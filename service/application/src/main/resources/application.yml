@@ -1,0 +1,79 @@
+server:
+  port: 8180
+
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  h2:
+    console:
+      path: /h2
+      enabled: true
+      settings:
+        web-allow-others: true
+  main:
+    allow-bean-definition-overriding: true
+
+camel:
+  springboot:
+    use-mdc-logging: true
+
+eventPortal:
+  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:defaultAgentId}
+  organizationId: ${EP_ORGANIZATION_ID:defaultOrgId}
+  topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
+  gateway:
+    id: gateway
+    name: evmr1
+    messaging:
+      standalone: true
+      rtoSession: false
+      enableHeartbeats: false
+      testHeartbeats: false
+      connections:
+        - name: eventPortalGateway
+          authenticationType: ${EP_GATEWAY_AUTH}
+          url: ${EP_GATEWAY_URL}
+          msgVpn: ${EP_GATEWAY_MSGVPN}
+          trustStoreDir: ${SSL_STORE_DIR}
+          users:
+            - name: messaging1
+              username: ${EP_GATEWAY_USERNAME}
+              password: ${EP_GATEWAY_PASSWORD}
+              clientName: runtime_agent_${EP_RUNTIME_AGENT_ID}  # 'client_' + runtimeAgentId
+plugins:
+  solace:
+    semp:
+      pageSize: 100
+    messagingServices:
+      # A solace service with both management and messaging credentials
+      - id: solaceDefaultService
+        name: staging service
+        management:
+          connections:
+            - name: mySolaceServiceSemp
+              authenticationType: basicAuthentication
+              url: ${SOLACE_SEMP_URL}
+              msgVpn: ${SOLACE_MSGVPN_NAME}
+              users:
+                - name: sempuser
+                  username: ${SOLACE_SEMP_USERNAME}
+                  password: ${SOLACE_SEMP_PASSWORD}
+  kafka:
+    messagingServices:
+      - id: kafkaDefaultService
+        name: confluent kafka cluster
+        management:
+          connections:
+            - name: noAuth
+              authenticationType: NO_AUTH
+              bootstrapServer: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9091}
+              users:
+                - name: noauthKafkaUser

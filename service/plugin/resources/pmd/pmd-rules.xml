@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<ruleset name="Custom ruleset">
+    <description>
+        Runtime agent custom rule set.
+    </description>
+
+    <rule ref="category/java/bestpractices.xml">
+        <description>
+            Rules which enforce generally accepted best practices.
+        </description>
+        <exclude name="AbstractClassWithoutAbstractMethod"/>
+        <exclude name="AvoidReassigningParameters"/>
+        <exclude name="DoubleBraceInitialization"/>
+        <exclude name="GuardLogStatement"/>
+        <exclude name="JUnit4TestShouldUseBeforeAnnotation"/>
+        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
+        <exclude name="JUnitTestContainsTooManyAsserts"/>
+        <exclude name="JUnitTestsShouldIncludeAssert"/>
+        <exclude name="PreserveStackTrace"/>
+        <exclude name="SwitchStmtsShouldHaveDefault"/>
+        <exclude name="UseVarargs"/>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml">
+        <description>
+            Rules which enforce a specific coding style.
+        </description>
+        <exclude name="AtLeastOneConstructor"/>
+        <exclude name="ClassNamingConventions"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="ConfusingTernary"/>
+        <exclude name="DefaultPackage"/>
+        <exclude name="FieldNamingConventions"/>
+        <exclude name="FormalParameterNamingConventions"/>
+        <exclude name="GenericsNaming"/>
+        <exclude name="LinguisticNaming"/>
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <exclude name="LocalVariableNamingConventions"/>
+        <exclude name="LongVariable"/>
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <exclude name="MethodNamingConventions"/>
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="PackageCase"/>
+        <exclude name="PrematureDeclaration"/>
+        <exclude name="ShortClassName"/>
+        <exclude name="ShortVariable"/>
+        <exclude name="TooManyStaticImports"/>
+        <exclude name="UnnecessaryAnnotationValueElement"/>
+        <exclude name="UnnecessaryLocalBeforeReturn"/>
+        <exclude name="UseDiamondOperator"/>
+        <exclude name="UselessParentheses"/>
+    </rule>
+
+    <rule ref="category/java/design.xml">
+        <description>
+            Rules that help you discover design issues.
+        </description>
+        <exclude name="AbstractClassWithoutAnyMethod"/> <!-- consider enabling -->
+        <exclude name="AvoidCatchingGenericException"/>
+        <exclude name="AvoidDeeplyNestedIfStmts"/>
+        <exclude name="AvoidRethrowingException"/>
+        <exclude name="AvoidThrowingRawExceptionTypes"/>
+        <exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal"/>
+        <exclude name="CollapsibleIfStatements"/>
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="ExcessiveImports"/>
+        <exclude name="ExcessiveParameterList"/>
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="NPathComplexity"/>
+        <exclude name="SignatureDeclareThrowsException"/>
+        <exclude name="TooManyFields"/>
+        <exclude name="TooManyMethods"/>
+        <exclude name="UseObjectForClearerAPI"/>
+        <exclude name="UseUtilityClass"/>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml">
+        <description>
+            Rules to detect constructs that are either broken, extremely confusing or prone to runtime errors.
+        </description>
+        <exclude name="AvoidCatchingThrowable"/>
+        <exclude name="AvoidDuplicateLiterals"/>
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
+        <exclude name="AvoidLiteralsInIfCondition"/>
+        <exclude name="AvoidUsingOctalValues"/>
+        <exclude name="BeanMembersShouldSerialize"/>
+        <exclude name="DataflowAnomalyAnalysis"/>
+        <exclude name="DetachedTestCase"/>
+        <exclude name="EmptyCatchBlock"/>
+        <exclude name="MissingSerialVersionUID"/>
+        <exclude name="UseLocaleWithCaseConversions"/>
+    </rule>
+
+    <rule ref="category/java/multithreading.xml">
+        <description>
+            Rules that flag issues when dealing with multiple threads of execution.
+        </description>
+        <exclude name="AvoidUsingVolatile"/>
+        <exclude name="DoNotUseThreads"/>
+        <exclude name="UseConcurrentHashMap"/>
+    </rule>
+
+    <rule ref="category/java/performance.xml">
+        <description>
+            Rules that flag suboptimal code.
+        </description>
+        <exclude name="AvoidInstantiatingObjectsInLoops"/>
+        <exclude name="ConsecutiveAppendsShouldReuse"/>
+        <exclude name="ConsecutiveLiteralAppends"/>
+        <exclude name="InsufficientStringBufferDeclaration"/>
+        <exclude name="TooFewBranchesForASwitchStatement"/>
+        <exclude name="UseStringBufferForStringAppends"/>
+    </rule>
+
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateField">
+        <description>
+            Ignore lombok annotations
+        </description>
+        <properties>
+            <property name="violationSuppressXPath"
+                      value="//ClassOrInterfaceBodyDeclaration//FieldDeclaration[//TypeDeclaration//MarkerAnnotation//Name[@Image='Getter']
+             | //TypeDeclaration//MarkerAnnotation//Name[@Image='Setter'] | //TypeDeclaration//MarkerAnnotation//Name[@Image='Data']]"/>
+        </properties>
+    </rule>
+</ruleset>

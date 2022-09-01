@@ -1,0 +1,1 @@
+{{ include "solacecloudlibchart.service.tpl" .}}

@@ -1,0 +1,1 @@
+@dockerVersion@-@git.commit.id.abbrev@

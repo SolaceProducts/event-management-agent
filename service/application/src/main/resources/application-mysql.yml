@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:mysql://DevBox1-VirtualBox.local:3306/runtime_agent
+    username: root
+    password: example
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: create
