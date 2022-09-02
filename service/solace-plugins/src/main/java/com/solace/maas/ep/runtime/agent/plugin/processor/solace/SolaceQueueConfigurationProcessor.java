@@ -32,12 +32,5 @@ public class SolaceQueueConfigurationProcessor extends ResultProcessorImpl<List<
         List<Map<String, Object>> queueResponse = sempClient.getQueues();
 
         return queueResponse;
-//                queueResponse.stream()
-//                .map(qConfig -> SolaceQueueConfigurationEvent.builder()
-//                        .name(qConfig.get("queueName").toString())
-//                        .configuration(qConfig)
-//                        .build())
-//                .sorted(Comparator.comparing(SolaceQueueConfigurationEvent::getName))
-//                .collect(Collectors.toUnmodifiableList());
     }
 }
