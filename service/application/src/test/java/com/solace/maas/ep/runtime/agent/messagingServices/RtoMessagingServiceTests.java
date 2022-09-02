@@ -8,6 +8,7 @@ import com.solacesystems.solclientj.core.event.MessageCallback;
 import com.solacesystems.solclientj.core.event.SessionEventCallback;
 import com.solacesystems.solclientj.core.handle.SessionHandle;
 import lombok.SneakyThrows;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,7 +35,7 @@ public class RtoMessagingServiceTests {
     @Mock
     SessionEventCallback sessionEventCallback;
 
-
+    @Ignore
     @SneakyThrows
     @Test
     public void RtoMessagingService_Create_Context_And_Session_Then_Connect() {

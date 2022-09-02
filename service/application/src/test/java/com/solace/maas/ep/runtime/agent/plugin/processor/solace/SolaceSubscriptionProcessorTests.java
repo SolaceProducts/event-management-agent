@@ -1,10 +1,12 @@
 package com.solace.maas.ep.runtime.agent.plugin.processor.solace;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
-import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.processor.solace.event.SolaceQueueNameEvent;
-import com.solace.maas.ep.runtime.agent.plugin.processor.solace.event.SolaceSubscriptionEvent;
+import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
+//import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
+//import com.solace.maas.ep.runtime.agent.plugin.processor.solace.event.SolaceQueueNameEvent;
+//import com.solace.maas.ep.runtime.agent.plugin.processor.solace.event.SolaceSubscriptionEvent;
 import com.solace.maas.ep.runtime.agent.plugin.processor.solace.semp.SolaceHttpSemp;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -38,19 +40,19 @@ public class SolaceSubscriptionProcessorTests {
     public void testHandleEvent() {
         SolaceHttpSemp sempClient = mock(SolaceHttpSemp.class);
 
+        Map<String, Object> sub1 = Map.of("queueName", "myQueue1", "subscriptionTopic", "sc/topic/1", "msgVpnName", "myMsgVpn");
+        Map<String, Object> sub2 = Map.of("queueName", "myQueue1", "subscriptionTopic", "sc/topic/2", "msgVpnName", "myMsgVpn");
         when(messagingServiceDelegateService.getMessagingServiceClient("testService"))
                 .thenReturn(sempClient);
         when(sempClient.getSubscriptionForQueue("abc")).thenReturn(List.of(
-                Map.of("queueName", "myQueue1", "subscriptionTopic", "sc/topic/1", "msgVpnName", "myMsgVpn"),
-                Map.of("queueName", "myQueue1", "subscriptionTopic", "sc/topic/2", "msgVpnName", "myMsgVpn")));
-
-        List<SolaceSubscriptionEvent> subscriptionEvents =
+                    sub1, sub2
+                ));
+        List<Map<String, Object>> subscriptionEvents =
                 solaceSubscriptionProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"),
                 List.of(SolaceQueueNameEvent.builder().name("abc").build()));
 
-        assertThat(subscriptionEvents, hasSize(1));
-        assertThat(subscriptionEvents.get(0).getSubscriptionList(), hasSize(2));
-        assertThat(subscriptionEvents.get(0).getSubscriptionList(), containsInAnyOrder("sc/topic/1", "sc/topic/2"));
+        assertThat(subscriptionEvents, hasSize(2));
+        assertThat(subscriptionEvents, containsInAnyOrder(sub1, sub2));
         assertThatNoException();
     }
 }

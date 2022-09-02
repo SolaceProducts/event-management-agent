@@ -1,9 +1,8 @@
 package com.solace.maas.ep.runtime.agent.plugin.processor.solace;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
-import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.runtime.agent.plugin.processor.solace.event.SolaceQueueConfigurationEvent;
+import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.plugin.processor.solace.semp.SolaceHttpSemp;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,12 +43,10 @@ public class SolaceQueueConfigurationProcessorTests {
 
         when(sempClient.getQueues()).thenReturn(List.of(queue1Config, queue2Config));
 
-        List<SolaceQueueConfigurationEvent> queueEventList = solaceQueueConfigurationProcessor.handleEvent(
+        List<Map<String, Object>> queueEventList = solaceQueueConfigurationProcessor.handleEvent(
                 Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), null);
 
         assertThat(queueEventList, hasSize(2));
-        assertThat(queueEventList, containsInAnyOrder(
-                SolaceQueueConfigurationEvent.builder().name("myQueue1").configuration(queue1Config).build(),
-                SolaceQueueConfigurationEvent.builder().name("myQueue2").configuration(queue2Config).build()));
+        assertThat(queueEventList, containsInAnyOrder(queue1Config, queue2Config));
     }
 }

@@ -3,21 +3,16 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: password
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3308/runtime_agent
+    username: root
+    password: secret
+    driver-class-name: com.mysql.jdbc.Driver
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     defer-datasource-initialization: true
-  h2:
-    console:
-      path: /h2
-      enabled: true
-      settings:
-        web-allow-others: true
+
   main:
     allow-bean-definition-overriding: true
 
@@ -33,7 +28,7 @@ eventPortal:
     id: gateway
     name: evmr1
     messaging:
-      standalone: true
+      standalone: false
       rtoSession: false
       enableHeartbeats: false
       testHeartbeats: false
