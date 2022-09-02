@@ -42,7 +42,7 @@ eventPortal.gateway.messaging.connections.users.clientName= <your client name>
 1. Clone the runtime-agent repository
 
 ```
-git clone git@github.com:SolaceDev/runtime-agent.git
+git clone git@github.com:SolaceLabs/runtime-agent.git
 ```
 
 2. Install maven dependencies
