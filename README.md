@@ -63,7 +63,7 @@ Alternatively, to build and run the service in IDE
 1. Clone the runtime-agent repository
 
 ```
-git clone git@github.com:SolaceDev/runtime-agent.git
+git clone git@github.com:SolaceLabs/runtime-agent.git
 ```
 
 2. Save the code below to a yml file, then run `docker-compose up` against the file **Note**: For Macbook users with M1
