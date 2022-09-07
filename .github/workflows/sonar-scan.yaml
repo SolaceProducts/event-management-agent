@@ -1,0 +1,19 @@
+name: SonarQube
+on:
+  push:
+    branches:
+      develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  SonarQube:
+    uses: SolaceDev/maas-build-actions/.github/workflows/sonar-maven-scan.yaml@master
+    with:
+      pom_location: service/pom.xml
+      sonar_project_key: SolaceLabs_runtime-agent
+      extra_maven_settings: "-s maas-build-actions/.github/workflows/mvn-settings.xml"
+    secrets:
+      sonar_token: ${{ secrets.SONAR_TOKEN }}
+      sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
+      packages_admin_user: ${{ secrets.PACKAGES_ADMIN_USER }}
+      packages_admin_token: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
