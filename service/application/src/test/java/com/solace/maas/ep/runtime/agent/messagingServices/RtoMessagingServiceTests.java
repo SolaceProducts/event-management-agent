@@ -8,13 +8,13 @@ import com.solacesystems.solclientj.core.event.MessageCallback;
 import com.solacesystems.solclientj.core.event.SessionEventCallback;
 import com.solacesystems.solclientj.core.handle.SessionHandle;
 import lombok.SneakyThrows;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.DisabledIf;
 
 import java.util.ArrayList;
 
@@ -35,7 +35,10 @@ public class RtoMessagingServiceTests {
     @Mock
     SessionEventCallback sessionEventCallback;
 
-    @Ignore
+    @DisabledIf(
+            expression = "#{systemProperties['os.name'].toLowerCase().contains('mac')}",
+            reason = "Disabled on Mac OS"
+    )
     @SneakyThrows
     @Test
     public void RtoMessagingService_Create_Context_And_Session_Then_Connect() {
