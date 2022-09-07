@@ -7,13 +7,33 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   SonarQube:
-    uses: SolaceDev/maas-build-actions/.github/workflows/sonar-maven-scan.yaml@master
-    with:
-      pom_location: service/pom.xml
-      sonar_project_key: SolaceLabs_runtime-agent
-      extra_maven_settings: "-s maas-build-actions/.github/workflows/mvn-settings.xml"
-    secrets:
-      sonar_token: ${{ secrets.SONAR_TOKEN }}
-      sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
-      packages_admin_user: ${{ secrets.PACKAGES_ADMIN_USER }}
-      packages_admin_token: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
+    - name: Checkout SolaceDev/maas-build-actions
+        uses: actions/checkout@v2
+        with:
+          repository: SolaceDev/maas-build-actions
+          ref: refs/heads/master
+          token: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
+          persist-credentials: false
+          path: maas-build-actions
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Cache SonarQube packages
+      uses: actions/cache@v1
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+    - name: Cache Maven packages
+      uses: actions/cache@v1
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    - name: Build and Analyze
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        PACKAGES_ADMIN_USER: ${{ secrets.PACKAGES_ADMIN_USER }}
+        PACKAGES_ADMIN_TOKEN: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
