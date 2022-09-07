@@ -1,3 +1,11 @@
+name: SonarQube
+on:
+  push:
+    branches:
+      develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+    
 jobs:
   Scan:
     runs-on: ubuntu-latest
