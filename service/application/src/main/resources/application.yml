@@ -1,3 +1,10 @@
+springdoc:
+  packages-to-scan: com.solace.maas.ep.runtime.agent.scanManager
+  api-docs:
+    path: /docs/runtime-agent
+  swagger-ui:
+    path: runtime-agent/swagger-ui.html
+
 server:
   port: 8180
 
