@@ -5,7 +5,7 @@ on:
       develop
   pull_request:
     types: [opened, synchronize, reopened]
-    
+
 jobs:
   Scan:
     runs-on: ubuntu-latest
@@ -43,4 +43,4 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           PACKAGES_ADMIN_USER: ${{ secrets.PACKAGES_ADMIN_USER }}
           PACKAGES_ADMIN_TOKEN: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
-        run: mvn s maas-build-actions/.github/workflows/mvn-settings.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=${{inputs.sonar_project_key}} --file ${{inputs.pom_location}}
+        run: mvn s maas-build-actions/.github/workflows/mvn-settings.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent --file service/pom.xml
