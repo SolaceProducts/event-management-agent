@@ -1,9 +1,45 @@
-# Runtime Agent
+# Event Management Agent
 
-Discover event streams flowing through a broker.
 
-The Runtime Agent can discover event broker configuration. The Runtime Agent is built on a plugin architecture that
-allows it to be easily extended for additional broker types.
+The Event Management Agent is a tool used by architects and developers working with Event-Driven Architecture  (EDA) to discover event streams flowing through a broker as well as the related configuration information.
+The Event Management Agent can be used in two different ways:
+* As a standalone tool that discovers runtime event data from event or message brokers in the runtime to retrieve EDA related data. This data can be exported as an AsyncAPI specification for the broker service and can be imported in event management software.
+* As the Event Management Agent component of the Solace’s PubSub+ Event Portal product to:
+  - discover runtime event data from runtime event brokers
+  - populate the Designer and Catalog services of the Event Portal with the runtime data and thus enable the management and reuse of EDA assets 
+  - continuously audit the runtime data and flag discrepancies between the runtime and the intent of the design time to ensure that the runtime and design time configurations stay in-sync
+
+
+Our plan is to open source the Event Management Agent to enable architects and developers to contribute to it as well as to build plugins so that:
+* runtime data can be discovered from additional broker types
+* existing plugins can discover additional data
+* EDA data can be discovered from other systems, e.g. schemas from schema registries
+
+
+At this stage (September 2022), the Event Management Agent is still in an active development
+phase.
+
+### Available today:
+* Users can discover Solace PubSub+ and Apache Kafka brokers event flow data
+  - Users can discover Solace PubSub+ queues and subscriptions
+  - Users can discover Apache Kafka topics and consumer groups
+* The Event Management Agent architecture is currently in the form of Java packages
+
+On the roadmap:
+* The Event Management Agent has an open source plugin framework
+* Support additional Solace PubSub+ and Apache Kafka event broker authentication types in the
+form of plugins such as basic authentication, certificates, Kerberos, etc.
+* Collection of topics from events flowing though Solace PubSub+ brokers
+* Import discovered data in the Solace PubSub+ Event Portal
+* Addition of the infrastructure needed for the Event Management Agent to be a true open source
+project
+* Additional support to more broker types
+* Discovery of Apache Kafka connectors
+* Discovery of schemas from schema registries
+* Introduction of a UI for the Event Management Agent
+* Export discovered data as AsyncAPI specifications
+* Support for Confluent and MSK flavours of Apache Kafka
+
 
 ## Running the Runtime Agent
 
