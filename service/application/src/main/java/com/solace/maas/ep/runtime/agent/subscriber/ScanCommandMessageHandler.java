@@ -41,9 +41,11 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
         ScanRequestBO scanRequestBO = scanRequestMapper.map(scanRequestDTO);
         scanRequestBO.setMessagingServiceId(message.getMessagingServiceId());
 
-        if (scanRequestBO.getDestinations() == null ||
-                !scanRequestBO.getDestinations().contains("DATA_COLLECTION_FILE_WRITER")) {
+        if (scanRequestBO.getDestinations() == null) {
             destinations.add("DATA_COLLECTION_FILE_WRITER");
+        } else if (!scanRequestBO.getDestinations().contains("DATA_COLLECTION_FILE_WRITER")) {
+            destinations.add("DATA_COLLECTION_FILE_WRITER");
+            destinations.addAll(scanRequestBO.getDestinations());
         }
 
         List<String> scanRequestDestinations = destinations.stream()
