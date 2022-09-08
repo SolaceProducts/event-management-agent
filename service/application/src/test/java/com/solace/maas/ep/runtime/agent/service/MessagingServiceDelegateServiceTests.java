@@ -74,6 +74,8 @@ public class MessagingServiceDelegateServiceTests {
     public void testGetMessagingServiceClient() {
         MessagingServiceClientManager clientManager = mock(MessagingServiceClientManager.class);
 
+        MessagingServiceTypeConfig.getMessagingServiceManagers().put("KAFKA", clientManager);
+
         byte[] encryptedPassword = "encryptedPassword".getBytes();
 
         AuthenticationDetailsEntity authenticationDetailsEntity = AuthenticationDetailsEntity.builder()
@@ -96,10 +98,6 @@ public class MessagingServiceDelegateServiceTests {
                         .id(UUID.randomUUID().toString())
                         .managementDetails(List.of(connectionDetailsEntity))
                         .build()));
-        when(MessagingServiceTypeConfig.getMessagingServiceManagers().containsKey(any(String.class)))
-                .thenReturn(true);
-        when(MessagingServiceTypeConfig.getMessagingServiceManagers().get(any(String.class)))
-                .thenReturn(clientManager);
         when(clientManager.getClient(any(ConnectionDetailsEvent.class)))
                 .thenReturn(mock(AdminClient.class));
 
