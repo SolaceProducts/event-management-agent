@@ -48,32 +48,37 @@ eventPortal:
               username: ${EP_GATEWAY_USERNAME}
               password: ${EP_GATEWAY_PASSWORD}
               clientName: runtime_agent_${EP_RUNTIME_AGENT_ID}  # 'client_' + runtimeAgentId
-plugins:
-  solace:
-    semp:
-      pageSize: 100
-    messagingServices:
-      # A solace service with both management and messaging credentials
-      - id: solaceDefaultService
-        name: staging service
-        management:
-          connections:
-            - name: mySolaceServiceSemp
-              authenticationType: basicAuthentication
-              url: ${SOLACE_SEMP_URL}
-              msgVpn: ${SOLACE_MSGVPN_NAME}
-              users:
-                - name: sempuser
-                  username: ${SOLACE_SEMP_USERNAME}
-                  password: ${SOLACE_SEMP_PASSWORD}
-  kafka:
-    messagingServices:
-      - id: kafkaDefaultService
-        name: confluent kafka cluster
-        management:
-          connections:
-            - name: noAuth
-              authenticationType: NO_AUTH
-              bootstrapServer: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9091}
-              users:
-                - name: noauthKafkaUser
+
+# Below is an example of how to set up messaging service configuration in the application.yml file.
+
+#plugins:
+#  messagingServices:
+#    # A solace service with both management and messaging credentials
+#    - id: solaceDefaultService
+#      type: SOLACE
+#      name: staging service
+#      management:
+#        connections:
+#          - name: mySolaceServiceSemp
+#            authenticationType: basicAuthentication
+#            url: ${SOLACE_SEMP_URL}
+#            msgVpn: ${SOLACE_MSGVPN_NAME}
+#            users:
+#              - name: sempuser
+#                username: ${SOLACE_SEMP_USERNAME}
+#                password: ${SOLACE_SEMP_PASSWORD}
+#      properties:
+#        semp:
+#          pageSize: 100
+#    - id: kafkaDefaultService
+#      name: confluent kafka cluster
+#      type: KAFKA
+#      management:
+#        connections:
+#          - name: noAuth
+#            authenticationType: NO_AUTH
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9091}
+#            users:
+#              - name: noauthKafkaUser
+#                username: admin
+#                password: admin

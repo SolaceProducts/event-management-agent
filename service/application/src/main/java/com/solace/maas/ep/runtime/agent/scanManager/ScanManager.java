@@ -35,7 +35,7 @@ public class ScanManager {
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
         MessagingServiceRouteDelegate scanDelegate =
-                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType().name());
+                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType());
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
         List<RouteBundle> destinations = scanDestinations.stream()

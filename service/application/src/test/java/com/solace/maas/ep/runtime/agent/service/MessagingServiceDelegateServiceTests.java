@@ -57,14 +57,14 @@ public class MessagingServiceDelegateServiceTests {
                 .build();
 
         MessagingServiceEvent messagingServiceEvent = MessagingServiceEvent.builder()
-                .messagingServiceType(MessagingServiceType.SOLACE)
+                .messagingServiceType(MessagingServiceType.SOLACE.name())
                 .name("service1")
                 .connectionDetails(List.of(connectionDetailsEvent))
                 .build();
 
         when(repository.save(any(MessagingServiceEntity.class)))
                 .thenReturn(MessagingServiceEntity.builder()
-                        .messagingServiceType(MessagingServiceType.SOLACE)
+                        .messagingServiceType(MessagingServiceType.SOLACE.name())
                         .name("service1")
                         .build());
 
@@ -94,7 +94,7 @@ public class MessagingServiceDelegateServiceTests {
 
         when(repository.findById(any(String.class)))
                 .thenReturn(Optional.of(MessagingServiceEntity.builder()
-                        .messagingServiceType(MessagingServiceType.KAFKA)
+                        .messagingServiceType(MessagingServiceType.KAFKA.name())
                         .name("service1")
                         .id(UUID.randomUUID().toString())
                         .managementDetails(List.of(connectionDetailsEntity))

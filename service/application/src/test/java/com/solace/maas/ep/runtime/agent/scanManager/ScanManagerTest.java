@@ -39,7 +39,7 @@ public class ScanManagerTest {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id("id")
                 .name("name")
-                .messagingServiceType(MessagingServiceType.KAFKA)
+                .messagingServiceType(MessagingServiceType.KAFKA.name())
                 .managementDetails(List.of())
                 .build();
 
@@ -71,7 +71,7 @@ public class ScanManagerTest {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id("id")
                 .name("name")
-                .messagingServiceType(MessagingServiceType.SOLACE)
+                .messagingServiceType(MessagingServiceType.SOLACE.name())
                 .managementDetails(List.of())
                 .build();
 

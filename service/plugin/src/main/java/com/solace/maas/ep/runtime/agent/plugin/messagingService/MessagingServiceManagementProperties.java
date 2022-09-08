@@ -5,12 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessagingServiceManagementProperties {
+public class MessagingServiceManagementProperties implements Serializable {
     private List<MessagingServiceConnectionProperties> connections;
 }
