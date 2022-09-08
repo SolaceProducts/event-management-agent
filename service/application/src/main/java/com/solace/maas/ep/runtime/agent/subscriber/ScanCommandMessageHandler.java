@@ -10,6 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
@@ -28,10 +32,28 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
 
     @Override
     public void receiveMessage(String destinationName, ScanCommandMessage message) {
-        log.debug("Received scan command message: {}\n{}", message.getMessagingServiceId(), message);
+        List<String> destinations = new ArrayList<>();
+
+        log.debug("Received scan command message: {} for messaging service: {}",
+                message, message.getMessagingServiceId());
+
         ScanRequestDTO scanRequestDTO = message.getScanRequest();
         ScanRequestBO scanRequestBO = scanRequestMapper.map(scanRequestDTO);
         scanRequestBO.setMessagingServiceId(message.getMessagingServiceId());
+
+        if (scanRequestBO.getDestinations() == null) {
+            destinations.add("DATA_COLLECTION_FILE_WRITER");
+        } else if (!scanRequestBO.getDestinations().contains("DATA_COLLECTION_FILE_WRITER")) {
+            destinations.add("DATA_COLLECTION_FILE_WRITER");
+            destinations.addAll(scanRequestBO.getDestinations());
+        }
+
+        List<String> scanRequestDestinations = destinations.stream()
+                .distinct()
+                .collect(Collectors.toUnmodifiableList());
+
+        scanRequestBO.setDestinations(scanRequestDestinations);
+
         scanManager.scan(scanRequestBO);
     }
 }

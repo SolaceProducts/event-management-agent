@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
-public class DiscoveryMessageHandler extends SolaceMessageHandler {
+public class DiscoveryMessageHandler extends SolaceMessageHandler<MOPMessage> {
 
     public DiscoveryMessageHandler(
             SolaceConfiguration solaceConfiguration,
