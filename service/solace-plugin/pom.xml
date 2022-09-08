@@ -61,7 +61,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.solace.maas.ep.runtime.agent.plugin.kafka.KafkaApplication</mainClass>
+                    <mainClass>com.solace.maas.ep.runtime.agent.plugin.solace.SolaceApplication</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -77,7 +77,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.solace.maas.ep.runtime.agent.plugin.kafka.KafkaApplication</mainClass>
+                                    <mainClass>com.solace.maas.ep.runtime.agent.plugin.solace.SolaceApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
