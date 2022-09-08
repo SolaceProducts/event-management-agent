@@ -1,5 +1,5 @@
 springdoc:
-  packages-to-scan: com.solace.maas.ep.runtime.agent.scanManager
+  packages-to-scan: com.solace.maas.ep.runtime.agent.scanManager.rest
   api-docs:
     path: /docs/runtime-agent
   swagger-ui:
