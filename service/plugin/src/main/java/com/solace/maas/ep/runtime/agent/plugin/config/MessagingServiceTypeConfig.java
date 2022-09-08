@@ -1,24 +1,21 @@
 package com.solace.maas.ep.runtime.agent.plugin.config;
 
 import com.solace.maas.ep.runtime.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.runtime.agent.plugin.manager.client.MessagingServiceClientManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import com.solace.maas.ep.runtime.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ExcludeFromJacocoGeneratedReport
-@Configuration
 public class MessagingServiceTypeConfig {
-    @Autowired
-    public MessagingServiceTypeConfig() {
+    private final static Map<String, MessagingServiceClientManager<?>> messagingServiceManagers =
+            new ConcurrentHashMap<>();
 
+    public static void addMessagingServiceManager(String serviceName, MessagingServiceClientManager<?> clientManager) {
+        messagingServiceManagers.put(serviceName, clientManager);
     }
 
-    @Bean
-    public Map<String, MessagingServiceClientManager<?>> messagingServiceManagers() {
-        return new ConcurrentHashMap<>();
+    public static Map<String, MessagingServiceClientManager<?>> getMessagingServiceManagers() {
+        return messagingServiceManagers;
     }
 }

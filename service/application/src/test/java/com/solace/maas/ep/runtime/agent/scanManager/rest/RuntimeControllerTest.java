@@ -5,7 +5,6 @@ import com.solace.maas.ep.runtime.agent.scanManager.ScanManager;
 import com.solace.maas.ep.runtime.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.common.model.ScanRequestDTO;
-import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.KafkaScanType;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,7 @@ public class RuntimeControllerTest {
 
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(ONETIME, List.of("topics"), List.of());
         ScanRequestBO scanRequestBO = new ScanRequestBO("id", ONETIME,
-                List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
+                List.of("TEST_SCAN"), List.of());
 
         when(scanManager.scan(scanRequestBO))
                 .thenReturn(Mockito.anyString());

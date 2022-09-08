@@ -2,7 +2,8 @@ package com.solace.maas.ep.runtime.agent.service;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
 import com.solace.maas.ep.runtime.agent.event.MessagingServiceEvent;
-import com.solace.maas.ep.runtime.agent.plugin.manager.client.MessagingServiceClientManager;
+import com.solace.maas.ep.runtime.agent.plugin.config.MessagingServiceTypeConfig;
+import com.solace.maas.ep.runtime.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.runtime.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.runtime.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.runtime.agent.repository.messagingservice.MessagingServiceRepository;
@@ -19,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,9 +35,6 @@ import static org.mockito.Mockito.when;
 public class MessagingServiceDelegateServiceTests {
     @Mock
     private MessagingServiceRepository repository;
-
-    @Mock
-    private Map<String, MessagingServiceClientManager<?>> messagingServiceManagers;
 
     @InjectMocks
     private MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
@@ -99,9 +96,9 @@ public class MessagingServiceDelegateServiceTests {
                         .id(UUID.randomUUID().toString())
                         .managementDetails(List.of(connectionDetailsEntity))
                         .build()));
-        when(messagingServiceManagers.containsKey(any(String.class)))
+        when(MessagingServiceTypeConfig.getMessagingServiceManagers().containsKey(any(String.class)))
                 .thenReturn(true);
-        when(messagingServiceManagers.get(any(String.class)))
+        when(MessagingServiceTypeConfig.getMessagingServiceManagers().get(any(String.class)))
                 .thenReturn(clientManager);
         when(clientManager.getClient(any(ConnectionDetailsEvent.class)))
                 .thenReturn(mock(AdminClient.class));

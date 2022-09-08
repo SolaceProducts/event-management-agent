@@ -5,7 +5,6 @@ import com.solace.maas.ep.runtime.agent.model.User;
 import com.solace.maas.ep.common.model.ScanType;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.common.model.ScanRequestDTO;
-import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.KafkaScanType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,7 +29,7 @@ public class ScanRequestMapperTest {
         scanRequestMapper.map((ScanRequestDTO) null);
 
         ScanRequestBO scanRequestBO = new ScanRequestBO("id", ScanType.ONETIME,
-                List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
+                List.of("TEST_SCAN"), List.of());
 
         scanRequestMapper.map(scanRequestBO);
         scanRequestMapper.map((ScanRequestBO) null);
@@ -42,7 +41,7 @@ public class ScanRequestMapperTest {
     public void testMapperWithUser() {
         User user = new User("orgId", "userId");
         ScanRequestBO scanRequestBO = new ScanRequestBO("id", ScanType.ONETIME,
-                List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
+                List.of("TEST_SCAN"), List.of());
 
         scanRequestMapper.map(scanRequestBO, user);
         scanRequestMapper.map(null, null);

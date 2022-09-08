@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,6 +37,8 @@ public class ScanManager {
 
         MessagingServiceRouteDelegate scanDelegate =
                 PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType());
+
+        Objects.requireNonNull(scanDelegate, "Messaging Service Plugin not found!");
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
         List<RouteBundle> destinations = scanDestinations.stream()

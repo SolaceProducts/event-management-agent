@@ -1,7 +1,8 @@
 package com.solace.maas.ep.runtime.agent.service;
 
 import com.solace.maas.ep.runtime.agent.event.MessagingServiceEvent;
-import com.solace.maas.ep.runtime.agent.plugin.manager.client.MessagingServiceClientManager;
+import com.solace.maas.ep.runtime.agent.plugin.config.MessagingServiceTypeConfig;
+import com.solace.maas.ep.runtime.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.runtime.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.runtime.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.runtime.agent.plugin.service.MessagingServiceDelegateService;
@@ -32,15 +33,11 @@ import java.util.stream.Collectors;
 public class MessagingServiceDelegateServiceImpl implements MessagingServiceDelegateService {
     private final MessagingServiceRepository repository;
 
-    private final Map<String, MessagingServiceClientManager<?>> messagingServiceManagers;
-
     private final Map<String, Object> messagingServiceClients;
 
     @Autowired
-    public MessagingServiceDelegateServiceImpl(MessagingServiceRepository repository,
-                                               Map<String, MessagingServiceClientManager<?>> messagingServiceManagers) {
+    public MessagingServiceDelegateServiceImpl(MessagingServiceRepository repository) {
         this.repository = repository;
-        this.messagingServiceManagers = messagingServiceManagers;
         messagingServiceClients = new HashMap<>();
     }
 
@@ -127,10 +124,11 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
 
         if (messagingServiceClients.containsKey(messagingServiceId)) {
             return (T) messagingServiceClients.get(messagingServiceId);
-        } else if (messagingServiceManagers.containsKey(type)) {
+        } else if (MessagingServiceTypeConfig.getMessagingServiceManagers().containsKey(type)) {
             // Attempt to retrieve the Messaging Service Manager for this type of Messaging Service. If it is found,
             // we will attempt to create a Connection Client.
-            MessagingServiceClientManager<?> clientManager = messagingServiceManagers.get(type);
+            MessagingServiceClientManager<?> clientManager =
+                    MessagingServiceTypeConfig.getMessagingServiceManagers().get(type);
 
             T messagingServiceClient = (T) clientManager.getClient(connectionDetailsEvent);
             messagingServiceClients.put(messagingServiceId, messagingServiceClient);

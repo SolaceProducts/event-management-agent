@@ -7,8 +7,8 @@ import com.solace.maas.ep.common.model.ScanType;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.service.ScanService;
-import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.KafkaScanType;
 import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.SolaceScanType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -50,19 +50,18 @@ public class ScanManagerTest {
 
         ScanRequestBO scanRequestBO =
                 new ScanRequestBO("id", ScanType.ONETIME, List.of(), List.of());
-        scanManager.scan(scanRequestBO);
+
+        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOTopics =
                 new ScanRequestBO("id", ScanType.ONETIME,
-                        List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
-        scanManager.scan(scanRequestBOTopics);
+                        List.of("TEST_SCAN_1"), List.of());
+        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOConsumerGroups =
                 new ScanRequestBO("id", ScanType.ONETIME,
-                        List.of(KafkaScanType.KAFKA_CONSUMER_GROUPS.name()), List.of());
-        scanManager.scan(scanRequestBOConsumerGroups);
-
-        assertThatNoException();
+                        List.of("TEST_SCAN_2"), List.of());
+        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
     }
 
 
