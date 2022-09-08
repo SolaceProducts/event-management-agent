@@ -3,7 +3,7 @@ package com.solace.maas.ep.runtime.agent.plugin.route.enumeration;
 public enum KafkaRouteType {
     KAFKA_BROKER_CONFIGURATION("brokerConfiguration"),
     KAFKA_CUSTER_CONFIGURATION("clusterConfiguration"),
-    KAFKA_CONSUMER_GROUPS("consumerGroupConfiguration"),
+    KAFKA_CONSUMER_GROUPS("consumerGroups"),
     KAFKA_CONSUMER_GROUP_CONFIGURATION("consumerGroupConfiguration"),
     KAFKA_TOPIC_LISTING("topicListing"),
     KAFKA_FEATURES("features"),
