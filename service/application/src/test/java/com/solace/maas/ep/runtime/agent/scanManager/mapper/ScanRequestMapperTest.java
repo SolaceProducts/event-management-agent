@@ -1,11 +1,10 @@
 package com.solace.maas.ep.runtime.agent.scanManager.mapper;
 
+import com.solace.maas.ep.common.model.ScanRequestDTO;
 import com.solace.maas.ep.runtime.agent.TestConfig;
 import com.solace.maas.ep.runtime.agent.model.User;
-import com.solace.maas.ep.common.model.ScanType;
-import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
-import com.solace.maas.ep.common.model.ScanRequestDTO;
 import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.KafkaScanType;
+import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static com.solace.maas.ep.common.model.ScanType.KAFKA_ALL;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 
 @ActiveProfiles("TEST")
@@ -24,12 +24,12 @@ public class ScanRequestMapperTest {
 
     @Test
     public void testMapper() {
-        ScanRequestDTO scanRequestDTO = new ScanRequestDTO(ScanType.ONETIME, List.of("TOPICS"), List.of());
+        ScanRequestDTO scanRequestDTO = new ScanRequestDTO(KAFKA_ALL, List.of("TOPICS"), List.of());
 
         scanRequestMapper.map(scanRequestDTO);
         scanRequestMapper.map((ScanRequestDTO) null);
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", ScanType.ONETIME,
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", KAFKA_ALL,
                 List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
 
         scanRequestMapper.map(scanRequestBO);
@@ -41,7 +41,7 @@ public class ScanRequestMapperTest {
     @Test
     public void testMapperWithUser() {
         User user = new User("orgId", "userId");
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", ScanType.ONETIME,
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", KAFKA_ALL,
                 List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
 
         scanRequestMapper.map(scanRequestBO, user);

@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class HeartbeatMessage extends MOPMessage {
 
+    private String orgId;
     private String runtimeAgentId;
     private String timestamp;
 
