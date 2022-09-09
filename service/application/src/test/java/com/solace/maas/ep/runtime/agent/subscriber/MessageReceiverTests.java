@@ -50,10 +50,8 @@ public class MessageReceiverTests {
                 "  \"isReplyMessage\" : false,\n" +
                 "  \"msgPriority\" : 4,\n" +
                 "  \"traceId\" : \"80817f0d335b6221\",\n" +
-                "  \"scanRequest\" : {\n" +
-                "    \"scanType\" : \"one-time\",\n" +
-                "    \"entityTypes\" : [ \"queues\" ]\n" +
-                "  },\n" +
+                "  \"scanTypes\" : [\"KAFKA_ALL\"],\n" +
+                "  \"destinations\" : [ \"FILE_WRITER\" ],\n" +
                 "  \"messagingServiceId\" : \"someId\"\n" +
                 "}";
 

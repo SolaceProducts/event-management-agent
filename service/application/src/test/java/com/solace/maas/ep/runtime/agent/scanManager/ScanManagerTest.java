@@ -1,14 +1,13 @@
 package com.solace.maas.ep.runtime.agent.scanManager;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
-import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.runtime.agent.plugin.config.enumeration.MessagingServiceType;
-import com.solace.maas.ep.common.model.ScanType;
+import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.KafkaScanType;
+import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.SolaceScanType;
+import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.service.ScanService;
-import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.KafkaScanType;
-import com.solace.maas.ep.runtime.agent.plugin.route.enumeration.SolaceScanType;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,6 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static com.solace.maas.ep.common.model.ScanType.KAFKA_ALL;
+import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.when;
 
@@ -49,16 +50,16 @@ public class ScanManagerTest {
         when(scanService.singleScan(List.of(), 4)).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", ScanType.ONETIME, List.of(), List.of());
+                new ScanRequestBO("id", KAFKA_ALL, List.of(), List.of());
         scanManager.scan(scanRequestBO);
 
         ScanRequestBO scanRequestBOTopics =
-                new ScanRequestBO("id", ScanType.ONETIME,
+                new ScanRequestBO("id", KAFKA_ALL,
                         List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
         scanManager.scan(scanRequestBOTopics);
 
         ScanRequestBO scanRequestBOConsumerGroups =
-                new ScanRequestBO("id", ScanType.ONETIME,
+                new ScanRequestBO("id", KAFKA_ALL,
                         List.of(KafkaScanType.KAFKA_CONSUMER_GROUPS.name()), List.of());
         scanManager.scan(scanRequestBOConsumerGroups);
 
@@ -81,16 +82,16 @@ public class ScanManagerTest {
         when(scanService.singleScan(List.of(), 2)).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", ScanType.ONETIME, List.of(), List.of());
+                new ScanRequestBO("id", SOLACE_ALL, List.of(), List.of());
         scanManager.scan(scanRequestBO);
 
         ScanRequestBO scanRequestBOQueues =
-                new ScanRequestBO("id", ScanType.ONETIME,
+                new ScanRequestBO("id", SOLACE_ALL,
                         List.of(SolaceScanType.SOLACE_QUEUE_LISTING.name()), List.of());
         scanManager.scan(scanRequestBOQueues);
 
         ScanRequestBO scanRequestBOQueuesConfig =
-                new ScanRequestBO("id", ScanType.ONETIME,
+                new ScanRequestBO("id", SOLACE_ALL,
                         List.of(SolaceScanType.SOLACE_SUBSCRIPTION_CONFIG.name()), List.of());
         scanManager.scan(scanRequestBOQueuesConfig);
 
