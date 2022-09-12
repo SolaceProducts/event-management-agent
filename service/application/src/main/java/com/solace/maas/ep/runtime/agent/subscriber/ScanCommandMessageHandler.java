@@ -1,7 +1,6 @@
 package com.solace.maas.ep.runtime.agent.subscriber;
 
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
-import com.solace.maas.ep.common.model.ScanRequestDTO;
 import com.solace.maas.ep.runtime.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.runtime.agent.scanManager.ScanManager;
 import com.solace.maas.ep.runtime.agent.scanManager.mapper.ScanRequestMapper;
@@ -19,6 +18,7 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandMessage> {
 
+    private static final String DEFAULT_DESTINATION = "FILE_WRITER";
     private final ScanManager scanManager;
     private final ScanRequestMapper scanRequestMapper;
 
@@ -33,26 +33,31 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
     @Override
     public void receiveMessage(String destinationName, ScanCommandMessage message) {
         List<String> destinations = new ArrayList<>();
+        List<String> entityTypes = new ArrayList<>();
 
         log.debug("Received scan command message: {} for messaging service: {}",
                 message, message.getMessagingServiceId());
 
-        ScanRequestDTO scanRequestDTO = message.getScanRequest();
-        ScanRequestBO scanRequestBO = scanRequestMapper.map(scanRequestDTO);
-        scanRequestBO.setMessagingServiceId(message.getMessagingServiceId());
+        message.getScanTypes().forEach(scanType -> entityTypes.add(scanType.name()));
 
-        if (scanRequestBO.getDestinations() == null) {
-            destinations.add("DATA_COLLECTION_FILE_WRITER");
-        } else if (!scanRequestBO.getDestinations().contains("DATA_COLLECTION_FILE_WRITER")) {
-            destinations.add("DATA_COLLECTION_FILE_WRITER");
-            destinations.addAll(scanRequestBO.getDestinations());
+        if (message.getDestinations() == null) {
+            destinations.add(DEFAULT_DESTINATION);
+        } else {
+            message.getDestinations().forEach(destination -> destinations.add(destination.name()));
+            if (!destinations.contains(DEFAULT_DESTINATION)) {
+                destinations.add(DEFAULT_DESTINATION);
+            }
         }
 
         List<String> scanRequestDestinations = destinations.stream()
                 .distinct()
                 .collect(Collectors.toUnmodifiableList());
 
-        scanRequestBO.setDestinations(scanRequestDestinations);
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .messagingServiceId(message.getMessagingServiceId())
+                .entityTypes(entityTypes)
+                .destinations(scanRequestDestinations)
+                .build();
 
         scanManager.scan(scanRequestBO);
     }

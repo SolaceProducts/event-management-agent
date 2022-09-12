@@ -1,11 +1,19 @@
 package com.solace.maas.ep.common.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public enum ScanType {
-    @JsonProperty("one-time")
-    ONETIME,
-
-    @JsonProperty("scheduled")
-    SCHEDULED;
+    KAFKA_ALL,
+    KAFKA_BROKER_CONFIGURATION,
+    KAFKA_CLUSTER_CONFIGURATION,
+    KAFKA_CONSUMER_GROUPS,
+    KAFKA_CONSUMER_GROUPS_CONFIGURATION,
+    KAFKA_FEATURES,
+    KAFKA_PRODUCERS,
+    KAFKA_TOPIC_CONFIGURATION,
+    KAFKA_TOPIC_CONFIGURATION_FULL,
+    KAFKA_TOPIC_LISTING,
+    KAFKA_TOPIC_OVERRIDE_CONFIGURATION,
+    SOLACE_ALL,
+    SOLACE_QUEUE_CONFIG,
+    SOLACE_QUEUE_LISTING,
+    SOLACE_SUBSCRIPTION_CONFIG;
 }

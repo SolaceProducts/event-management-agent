@@ -9,7 +9,7 @@ import java.util.List;
 @Component
 public class DataCollectionFileWriterDelegateImpl extends MessagingServiceRouteDelegateImpl {
     public DataCollectionFileWriterDelegateImpl() {
-        super("DATA_COLLECTION_FILE_WRITER");
+        super("FILE_WRITER");
     }
 
     @Override
