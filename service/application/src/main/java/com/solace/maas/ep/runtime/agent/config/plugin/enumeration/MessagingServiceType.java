@@ -1,4 +1,4 @@
-package com.solace.maas.ep.runtime.agent.plugin.config.enumeration;
+package com.solace.maas.ep.runtime.agent.config.plugin.enumeration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

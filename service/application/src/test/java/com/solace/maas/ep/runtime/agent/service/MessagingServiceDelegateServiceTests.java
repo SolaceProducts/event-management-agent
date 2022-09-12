@@ -1,6 +1,7 @@
 package com.solace.maas.ep.runtime.agent.service;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
+import com.solace.maas.ep.runtime.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.runtime.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.runtime.agent.plugin.config.MessagingServiceTypeConfig;
 import com.solace.maas.ep.runtime.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
@@ -10,7 +11,6 @@ import com.solace.maas.ep.runtime.agent.repository.messagingservice.MessagingSer
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
-import com.solace.maas.ep.runtime.agent.plugin.config.enumeration.MessagingServiceType;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.junit.jupiter.api.Test;

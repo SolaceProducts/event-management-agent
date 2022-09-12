@@ -4,7 +4,6 @@
     <modelVersion>4.0.0</modelVersion>
     <modules>
         <module>plugin</module>
-        <module>solace-plugins</module>
         <module>application</module>
         <module>rabbitmq-plugin</module>
         <module>kafka-plugin</module>

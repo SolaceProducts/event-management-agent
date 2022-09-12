@@ -1,8 +1,8 @@
 package com.solace.maas.ep.runtime.agent.config;
 
+import com.solace.maas.ep.runtime.agent.config.plugin.ClientConnectionDetails;
+import com.solace.maas.ep.runtime.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.runtime.agent.event.MessagingServiceEvent;
-import com.solace.maas.ep.runtime.agent.plugin.config.ClientConnectionDetails;
-import com.solace.maas.ep.runtime.agent.plugin.config.enumeration.MessagingServiceType;
 import com.solace.maas.ep.runtime.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.runtime.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
