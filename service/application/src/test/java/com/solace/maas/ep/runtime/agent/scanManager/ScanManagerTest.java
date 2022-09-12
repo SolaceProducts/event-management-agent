@@ -3,7 +3,6 @@ package com.solace.maas.ep.runtime.agent.scanManager;
 import com.solace.maas.ep.runtime.agent.TestConfig;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.runtime.agent.plugin.config.enumeration.MessagingServiceType;
-import com.solace.maas.ep.common.model.ScanType;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.service.ScanService;
@@ -47,18 +46,16 @@ public class ScanManagerTest {
         when(scanService.singleScan(List.of(), 4)).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", ScanType.ONETIME, List.of(), List.of());
+                new ScanRequestBO("id", List.of("topics"), List.of());
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOTopics =
-                new ScanRequestBO("id", ScanType.ONETIME,
-                        List.of("TEST_SCAN_1"), List.of());
+                new ScanRequestBO("id", List.of("TEST_SCAN_1"), List.of());
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOConsumerGroups =
-                new ScanRequestBO("id", ScanType.ONETIME,
-                        List.of("TEST_SCAN_2"), List.of());
+                new ScanRequestBO("id", List.of("TEST_SCAN_2"), List.of());
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
     }
 }

@@ -7,5 +7,8 @@ public enum MessagingServiceType {
     SOLACE,
 
     @JsonProperty("Kafka")
-    KAFKA
+    KAFKA,
+
+    @JsonProperty("RabbitMq")
+    RABBITMQ
 }

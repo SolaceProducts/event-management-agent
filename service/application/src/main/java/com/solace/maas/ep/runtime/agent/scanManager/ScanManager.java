@@ -47,14 +47,14 @@ public class ScanManager {
                     return delegate.generateRouteList(
                                     List.of(),
                                     List.of(),
-                                    scanRequestBO.getEntityTypes().stream().findFirst().orElseThrow(),
+                                    scanRequestBO.getScanTypes().stream().findFirst().orElseThrow(),
                                     messagingServiceId
                             ).stream()
                             .findFirst()
                             .orElseThrow();
                 }).collect(Collectors.toUnmodifiableList());
 
-        List<String> brokerScanTypes = scanRequestBO.getEntityTypes();
+        List<String> brokerScanTypes = scanRequestBO.getScanTypes();
         List<RouteBundle> routes = brokerScanTypes.stream()
                 .distinct()
                 .flatMap(brokerScanType -> scanDelegate.generateRouteList(destinations, List.of(),

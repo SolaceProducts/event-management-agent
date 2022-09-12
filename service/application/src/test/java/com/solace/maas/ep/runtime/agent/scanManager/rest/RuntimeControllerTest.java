@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static com.solace.maas.ep.common.model.ScanType.ONETIME;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,8 +29,8 @@ public class RuntimeControllerTest {
     public void runtimeControllerTest() {
         ScanManager scanManager = mock(ScanManager.class);
 
-        ScanRequestDTO scanRequestDTO = new ScanRequestDTO(ONETIME, List.of("topics"), List.of());
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", ONETIME,
+        ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of());
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id",
                 List.of("TEST_SCAN"), List.of());
 
         when(scanManager.scan(scanRequestBO))

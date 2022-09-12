@@ -1,7 +1,6 @@
 package com.solace.maas.ep.runtime.agent.scanManager.model;
 
 import com.solace.maas.ep.runtime.agent.model.AbstractBaseBO;
-import com.solace.maas.ep.common.model.ScanType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,9 +19,7 @@ public class ScanRequestBO extends AbstractBaseBO<String> {
 
     private String messagingServiceId;
 
-    private ScanType scanType;
-
-    private List<String> entityTypes;
+    private List<String> scanTypes;
 
     private List<String> destinations;
 

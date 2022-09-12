@@ -23,11 +23,7 @@ import java.util.List;
 public class ScanRequestDTO extends BaseDTO {
 
     @NotNull(message = "Scan type must not be null")
-    @Schema(enumAsRef = true)
-    private ScanType scanType;
-
-    @NotNull(message = "Entity type must not be null")
-    private List<String> entityTypes;
+    private List<String> scanTypes;
 
     @NotNull(message = "Destinations must not be null")
     private List<String> destinations;

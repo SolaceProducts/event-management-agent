@@ -7,6 +7,7 @@ import net.logstash.logback.marker.Markers;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+//import org.springframework.boot.loader.PropertiesLauncher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -30,15 +31,18 @@ public class RuntimeApplication {
         startupCompletedMarker.put("starting-state", "startup-completed");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         log.info(Markers.appendEntries(startupStartedMarker), "Starting runtime-agent --> " + Arrays.toString(args));
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
+
         new SpringApplicationBuilder()
                 .bannerMode(Banner.Mode.CONSOLE)
                 .sources(RuntimeApplication.class)
                 .properties(getDefault())
                 .run(args);
+
+//        PropertiesLauncher.main(args);
 
         log.info(Markers.appendEntries(startupCompletedMarker), "Started runtime-agent --> " + Arrays.toString(args));
     }
