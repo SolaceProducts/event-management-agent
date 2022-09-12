@@ -42,17 +42,17 @@ public class ScanManager {
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
         List<RouteBundle> destinations = scanDestinations.stream()
-                .map(scanDestination -> {
-                    MessagingServiceRouteDelegate delegate = PluginLoader.findPlugin(scanDestination);
-                    return delegate.generateRouteList(
-                                    List.of(),
-                                    List.of(),
-                                    scanRequestBO.getScanTypes().stream().findFirst().orElseThrow(),
-                                    messagingServiceId
-                            ).stream()
-                            .findFirst()
-                            .orElseThrow();
-                }).collect(Collectors.toUnmodifiableList());
+                .map(PluginLoader::findPlugin)
+                .filter(Objects::nonNull)
+                .map(delegate -> delegate.generateRouteList(
+                                List.of(),
+                                List.of(),
+                                scanRequestBO.getScanTypes().stream().findFirst().orElseThrow(),
+                                messagingServiceId
+                        ).stream()
+                        .findFirst()
+                        .orElseThrow())
+                .collect(Collectors.toUnmodifiableList());
 
         List<String> brokerScanTypes = scanRequestBO.getScanTypes();
         List<RouteBundle> routes = brokerScanTypes.stream()
