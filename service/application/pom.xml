@@ -16,6 +16,7 @@
 
     <properties>
         <camel.version>3.16.0</camel.version>
+        <springdoc.version>1.6.11</springdoc.version>
     </properties>
 
     <repositories>
@@ -149,6 +150,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok-mapstruct-binding</artifactId>
             <version>0.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
     </dependencies>
     <build>

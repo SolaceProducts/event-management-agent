@@ -1,5 +1,6 @@
 package com.solace.maas.ep.runtime.agent.scanManager.rest;
 
+import com.solace.maas.ep.common.model.EventErrorDTO;
 import com.solace.maas.ep.common.model.ScanRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,7 +23,12 @@ public interface RuntimeController {
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "The scan has been triggered."
+                            description = "The scan has been triggered successfully."
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            content = @Content(schema = @Schema(implementation = EventErrorDTO.class), mediaType = "application/json"),
+                            description = "Bad Request."
                     )
             }
     )
