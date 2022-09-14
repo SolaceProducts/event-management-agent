@@ -16,17 +16,7 @@ The Kafka Confluent plugin uses the kafka broker admin APIs to learn about topic
 
 ## Initiating a scan request
 
-A scan is initiated with a POST to a fixed URL:
-
-```
-POST http://localhost:8120/api/v0/event-discovery-agent/local/app/operation
-
-POST http://localhost:8180/api/v2/runtime/messagingServices/{messaging service Id}/scan
-```
-
-with a header of `Content-Type: application/json`
-
-Update the `plugins` section of the `application.yml` with the details of the messaging service to scan.
+Update the `plugins` section of the `service/application/src/main/resources/application.yml` with the details of the messaging service to scan.
 
 #### Semp Secured Connection
 
@@ -59,29 +49,60 @@ management:
         - name: <user name> 
 ```
 
-### Example
-
-To initiate a scan against
-
-* Solace messaging service with id `solaceDefaultService`
+Rebuild the Event Management Agent:
 
 ```
-POST http://localhost:8180/api/v2/runtime/messagingServices/solaceDefaultService/scan
-{
-	"scanType": "one-time",
-	"entityTypes": ["SOLACE_ALL"],
-	"destinations":["DATA_COLLECTION_FILE_WRITER"]
-}
+mvn clean install
 ```
 
-* Kafka messaging service with id `kafkaDefaultService`
+Re-run the agent:
 
 ```
-POST  http://localhost:8180/api/v2/runtime/messagingServices/kafkaDefaultService/scan
+java -jar application/target/runtime-agent-0.0.1-SNAPSHOT.jar
+```
 
-{
-	"scanType": "one-time",
-	"entityTypes": ["KAFKA_ALL"],
-	"destinations":["DATA_COLLECTION_FILE_WRITER"]
-}
+To scan a PubSub+ Solace broker:
+
+```
+curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/runtime/messagingServices/{messaging service id}/scan -d '{"scanType": "SOLACE_ALL", "entityTypes": ["SOLACE_ALL"], "destinations":["FILE_WRITER"]}'
+```
+
+* PubSub+ messaging service with id 'y80bvdnyokl'
+
+To scan a Apache Kafka broker:
+
+```
+curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/runtime/messagingServices/{messaging service id}/scan -d '{"scanType": "KAKFA_ALL", "entityTypes": ["KAFKA_ALL"], "destinations":["FILE_WRITER"]}'
+```
+
+* Kafka messaging service with id `bcvch3xfrq0`
+
+The scan's output files can be found under 'service/data_collection/[group id]/[scan id]/'
+
+```
+queueConfiguration.json
+queueListing.json
+subscriptionConfiguration.json
+```
+
+
+## To get the Event Management Agent Swagger specification
+
+Make sure the following section is in the 'service/application/src/main/resources/application.yml' file:
+
+```
+springdoc:
+  packages-to-scan: com.solace.maas.ep.runtime.agent.scanManager.rest
+  api-docs:
+    path: /docs/runtime-agent
+  swagger-ui:
+    path: runtime-agent/swagger-ui.html
+```
+
+Rebuild and rerun the agent if needed.
+
+Get the swagger specification:
+
+```
+curl -H "Content-Type: application/json" -X GET http://localhost:8180/docs/runtime-agent
 ```
