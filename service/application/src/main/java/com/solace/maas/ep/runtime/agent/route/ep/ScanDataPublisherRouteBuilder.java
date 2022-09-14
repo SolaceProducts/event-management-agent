@@ -20,6 +20,7 @@ public class ScanDataPublisherRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("seda:eventPortal")
+                .routeId("scanDataPublisher")
                 .transform(body().append("\n"))
                 .process(processor)
                 .to("seda:eventPortalEndOfRoute");
