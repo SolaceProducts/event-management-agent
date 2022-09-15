@@ -4,6 +4,7 @@ import com.solace.maas.ep.runtime.agent.config.plugin.enumeration.MessagingServi
 import com.solace.maas.ep.runtime.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolaceWebPublisher;
+import com.solace.maas.ep.runtime.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.runtime.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
@@ -90,6 +91,12 @@ public class TestConfig {
     @Primary
     public SolaceWebPublisher solaceWebPublisher() {
         return mock(SolaceWebPublisher.class);
+    }
+
+    @Bean
+    @Primary
+    public ScanDataPublisher scanDataPublisher() {
+        return mock(ScanDataPublisher.class);
     }
 
     @Bean

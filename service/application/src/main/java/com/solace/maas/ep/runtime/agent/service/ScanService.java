@@ -123,7 +123,7 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages) {
+    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String scanId) {
 
         ScanEntity savedScanEntity = null;
 
@@ -133,8 +133,7 @@ public class ScanService {
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
-            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity);
-            String scanId = returnedScanEntity.getId();
+            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
 
             if (!loggingService.hasLoggingProcessor(scanId)) {
                 MDC.put(SCAN_ID, scanId);
@@ -148,8 +147,6 @@ public class ScanService {
         }
 
         if (savedScanEntity != null) {
-            String scanId = savedScanEntity.getId();
-
             ScanLifecycleEntity scannedLifecycleEntity = ScanLifecycleEntity.builder()
                     .scanId(scanId)
                     .numExpectedCompletionMessages(numExpectedCompletionMessages)
@@ -163,8 +160,8 @@ public class ScanService {
     }
 
     @Transactional
-    protected ScanEntity setupScan(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity) {
-        ScanEntity savedScanEntity = saveScanEntity(route, routeBundle, scanEntity);
+    protected ScanEntity setupScan(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity, String scanId) {
+        ScanEntity savedScanEntity = saveScanEntity(route, routeBundle, scanEntity, scanId);
 
         List<ScanDestinationEntity> destinationEntities = routeBundle.getDestinations().stream()
                 .map(destination -> ScanDestinationEntity.builder()
@@ -190,15 +187,16 @@ public class ScanService {
             scanRouteService.saveRecipients(recipientEntities);
         }
 
-        setupRecipientsForScan(savedScanEntity, routeBundle);
+        setupRecipientsForScan(savedScanEntity, routeBundle, scanId);
 
         return savedScanEntity;
     }
 
-    private ScanEntity saveScanEntity(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity) {
+    private ScanEntity saveScanEntity(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity, String scanId) {
         ScanEntity returnScanEntity = scanEntity;
         if (returnScanEntity == null) {
             returnScanEntity = save(ScanEntity.builder()
+                    .id(scanId)
                     .route(List.of(route))
                     .active(true)
                     .scanType(routeBundle.getScanType())
@@ -214,12 +212,12 @@ public class ScanService {
         return returnScanEntity;
     }
 
-    protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle) {
+    protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle, String scanId) {
 
         for (RouteBundle recipient : routeBundle.getRecipients()) {
             RouteEntity route = routeService.findById(recipient.getRouteId())
                     .orElseThrow();
-            setupScan(route, recipient, scanEntity);
+            setupScan(route, recipient, scanEntity, scanId);
         }
     }
 

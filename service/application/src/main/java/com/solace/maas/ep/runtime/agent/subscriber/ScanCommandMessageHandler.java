@@ -6,11 +6,13 @@ import com.solace.maas.ep.runtime.agent.scanManager.ScanManager;
 import com.solace.maas.ep.runtime.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -55,6 +57,7 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
 
         ScanRequestBO scanRequestBO = ScanRequestBO.builder()
                 .messagingServiceId(message.getMessagingServiceId())
+                .scanId(!StringUtils.isEmpty(message.getScanId()) ? message.getScanId() : UUID.randomUUID().toString())
                 .scanTypes(entityTypes)
                 .destinations(scanRequestDestinations)
                 .build();
