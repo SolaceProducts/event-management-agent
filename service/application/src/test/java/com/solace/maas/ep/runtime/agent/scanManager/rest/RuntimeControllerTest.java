@@ -30,7 +30,7 @@ public class RuntimeControllerTest {
         ScanManager scanManager = mock(ScanManager.class);
 
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of());
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id",
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId",
                 List.of("TEST_SCAN"), List.of());
 
         when(scanManager.scan(scanRequestBO))

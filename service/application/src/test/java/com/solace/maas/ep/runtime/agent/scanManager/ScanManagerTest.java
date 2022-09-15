@@ -42,19 +42,19 @@ public class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), 4)).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), 4, "scanId")).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", List.of("topics"), List.of());
+                new ScanRequestBO("id", "scanId", List.of("topics"), List.of());
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOTopics =
-                new ScanRequestBO("id", List.of("TEST_SCAN_1"), List.of());
+                new ScanRequestBO("id", "scanId", List.of("TEST_SCAN_1"), List.of());
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOConsumerGroups =
-                new ScanRequestBO("id", List.of("TEST_SCAN_2"), List.of());
+                new ScanRequestBO("id", "scanId", List.of("TEST_SCAN_2"), List.of());
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
     }
 }

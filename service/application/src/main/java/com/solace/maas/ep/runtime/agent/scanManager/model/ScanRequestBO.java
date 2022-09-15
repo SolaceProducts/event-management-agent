@@ -1,7 +1,6 @@
 package com.solace.maas.ep.runtime.agent.scanManager.model;
 
 import com.solace.maas.ep.runtime.agent.model.AbstractBaseBO;
-import com.solace.maas.ep.common.model.ScanType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,6 +1,7 @@
 package com.solace.maas.ep.runtime.agent.plugin.route.delegate;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
+import com.solace.maas.ep.runtime.agent.plugin.ScanDataPublisherDelegateImpl;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

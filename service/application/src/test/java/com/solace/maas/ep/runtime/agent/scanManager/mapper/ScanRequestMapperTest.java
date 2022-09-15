@@ -27,7 +27,7 @@ public class ScanRequestMapperTest {
         scanRequestMapper.map(scanRequestDTO);
         scanRequestMapper.map((ScanRequestDTO) null);
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", List.of("TEST_SCAN"), List.of());
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId", List.of("TEST_SCAN"), List.of());
 
         scanRequestMapper.map(scanRequestBO);
         scanRequestMapper.map((ScanRequestBO) null);
@@ -38,7 +38,7 @@ public class ScanRequestMapperTest {
     @Test
     public void testMapperWithUser() {
         User user = new User("orgId", "userId");
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", List.of("TEST_SCAN"), List.of());
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId", List.of("TEST_SCAN"), List.of());
 
         scanRequestMapper.map(scanRequestBO, user);
         scanRequestMapper.map(null, null);
