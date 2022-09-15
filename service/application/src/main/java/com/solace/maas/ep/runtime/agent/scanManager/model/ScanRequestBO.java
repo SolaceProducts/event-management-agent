@@ -20,6 +20,8 @@ public class ScanRequestBO extends AbstractBaseBO<String> {
 
     private String messagingServiceId;
 
+    private String scanId;
+
     private ScanType scanType;
 
     private List<String> entityTypes;

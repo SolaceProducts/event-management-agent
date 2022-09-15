@@ -1,12 +1,12 @@
 package com.solace.maas.ep.runtime.agent.scanManager;
 
+import com.solace.maas.ep.runtime.agent.plugin.manager.loader.PluginLoader;
+import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
+import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.service.ScanService;
-import com.solace.maas.ep.runtime.agent.plugin.manager.loader.PluginLoader;
-import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
-import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +31,7 @@ public class ScanManager {
 
     public String scan(ScanRequestBO scanRequestBO) {
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
+        String scanId = scanRequestBO.getScanId();
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
@@ -59,7 +60,7 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, routes.size());
+        return scanService.singleScan(routes, routes.size(), scanId);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

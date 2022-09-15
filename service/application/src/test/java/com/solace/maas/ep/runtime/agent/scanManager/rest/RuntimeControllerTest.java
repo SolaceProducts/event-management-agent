@@ -32,7 +32,7 @@ public class RuntimeControllerTest {
         ScanManager scanManager = mock(ScanManager.class);
 
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(KAFKA_ALL, List.of("topics"), List.of());
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", KAFKA_ALL,
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId", KAFKA_ALL,
                 List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
 
         when(scanManager.scan(scanRequestBO))

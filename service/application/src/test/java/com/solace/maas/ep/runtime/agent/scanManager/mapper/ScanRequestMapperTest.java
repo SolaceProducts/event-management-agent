@@ -29,7 +29,7 @@ public class ScanRequestMapperTest {
         scanRequestMapper.map(scanRequestDTO);
         scanRequestMapper.map((ScanRequestDTO) null);
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", KAFKA_ALL,
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId", KAFKA_ALL,
                 List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
 
         scanRequestMapper.map(scanRequestBO);
@@ -41,7 +41,7 @@ public class ScanRequestMapperTest {
     @Test
     public void testMapperWithUser() {
         User user = new User("orgId", "userId");
-        ScanRequestBO scanRequestBO = new ScanRequestBO("id", KAFKA_ALL,
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId", KAFKA_ALL,
                 List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
 
         scanRequestMapper.map(scanRequestBO, user);
