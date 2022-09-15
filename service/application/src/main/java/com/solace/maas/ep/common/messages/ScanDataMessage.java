@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class ScanDataMessage extends MOPMessage {
-    String messagingServiceId;
+    String orgId;
 
     String scanId;
 
@@ -18,14 +18,14 @@ public class ScanDataMessage extends MOPMessage {
 
     private String timestamp;
 
-    public ScanDataMessage(String messagingServiceId, String scanId, String dataCollectionType, String data, String timestamp) {
+    public ScanDataMessage(String orgId, String scanId, String dataCollectionType, String data, String timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
 
-        this.messagingServiceId = messagingServiceId;
+        this.orgId = orgId;
         this.scanId = scanId;
         this.dataCollectionType = dataCollectionType;
         this.data = data;

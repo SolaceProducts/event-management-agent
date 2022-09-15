@@ -2,10 +2,10 @@ package com.solace.maas.ep.runtime.agent.service;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
 import com.solace.maas.ep.runtime.agent.logging.FileLoggerFactory;
+import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.runtime.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.runtime.agent.repository.scan.ScanRepository;
-import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.runtime.agent.service.lifecycle.ScanLifecycleService;
 import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import org.apache.camel.Processor;
@@ -143,7 +143,7 @@ public class ScanServiceTests {
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
 
-        scanService.singleScan(List.of(routeBundle), 2);
+        scanService.singleScan(List.of(routeBundle), 2, "scanId");
 
         assertThatNoException();
     }

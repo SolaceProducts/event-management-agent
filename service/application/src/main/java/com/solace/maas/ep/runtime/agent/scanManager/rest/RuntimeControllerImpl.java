@@ -1,9 +1,9 @@
 package com.solace.maas.ep.runtime.agent.scanManager.rest;
 
+import com.solace.maas.ep.common.model.ScanRequestDTO;
 import com.solace.maas.ep.runtime.agent.scanManager.ScanManager;
 import com.solace.maas.ep.runtime.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
-import com.solace.maas.ep.common.model.ScanRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.UUID;
 
 @Slf4j
 @Validated
@@ -39,6 +40,8 @@ public class RuntimeControllerImpl implements RuntimeController {
         try {
             ScanRequestBO scanRequestBO = scanRequestMapper.map(body);
             scanRequestBO.setMessagingServiceId(messagingServiceId);
+            scanRequestBO.setScanId(UUID.randomUUID().toString());
+
             String result = scanManager.scan(scanRequestBO);
 
             log.info("Successfully started the scan {}", result);

@@ -47,19 +47,19 @@ public class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), 4)).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), 4,"scanId")).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", KAFKA_ALL, List.of(), List.of());
+                new ScanRequestBO("id", "scanId", KAFKA_ALL, List.of(), List.of());
         scanManager.scan(scanRequestBO);
 
         ScanRequestBO scanRequestBOTopics =
-                new ScanRequestBO("id", KAFKA_ALL,
+                new ScanRequestBO("id", "scanId", KAFKA_ALL,
                         List.of(KafkaScanType.KAFKA_TOPIC_LISTING.name()), List.of());
         scanManager.scan(scanRequestBOTopics);
 
         ScanRequestBO scanRequestBOConsumerGroups =
-                new ScanRequestBO("id", KAFKA_ALL,
+                new ScanRequestBO("id", "scanId", KAFKA_ALL,
                         List.of(KafkaScanType.KAFKA_CONSUMER_GROUPS.name()), List.of());
         scanManager.scan(scanRequestBOConsumerGroups);
 
@@ -79,19 +79,19 @@ public class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), 2)).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), 2, "scanId")).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", SOLACE_ALL, List.of(), List.of());
+                new ScanRequestBO("id", "scanId", SOLACE_ALL, List.of(), List.of());
         scanManager.scan(scanRequestBO);
 
         ScanRequestBO scanRequestBOQueues =
-                new ScanRequestBO("id", SOLACE_ALL,
+                new ScanRequestBO("id", "scanId", SOLACE_ALL,
                         List.of(SolaceScanType.SOLACE_QUEUE_LISTING.name()), List.of());
         scanManager.scan(scanRequestBOQueues);
 
         ScanRequestBO scanRequestBOQueuesConfig =
-                new ScanRequestBO("id", SOLACE_ALL,
+                new ScanRequestBO("id", "scanId", SOLACE_ALL,
                         List.of(SolaceScanType.SOLACE_SUBSCRIPTION_CONFIG.name()), List.of());
         scanManager.scan(scanRequestBOQueuesConfig);
 

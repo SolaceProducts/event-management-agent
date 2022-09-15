@@ -1,6 +1,6 @@
 package com.solace.maas.ep.runtime.agent.plugin.route.handler;
 
-import com.solace.maas.ep.runtime.agent.config.SolaceConfiguration;
+import com.solace.maas.ep.runtime.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.runtime.agent.processor.ScanDataProcessor;
 import com.solace.maas.ep.runtime.agent.publisher.ScanDataPublisher;
@@ -62,11 +62,11 @@ public class ScanDataPublisherRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
-            SolaceConfiguration solaceConfiguration = mock(SolaceConfiguration.class);
             SolacePublisher solacePublisher = mock(SolacePublisher.class);
+            EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
 
-            ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solaceConfiguration, solacePublisher);
-            ScanDataProcessor scanDataProcessor = new ScanDataProcessor(scanDataPublisher);
+            ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher);
+            ScanDataProcessor scanDataProcessor = new ScanDataProcessor(scanDataPublisher, eventPortalProperties);
 
             return new ScanDataPublisherRouteBuilder(scanDataProcessor);
         }

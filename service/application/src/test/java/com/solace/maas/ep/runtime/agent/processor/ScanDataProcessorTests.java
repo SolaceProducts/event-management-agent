@@ -1,6 +1,7 @@
 package com.solace.maas.ep.runtime.agent.processor;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
+import com.solace.maas.ep.runtime.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.publisher.ScanDataPublisher;
 import lombok.SneakyThrows;
@@ -23,6 +24,9 @@ public class ScanDataProcessorTests {
 
     @Mock
     ScanDataPublisher scanDataPublisher;
+
+    @Mock
+    EventPortalProperties eventPortalProperties;
 
     @Autowired
     private CamelContext camelContext;
