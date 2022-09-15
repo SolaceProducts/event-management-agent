@@ -22,8 +22,8 @@ public class ScanDataPublisher {
                 topicDetails.get("orgId"),
                 topicDetails.get("runtimeAgentId"),
                 topicDetails.get("messagingServiceId"),
-                topicDetails.get(" scanId"),
-                topicDetails.get(" dataCollectionType"));
+                topicDetails.get("scanId"),
+                topicDetails.get("dataCollectionType"));
 
         solacePublisher.publish(message, topicString);
     }

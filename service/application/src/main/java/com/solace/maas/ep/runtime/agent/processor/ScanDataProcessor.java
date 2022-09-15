@@ -50,8 +50,8 @@ public class ScanDataProcessor implements Processor {
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
-        topicDetails.put(" scanId", scanId);
-        topicDetails.put(" dataCollectionType", dataCollectionType);
+        topicDetails.put("scanId", scanId);
+        topicDetails.put("dataCollectionType", dataCollectionType);
 
         scanDataPublisher.sendScanData(scanDataMessage, topicDetails);
     }
