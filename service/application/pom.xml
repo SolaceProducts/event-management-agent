@@ -119,7 +119,22 @@
 
         <dependency>
             <groupId>com.solace.maas</groupId>
-            <artifactId>solace-plugins</artifactId>
+            <artifactId>plugin</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.solace.maas.plugin.kafka</groupId>
+            <artifactId>kafka-plugin</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.solace.maas.plugin.solace</groupId>
+            <artifactId>solace-plugin</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.solace.maas.plugin.localstorage</groupId>
+            <artifactId>local-storage-plugin</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
