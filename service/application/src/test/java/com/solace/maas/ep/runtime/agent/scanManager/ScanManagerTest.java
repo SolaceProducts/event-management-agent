@@ -1,7 +1,6 @@
 package com.solace.maas.ep.runtime.agent.scanManager;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
-import com.solace.maas.ep.runtime.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
@@ -36,7 +35,7 @@ public class ScanManagerTest {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id("id")
                 .name("name")
-                .messagingServiceType(MessagingServiceType.KAFKA.name())
+                .messagingServiceType("TEST_SERVICE")
                 .managementDetails(List.of())
                 .build();
 
