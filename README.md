@@ -44,7 +44,7 @@ project
 * Event Management Agent executables
 
 
-## Running the Runtime Agent
+## Running the Event Management Agent
 
 ### Prerequisites:
 
@@ -91,7 +91,7 @@ cd runtime-agent/service
 mvn clean install
 ```
 
-3. Start the Runtime Agent
+3. Start the Event Management Agent
 
 ```
 java -jar application/target/runtime-agent-0.0.1-SNAPSHOT.jar 
@@ -167,7 +167,7 @@ service/application/src/main/java/com/solace/maas/ep/runtime/agent/RuntimeApplic
 
 ## Broker Plugins
 
-The Runtime Agent comes with the following event or message broker plugins included:
+The Event Management Agent comes with the following event or message broker plugins included:
 
 * Apache Kafka
 * Solace PubSub+
@@ -178,15 +178,15 @@ The Runtime Agent comes with the following event or message broker plugins inclu
 
 There are essentially 2 main modes of deployment:
 
-* SC Connected: The Runtime Agent connects to the runtime region and can be controlled remotely via Event Portal
+* SC Connected: The Event Management Agent connects to the runtime region and can be controlled remotely via Event Portal
 
-* Stand-alone: The Runtime Agent is controlled via the REST API and results must be uploaded manually.
+* Stand-alone: The Event Management Agent is controlled via the REST API and results must be uploaded manually.
 
 ## Running a scan
 
 ### REST interface
 
-The Runtime Agent includes a REST API that allows the user to initiate a scan. Each plugin requires its own custom set
+The Event Management Agent includes a REST API that allows the user to initiate a scan. Each plugin requires its own custom set
 of authentication and identification attributes that must be supplied by the user.
 
 See [REST Documentation](docs/rest.md) for additional information
