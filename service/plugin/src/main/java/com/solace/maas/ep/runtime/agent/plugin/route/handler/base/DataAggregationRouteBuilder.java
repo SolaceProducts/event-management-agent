@@ -51,7 +51,7 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
-                .split(body()).streaming().parallelProcessing()
+                .split(body()).streaming()
                 .choice().when(header(Exchange.SPLIT_COMPLETE).isEqualTo(true))
                 .setHeader("DATA_PROCESSING_COMPLETE", constant(true))
                 .endChoice()
@@ -68,7 +68,7 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
-                .split(body()).streaming().parallelProcessing()
+                .split(body()).streaming()
 
                 // The last aggregation bundle will have "DATA_PROCESSING_COMPLETE" set true in the header for all
                 // messages in the aggregation bundle.
