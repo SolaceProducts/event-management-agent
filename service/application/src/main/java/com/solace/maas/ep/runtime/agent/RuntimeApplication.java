@@ -7,7 +7,6 @@ import net.logstash.logback.marker.Markers;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-//import org.springframework.boot.loader.PropertiesLauncher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -41,8 +40,6 @@ public class RuntimeApplication {
                 .sources(RuntimeApplication.class)
                 .properties(getDefault())
                 .run(args);
-
-//        PropertiesLauncher.main(args);
 
         log.info(Markers.appendEntries(startupCompletedMarker), "Started runtime-agent --> " + Arrays.toString(args));
     }
