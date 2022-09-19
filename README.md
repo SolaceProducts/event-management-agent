@@ -1,5 +1,9 @@
 # Event Management Agent
 
+The Event Management Agent is a tool used by architects and developers working with Event-Driven Architectures  (EDAs)
+to discover event streams flowing through an event broker as well as the related broker configuration information. The
+Event Management Agent can be used in two different ways:
+
 * As a standalone tool that discovers runtime event data from event or message brokers in the runtime to retrieve EDA
   related data. This data can be exported as an AsyncAPI specification for the broker service to document the event flow
   information and be used with other tools supporting AsyncAPI specifications.
@@ -17,7 +21,7 @@ to build new plugins so that:
 * existing plugins can be extended to discover additional data
 * EDA data can be discovered from other systems, e.g. schemas from schema registries
 
-¬At this stage (September 2022), the Event Management Agent is still in an active development phase.
+At this stage (September 2022), the Event Management Agent is still in an active development phase.
 
 ### Available today:
 
@@ -105,61 +109,69 @@ Alternatively, to build and run the service in IDE
 git clone git@github.com:SolaceLabs/runtime-agent.git
 ```
 
-2. Save the code below to a yml file, then run `docker-compose up` against the file **Note**: For Macbook users with M1
-   chip, add the property `platform: linux/x86_64` to the file
+2. The Event Management Agent uses H2 database by default. The H2 console is available at `http://localhost:8180/h2`.
+   The database is available at `jdbc:h2:file:./data/cache`.
+
+3. The connection details for the H2 database are specified using the following properties in the application.yml file
 
 ```
-version: '3.1'
+spring.datasource.url
+spring.datasource.username
+spring.datasource.password
+spring.datasource.driver-class-name
+spring.h2.console.path
+```
 
-services:
-  db:
-    image: mysql
-    container_name: mysql8
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    ports:
-      - "3308:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-    volumes:
-      - ./my-datavolume:/var/lib/mysql 
+4. Alternatively, to use MySql database
+
+    1. save the code below to a yml file, then run `docker-compose up` against the file. **
+       Note**: For Macbook users with M1 chip, add the property `platform: linux/x86_64` to the file
+
    ```
+   version: '3.1'
 
-3. On a different terminal window, run the command
+   services:
+    db:
+      image: mysql
+      container_name: mysql8
+      command: --default-authentication-plugin=mysql_native_password
+      restart: always
+      ports:
+        - "3308:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: secret
+      volumes:
+        - ./my-datavolume:/var/lib/mysql 
+     ```
 
-```
-docker exec -it mysql8 /usr/bin/mysql -psecret
-```
+    2. Create the `runtime_agent` database
 
-4. Create the `runtime_agent` database
+    ```
+    create database if not exists runtime_agent;
+    ```
 
-```
-create database if not exists runtime_agent;
-```
+    3. Create an active profile named `mysql-dev` in Spring Boot Run Configurations
 
-5. Create an active profile named `mysql-dev` in Spring Boot Run Configurations
+   ![Alt text](docs/images/run-configuration.png "run configuration")
 
-![Alt text](docs/images/run-configuration.png "run configuration")
+    4. Create new yml file in resources with the name `application-mysql-dev.yml`&nbsp;
 
-6. Create new yml file in resources with the name `application-mysql-dev.yml`&nbsp;
+    5. Add the code below to the file
 
+    ```
+    spring:
+      datasource:
+        url: jdbc:mysql://localhost:3308/runtime_agent
+        username: root
+        password: secret
+        driver-class-name: com.mysql.jdbc.Driver
+      jpa:
+        database-platform: org.hibernate.dialect.MySQL8Dialect
+        hibernate:
+          ddl-auto: create
+    ```
 
-7. Add the code below to the file
-
-```
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3308/runtime_agent
-    username: root
-    password: secret
-    driver-class-name: com.mysql.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: create
-```
-
-8. Start the application by running this class in Intellij
+5. Start the application by running this class in Intellij
 
 ```
 service/application/src/main/java/com/solace/maas/ep/runtime/agent/RuntimeApplication.java
