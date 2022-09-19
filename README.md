@@ -223,13 +223,14 @@ The most important test in standalone mode is to ensure that the Event Managemen
 To that end, the test includes the steps below:
 
 1. Update the `plugins` section of the `application.yml` with the details of the messaging service you want to scan.
-2. Start the Event Management Agent either from IntelliJ or by running the JAR file.
-3. Examine the on-console logs for a log from `RuntimeAgentConfig` class indicating that the messaging service(s) has
-   been created.
+2. Start the Event Management Agent either from the IDE or by running the JAR file.
+3. Examine the on-console logs for a log from `MessagingServiceConfig` class indicating that the messaging service(s)
+   has been created. **Note**: The logs may differ according to the messaging service(s) specified in the
+   `application.yml` file.
 
 ```
-c.s.m.e.r.a.config.RuntimeAgentConfig : Created Kafka messaging service: kafkaDefaultService confluent kafka cluster
-c.s.m.e.r.a.config.RuntimeAgentConfig : Created Solace messaging service: solaceDefaultService staging service
+c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: kafkaDefaultService confluent kafka cluster KAFKA
+c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: solaceDefaultService staging service SOLACE
 ```
 
 4. View the Swagger documentation to learn about the available REST endpoints for the Event Management Agent. To access
@@ -271,15 +272,16 @@ the front end to initiate the scan all the way to receiving the scan data in the
    file.
 9. Update the `application.yml` file with the details from the connection file.
 10. Start the Event Management Agent either from IntelliJ or by running the JAR file.
-11. Examine the on-console logs for a log from `RuntimeAgentConfig` class indicating that the messaging service(s) has
-    been created.
+11. Examine the on-console logs for a log from `MessagingServiceConfig` class indicating that the messaging service(s)
+    has been created. **Note**: The logs may differ according to the messaging service(s) specified in the
+    `application.yml` file.
 
 ```
-c.s.m.e.r.a.config.RuntimeAgentConfig : Created Kafka messaging service: kafkaDefaultService confluent kafka cluster
-c.s.m.e.r.a.config.RuntimeAgentConfig : Created Solace messaging service: solaceDefaultService staging service
+c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: kafkaDefaultService confluent kafka cluster KAFKA
+c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: solaceDefaultService staging service SOLACE
 ```
 
-12. Refresh the frontend and make sure that the badge next to the Event Management Agent shows `Connected`.
+12. Refresh the frontend and make sure that the chip next to the Event Management Agent shows `Connected`.
 13. Navigate to `Runtime Event Manager`, then select the modeled event mesh and navigate to the `Runtime` tab.
 14. Select the messaging service and click `Collect Data`.
 15. Examine the Event Management Agent console logs to make sure that the individual scan types are complete. e.g.,
