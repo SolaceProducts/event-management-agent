@@ -37,9 +37,10 @@ public class ScanManager {
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
         MessagingServiceRouteDelegate scanDelegate =
-                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType());
+                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType().toUpperCase());
 
-        Objects.requireNonNull(scanDelegate, "Messaging Service Plugin not found!");
+        Objects.requireNonNull(scanDelegate, "Unable to find messaging service plugin for plugin type "
+                +messagingServiceEntity.getMessagingServiceType()+". Valid types are \"SOLACE\", \"KAFKA\".");
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
         List<RouteBundle> destinations = scanDestinations.stream()
