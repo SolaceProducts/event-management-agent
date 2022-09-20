@@ -1,6 +1,5 @@
 package com.solace.maas.ep.runtime.agent.repository.model.mesagingservice;
 
-import com.solace.maas.ep.runtime.agent.plugin.config.enumeration.MessagingServiceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,7 +28,7 @@ public class MessagingServiceEntity {
     private String name;
 
     @Column(name = "MESSAGING_SERVICE_TYPE", nullable = false)
-    private MessagingServiceType messagingServiceType;
+    private String messagingServiceType;
 
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConnectionDetailsEntity> managementDetails;

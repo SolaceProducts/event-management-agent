@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,23 +37,25 @@ public class ScanManager {
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
         MessagingServiceRouteDelegate scanDelegate =
-                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType().name());
+                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType());
+
+        Objects.requireNonNull(scanDelegate, "Messaging Service Plugin not found!");
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
         List<RouteBundle> destinations = scanDestinations.stream()
-                .map(scanDestination -> {
-                    MessagingServiceRouteDelegate delegate = PluginLoader.findPlugin(scanDestination);
-                    return delegate.generateRouteList(
-                                    List.of(),
-                                    List.of(),
-                                    scanRequestBO.getEntityTypes().stream().findFirst().orElseThrow(),
-                                    messagingServiceId
-                            ).stream()
-                            .findFirst()
-                            .orElseThrow();
-                }).collect(Collectors.toUnmodifiableList());
+                .map(PluginLoader::findPlugin)
+                .filter(Objects::nonNull)
+                .map(delegate -> delegate.generateRouteList(
+                                List.of(),
+                                List.of(),
+                                scanRequestBO.getScanTypes().stream().findFirst().orElseThrow(),
+                                messagingServiceId
+                        ).stream()
+                        .findFirst()
+                        .orElseThrow())
+                .collect(Collectors.toUnmodifiableList());
 
-        List<String> brokerScanTypes = scanRequestBO.getEntityTypes();
+        List<String> brokerScanTypes = scanRequestBO.getScanTypes();
         List<RouteBundle> routes = brokerScanTypes.stream()
                 .distinct()
                 .flatMap(brokerScanType -> scanDelegate.generateRouteList(destinations, List.of(),

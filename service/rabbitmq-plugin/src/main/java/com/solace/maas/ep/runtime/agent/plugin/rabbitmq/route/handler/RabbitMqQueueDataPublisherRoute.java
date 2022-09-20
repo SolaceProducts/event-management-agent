@@ -1,0 +1,15 @@
+package com.solace.maas.ep.runtime.agent.plugin.rabbitmq.route.handler;
+
+import com.solace.maas.ep.runtime.agent.plugin.rabbitmq.processor.queue.RabbitMqQueueProcessor;
+import com.solace.maas.ep.runtime.agent.plugin.rabbitmq.route.enumeration.RabbitMqRouteId;
+import com.solace.maas.ep.runtime.agent.plugin.rabbitmq.route.enumeration.RabbitMqRouteType;
+import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
+import com.solace.maas.ep.runtime.agent.plugin.route.manager.RouteManager;
+import org.springframework.stereotype.Component;
+
+@Component
+public class RabbitMqQueueDataPublisherRoute extends DataPublisherRouteBuilder {
+    public RabbitMqQueueDataPublisherRoute(RabbitMqQueueProcessor processor, RouteManager routeManager) {
+        super(processor, RabbitMqRouteId.RABBIT_MQ_QUEUE.label, RabbitMqRouteType.RABBIT_MQ_QUEUE.label, routeManager);
+    }
+}

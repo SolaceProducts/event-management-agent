@@ -30,10 +30,11 @@ public class RuntimeApplication {
         startupCompletedMarker.put("starting-state", "startup-completed");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         log.info(Markers.appendEntries(startupStartedMarker), "Starting runtime-agent --> " + Arrays.toString(args));
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
+
         new SpringApplicationBuilder()
                 .bannerMode(Banner.Mode.CONSOLE)
                 .sources(RuntimeApplication.class)

@@ -58,7 +58,7 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
         ScanRequestBO scanRequestBO = ScanRequestBO.builder()
                 .messagingServiceId(message.getMessagingServiceId())
                 .scanId(!StringUtils.isEmpty(message.getScanId()) ? message.getScanId() : UUID.randomUUID().toString())
-                .entityTypes(entityTypes)
+                .scanTypes(entityTypes)
                 .destinations(scanRequestDestinations)
                 .build();
 
