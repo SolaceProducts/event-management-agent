@@ -254,46 +254,6 @@ c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: solaceDefaultS
 13. Finally, if you have added the `EVENT_PORTAL` as a destination, check the Event Portal tables to confirm they
     contain the scanned data.
 
-### Testing the Event Management Agent in SC mode
-
-The most important test is SC mode is to verify that the entire end-to-end flow works properly. That is, from utilizing
-the front end to initiate the scan all the way to receiving the scan data in the Event Portal database.
-
-1. Start the Frontend by running the `maas-ui` locally, then visiting `http://localhost:9000/`
-2. Sign in, then enable the option `New Event Portal 2.0 : On`
-3. Navigate to the `Runtime Event Manager`, then either choose an existing `Modeled Event Mesh` or create a new one.
-4. Open the `Modeled Event Mesh` view, then navigate to the `Runtime` tab.
-5. Add a messaging service either by selecting a new or existing one.
-6. Fill in the messaging service details, i.e., `Name`, `SEMP Username`, `SEMP Password`, `SEMP URL`, and `Message VPN`.
-   (You can retrieve these details from your messaging service in Cluster Manager).
-7. After associating a messaging service to the modeled event mesh, navigate to `Runtime Event Manager`
-   then `Runtime Agents`.
-8. Set up the Event Management Agent's connection and add the messaging service, then save and create the connection
-   file.
-9. Update the `application.yml` file with the details from the connection file.
-10. Start the Event Management Agent either from IntelliJ or by running the JAR file.
-11. Examine the on-console logs for a log from `MessagingServiceConfig` class indicating that the messaging service(s)
-    has been created. **Note**: The logs may differ according to the messaging service(s) specified in the
-    `application.yml` file.
-
-```
-c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: kafkaDefaultService confluent kafka cluster KAFKA
-c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: solaceDefaultService staging service SOLACE
-```
-
-12. Refresh the frontend and make sure that the chip next to the Event Management Agent shows `Connected`.
-13. Navigate to `Runtime Event Manager`, then select the modeled event mesh and navigate to the `Runtime` tab.
-14. Select the messaging service and click `Collect Data`.
-15. Examine the Event Management Agent console logs to make sure that the individual scan types are complete. e.g.,
-    `Route subscriptionConfiguration completed for scanId 3a41a0f5-cd85-455c-a863-9636f69dc7b2`
-16. Examine the collected data by browsing to the directory `data_collection`. This directory is organized as
-    {schedule_id}/{scan_id}/{scan_type.json}
-17. Verify that the collected data contains a separate JSON file for each scan type.
-18. Verify the contents of each JSON file.
-19. Check the logs by browsing to `data_collection/logs/{scan_id}.log` and `general-logs.log` to make sure no exceptions
-    or errors occurred.
-20. Finally, check the Event Portal tables to confirm they contain the scanned data.
-
 ## Contributions
 
 Contributions are encouraged! If you have ideas to improve an existing plugin, create a new plugin, or improve/extend
