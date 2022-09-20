@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -21,7 +22,7 @@ public class ScanManager {
 
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
-
+    private final String[] VALID_MESSAGING_SERVICE_TYPES = {"SOLACE", "KAFKA"};
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
@@ -39,8 +40,10 @@ public class ScanManager {
         MessagingServiceRouteDelegate scanDelegate =
                 PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType().toUpperCase());
 
-        Objects.requireNonNull(scanDelegate, "Unable to find messaging service plugin for plugin type "
-                +messagingServiceEntity.getMessagingServiceType()+". Valid types are \"SOLACE\", \"KAFKA\".");
+        Objects.requireNonNull(scanDelegate,
+                String.format("Unable to find messaging service plugin for plugin type %s. Valid types are %s.",
+                        messagingServiceEntity.getMessagingServiceType(),
+                        String.join(", ", VALID_MESSAGING_SERVICE_TYPES)));
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
         List<RouteBundle> destinations = scanDestinations.stream()
