@@ -120,7 +120,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
                 .build();
 
         // Get the Messaging Service type.
-        String type = messagingServiceEntity.getMessagingServiceType().toUpperCase();
+        String type = messagingServiceEntity.getMessagingServiceType();
 
         if (messagingServiceClients.containsKey(messagingServiceId)) {
             return (T) messagingServiceClients.get(messagingServiceId);
