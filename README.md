@@ -54,7 +54,7 @@ On the roadmap:
 
 * Java 11 (AdoptOpenJDK 11.0.14+ https://adoptium.net/temurin/releases)
 * Maven
-* Docker
+* Docker (for running the Event Management Agent with MySQL database)
 * Event Management Agent Region (for cloud mode)
 
 ### Minimum hardware requirements
@@ -190,8 +190,8 @@ The Event Management Agent comes with the following event or message broker plug
 
 There are essentially 2 main modes of deployment:
 
-* SC Connected: The Event Management Agent connects to the event management region and can be controlled remotely via
-  Event Portal
+* Solace PubSub+ Console Connected: The Event Management Agent connects to the event management region and can be
+  controlled remotely via Event Portal
 
 * Stand-alone: The Event Management Agent is controlled via the REST API and results must be uploaded manually.
 
@@ -214,8 +214,8 @@ There are several interesting scenarios to test the Event Management Agent. Thes
 categories according to the deployment mode.
 
 * Testing the Event Management Agent as standalone service (stand-alone deployment).
-* Testing the end-to-end flow in SC connected mode (From the frontend to the Event Portal, then to the Event Management
-  Agent)
+* Testing the end-to-end flow in Solace PubSub+ Console connected mode (From the frontend to the Event Portal, then to
+  the Event Management Agent)
 
 ### Testing the Event Management Agent in standalone mode
 
