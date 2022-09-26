@@ -1,6 +1,8 @@
 package com.solace.maas.ep.runtime.agent.service;
 
 import com.solace.maas.ep.runtime.agent.logging.FileLoggerFactory;
+import com.solace.maas.ep.runtime.agent.logging.StreamLoggerFactory;
+import com.solace.maas.ep.runtime.agent.logging.StreamingAppender;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.runtime.agent.processor.LoggingProcessor;
@@ -20,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -48,10 +52,13 @@ public class ScanService {
 
     private final FileLoggerFactory fileLoggerFactory;
 
+    private final StreamLoggerFactory streamLoggerFactory;
+
     public ScanService(ScanRepository repository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
                        LoggingService loggingService, ScanLifecycleService scanLifecycleService,
-                       FileLoggerFactory fileLoggerFactory) {
+                       FileLoggerFactory fileLoggerFactory,
+                       StreamLoggerFactory streamLoggerFactory) {
         this.repository = repository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
@@ -59,6 +66,7 @@ public class ScanService {
         this.loggingService = loggingService;
         this.scanLifecycleService = scanLifecycleService;
         this.fileLoggerFactory = fileLoggerFactory;
+        this.streamLoggerFactory = streamLoggerFactory;
     }
 
     /**
@@ -136,10 +144,14 @@ public class ScanService {
             ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
 
             if (!loggingService.hasLoggingProcessor(scanId)) {
+                Map<String, String> details = new HashMap<>();
                 MDC.put(SCAN_ID, scanId);
-                fileLoggerFactory.create();
-                LoggingProcessor loggingProcessor = new LoggingProcessor();
-                loggingService.addLoggingProcessor(scanId, loggingProcessor);
+                details.put("scanId", scanId);
+                details.put("messagingServiceId", routeBundle.getMessagingServiceId());
+                details.put("groupId", groupId);
+
+                createScanFileLogger(details);
+                createScanStreamingLogger(details);
             }
 
             scanAsync(groupId, scanId, route, routeBundle.getMessagingServiceId());
@@ -336,7 +348,7 @@ public class ScanService {
      * @param messagingServiceId The ID of the Messaging Service being scanned.
      * @return A Future of the Route result.
      */
-    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route,
+    public CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route,
                                                     String messagingServiceId) {
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
@@ -361,5 +373,28 @@ public class ScanService {
      */
     protected ScanEntity save(ScanEntity scanEntity) {
         return repository.save(scanEntity);
+    }
+
+    protected void createScanFileLogger(Map<String, String> details) {
+        String scanId = details.get("scanId");
+
+        fileLoggerFactory.create();
+        LoggingProcessor loggingProcessor = new LoggingProcessor("FileAppender");
+        loggingService.addLoggingProcessor(scanId, loggingProcessor);
+    }
+
+    protected void createScanStreamingLogger(Map<String, String> details) {
+        String groupId = details.get("groupId");
+        String scanId = details.get("scanId");
+        String messagingServiceId = details.get("messagingServiceId");
+
+        StreamingAppender streamingAppender = streamLoggerFactory.create(producerTemplate);
+        streamingAppender.setGroupId(groupId);
+        streamingAppender.setScanId(scanId);
+        streamingAppender.setMessagingServiceId(messagingServiceId);
+        streamingAppender.start();
+
+        LoggingProcessor streamingAppenderProcessor = new LoggingProcessor("StreamingAppender");
+        loggingService.addLoggingProcessor(scanId, streamingAppenderProcessor);
     }
 }

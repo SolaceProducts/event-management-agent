@@ -5,6 +5,7 @@ import com.solace.maas.ep.runtime.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolaceWebPublisher;
 import com.solace.maas.ep.runtime.agent.publisher.ScanDataPublisher;
+import com.solace.maas.ep.runtime.agent.publisher.ScanLogsPublisher;
 import com.solace.maas.ep.runtime.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
@@ -103,7 +104,12 @@ public class TestConfig {
     @Primary
     public DirectMessagePublisher directMessagePublisher() {
         return mock(DirectMessagePublisher.class);
+    }
 
+    @Bean
+    @Primary
+    public ScanLogsPublisher scanLogsPublisher() {
+        return mock(ScanLogsPublisher.class);
     }
 
     @Bean
