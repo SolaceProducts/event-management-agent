@@ -33,7 +33,7 @@ public class StreamLoggerFactory {
         streamingAppender.setName("streamingAppender");
         streamingAppender.setContext(lc);
 
-        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Logger logger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.DEBUG);
         logger.addAppender(streamingAppender);
 

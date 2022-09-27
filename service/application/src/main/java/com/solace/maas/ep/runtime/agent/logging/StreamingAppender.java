@@ -42,16 +42,18 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent event) {
-        if (!createdRouts.containsKey(scanId)) {
-            route = loggingService.creatLoggingRoute(messagingServiceId);
-            createdRouts.put(scanId, route);
-        }
+        createdRouts.computeIfAbsent(scanId, k -> setRoute());
 
         if (event.getLevel().isGreaterOrEqual(logLevel)) {
             if (MDC.get(SCAN_ID).equals(scanId)) {
                 sendLogsAsync(event);
             }
         }
+    }
+
+    public RouteEntity setRoute() {
+        route = loggingService.creatLoggingRoute(messagingServiceId);
+        return route;
     }
 
     public void sendLogsAsync(ILoggingEvent event) {
