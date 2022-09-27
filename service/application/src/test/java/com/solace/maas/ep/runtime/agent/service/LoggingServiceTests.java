@@ -22,12 +22,17 @@ public class LoggingServiceTests {
     @SneakyThrows
     @Test
     public void testInMemoryLoggingService() throws Exception {
-        LoggingProcessor loggingProcessor = mock(LoggingProcessor.class);
+        LoggingProcessor firstLoggingProcessor = mock(LoggingProcessor.class);
+        LoggingProcessor secondLoggingProcessor = mock(LoggingProcessor.class);
 
-        loggingService.addLoggingProcessor("scanId", loggingProcessor);
+        loggingService.addLoggingProcessor("scanId", firstLoggingProcessor);
+        loggingService.addLoggingProcessor("scanId", secondLoggingProcessor);
+
         loggingService.removeLoggingProcessor("scanId");
         loggingService.hasLoggingProcessor("scanId");
         loggingService.getLoggingProcessor("scanId");
+
+        loggingService.creatLoggingRoute( "messagingServiceId");
 
         assertThatNoException();
     }

@@ -20,6 +20,7 @@ public class ScanLogsPublisherRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("seda:scanLogsPublisher")
+                .routeId("scanLogsPublisher")
                 .process(scanLogsProcessor)
                 .to("seda:scanLogsPublisherEndOfRoute");
     }

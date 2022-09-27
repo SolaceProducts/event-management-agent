@@ -45,6 +45,7 @@ public class ScanLogsProcessor implements Processor {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
         JSONObject json = new JSONObject();
+        json.put("scanId", scanId);
         json.put("timestamp", event.getTimeStamp());
         json.put("level", event.getLevel());
         json.put("message", String.format("%s%s", event.getFormattedMessage(), "\n"));
