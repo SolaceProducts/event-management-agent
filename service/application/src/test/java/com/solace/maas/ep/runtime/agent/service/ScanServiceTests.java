@@ -150,10 +150,8 @@ public class ScanServiceTests {
                 .thenReturn(CompletableFuture.completedFuture(null));
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
-        when(streamLoggerFactory.create(producerTemplate))
-                .thenReturn(streamingAppender);
 
-        scanService.singleScan(List.of(routeBundle), 2, "scanId");
+        scanService.singleScan(List.of(routeBundle), 2, "groupId","scanId");
 
         assertThatNoException();
     }

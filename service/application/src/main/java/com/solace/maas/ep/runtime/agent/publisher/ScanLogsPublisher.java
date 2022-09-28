@@ -2,6 +2,7 @@ package com.solace.maas.ep.runtime.agent.publisher;
 
 import com.solace.maas.ep.common.messages.ScanLogsMessage;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 
 
 @Component
+@Slf4j
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanLogsPublisher {
 

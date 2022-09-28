@@ -1,5 +1,6 @@
 package com.solace.maas.ep.common.messages;
 
+import ch.qos.logback.classic.Level;
 import com.solace.maas.ep.runtime.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.runtime.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.runtime.agent.plugin.mop.MOPProtocol;
@@ -10,11 +11,13 @@ public class ScanLogsMessage extends MOPMessage {
 
     String scanId;
 
-    String log;
+    Level level;
 
-    String timestamp;
+    String message;
 
-    public ScanLogsMessage(String orgId, String scanId, String log, String timestamp) {
+    Long timestamp;
+
+    public ScanLogsMessage(String orgId, String scanId, Level level, String message, Long timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)
@@ -23,7 +26,8 @@ public class ScanLogsMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.scanId = scanId;
-        this.log = log;
+        this.level = level;
+        this.message = message;
         this.timestamp = timestamp;
     }
 }

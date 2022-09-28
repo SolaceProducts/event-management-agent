@@ -5,55 +5,36 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.repository.model.route.RouteEntity;
-import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.SCAN_ID;
 
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Data
-@Component
 public class StreamingAppender extends AppenderBase<ILoggingEvent> {
-    private final ProducerTemplate producerTemplate;
-    private final LoggingService loggingService;
 
+    protected ProducerTemplate producerTemplate;
     protected Level logLevel = Level.DEBUG;
-
     protected String groupId;
     protected String scanId;
     protected String messagingServiceId;
     protected RouteEntity route;
-
-    protected Map<String, RouteEntity> createdRouts = new HashMap<>();
-
-    public StreamingAppender(ProducerTemplate producerTemplate, LoggingService loggingService) {
-        this.producerTemplate = producerTemplate;
-        this.loggingService = loggingService;
-    }
+    protected Boolean standalone;
 
     @Override
     protected void append(ILoggingEvent event) {
-        createdRouts.computeIfAbsent(scanId, k -> setRoute());
-
         if (event.getLevel().isGreaterOrEqual(logLevel)) {
             if (MDC.get(SCAN_ID).equals(scanId)) {
-                sendLogsAsync(event);
+                if (!standalone) {
+                    sendLogsAsync(event);
+                }
             }
         }
-    }
-
-    public RouteEntity setRoute() {
-        route = loggingService.creatLoggingRoute(messagingServiceId);
-        return route;
     }
 
     public void sendLogsAsync(ILoggingEvent event) {

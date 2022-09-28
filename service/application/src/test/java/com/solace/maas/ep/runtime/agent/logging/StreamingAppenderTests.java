@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.solace.maas.ep.runtime.agent.TestConfig;
+import com.solace.maas.ep.runtime.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.runtime.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import lombok.SneakyThrows;
@@ -33,6 +34,9 @@ public class StreamingAppenderTests {
     LoggingService loggingService;
 
     @Mock
+    EventPortalProperties eventPortalProperties;
+
+    @Mock
     ProducerTemplate producerTemplate;
 
     @InjectMocks
@@ -53,10 +57,11 @@ public class StreamingAppenderTests {
         streamingAppender.setGroupId("groupId");
         streamingAppender.setMessagingServiceId("messagingServiceId");
         streamingAppender.setScanId("12345");
+        streamingAppender.setRoute(route);
+        streamingAppender.setStandalone(false);
+
         MDC.put(SCAN_ID, "12345");
 
-        when(loggingService.creatLoggingRoute(any(String.class)))
-                .thenReturn(route);
         when(producerTemplate.asyncSend(any(String.class), any(Processor.class)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 

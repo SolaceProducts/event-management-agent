@@ -17,7 +17,6 @@
     <properties>
         <camel.version>3.16.0</camel.version>
         <springdoc.version>1.6.11</springdoc.version>
-        <org.json.version>20210307</org.json.version>
     </properties>
 
     <repositories>
@@ -171,11 +170,6 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>${springdoc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>${org.json.version}</version>
         </dependency>
     </dependencies>
     <build>

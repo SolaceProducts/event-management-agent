@@ -1,11 +1,7 @@
 package com.solace.maas.ep.runtime.agent.service;
 
-import com.solace.maas.ep.runtime.agent.logging.FileLoggerFactory;
-import com.solace.maas.ep.runtime.agent.logging.StreamLoggerFactory;
-import com.solace.maas.ep.runtime.agent.logging.StreamingAppender;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
-import com.solace.maas.ep.runtime.agent.processor.LoggingProcessor;
 import com.solace.maas.ep.runtime.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanEntity;
@@ -13,25 +9,20 @@ import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanLifecycleEntit
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.runtime.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.runtime.agent.service.lifecycle.ScanLifecycleService;
-import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
-import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.SCAN_ID;
 import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
 
 /**
@@ -48,27 +39,16 @@ public class ScanService {
 
     private final ProducerTemplate producerTemplate;
 
-    private final LoggingService loggingService;
-
     private final ScanLifecycleService scanLifecycleService;
-
-    private final FileLoggerFactory fileLoggerFactory;
-
-    private final StreamLoggerFactory streamLoggerFactory;
 
     public ScanService(ScanRepository repository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
-                       LoggingService loggingService, ScanLifecycleService scanLifecycleService,
-                       FileLoggerFactory fileLoggerFactory,
-                       StreamLoggerFactory streamLoggerFactory) {
+                       ScanLifecycleService scanLifecycleService) {
         this.repository = repository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
-        this.loggingService = loggingService;
         this.scanLifecycleService = scanLifecycleService;
-        this.fileLoggerFactory = fileLoggerFactory;
-        this.streamLoggerFactory = streamLoggerFactory;
     }
 
     /**
@@ -133,28 +113,15 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String scanId) {
+    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String groupId, String scanId) {
 
         ScanEntity savedScanEntity = null;
-
-        String groupId = UUID.randomUUID().toString();
 
         for (RouteBundle routeBundle : routeBundles) {
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
             ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
-
-            if (!loggingService.hasLoggingProcessor(scanId)) {
-                Map<String, String> details = new HashMap<>();
-                MDC.put(SCAN_ID, scanId);
-                details.put(SCAN_ID, scanId);
-                details.put(MESSAGING_SERVICE_ID, routeBundle.getMessagingServiceId());
-                details.put(SCHEDULE_ID, groupId);
-
-                createScanFileLogger(details);
-                createScanStreamingLogger(details);
-            }
 
             scanAsync(groupId, scanId, route, routeBundle.getMessagingServiceId());
             savedScanEntity = returnedScanEntity;
@@ -375,28 +342,5 @@ public class ScanService {
      */
     protected ScanEntity save(ScanEntity scanEntity) {
         return repository.save(scanEntity);
-    }
-
-    protected void createScanFileLogger(Map<String, String> details) {
-        String scanId = details.get(SCAN_ID);
-
-        fileLoggerFactory.create();
-        LoggingProcessor loggingProcessor = new LoggingProcessor("FileAppender");
-        loggingService.addLoggingProcessor(scanId, loggingProcessor);
-    }
-
-    protected void createScanStreamingLogger(Map<String, String> details) {
-        String groupId = details.get(SCHEDULE_ID);
-        String scanId = details.get(SCAN_ID);
-        String messagingServiceId = details.get(MESSAGING_SERVICE_ID);
-
-        StreamingAppender streamingAppender = streamLoggerFactory.create(producerTemplate);
-        streamingAppender.setGroupId(groupId);
-        streamingAppender.setScanId(scanId);
-        streamingAppender.setMessagingServiceId(messagingServiceId);
-        streamingAppender.start();
-
-        LoggingProcessor streamingAppenderProcessor = new LoggingProcessor("StreamingAppender");
-        loggingService.addLoggingProcessor(scanId, streamingAppenderProcessor);
     }
 }
