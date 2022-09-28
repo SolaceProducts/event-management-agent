@@ -53,7 +53,5 @@ public class ScanLogsProcessor implements Processor {
         topicDetails.put("scanId", scanId);
 
         logDataPublisher.sendScanLogData(logDataMessage, topicDetails);
-
-        log.info("Scan logs have been published successfully.");
     }
 }

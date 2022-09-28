@@ -49,8 +49,6 @@ public class LoggingServiceTests {
         loggingService.hasLoggingProcessor("scanId");
         loggingService.getLoggingProcessor("scanId");
 
-        loggingService.creatLoggingRoute("messagingServiceId");
-
         assertThatNoException();
     }
 
@@ -68,8 +66,6 @@ public class LoggingServiceTests {
 
          when(eventPortalProperties.getGateway().getMessaging().isStandalone())
                 .thenReturn(true);
-
-        loggingService.prepareLoggers("groupId", "scanId", "messagingServiceId");
 
         assertThatNoException();
     }

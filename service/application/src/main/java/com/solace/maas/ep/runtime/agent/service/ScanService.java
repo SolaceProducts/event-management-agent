@@ -12,6 +12,7 @@ import com.solace.maas.ep.runtime.agent.service.lifecycle.ScanLifecycleService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -324,6 +325,10 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
+
+            MDC.put(RouteConstants.SCAN_ID, scanId);
+            MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+            MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
         }).whenComplete((exchange, exception) -> {
             if (exception != null) {
                 log.error("Exception occurred while executing route {} for scan {}.", route.getId(), scanId, exception);

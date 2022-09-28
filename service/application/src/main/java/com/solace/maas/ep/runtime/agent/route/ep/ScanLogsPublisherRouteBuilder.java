@@ -19,9 +19,8 @@ public class ScanLogsPublisherRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("seda:scanLogsPublisher")
+        from("seda:scanLogsPublisher?blockWhenFull=true&size=1000000")
                 .routeId("scanLogsPublisher")
-                .process(scanLogsProcessor)
-                .to("seda:scanLogsPublisherEndOfRoute");
+                .process(scanLogsProcessor);
     }
 }

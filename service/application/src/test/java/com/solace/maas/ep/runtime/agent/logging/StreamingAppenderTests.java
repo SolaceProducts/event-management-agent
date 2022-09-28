@@ -54,9 +54,6 @@ public class StreamingAppenderTests {
                 .active(true)
                 .build();
 
-        streamingAppender.setGroupId("groupId");
-        streamingAppender.setMessagingServiceId("messagingServiceId");
-        streamingAppender.setScanId("12345");
         streamingAppender.setRoute(route);
         streamingAppender.setStandalone(false);
 

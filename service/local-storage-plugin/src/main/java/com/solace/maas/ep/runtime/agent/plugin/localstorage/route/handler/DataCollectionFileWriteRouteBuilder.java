@@ -8,6 +8,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,21 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        interceptFrom()
+                .process(exchange -> {
+                    MDC.put(RouteConstants.SCAN_ID,
+                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
+
+                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
+                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
+
+                    MDC.put(RouteConstants.SCHEDULE_ID,
+                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
+
+                    MDC.put(RouteConstants.SCAN_TYPE,
+                            exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class));
+                });
+
         from("seda:dataCollectionFileWrite?blockWhenFull=true&size=" + Integer.MAX_VALUE)
                 .transform(body().append("\n"))
                 .to("file://data_collection/?fileExist=append&charset=utf-8&fileName=" +

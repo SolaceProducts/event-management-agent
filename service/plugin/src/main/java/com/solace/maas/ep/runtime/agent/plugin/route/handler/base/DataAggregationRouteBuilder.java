@@ -7,6 +7,7 @@ import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.slf4j.MDC;
 
 import java.util.Objects;
 
@@ -40,6 +41,20 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
     @SuppressWarnings("CPD-START")
     @Override
     public void configure() {
+        interceptFrom()
+                .process(exchange -> {
+                    MDC.put(RouteConstants.SCAN_ID,
+                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
+
+                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
+                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
+
+                    MDC.put(RouteConstants.SCHEDULE_ID,
+                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
+
+                    MDC.put(RouteConstants.SCAN_TYPE, routeType);
+                });
+
         from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 // Define a Route ID so we can kill this Route if needed.
                 .routeId(routeId)
@@ -51,16 +66,28 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
-                .split(body()).streaming()
+                .split(body()).shareUnitOfWork().streaming().shareUnitOfWork()
                 .choice().when(header(Exchange.SPLIT_COMPLETE).isEqualTo(true))
                 .setHeader("DATA_PROCESSING_COMPLETE", constant(true))
                 .endChoice()
                 .end()
-
+                .log("agg element ${body}")
                 .aggregate(header(RouteConstants.SCAN_ID))
                 .aggregationStrategy(aggregationStrategy)
                 .completionSize(aggregationSize)
                 .completionPredicate(simple("${header.DATA_PROCESSING_COMPLETE} == true"))
+                .process(exchange -> {
+                    MDC.put(RouteConstants.SCAN_ID,
+                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
+
+                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
+                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
+
+                    MDC.put(RouteConstants.SCHEDULE_ID,
+                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
+
+                    MDC.put(RouteConstants.SCAN_TYPE, routeType);
+                })
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .log("agg complete ${body}")
@@ -69,7 +96,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
                 .split(body()).streaming()
-
+                .shareUnitOfWork()
+                .log("agg split ${body}")
                 // The last aggregation bundle will have "DATA_PROCESSING_COMPLETE" set true in the header for all
                 // messages in the aggregation bundle.
                 // We want to set the "DATA_PROCESSING_COMPLETE" to false, except for the last message in the
@@ -79,16 +107,17 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .setHeader("DATA_PROCESSING_COMPLETE", constant(false))
                 .endChoice()
                 .end()
-
                 // The Route Interceptors are injected here. They are called Asynchronously and don't return a response
                 // to this Route.
                 .recipientList().header("RECIPIENTS").delimiter(";")
-                .parallelProcessing()
+                .shareUnitOfWork()
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
                 .marshal().json(JsonLibrary.Jackson)
+                .log("destinations ${body}")
                 // The Destinations receiving the Data Collection events get called here.
-                .recipientList().header("DESTINATIONS").delimiter(";");
+                .recipientList().header("DESTINATIONS").delimiter(";")
+                .shareUnitOfWork();
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);

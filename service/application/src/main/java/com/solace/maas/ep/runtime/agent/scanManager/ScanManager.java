@@ -1,5 +1,6 @@
 package com.solace.maas.ep.runtime.agent.scanManager;
 
+import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
@@ -9,6 +10,7 @@ import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceI
 import com.solace.maas.ep.runtime.agent.service.ScanService;
 import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,10 @@ public class ScanManager {
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
         String scanId = scanRequestBO.getScanId();
         String groupId = UUID.randomUUID().toString();
+
+        MDC.put(RouteConstants.SCAN_ID, scanId);
+        MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+        MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
