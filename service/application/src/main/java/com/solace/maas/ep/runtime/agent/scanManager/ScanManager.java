@@ -76,7 +76,7 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        loggingService.prepareLoggers(groupId, scanId, messagingServiceEntity.getId());
+        loggingService.prepareLoggers(scanId);
 
         return scanService.singleScan(routes, routes.size(), groupId, scanId);
     }

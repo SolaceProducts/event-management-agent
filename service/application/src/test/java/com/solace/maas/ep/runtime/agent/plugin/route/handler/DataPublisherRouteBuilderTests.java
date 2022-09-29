@@ -1,13 +1,14 @@
 package com.solace.maas.ep.runtime.agent.plugin.route.handler;
 
+import com.solace.maas.ep.runtime.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -22,6 +23,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
 
 @CamelSpringBootTest
 @EnableAutoConfiguration
@@ -67,11 +70,13 @@ public class DataPublisherRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
+            MDCProcessor mdcProcessor = mock(MDCProcessor.class);
+
             return new DataPublisherRouteBuilder(exchange -> {
                 List<TestEvent> testData = generateTestData();
 
                 exchange.getIn().setBody(testData);
-            }, "dataPublisherRoute", "topicListing", null);
+            }, "dataPublisherRoute", "topicListing", null, mdcProcessor);
         }
     }
 

@@ -21,8 +21,7 @@ import java.util.List;
 public class StreamingAppender extends AppenderBase<ILoggingEvent> {
 
     protected ProducerTemplate producerTemplate;
-    protected RouteEntity route;
-    protected Boolean standalone;
+    protected boolean standalone;
 
     @Override
     protected void append(ILoggingEvent event) {

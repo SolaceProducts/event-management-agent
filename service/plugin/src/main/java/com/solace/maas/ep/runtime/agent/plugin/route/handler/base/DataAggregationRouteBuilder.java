@@ -2,6 +2,7 @@ package com.solace.maas.ep.runtime.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.runtime.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
@@ -19,6 +20,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
 
     protected final Integer aggregationSize;
 
+    protected final MDCProcessor mdcProcessor;
+
     /**
      * @param processor           The Processor handling the Data Collection for a Scan.
      * @param routeId             The Unique Identifier for this Route.
@@ -26,13 +29,15 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
      * @param routeManager        The list of Route Destinations the Data Collection events will be streamed to.
      * @param aggregationStrategy
      * @param aggregationSize
+     * @param mdcProcessor        The Processor handling the MDC data for logging.
      */
     public DataAggregationRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager,
-                                       AggregationStrategy aggregationStrategy, Integer aggregationSize) {
-        super(processor, routeId, routeType, routeManager);
+                                       AggregationStrategy aggregationStrategy, Integer aggregationSize, MDCProcessor mdcProcessor) {
+        super(processor, routeId, routeType, routeManager, mdcProcessor);
 
         this.aggregationStrategy = aggregationStrategy;
         this.aggregationSize = aggregationSize;
+        this.mdcProcessor = mdcProcessor;
     }
 
     /**
@@ -42,18 +47,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
     @Override
     public void configure() {
         interceptFrom()
-                .process(exchange -> {
-                    MDC.put(RouteConstants.SCAN_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
-
-                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
-                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCHEDULE_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCAN_TYPE, routeType);
-                });
+                .process(mdcProcessor)
+                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE, routeType));
 
         from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 // Define a Route ID so we can kill this Route if needed.
@@ -76,18 +71,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .aggregationStrategy(aggregationStrategy)
                 .completionSize(aggregationSize)
                 .completionPredicate(simple("${header.DATA_PROCESSING_COMPLETE} == true"))
-                .process(exchange -> {
-                    MDC.put(RouteConstants.SCAN_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
-
-                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
-                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCHEDULE_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCAN_TYPE, routeType);
-                })
+                .process(mdcProcessor)
+                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE, routeType))
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .log("agg complete ${body}")

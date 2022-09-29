@@ -2,6 +2,7 @@ package com.solace.maas.ep.runtime.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.runtime.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -27,18 +28,24 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
 
     protected final RouteManager routeManager;
 
+    protected final MDCProcessor mdcProcessor;
+
     /**
      * @param processor    The Processor handling the Data Collection for a Scan.
      * @param routeId      The Unique Identifier for this Route.
      * @param routeManager The list of Route Destinations the Data Collection events will be streamed to.
+     * @param mdcProcessor The Processor handling the MDC data for logging.
      */
-    public DataPublisherRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager) {
+    public DataPublisherRouteBuilder(Processor processor, String routeId,
+                                     String routeType, RouteManager routeManager,
+                                     MDCProcessor mdcProcessor) {
         super();
 
         this.processor = processor;
         this.routeId = routeId;
         this.routeType = routeType;
         this.routeManager = routeManager;
+        this.mdcProcessor = mdcProcessor;
     }
 
     /**
@@ -48,18 +55,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
     @Override
     public void configure() {
         interceptFrom()
-                .process(exchange -> {
-                    MDC.put(RouteConstants.SCAN_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
-
-                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
-                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCHEDULE_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCAN_TYPE, routeType);
-                });
+                .process(mdcProcessor)
+                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE, routeType));
 
         from("seda:" + routeId + "?blockWhenFull=true&size=100")
                 // Define a Route ID so we can kill this Route if needed.

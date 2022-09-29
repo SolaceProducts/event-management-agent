@@ -2,6 +2,7 @@ package com.solace.maas.ep.runtime.agent.plugin.localstorage.route.handler;
 
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.localstorage.processor.output.file.DataCollectionFileWriteProcessor;
+import com.solace.maas.ep.runtime.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.processor.logging.RouteCompleteProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.processor.logging.ScanCompleteProcessor;
 import org.apache.camel.LoggingLevel;
@@ -20,33 +21,26 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
 
     private final ScanCompleteProcessor scanCompleteProcessor;
 
+    private final MDCProcessor mdcProcessor;
 
     @Autowired
     public DataCollectionFileWriteRouteBuilder(DataCollectionFileWriteProcessor processor,
                                                RouteCompleteProcessor routeCompleteProcessor,
-                                               ScanCompleteProcessor scanCompleteProcessor) {
+                                               ScanCompleteProcessor scanCompleteProcessor,
+                                               MDCProcessor mdcProcessor) {
         super();
         this.processor = processor;
         this.routeCompleteProcessor = routeCompleteProcessor;
         this.scanCompleteProcessor = scanCompleteProcessor;
+        this.mdcProcessor = mdcProcessor;
     }
 
     @Override
     public void configure() throws Exception {
         interceptFrom()
-                .process(exchange -> {
-                    MDC.put(RouteConstants.SCAN_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
-
-                    MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
-                            exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCHEDULE_ID,
-                            exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
-
-                    MDC.put(RouteConstants.SCAN_TYPE,
-                            exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class));
-                });
+                .process(mdcProcessor)
+                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE,
+                        exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class)));
 
         from("seda:dataCollectionFileWrite?blockWhenFull=true&size=" + Integer.MAX_VALUE)
                 .transform(body().append("\n"))
