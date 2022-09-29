@@ -8,7 +8,6 @@ import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import org.slf4j.MDC;
 
 import java.util.Objects;
 
@@ -47,8 +46,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
     @Override
     public void configure() {
         interceptFrom()
-                .process(mdcProcessor)
-                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE, routeType));
+                .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
+                .process(mdcProcessor);
 
         from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 // Define a Route ID so we can kill this Route if needed.
@@ -72,7 +71,6 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .completionSize(aggregationSize)
                 .completionPredicate(simple("${header.DATA_PROCESSING_COMPLETE} == true"))
                 .process(mdcProcessor)
-                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE, routeType))
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .log("agg complete ${body}")

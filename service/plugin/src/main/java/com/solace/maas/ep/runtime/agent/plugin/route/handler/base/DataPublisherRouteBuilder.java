@@ -55,8 +55,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
     @Override
     public void configure() {
         interceptFrom()
-                .process(mdcProcessor)
-                .process(exchange -> MDC.put(RouteConstants.SCAN_TYPE, routeType));
+                .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
+                .process(mdcProcessor);
 
         from("seda:" + routeId + "?blockWhenFull=true&size=100")
                 // Define a Route ID so we can kill this Route if needed.
