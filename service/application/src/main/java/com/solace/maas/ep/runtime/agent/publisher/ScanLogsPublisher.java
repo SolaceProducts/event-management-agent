@@ -1,6 +1,6 @@
 package com.solace.maas.ep.runtime.agent.publisher;
 
-import com.solace.maas.ep.common.messages.ScanLogsMessage;
+import com.solace.maas.ep.common.messages.ScanLogMessage;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -20,7 +20,7 @@ public class ScanLogsPublisher {
         this.solacePublisher = solacePublisher;
     }
 
-    public void sendScanLogData(ScanLogsMessage message, Map<String, String> topicDetails) {
+    public void sendScanLogData(ScanLogMessage message, Map<String, String> topicDetails) {
         String topicString = String.format("sc/ep/runtime/%s/%s/scan/logs/v1/%s/%s",
                 topicDetails.get("orgId"),
                 topicDetails.get("runtimeAgentId"),

@@ -1,7 +1,7 @@
 package com.solace.maas.ep.runtime.agent.processor;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import com.solace.maas.ep.common.messages.ScanLogsMessage;
+import com.solace.maas.ep.common.messages.ScanLogMessage;
 import com.solace.maas.ep.runtime.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.publisher.ScanLogsPublisher;
@@ -43,8 +43,8 @@ public class ScanLogsProcessor implements Processor {
         String scanId = (String) exchange.getIn().getHeader(RouteConstants.SCAN_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        ScanLogsMessage logDataMessage =
-                new ScanLogsMessage(orgId, scanId, event.getLevel(),
+        ScanLogMessage logDataMessage =
+                new ScanLogMessage(orgId, scanId, event.getLevel().toString(),
                         String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
 
         topicDetails.put("orgId", orgId);
