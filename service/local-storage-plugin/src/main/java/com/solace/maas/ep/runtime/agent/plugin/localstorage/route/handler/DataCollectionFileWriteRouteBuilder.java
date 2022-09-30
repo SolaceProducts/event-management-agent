@@ -2,6 +2,7 @@ package com.solace.maas.ep.runtime.agent.plugin.localstorage.route.handler;
 
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.localstorage.processor.output.file.DataCollectionFileWriteProcessor;
+import com.solace.maas.ep.runtime.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.processor.logging.RouteCompleteProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.processor.logging.ScanCompleteProcessor;
 import org.apache.camel.LoggingLevel;
@@ -19,19 +20,25 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
 
     private final ScanCompleteProcessor scanCompleteProcessor;
 
+    private final MDCProcessor mdcProcessor;
 
     @Autowired
     public DataCollectionFileWriteRouteBuilder(DataCollectionFileWriteProcessor processor,
                                                RouteCompleteProcessor routeCompleteProcessor,
-                                               ScanCompleteProcessor scanCompleteProcessor) {
+                                               ScanCompleteProcessor scanCompleteProcessor,
+                                               MDCProcessor mdcProcessor) {
         super();
         this.processor = processor;
         this.routeCompleteProcessor = routeCompleteProcessor;
         this.scanCompleteProcessor = scanCompleteProcessor;
+        this.mdcProcessor = mdcProcessor;
     }
 
     @Override
     public void configure() throws Exception {
+        interceptFrom()
+                .process(mdcProcessor);
+
         from("seda:dataCollectionFileWrite?blockWhenFull=true&size=" + Integer.MAX_VALUE)
                 .transform(body().append("\n"))
                 .to("file://data_collection/?fileExist=append&charset=utf-8&fileName=" +

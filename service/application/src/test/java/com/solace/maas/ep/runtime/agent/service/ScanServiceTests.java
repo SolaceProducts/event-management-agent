@@ -2,6 +2,7 @@ package com.solace.maas.ep.runtime.agent.service;
 
 import com.solace.maas.ep.runtime.agent.TestConfig;
 import com.solace.maas.ep.runtime.agent.logging.FileLoggerFactory;
+import com.solace.maas.ep.runtime.agent.logging.StreamingAppender;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.runtime.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanEntity;
@@ -39,6 +40,9 @@ public class ScanServiceTests {
 
     @Mock
     FileLoggerFactory fileLoggerFactory;
+
+    @Mock
+    StreamingAppender streamingAppender;
 
     @Mock
     private ScanRepository scanRepository;
@@ -143,7 +147,7 @@ public class ScanServiceTests {
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
 
-        scanService.singleScan(List.of(routeBundle), 2, "scanId");
+        scanService.singleScan(List.of(routeBundle), 2, "groupId","scanId");
 
         assertThatNoException();
     }

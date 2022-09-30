@@ -10,6 +10,11 @@ import org.apache.camel.Processor;
 @Data
 @NoArgsConstructor
 public class LoggingProcessor implements Processor {
+    private String loggerName;
+
+    public LoggingProcessor(String loggerName) {
+        this.loggerName = loggerName;
+    }
 
     @Override
     public void process(Exchange exchange) throws Exception {

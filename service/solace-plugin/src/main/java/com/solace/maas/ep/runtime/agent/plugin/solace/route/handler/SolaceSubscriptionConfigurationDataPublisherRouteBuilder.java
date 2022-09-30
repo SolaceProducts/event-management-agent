@@ -1,5 +1,6 @@
 package com.solace.maas.ep.runtime.agent.plugin.solace.route.handler;
 
+import com.solace.maas.ep.runtime.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.runtime.agent.plugin.route.aggregation.GenericListScanIdAggregationStrategy;
 import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.DataAggregationRouteBuilder;
 import com.solace.maas.ep.runtime.agent.plugin.route.manager.RouteManager;
@@ -13,8 +14,8 @@ public class SolaceSubscriptionConfigurationDataPublisherRouteBuilder extends Da
      * @param routeManager The list of Route Destinations the Data Collection events will be streamed to.
      */
     public SolaceSubscriptionConfigurationDataPublisherRouteBuilder(SolaceSubscriptionProcessor processor,
-                                                                    RouteManager routeManager) {
+                                                                    RouteManager routeManager, MDCProcessor mdcProcessor) {
         super(processor, "solaceSubscriptionConfiguration", "subscriptionConfiguration", routeManager,
-                new GenericListScanIdAggregationStrategy(), 10);
+                new GenericListScanIdAggregationStrategy(), 10, mdcProcessor);
     }
 }

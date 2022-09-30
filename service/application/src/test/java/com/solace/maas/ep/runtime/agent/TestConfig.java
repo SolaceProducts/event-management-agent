@@ -2,16 +2,17 @@ package com.solace.maas.ep.runtime.agent;
 
 import com.solace.maas.ep.runtime.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.runtime.agent.messagingServices.RtoMessagingService;
-import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
-import com.solace.maas.ep.runtime.agent.plugin.publisher.SolaceWebPublisher;
-import com.solace.maas.ep.runtime.agent.publisher.ScanDataPublisher;
-import com.solace.maas.ep.runtime.agent.repository.messagingservice.MessagingServiceRepository;
-import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
-import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.runtime.agent.plugin.config.VMRProperties;
 import com.solace.maas.ep.runtime.agent.plugin.config.eventPortal.EventPortalPluginProperties;
 import com.solace.maas.ep.runtime.agent.plugin.messagingService.RtoMessageBuilder;
+import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
+import com.solace.maas.ep.runtime.agent.plugin.publisher.SolaceWebPublisher;
 import com.solace.maas.ep.runtime.agent.plugin.vmr.VmrProcessor;
+import com.solace.maas.ep.runtime.agent.publisher.ScanDataPublisher;
+import com.solace.maas.ep.runtime.agent.publisher.ScanLogsPublisher;
+import com.solace.maas.ep.runtime.agent.repository.messagingservice.MessagingServiceRepository;
+import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
+import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
@@ -103,7 +104,12 @@ public class TestConfig {
     @Primary
     public DirectMessagePublisher directMessagePublisher() {
         return mock(DirectMessagePublisher.class);
+    }
 
+    @Bean
+    @Primary
+    public ScanLogsPublisher scanLogsPublisher() {
+        return mock(ScanLogsPublisher.class);
     }
 
     @Bean

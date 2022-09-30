@@ -1,9 +1,7 @@
 package com.solace.maas.ep.runtime.agent.service;
 
-import com.solace.maas.ep.runtime.agent.logging.FileLoggerFactory;
 import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
-import com.solace.maas.ep.runtime.agent.processor.LoggingProcessor;
 import com.solace.maas.ep.runtime.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanEntity;
@@ -11,7 +9,6 @@ import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanLifecycleEntit
 import com.solace.maas.ep.runtime.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.runtime.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.runtime.agent.service.lifecycle.ScanLifecycleService;
-import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -26,7 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.SCAN_ID;
+import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
+import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
 
 /**
  * Responsible for initiating and managing Messaging Service scans.
@@ -42,23 +40,16 @@ public class ScanService {
 
     private final ProducerTemplate producerTemplate;
 
-    private final LoggingService loggingService;
-
     private final ScanLifecycleService scanLifecycleService;
-
-    private final FileLoggerFactory fileLoggerFactory;
 
     public ScanService(ScanRepository repository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
-                       LoggingService loggingService, ScanLifecycleService scanLifecycleService,
-                       FileLoggerFactory fileLoggerFactory) {
+                       ScanLifecycleService scanLifecycleService) {
         this.repository = repository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
-        this.loggingService = loggingService;
         this.scanLifecycleService = scanLifecycleService;
-        this.fileLoggerFactory = fileLoggerFactory;
     }
 
     /**
@@ -123,24 +114,15 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String scanId) {
+    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String groupId, String scanId) {
 
         ScanEntity savedScanEntity = null;
-
-        String groupId = UUID.randomUUID().toString();
 
         for (RouteBundle routeBundle : routeBundles) {
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
             ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
-
-            if (!loggingService.hasLoggingProcessor(scanId)) {
-                MDC.put(SCAN_ID, scanId);
-                fileLoggerFactory.create();
-                LoggingProcessor loggingProcessor = new LoggingProcessor();
-                loggingService.addLoggingProcessor(scanId, loggingProcessor);
-            }
 
             scanAsync(groupId, scanId, route, routeBundle.getMessagingServiceId());
             savedScanEntity = returnedScanEntity;
@@ -322,8 +304,8 @@ public class ScanService {
         return producerTemplate.send("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
-            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(SCHEDULE_ID, groupId);
+            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
         });
     }
 
@@ -336,13 +318,17 @@ public class ScanService {
      * @param messagingServiceId The ID of the Messaging Service being scanned.
      * @return A Future of the Route result.
      */
-    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route,
-                                                    String messagingServiceId) {
+    public CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route,
+                                                 String messagingServiceId) {
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
-            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(SCHEDULE_ID, groupId);
+            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
+
+            MDC.put(RouteConstants.SCAN_ID, scanId);
+            MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+            MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
         }).whenComplete((exchange, exception) -> {
             if (exception != null) {
                 log.error("Exception occurred while executing route {} for scan {}.", route.getId(), scanId, exception);

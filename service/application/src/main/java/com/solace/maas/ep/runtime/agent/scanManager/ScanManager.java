@@ -1,5 +1,6 @@
 package com.solace.maas.ep.runtime.agent.scanManager;
 
+import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.runtime.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.runtime.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
@@ -7,12 +8,15 @@ import com.solace.maas.ep.runtime.agent.repository.model.mesagingservice.Messagi
 import com.solace.maas.ep.runtime.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.runtime.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.runtime.agent.service.ScanService;
+import com.solace.maas.ep.runtime.agent.service.logging.LoggingService;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,17 +25,24 @@ public class ScanManager {
 
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
+    private final LoggingService loggingService;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                       ScanService scanService) {
+                       ScanService scanService, LoggingService loggingService) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
+        this.loggingService = loggingService;
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
         String scanId = scanRequestBO.getScanId();
+        String groupId = UUID.randomUUID().toString();
+
+        MDC.put(RouteConstants.SCAN_ID, scanId);
+        MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+        MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
@@ -65,7 +76,9 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, routes.size(), scanId);
+        loggingService.prepareLoggers(scanId);
+
+        return scanService.singleScan(routes, routes.size(), groupId, scanId);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

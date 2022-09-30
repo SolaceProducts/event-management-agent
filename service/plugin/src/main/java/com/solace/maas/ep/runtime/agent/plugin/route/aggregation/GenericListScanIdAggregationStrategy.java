@@ -1,7 +1,9 @@
 package com.solace.maas.ep.runtime.agent.plugin.route.aggregation;
 
+import com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.runtime.agent.plugin.route.aggregation.base.ScanIdAggregationStrategyImpl;
 import org.apache.camel.Exchange;
+import org.slf4j.MDC;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,5 +26,13 @@ public class GenericListScanIdAggregationStrategy extends ScanIdAggregationStrat
         newBody.add(newElement);
 
         newExchange.getIn().setBody(newBody);
+
+        MDC.put(RouteConstants.SCAN_ID, newExchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
+        MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
+                newExchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
+        MDC.put(RouteConstants.SCHEDULE_ID,
+                newExchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
+        MDC.put(RouteConstants.SCAN_TYPE,
+                newExchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class));
     }
 }
