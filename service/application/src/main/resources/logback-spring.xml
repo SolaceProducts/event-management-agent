@@ -6,13 +6,13 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>RuntimeAgent.log</file>
+        <file>EMA.log</file>
         <encoder>
             <pattern>%d [%thread] %-5level %-50logger{40} : %msg%n</pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>RuntimeAgent-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>EMA-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>1MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>
@@ -28,12 +28,12 @@
             <appender name="Logger" class="ch.qos.logback.core.FileAppender">
                 <file>data_collection/logs/${SCAN_ID}.log</file>
                 <layout class="ch.qos.logback.classic.PatternLayout">
-                    <pattern>[%X{SCAN_ID}] ------ %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                    <pattern>[%X{SCAN_ID}] ------ %date [%level] [%thread] %logger{10} [%file:%line] %msg%n</pattern>
                 </layout>
             </appender>
         </sift>
     </appender>
-    <appender name="StreamingAppender" class="com.solace.maas.ep.runtime.agent.logging.StreamingAppender"/>
+    <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
 
     <springProfile name="default,mysql,mysql-dev,DEV,TEST">
         <root level="INFO">

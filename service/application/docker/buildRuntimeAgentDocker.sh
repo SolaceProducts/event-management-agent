@@ -9,8 +9,8 @@ usage() {
   cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] -t IMAGE_TAG [-bt docker_base_image_tag]
 
-Creates a docker image of the runtime agent. The runtime agent docker image is made up
-of a base image and the runtime-agent application layer. The base image tag can be specified
+Creates a docker image of the event management agent. The event management agent docker image is made up
+of a base image and the event-management-agent application layer. The base image tag can be specified
 using the bt parameter. If the base image tag exists, it is used, if it does not exist, it
 is built automatically before creating the application docker image.
 
@@ -85,33 +85,33 @@ parse_params "$@"
 setup_colors
 
 # If the base docker container tag isn't set, use the same tag that was
-# provided for the runtime-agent.
+# provided for the event-management-agent.
 
 [[ -z "${BASE_IMAGE_TAG-}" ]] && BASE_IMAGE_TAG=${IMAGE_TAG}
 
-if [[ "$(docker images -q runtime-agent-base:${BASE_IMAGE_TAG} 2> /dev/null)" == "" ]]; then
+if [[ "$(docker images -q event-management-agent-base:${BASE_IMAGE_TAG} 2> /dev/null)" == "" ]]; then
   # do something
   msg "${RED}The base image does not exist, building\n${NOFORMAT}"
   cd base-image
   ./buildBaseImage.sh ${BASE_IMAGE_TAG}
   cd ${script_dir}
 else
-  msg "${GREEN}Base image found, using:${YELLOW} runtime-agent-base:${BASE_IMAGE_TAG}\n${NOFORMAT}"
+  msg "${GREEN}Base image found, using:${YELLOW} event-management-agent-base:${BASE_IMAGE_TAG}\n${NOFORMAT}"
 fi
 
-msg "${GREEN}Building image:${YELLOW} runtime-agent:${IMAGE_TAG}\n${NOFORMAT}"
+msg "${GREEN}Building image:${YELLOW} event-management-agent:${IMAGE_TAG}\n${NOFORMAT}"
 
-export BASE_IMAGE=runtime-agent-base:${BASE_IMAGE_TAG}
+export BASE_IMAGE=event-management-agent-base:${BASE_IMAGE_TAG}
 export GITHASH=$(git rev-parse HEAD)
 export GITBRANCH=$(git branch --show-current)
 export BUILD_TIMESTAMP=$(date -u)
-cp ../target/runtime-agent-0.0.1-SNAPSHOT.jar .
+cp ../target/event-management-agent-0.0.1-SNAPSHOT.jar .
 
 cd ..
-docker build docker -t runtime-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
-       --build-arg JAR_FILE=runtime-agent-0.0.1-SNAPSHOT.jar --build-arg GITHASH=${GITHASH}\
+docker build docker -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
+       --build-arg JAR_FILE=event-management-agent-0.0.1-SNAPSHOT.jar --build-arg GITHASH=${GITHASH}\
        --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}
 cd ${script_dir}
 
 # cleanup
-rm runtime-agent-0.0.1-SNAPSHOT.jar
+rm event-management-agent-0.0.1-SNAPSHOT.jar

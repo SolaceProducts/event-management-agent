@@ -17,10 +17,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
-    <artifactId>maas-runtime-agent-parent</artifactId>
+    <artifactId>maas-event-management-agent-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>maas-runtime-agent-parent</name>
-    <description>maas-runtime-agent-parent</description>
+    <name>maas-event-management-agent-parent</name>
+    <description>maas-event-management-agent-parent</description>
     <packaging>pom</packaging>
     <properties>
         <java.version>11</java.version>
@@ -371,7 +371,7 @@
                         <skipDockerInfo>true</skipDockerInfo>
                         <buildArgs>
                             <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
-                            <BASE_IMAGE>868978040651.dkr.ecr.us-east-1.amazonaws.com/runtime-agent-base:0.0.1</BASE_IMAGE>
+                            <BASE_IMAGE>868978040651.dkr.ecr.us-east-1.amazonaws.com/event-management-agent-base:0.0.1</BASE_IMAGE>
                             <MAAS_GITHASH>${dockerVersion}-${git.commit.id.abbrev}</MAAS_GITHASH>
                             <MAAS_BRANCH>${git.branch}</MAAS_BRANCH>
                             <MAAS_BUILD_TIMESTAMP>${dockerTimestamp}</MAAS_BUILD_TIMESTAMP>

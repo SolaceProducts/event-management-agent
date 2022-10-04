@@ -1,9 +1,9 @@
 springdoc:
-  packages-to-scan: com.solace.maas.ep.runtime.agent.scanManager.rest
+  packages-to-scan: com.solace.maas.ep.event.management.agent.scanManager.rest
   api-docs:
-    path: /docs/runtime-agent
+    path: /docs/event-management-agent
   swagger-ui:
-    path: runtime-agent/swagger-ui.html
+    path: /event-management-agent/swagger-ui.html
 
 server:
   port: 8180

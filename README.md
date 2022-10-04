@@ -82,31 +82,31 @@ eventPortal.gateway.messaging.connections.users.clientName= <your client name>
 
 #### Steps to build and run the service
 
-1. Clone the runtime-agent repository
+1. Clone the event-management-agent repository
 
 ```
-git clone git@github.com:SolaceLabs/runtime-agent.git
+git clone git@github.com:SolaceLabs/event-management-agent.git
 ```
 
 2. Install maven dependencies
 
 ```
-cd runtime-agent/service
+cd event-management-agent/service
 mvn clean install
 ```
 
 3. Start the Event Management Agent
 
 ```
-java -jar application/target/runtime-agent-0.0.1-SNAPSHOT.jar 
+java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
 ```
 
 Alternatively, to build and run the service in IDE
 
-1. Clone the runtime-agent repository
+1. Clone the event-management-agent repository
 
 ```
-git clone git@github.com:SolaceLabs/runtime-agent.git
+git clone git@github.com:SolaceLabs/event-management-agent.git
 ```
 
 2. The Event Management Agent uses H2 database by default. The H2 console is available at `http://localhost:8180/h2`.
@@ -144,10 +144,10 @@ spring.h2.console.path
         - ./my-datavolume:/var/lib/mysql 
      ```
 
-    2. Create the `runtime_agent` database
+    2. Create the `event-management-agent` database
 
     ```
-    create database if not exists runtime_agent;
+    create database if not exists event-management-agent;
     ```
 
     3. Create an active profile named `mysql-dev` in Spring Boot Run Configurations
@@ -161,7 +161,7 @@ spring.h2.console.path
     ```
     spring:
       datasource:
-        url: jdbc:mysql://localhost:3308/runtime_agent
+        url: jdbc:mysql://localhost:3308/event-management-agent
         username: root
         password: secret
         driver-class-name: com.mysql.jdbc.Driver
@@ -174,7 +174,7 @@ spring.h2.console.path
 5. Start the application by running this class in Intellij
 
 ```
-service/application/src/main/java/com/solace/maas/ep/runtime/agent/RuntimeApplication.java
+service/application/src/main/java/com/solace/maas/ep/event/management/agent/EMAApplication.java
 ```
 
 ## Broker Plugins
@@ -234,12 +234,12 @@ c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: solaceDefaultS
 ```
 
 4. View the Swagger documentation to learn about the available REST endpoints for the Event Management Agent. To access
-   the Swagger documentation, use the link `http://localhost:8180/runtime-agent/swagger-ui/index.html` (Note:
+   the Swagger documentation, use the link `http://localhost:8180/event-management-agent/swagger-ui/index.html` (Note:
    The Event Management Agent is under continuous development. Therefore, please check the Swagger documentation to make
    sure that you are using the recent endpoint schema).
 5. Initiate a scan against a messaging service by sending a POST request to the endpoint that triggers the data
-   collection `/api/v2/runtime/messagingServices/{messagingServiceId}/scan`. The request can be sent using either
-   Postman or a curl command.
+   collection `/api/v2/ema/messagingServices/{messagingServiceId}/scan`. The request can be sent using either Postman or
+   a curl command.
 6. Ensure that the `destinations` in the request body contains `FILE_WRITER`, i.e., `"destinations":["FILE_WRITER"]`,
    then send the request.
 7. Confirm that you receive a scan id, e.g., `3a41a0f5-cd85-455c-a863-9636f69dc7b2`
