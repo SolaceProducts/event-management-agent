@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.runtime.agent.plugin.config.EnableRtoCondition;
 import com.solace.maas.ep.runtime.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.runtime.agent.plugin.mop.MOPMessage;
-import com.solace.messaging.MessagingService;
 import com.solace.messaging.PubSubPlusClientException;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessage;
@@ -25,16 +24,13 @@ import java.util.Properties;
 public class SolacePublisher {
 
     private static final ObjectMapper mapper = new ObjectMapper();
-    private DirectMessagePublisher directMessagePublisher;
     private final OutboundMessageBuilder outboundMessageBuilder;
-    private final MessagingService messagingService;
+    private DirectMessagePublisher directMessagePublisher;
 
-    public SolacePublisher(DirectMessagePublisher directMessagePublisher,
-                           OutboundMessageBuilder outboundMessageBuilder,
-                           MessagingService messagingService) {
-        this.directMessagePublisher = directMessagePublisher;
+    public SolacePublisher(OutboundMessageBuilder outboundMessageBuilder,
+                           DirectMessagePublisher directMessagePublisher) {
         this.outboundMessageBuilder = outboundMessageBuilder;
-        this.messagingService = messagingService;
+        this.directMessagePublisher = directMessagePublisher;
     }
 
     public void publish(MOPMessage message, String topicString) {
