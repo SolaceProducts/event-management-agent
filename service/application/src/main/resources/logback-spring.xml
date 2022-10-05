@@ -28,7 +28,7 @@
             <appender name="Logger" class="ch.qos.logback.core.FileAppender">
                 <file>data_collection/logs/${SCAN_ID}.log</file>
                 <layout class="ch.qos.logback.classic.PatternLayout">
-                    <pattern>[%X{SCAN_ID}] ------ %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                    <pattern>[%X{SCAN_ID}] ------ %date [%level] [%thread] %logger{10} [%file:%line] %msg%n</pattern>
                 </layout>
             </appender>
         </sift>
