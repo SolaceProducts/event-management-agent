@@ -115,6 +115,7 @@ public class ScanService {
      * @return The id of the scan.
      */
     public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String groupId, String scanId) {
+        log.info("Starting single scan request {}.", scanId);
 
         ScanEntity savedScanEntity = null;
 
@@ -331,9 +332,9 @@ public class ScanService {
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
         }).whenComplete((exchange, exception) -> {
             if (exception != null) {
-                log.error("Exception occurred while executing route {} for scan {}.", route.getId(), scanId, exception);
+                log.error("Exception occurred while executing route {} for scan request: {}.", route.getId(), scanId, exception);
             } else {
-                log.debug("Successfully completed route {} for scan {}", route.getId(), scanId);
+                log.debug("Successfully completed route {} for scan request: {}", route.getId(), scanId);
             }
             routeService.stopRoute(route);
         });

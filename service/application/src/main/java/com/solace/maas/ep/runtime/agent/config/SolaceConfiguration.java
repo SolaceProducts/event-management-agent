@@ -2,27 +2,29 @@ package com.solace.maas.ep.runtime.agent.config;
 
 import com.solace.maas.ep.runtime.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.runtime.agent.messagingServices.RtoMessagingService;
+import com.solace.maas.ep.runtime.agent.plugin.config.EnableRtoCondition;
 import com.solace.maas.ep.runtime.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.runtime.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.runtime.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.runtime.agent.subscriber.SolaceSubscriber;
-import com.solace.maas.ep.runtime.agent.plugin.config.EnableRtoCondition;
-import com.solace.maas.ep.runtime.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.messaging.MessagingService;
+import com.solace.messaging.config.SolaceProperties;
 import com.solace.messaging.config.profile.ConfigurationProfile;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.solace.messaging.config.SolaceProperties;
 import org.springframework.context.annotation.Scope;
 
 import java.util.ArrayList;
 import java.util.Properties;
 
+@Slf4j
 @ExcludeFromJacocoGeneratedReport
 @Configuration
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
@@ -57,6 +59,8 @@ public class SolaceConfiguration {
     public MessagingService messagingService() {
         String clientName = "runtimeAgent-" + eventPortalProperties.getRuntimeAgentId();
         vmrConfiguration.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
+
+        log.info("Connecting to event portal using EMA client {}.", clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
                 .build()

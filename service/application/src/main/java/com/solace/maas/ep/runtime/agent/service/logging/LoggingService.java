@@ -1,9 +1,7 @@
 package com.solace.maas.ep.runtime.agent.service.logging;
 
-import com.solace.maas.ep.runtime.agent.logging.FileLoggerFactory;
 import com.solace.maas.ep.runtime.agent.processor.LoggingProcessor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,18 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.solace.maas.ep.runtime.agent.plugin.constants.RouteConstants.SCAN_ID;
-
 @Slf4j
 @Service
 public class LoggingService {
     private final Map<String, List<LoggingProcessor>> logStore = new HashMap<>();
-
-    private final FileLoggerFactory fileLoggerFactory;
-
-    public LoggingService(FileLoggerFactory fileLoggerFactory) {
-        this.fileLoggerFactory = fileLoggerFactory;
-    }
 
     public void addLoggingProcessor(String scanId, LoggingProcessor loggingProcessor) {
         if (logStore.containsKey(scanId)) {
@@ -50,16 +40,14 @@ public class LoggingService {
         return logStore.get(scanId);
     }
 
-    public void createScanFileLogger(String scanId) {
-        fileLoggerFactory.create();
+    public void addFileLoggingProcessor(String scanId) {
         LoggingProcessor loggingProcessor = new LoggingProcessor("FileAppender");
         addLoggingProcessor(scanId, loggingProcessor);
     }
 
     public void prepareLoggers(String scanId) {
         if (!hasLoggingProcessor(scanId)) {
-            MDC.put(SCAN_ID, scanId);
-            createScanFileLogger(scanId);
+            addFileLoggingProcessor(scanId);
         }
     }
 }

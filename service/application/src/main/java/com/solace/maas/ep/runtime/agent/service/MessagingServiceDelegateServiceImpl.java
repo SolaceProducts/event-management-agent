@@ -88,6 +88,8 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     @SuppressWarnings("unchecked")
     @Transactional
     public <T> T getMessagingServiceClient(String messagingServiceId) {
+        log.info("Retrieving connection details for messaging service {}.", messagingServiceId);
+
         MessagingServiceEntity messagingServiceEntity = getMessagingServiceById(messagingServiceId);
 
         ConnectionDetailsEntity connectionDetailsEntity = messagingServiceEntity
@@ -135,7 +137,8 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
 
             return messagingServiceClient;
         } else {
-            throw new RuntimeException("Placeholder Error.");
+            throw new RuntimeException(String.format(
+                    "Could not retrieve or create the messaging service client for %s.", messagingServiceId));
         }
     }
 

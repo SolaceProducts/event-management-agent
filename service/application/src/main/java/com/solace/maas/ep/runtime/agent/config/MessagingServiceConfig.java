@@ -28,13 +28,21 @@ import java.util.stream.Collectors;
 @Slf4j
 @Profile("!TEST")
 public class MessagingServiceConfig implements ApplicationRunner {
-    private List<MessagingServicePluginProperties> messagingServices;
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ClientConnectionDetails clientConnectionDetails;
+    private List<MessagingServicePluginProperties> messagingServices;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if (Objects.nonNull(messagingServices)) {
+
+            log.info(
+                    String.format("Creating messaging service(s): %s.",
+                            messagingServices.stream()
+                                    .map(MessagingServicePluginProperties::getName)
+                                    .collect(Collectors.joining(", ")))
+            );
+
             List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
                     .map(messagingService -> {
                         List<ConnectionDetailsEvent> connectionDetails = new ArrayList<>();
@@ -56,10 +64,12 @@ public class MessagingServiceConfig implements ApplicationRunner {
                     }).collect(Collectors.toUnmodifiableList());
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
-                    .forEach(messagingServiceEntity -> log.info("Created Messaging Service: {} {} {}",
-                            messagingServiceEntity.getId(), messagingServiceEntity.getName(),
-                            messagingServiceEntity.getMessagingServiceType()));
-
+                    .forEach(messagingServiceEntity ->
+                            log.info("Created {} Messaging Service with id: {} and name: {}.",
+                                    messagingServiceEntity.getMessagingServiceType(),
+                                    messagingServiceEntity.getId(), messagingServiceEntity.getName()));
+        } else {
+            log.info("No Messaging Service(s) created.");
         }
     }
 }
