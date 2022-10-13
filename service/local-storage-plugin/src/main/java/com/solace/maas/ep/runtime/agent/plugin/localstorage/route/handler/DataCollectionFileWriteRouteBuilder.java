@@ -65,10 +65,6 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
                 .end();
 
         from("seda:processEndOfScan")
-                .log(LoggingLevel.DEBUG, LoggerFactory.getLogger("SiftLogger"), "${body}")
-                .to("seda:finishUpTheScan");
-
-        from("seda:finishUpTheScan")
                 .process((Processor) scanCompleteProcessor);
 
     }

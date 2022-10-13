@@ -42,10 +42,14 @@ public class RuntimeControllerImpl implements RuntimeController {
             scanRequestBO.setMessagingServiceId(messagingServiceId);
             scanRequestBO.setScanId(UUID.randomUUID().toString());
 
-            String result = scanManager.scan(scanRequestBO);
+            log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
 
-            log.info("Successfully started the scan {}", result);
-            return ResponseEntity.ok().body(result);
+            String scanResult = scanManager.scan(scanRequestBO);
+
+            String message = String.format("started scan request %s.", scanResult);
+            log.info(message);
+
+            return ResponseEntity.ok().body(message);
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

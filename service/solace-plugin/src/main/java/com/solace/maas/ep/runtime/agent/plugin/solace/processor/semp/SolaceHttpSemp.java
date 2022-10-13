@@ -30,13 +30,12 @@ import java.util.function.Function;
 @Slf4j
 @Getter
 public class SolaceHttpSemp {
-    private final ObjectMapper objectMapper;
-    private final SempClient sempClient;
-    private final int SEMP_PAGE_SIZE = 100;
-
     private final static String GET_SYSTEM_INFORMATION = "/SEMP/v2/config/about/api";
     private final static String GET_QUEUES_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues";
     private final static String GET_TOPIC_SUBSCRIPTIONS_FOR_QUEUE_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues/{queuename}/subscriptions";
+    private final ObjectMapper objectMapper;
+    private final SempClient sempClient;
+    private final int SEMP_PAGE_SIZE = 100;
 
     public SolaceHttpSemp(SempClient sempClient) {
         this.sempClient = sempClient;
@@ -240,6 +239,6 @@ public class SolaceHttpSemp {
         return "Basic " +
                 Base64.getEncoder()
                         .encodeToString((sempClient.getUsername() + ':' + sempClient.getPassword())
-                        .getBytes(StandardCharsets.UTF_8));
+                                .getBytes(StandardCharsets.UTF_8));
     }
 }

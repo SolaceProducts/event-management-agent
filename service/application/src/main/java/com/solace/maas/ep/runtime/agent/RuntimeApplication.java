@@ -31,7 +31,7 @@ public class RuntimeApplication {
     }
 
     public static void main(String[] args) throws Exception {
-        log.info(Markers.appendEntries(startupStartedMarker), "Starting runtime-agent --> " + Arrays.toString(args));
+        log.info(Markers.appendEntries(startupStartedMarker), "Starting runtime-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
 
@@ -41,7 +41,7 @@ public class RuntimeApplication {
                 .properties(getDefault())
                 .run(args);
 
-        log.info(Markers.appendEntries(startupCompletedMarker), "Started runtime-agent --> " + Arrays.toString(args));
+        log.info(Markers.appendEntries(startupCompletedMarker), "Started runtime-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
     }
 
     public static Properties getDefault() {

@@ -62,6 +62,7 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
                 .destinations(scanRequestDestinations)
                 .build();
 
+        log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
         scanManager.scan(scanRequestBO);
     }
 }
