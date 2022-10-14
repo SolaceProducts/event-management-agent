@@ -6,13 +6,13 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>RuntimeAgent.log</file>
+        <file>EMA.log</file>
         <encoder>
             <pattern>%d [%thread] %-5level %-50logger{40} : %msg%n</pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>RuntimeAgent-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>EMA-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>1MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>
@@ -33,7 +33,7 @@
             </appender>
         </sift>
     </appender>
-    <appender name="StreamingAppender" class="com.solace.maas.ep.runtime.agent.logging.StreamingAppender"/>
+    <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
 
     <springProfile name="default,mysql,mysql-dev,DEV,TEST">
         <root level="INFO">

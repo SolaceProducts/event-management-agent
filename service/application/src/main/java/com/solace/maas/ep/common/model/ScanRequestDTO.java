@@ -2,7 +2,7 @@ package com.solace.maas.ep.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.solace.maas.ep.runtime.agent.model.rest.BaseDTO;
+import com.solace.maas.ep.event.management.agent.model.rest.BaseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -78,7 +78,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.solace.maas.ep.runtime.agent.plugin.localstorage.LocalStorageApplication</mainClass>
+                    <mainClass>com.solace.maas.ep.event.management.agent.plugin.localstorage.LocalStorageApplication</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -94,7 +94,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.solace.maas.ep.runtime.agent.plugin.localstorage.LocalStorageApplication</mainClass>
+                                    <mainClass>com.solace.maas.ep.event.management.agent.plugin.localstorage.LocalStorageApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

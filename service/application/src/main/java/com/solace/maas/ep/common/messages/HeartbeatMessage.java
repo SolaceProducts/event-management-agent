@@ -1,9 +1,9 @@
 package com.solace.maas.ep.common.messages;
 
-import com.solace.maas.ep.runtime.agent.plugin.mop.MOPMessage;
-import com.solace.maas.ep.runtime.agent.plugin.mop.MOPMessageType;
-import com.solace.maas.ep.runtime.agent.plugin.mop.MOPProtocol;
-import com.solace.maas.ep.runtime.agent.plugin.mop.MOPUHFlag;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import lombok.Data;
 
 @Data
