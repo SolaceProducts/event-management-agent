@@ -31,7 +31,7 @@ public class EMAApplication {
     }
 
     public static void main(String[] args) throws Exception {
-        log.info(Markers.appendEntries(startupStartedMarker), "Starting event-management-agent --> " + Arrays.toString(args));
+        log.info(Markers.appendEntries(startupStartedMarker), "Starting event-management-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
 
@@ -41,7 +41,7 @@ public class EMAApplication {
                 .properties(getDefault())
                 .run(args);
 
-        log.info(Markers.appendEntries(startupCompletedMarker), "Started event-management-agent --> " + Arrays.toString(args));
+        log.info(Markers.appendEntries(startupCompletedMarker), "Started event-management-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
     }
 
     public static Properties getDefault() {

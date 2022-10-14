@@ -4,7 +4,6 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.common.messages.VmrProcessorMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
-import com.solace.messaging.MessagingService;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessage;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
@@ -35,15 +34,14 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 public class VmrProcessorTests {
 
-    @Autowired
-    private CamelContext camelContext;
-
     @Mock
     SolacePublisher solacePublisher;
 
     @InjectMocks
     VmrProcessor vmrProcessor;
 
+    @Autowired
+    private CamelContext camelContext;
 
     @SneakyThrows
     @Test
@@ -51,9 +49,8 @@ public class VmrProcessorTests {
         DirectMessagePublisher directMessagePublisher = mock(DirectMessagePublisher.class);
         OutboundMessageBuilder outboundMessageBuilder = mock(OutboundMessageBuilder.class);
         OutboundMessage outboundMessage = mock(OutboundMessage.class);
-        MessagingService messagingService = mock(MessagingService.class);
 
-        SolacePublisher solacePublisher = new SolacePublisher(directMessagePublisher, outboundMessageBuilder, messagingService);
+        SolacePublisher solacePublisher = new SolacePublisher(outboundMessageBuilder, directMessagePublisher);
         VmrProcessorMessage message = new VmrProcessorMessage("data");
         when(outboundMessageBuilder.fromProperties(any())).thenReturn(outboundMessageBuilder);
         when(outboundMessageBuilder.build(anyString()))

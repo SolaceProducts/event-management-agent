@@ -1,14 +1,13 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
-import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
-import com.solace.maas.ep.event.management.agent.service.ScanService;
-import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
+import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +24,12 @@ public class ScanManager {
 
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
-    private final LoggingService loggingService;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                       ScanService scanService, LoggingService loggingService) {
+                       ScanService scanService) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
-        this.loggingService = loggingService;
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -75,8 +72,6 @@ public class ScanManager {
                                 brokerScanType, messagingServiceId)
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
-
-        loggingService.prepareLoggers(scanId);
 
         return scanService.singleScan(routes, routes.size(), groupId, scanId);
     }

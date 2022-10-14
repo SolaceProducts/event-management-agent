@@ -1,13 +1,11 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.logging.FileLoggerFactory;
 import com.solace.maas.ep.event.management.agent.processor.LoggingProcessor;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -17,9 +15,6 @@ import static org.mockito.Mockito.mock;
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class LoggingServiceTests {
-
-    @Mock
-    FileLoggerFactory fileLoggerFactory;
 
     @InjectMocks
     LoggingService loggingService;

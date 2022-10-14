@@ -1,14 +1,12 @@
 package com.solace.maas.ep.event.management.agent.plugin.localstorage.route.handler;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.processor.output.file.DataCollectionFileWriteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.ScanCompleteProcessor;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,10 +63,6 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
                 .end();
 
         from("seda:processEndOfScan")
-                .log(LoggingLevel.DEBUG, LoggerFactory.getLogger("SiftLogger"), "${body}")
-                .to("seda:finishUpTheScan");
-
-        from("seda:finishUpTheScan")
                 .process((Processor) scanCompleteProcessor);
 
     }

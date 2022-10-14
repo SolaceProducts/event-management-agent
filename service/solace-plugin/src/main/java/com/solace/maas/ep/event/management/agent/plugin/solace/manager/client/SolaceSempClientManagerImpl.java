@@ -7,10 +7,20 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriBuilder;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
+@Slf4j
 @ExcludeFromJacocoGeneratedReport
 @Data
 public class SolaceSempClientManagerImpl implements MessagingServiceClientManager<SolaceHttpSemp> {
@@ -20,6 +30,9 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
 
     @Override
     public SolaceHttpSemp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
+        log.info("Creating Solace SEMP client for messaging service {}.",
+                connectionDetailsEvent.getMessagingServiceId());
+
         AuthenticationDetailsEvent authenticationDetailsEvent =
                 connectionDetailsEvent.getAuthenticationDetails()
                         .stream()
@@ -35,6 +48,7 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                 .connectionUrl(connectionDetailsEvent.getConnectionUrl())
                 .build();
 
+        log.info("Solace SEMP client created for {}.", connectionDetailsEvent.getMessagingServiceId());
         return new SolaceHttpSemp(sempClient);
     }
 }
