@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
@@ -21,22 +22,27 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
 
     protected final MDCProcessor mdcProcessor;
 
+    protected final RouteCompleteProcessor routeCompleteProcessor;
+
     /**
-     * @param processor           The Processor handling the Data Collection for a Scan.
-     * @param routeId             The Unique Identifier for this Route.
+     * @param processor              The Processor handling the Data Collection for a Scan.
+     * @param routeId                The Unique Identifier for this Route.
      * @param routeType
-     * @param routeManager        The list of Route Destinations the Data Collection events will be streamed to.
+     * @param routeManager           The list of Route Destinations the Data Collection events will be streamed to.
      * @param aggregationStrategy
      * @param aggregationSize
-     * @param mdcProcessor        The Processor handling the MDC data for logging.
+     * @param mdcProcessor           The Processor handling the MDC data for logging.
+     * @param routeCompleteProcessor The Processor handling route completion logic to track scan status.
      */
     public DataAggregationRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager,
-                                       AggregationStrategy aggregationStrategy, Integer aggregationSize, MDCProcessor mdcProcessor) {
-        super(processor, routeId, routeType, routeManager, mdcProcessor);
+                                       AggregationStrategy aggregationStrategy, Integer aggregationSize,
+                                       MDCProcessor mdcProcessor, RouteCompleteProcessor routeCompleteProcessor) {
+        super(processor, routeId, routeType, routeManager, mdcProcessor, routeCompleteProcessor);
 
         this.aggregationStrategy = aggregationStrategy;
         this.aggregationSize = aggregationSize;
         this.mdcProcessor = mdcProcessor;
+        this.routeCompleteProcessor = routeCompleteProcessor;
     }
 
     /**
@@ -100,7 +106,18 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .log("destinations ${body}")
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
-                .shareUnitOfWork();
+                .shareUnitOfWork()
+                .to("seda:endOf" + routeId);
+
+        from("seda:endOf" + routeId + "?blockWhenFull=true&size=100")
+                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .to("seda:processEndOf" + routeId)
+                .endChoice()
+                .end();
+
+        from("seda:processEndOf" + routeId + "?blockWhenFull=true&size=100")
+                .process(routeCompleteProcessor)
+                .to("seda:finishUp" + routeId);
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);

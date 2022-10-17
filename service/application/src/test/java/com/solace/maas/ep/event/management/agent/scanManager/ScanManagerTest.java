@@ -42,7 +42,7 @@ public class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), 4,"groupId", "scanId")).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), "groupId", "scanId")).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
                 new ScanRequestBO("id", "scanId", List.of("topics"), List.of());

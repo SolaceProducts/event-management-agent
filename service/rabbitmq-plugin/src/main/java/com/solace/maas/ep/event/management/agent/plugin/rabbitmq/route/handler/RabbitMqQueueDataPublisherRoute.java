@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.rabbitmq.route.handler;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.rabbitmq.processor.queue.RabbitMqQueueProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.rabbitmq.route.enumeration.RabbitMqRouteId;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RabbitMqQueueDataPublisherRoute extends DataPublisherRouteBuilder {
-    public RabbitMqQueueDataPublisherRoute(RabbitMqQueueProcessor processor, RouteManager routeManager, MDCProcessor mdcProcessor) {
-        super(processor, RabbitMqRouteId.RABBIT_MQ_QUEUE.label, RabbitMqRouteType.RABBIT_MQ_QUEUE.label, routeManager, mdcProcessor);
+    public RabbitMqQueueDataPublisherRoute(RabbitMqQueueProcessor processor, RouteManager routeManager,
+                                           MDCProcessor mdcProcessor, RouteCompleteProcessor routeCompleteProcessor) {
+        super(processor, RabbitMqRouteId.RABBIT_MQ_QUEUE.label, RabbitMqRouteType.RABBIT_MQ_QUEUE.label,
+                routeManager, mdcProcessor, routeCompleteProcessor);
     }
 }

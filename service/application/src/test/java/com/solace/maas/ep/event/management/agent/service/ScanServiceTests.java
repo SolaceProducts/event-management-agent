@@ -3,10 +3,10 @@ package com.solace.maas.ep.event.management.agent.service;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.logging.StreamingAppender;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
+import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
-import com.solace.maas.ep.event.management.agent.service.lifecycle.ScanLifecycleService;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
@@ -35,9 +35,6 @@ public class ScanServiceTests {
     LoggingService loggingService;
 
     @Mock
-    ScanLifecycleService scanLifecycleService;
-
-    @Mock
     StreamingAppender streamingAppender;
 
     @Mock
@@ -51,6 +48,9 @@ public class ScanServiceTests {
 
     @Mock
     private ScanRouteService scanRouteService;
+
+    @Mock
+    private RouteCompleteProcessorImpl routeCompleteProcessor;
 
     @InjectMocks
     private ScanService scanService;
@@ -143,7 +143,7 @@ public class ScanServiceTests {
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
 
-        scanService.singleScan(List.of(routeBundle), 2, "groupId", "scanId");
+        scanService.singleScan(List.of(routeBundle), "groupId", "scanId");
 
         assertThatNoException();
     }

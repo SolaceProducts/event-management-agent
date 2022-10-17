@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
 import lombok.AllArgsConstructor;
@@ -43,14 +44,6 @@ public class DataPublisherRouteBuilderTests {
     @EndpointInject("mock:direct:result")
     private MockEndpoint mockResult;
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Data
-    @Builder
-    static class TestEvent {
-        private String data;
-    }
-
     public static List<TestEvent> generateTestData() {
         return List.of(
                 TestEvent.builder()
@@ -63,21 +56,6 @@ public class DataPublisherRouteBuilderTests {
                         .data("end")
                         .build()
         );
-    }
-
-    @Configuration
-    static class TestConfig {
-        @Bean
-        @Primary
-        public static RoutesBuilder createRouteBuilder() {
-            MDCProcessor mdcProcessor = mock(MDCProcessor.class);
-
-            return new DataPublisherRouteBuilder(exchange -> {
-                List<TestEvent> testData = generateTestData();
-
-                exchange.getIn().setBody(testData);
-            }, "dataPublisherRoute", "topicListing", null, mdcProcessor);
-        }
     }
 
     @Test
@@ -93,5 +71,29 @@ public class DataPublisherRouteBuilderTests {
         template.sendBody("direct:dataPublisherRoute", null);
 
         mockResult.assertIsSatisfied();
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Builder
+    static class TestEvent {
+        private String data;
+    }
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public static RoutesBuilder createRouteBuilder() {
+            MDCProcessor mdcProcessor = mock(MDCProcessor.class);
+            RouteCompleteProcessor routeCompleteProcessor = mock(RouteCompleteProcessor.class);
+
+            return new DataPublisherRouteBuilder(exchange -> {
+                List<TestEvent> testData = generateTestData();
+
+                exchange.getIn().setBody(testData);
+            }, "dataPublisherRoute", "topicListing", null, mdcProcessor, routeCompleteProcessor);
+        }
     }
 }

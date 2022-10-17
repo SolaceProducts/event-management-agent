@@ -1,14 +1,15 @@
 package com.solace.maas.ep.event.management.agent.service;
 
+import com.solace.maas.ep.common.model.ScanStatus;
+import com.solace.maas.ep.common.model.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
+import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanLifecycleEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
-import com.solace.maas.ep.event.management.agent.service.lifecycle.ScanLifecycleService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -40,16 +41,16 @@ public class ScanService {
 
     private final ProducerTemplate producerTemplate;
 
-    private final ScanLifecycleService scanLifecycleService;
+    private final RouteCompleteProcessorImpl routeCompleteProcessor;
 
     public ScanService(ScanRepository repository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
-                       ScanLifecycleService scanLifecycleService) {
+                       RouteCompleteProcessorImpl routeCompleteProcessor) {
         this.repository = repository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
-        this.scanLifecycleService = scanLifecycleService;
+        this.routeCompleteProcessor = routeCompleteProcessor;
     }
 
     /**
@@ -114,10 +115,16 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String groupId, String scanId) {
+    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId) {
         log.info("Starting single scan request {}.", scanId);
 
         ScanEntity savedScanEntity = null;
+
+        List<String> scanTypes = parseScanTypes(routeBundles, new ArrayList<>());
+
+        routeCompleteProcessor.sendScanStatus(scanId, scanTypes, groupId,
+                routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+                ScanStatus.IN_PROGRESS, ScanStatusType.OVERALL);
 
         for (RouteBundle routeBundle : routeBundles) {
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
@@ -130,12 +137,6 @@ public class ScanService {
         }
 
         if (savedScanEntity != null) {
-            ScanLifecycleEntity scannedLifecycleEntity = ScanLifecycleEntity.builder()
-                    .scanId(scanId)
-                    .numExpectedCompletionMessages(numExpectedCompletionMessages)
-                    .build();
-
-            scanLifecycleService.addScanLifecycleEntity(scannedLifecycleEntity);
             return scanId;
         }
         log.error("Unable to process scan request");
@@ -348,5 +349,15 @@ public class ScanService {
      */
     protected ScanEntity save(ScanEntity scanEntity) {
         return repository.save(scanEntity);
+    }
+
+    protected List<String> parseScanTypes(List<RouteBundle> routeBundles, List<String> scanTypes) {
+        for (RouteBundle routeBundle : routeBundles) {
+            scanTypes.add(routeBundle.getRouteId());
+            if (routeBundle.getRecipients() != null && !routeBundle.getRecipients().isEmpty()) {
+                parseScanTypes(routeBundle.getRecipients(), scanTypes);
+            }
+        }
+        return scanTypes;
     }
 }

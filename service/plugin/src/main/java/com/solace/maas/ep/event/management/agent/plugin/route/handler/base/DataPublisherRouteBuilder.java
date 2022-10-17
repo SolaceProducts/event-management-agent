@@ -1,9 +1,10 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
-import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -30,15 +31,19 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
 
     protected final MDCProcessor mdcProcessor;
 
+    protected final RouteCompleteProcessor routeCompleteProcessor;
+
     /**
-     * @param processor    The Processor handling the Data Collection for a Scan.
-     * @param routeId      The Unique Identifier for this Route.
-     * @param routeManager The list of Route Destinations the Data Collection events will be streamed to.
-     * @param mdcProcessor The Processor handling the MDC data for logging.
+     * @param processor              The Processor handling the Data Collection for a Scan.
+     * @param routeId                The Unique Identifier for this Route.
+     * @param routeManager           The list of Route Destinations the Data Collection events will be streamed to.
+     * @param mdcProcessor           The Processor handling the MDC data for logging.
+     * @param routeCompleteProcessor The Processor handling route completion logic to track scan status.
      */
     public DataPublisherRouteBuilder(Processor processor, String routeId,
                                      String routeType, RouteManager routeManager,
-                                     MDCProcessor mdcProcessor) {
+                                     MDCProcessor mdcProcessor,
+                                     RouteCompleteProcessor routeCompleteProcessor) {
         super();
 
         this.processor = processor;
@@ -46,6 +51,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
         this.routeType = routeType;
         this.routeManager = routeManager;
         this.mdcProcessor = mdcProcessor;
+        this.routeCompleteProcessor = routeCompleteProcessor;
     }
 
     /**
@@ -84,7 +90,18 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .end()
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
-                .shareUnitOfWork();
+                .shareUnitOfWork()
+                .to("seda:endOf" + routeId);
+
+        from("seda:endOf" + routeId + "?blockWhenFull=true&size=100")
+                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .to("seda:processEndOf" + routeId)
+                .endChoice()
+                .end();
+
+        from("seda:processEndOf" + routeId + "?blockWhenFull=true&size=100")
+                .process(routeCompleteProcessor)
+                .to("seda:finishUp" + routeId);
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
