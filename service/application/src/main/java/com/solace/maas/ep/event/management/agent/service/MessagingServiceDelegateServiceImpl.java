@@ -2,7 +2,7 @@ package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
