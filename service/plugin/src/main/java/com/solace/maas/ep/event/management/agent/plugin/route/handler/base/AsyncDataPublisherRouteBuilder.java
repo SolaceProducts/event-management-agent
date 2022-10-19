@@ -43,8 +43,17 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
                 .to("reactive-streams:asyncProcessing");
 
         from("reactive-streams:asyncEvent")
+                .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
+                .setHeader("RECIPIENTS", method(this, "getRecipients(${header."
+                        + RouteConstants.SCAN_ID + "})"))
+                .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
+                        + RouteConstants.SCAN_ID + "})"))
                 .process(processor)
-                .log("${body}");
+                .recipientList().header("RECIPIENTS").delimiter(";")
+                .shareUnitOfWork()
+                .split(body()).streaming().shareUnitOfWork()
+                .recipientList().header("DESTINATIONS").delimiter(";")
+                .shareUnitOfWork();
 
         Publisher<Exchange> exchanges = camel.fromStream("asyncProcessing");
 
