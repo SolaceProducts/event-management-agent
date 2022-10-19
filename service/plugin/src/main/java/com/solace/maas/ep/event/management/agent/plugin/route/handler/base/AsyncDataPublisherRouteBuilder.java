@@ -7,6 +7,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreamsService;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -52,6 +53,7 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
                 .recipientList().header("RECIPIENTS").delimiter(";")
                 .shareUnitOfWork()
                 .split(body()).streaming().shareUnitOfWork()
+                .marshal().json(JsonLibrary.Jackson)
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork();
 

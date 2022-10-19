@@ -1,13 +1,18 @@
 package com.solace.maas.ep.event.management.agent.plugin.async.processor;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
-public class AsyncSubscriberProcessor implements Processor {
+public class AsyncSubscriberProcessor extends ResultProcessorImpl<List<TestEvent>, Long> {
     @Override
-    public void process(Exchange exchange) throws Exception {
-        System.out.println("PROCESSING ASYNC: " + exchange.getIn().getBody());
+    public List<TestEvent> handleEvent(Map<String, Object> properties, Long body) throws Exception {
+        return List.of(TestEvent.builder()
+                .data("data_" + body)
+                .count(body)
+                .build());
     }
 }
