@@ -22,7 +22,7 @@ public class ScanStatusMessage extends MOPMessage {
 
     String description;
 
-    List<String> scanTypes;
+    private List<String> scanTypes;
 
     public ScanStatusMessage(String orgId, String scanId, String status, String description, List<String> scanTypes) {
         super();

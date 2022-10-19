@@ -1,4 +1,4 @@
-package com.solace.maas.ep.common.model;
+package com.solace.maas.ep.event.management.agent.plugin.constants;
 
 public enum ScanStatus {
     COMPLETE,

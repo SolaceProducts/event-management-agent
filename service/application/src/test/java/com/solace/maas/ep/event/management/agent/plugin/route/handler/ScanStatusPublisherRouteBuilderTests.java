@@ -1,12 +1,14 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
-import com.solace.maas.ep.common.model.ScanStatus;
-import com.solace.maas.ep.common.model.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
+import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanStatusPublisherRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -79,10 +81,11 @@ public class ScanStatusPublisherRouteBuilderTests {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(RouteConstants.SCAN_TYPES, List.of("queueListing"));
 
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
+
+        exchange.getIn().setBody(List.of("queueListing"));
 
         AdviceWith.adviceWith(camelContext, "scanStatusPublisher",
                 route -> {
@@ -105,7 +108,8 @@ public class ScanStatusPublisherRouteBuilderTests {
 
             ScanStatusPublisher scanStatusPublisher = new ScanStatusPublisher(solacePublisher);
             ScanStatusProcessor scanStatusProcessor = new ScanStatusProcessor(scanStatusPublisher, eventPortalProperties);
-            return new ScanStatusPublisherRouteBuilder(scanStatusProcessor);
+            RouteCompleteProcessorImpl routeCompleteProcessor = new RouteCompleteProcessorImpl(mock(ScanStatusRepository.class));
+            return new ScanStatusPublisherRouteBuilder(scanStatusProcessor, routeCompleteProcessor);
         }
     }
 }

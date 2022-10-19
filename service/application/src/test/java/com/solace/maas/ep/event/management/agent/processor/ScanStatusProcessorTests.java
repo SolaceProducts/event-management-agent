@@ -1,10 +1,10 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
-import com.solace.maas.ep.common.model.ScanStatus;
-import com.solace.maas.ep.common.model.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -46,9 +46,10 @@ public class ScanStatusProcessorTests {
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(RouteConstants.SCAN_TYPES, List.of("queueListing"));
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
+
+        exchange.getIn().setBody(List.of("queueListing"));
 
         scanStatusProcessor.process(exchange);
 

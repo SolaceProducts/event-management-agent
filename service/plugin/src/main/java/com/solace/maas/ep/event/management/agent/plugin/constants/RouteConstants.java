@@ -11,8 +11,6 @@ public class RouteConstants {
 
     public static final String SCAN_TYPE = "SCAN_TYPE";
 
-    public static final String SCAN_TYPES = "SCAN_TYPES";
-
     public static final String SCAN_STATUS = "SCAN_STATUS";
 
     public static final String SCAN_STATUS_TYPE = "SCAN_STATUS_TYPE";

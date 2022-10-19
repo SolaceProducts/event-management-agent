@@ -1,8 +1,9 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
@@ -31,19 +32,15 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
 
     protected final MDCProcessor mdcProcessor;
 
-    protected final RouteCompleteProcessor routeCompleteProcessor;
-
     /**
-     * @param processor              The Processor handling the Data Collection for a Scan.
-     * @param routeId                The Unique Identifier for this Route.
-     * @param routeManager           The list of Route Destinations the Data Collection events will be streamed to.
-     * @param mdcProcessor           The Processor handling the MDC data for logging.
-     * @param routeCompleteProcessor The Processor handling route completion logic to track scan status.
+     * @param processor    The Processor handling the Data Collection for a Scan.
+     * @param routeId      The Unique Identifier for this Route.
+     * @param routeManager The list of Route Destinations the Data Collection events will be streamed to.
+     * @param mdcProcessor The Processor handling the MDC data for logging.
      */
     public DataPublisherRouteBuilder(Processor processor, String routeId,
                                      String routeType, RouteManager routeManager,
-                                     MDCProcessor mdcProcessor,
-                                     RouteCompleteProcessor routeCompleteProcessor) {
+                                     MDCProcessor mdcProcessor) {
         super();
 
         this.processor = processor;
@@ -51,7 +48,6 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
         this.routeType = routeType;
         this.routeManager = routeManager;
         this.mdcProcessor = mdcProcessor;
-        this.routeCompleteProcessor = routeCompleteProcessor;
     }
 
     /**
@@ -73,6 +69,9 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
+                .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
+                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .to("seda:scanStatusPublisher")
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .process(processor)
@@ -91,17 +90,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork()
-                .to("seda:endOf" + routeId);
-
-        from("seda:endOf" + routeId + "?blockWhenFull=true&size=100")
-                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
-                .to("seda:processEndOf" + routeId)
-                .endChoice()
-                .end();
-
-        from("seda:processEndOf" + routeId + "?blockWhenFull=true&size=100")
-                .process(routeCompleteProcessor)
-                .to("seda:finishUp" + routeId);
+                .to("seda:processScanStatus");
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);

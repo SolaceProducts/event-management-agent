@@ -2,10 +2,10 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
 import com.solace.maas.ep.common.messages.ScanStatusMessage;
-import com.solace.maas.ep.common.model.ScanStatus;
-import com.solace.maas.ep.common.model.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
@@ -50,7 +50,7 @@ public class ScanStatusProcessor implements Processor {
         ScanStatusType statusType = (ScanStatusType) properties.get(RouteConstants.SCAN_STATUS_TYPE);
 
         if (statusType == ScanStatusType.OVERALL) {
-            List<String> scanTypes = (List<String>) properties.get(RouteConstants.SCAN_TYPES);
+            List<String> scanTypes = (List<String>) exchange.getIn().getBody();
 
             topicDetails.put("orgId", orgId);
             topicDetails.put("runtimeAgentId", runtimeAgentId);
