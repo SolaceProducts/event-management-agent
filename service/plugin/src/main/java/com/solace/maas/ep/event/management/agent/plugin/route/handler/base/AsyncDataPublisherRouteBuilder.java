@@ -39,17 +39,19 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
         CamelReactiveStreamsService camel = CamelReactiveStreams.get(getContext());
 
-        from("seda:asyncSubscriber?blockWhenFull=true&size=1000000")
+        from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 .routeId(routeId)
-                .to("reactive-streams:asyncProcessing");
+                .setHeader(RouteConstants.ROUTE_ID, constant(routeId))
+                .to("reactive-streams:asyncProcessing_" + routeId);
 
-        from("reactive-streams:asyncEvent")
+        from("reactive-streams:asyncEvent_" + routeId)
                 .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
                 .setHeader("RECIPIENTS", method(this, "getRecipients(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .process(processor)
+                .log("${body}")
                 .recipientList().header("RECIPIENTS").delimiter(";")
                 .shareUnitOfWork()
                 .split(body()).streaming().shareUnitOfWork()
@@ -57,7 +59,7 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork();
 
-        Publisher<Exchange> exchanges = camel.fromStream("asyncProcessing");
+        Publisher<Exchange> exchanges = camel.fromStream("asyncProcessing_" + routeId);
 
         Flux.from(exchanges)
                 .publishOn(Schedulers.boundedElastic())
