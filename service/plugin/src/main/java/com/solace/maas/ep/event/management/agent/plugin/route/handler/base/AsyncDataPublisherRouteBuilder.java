@@ -41,7 +41,6 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
         from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 .routeId(routeId)
-                .setHeader(RouteConstants.ROUTE_ID, constant(routeId))
                 .to("reactive-streams:asyncProcessing_" + routeId);
 
         from("reactive-streams:asyncEvent_" + routeId)

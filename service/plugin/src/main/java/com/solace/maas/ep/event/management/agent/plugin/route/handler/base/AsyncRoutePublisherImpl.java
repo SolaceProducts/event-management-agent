@@ -28,7 +28,7 @@ public abstract class AsyncRoutePublisherImpl implements AsyncRoutePublisher {
     }
 
     public Publisher<Exchange> sendMesage(Object body, Exchange exchange) {
-        String routeId = exchange.getIn().getHeader(RouteConstants.ROUTE_ID, String.class);
+        String routeId = exchange.getFromRouteId();
         exchange.getIn().setBody(body);
         return camel.toStream("asyncEvent_" + routeId, exchange);
     }

@@ -14,6 +14,4 @@ public class RouteConstants {
     public static final String AGGREGATION_ID = "AGGREGATION_ID";
 
     public static final String MESSAGING_SERVICE_ID = "MESSAGING_SERVICE_ID";
-
-    public static final String ROUTE_ID = "ROUTE_ID";
 }
