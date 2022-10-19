@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.service;
 
+import com.solace.maas.ep.event.management.agent.async.manager.AsyncProcessManager;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AsyncWrapper;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.AsyncManager;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.AsyncScanProcessEntity;
@@ -7,26 +8,23 @@ import com.solace.maas.ep.event.management.agent.repository.scan.AsyncScanProces
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AsyncStorageService implements AsyncManager {
     private final AsyncScanProcessRepository repository;
 
-    private final Map<String, AsyncWrapper> asyncWrapperMap;
+    private final AsyncProcessManager asyncProcessManager;
 
     @Autowired
-    public AsyncStorageService(AsyncScanProcessRepository repository) {
+    public AsyncStorageService(AsyncScanProcessRepository repository, AsyncProcessManager asyncProcessManager) {
         this.repository = repository;
-        this.asyncWrapperMap = new ConcurrentHashMap<>();
+        this.asyncProcessManager = asyncProcessManager;
     }
 
     @Override
     public void storeAsync(AsyncWrapper wrapper, String scanId, String scanType) {
-        asyncWrapperMap.put(scanId + "_" + scanType, wrapper);
+        asyncProcessManager.addAsyncProcess(scanId + "_" + scanType, wrapper);
 
         repository.save(AsyncScanProcessEntity.builder()
                 .id(UUID.randomUUID().toString())
@@ -38,17 +36,13 @@ public class AsyncStorageService implements AsyncManager {
 
     @Override
     public void stopAsync(String scanId, String scanType) {
-        AsyncWrapper asyncWrapper = asyncWrapperMap.remove(scanId + "_" + scanType);
+        asyncProcessManager.terminate(scanId + "_" + scanType);
 
-        if(Objects.nonNull(asyncWrapper)) {
-            asyncWrapper.terminate();
+        repository.findAsyncScanProcessEntityByScanIdAndScanType(scanId, scanType)
+                .ifPresent(asyncScanProcessEntity -> {
+                    asyncScanProcessEntity.setActive(false);
 
-            repository.findAsyncScanProcessEntityByScanIdAndScanType(scanId, scanType)
-                    .ifPresent(asyncScanProcessEntity -> {
-                        asyncScanProcessEntity.setActive(false);
-
-                        repository.save(asyncScanProcessEntity);
-                    });
-        }
+                    repository.save(asyncScanProcessEntity);
+                });
     }
 }
