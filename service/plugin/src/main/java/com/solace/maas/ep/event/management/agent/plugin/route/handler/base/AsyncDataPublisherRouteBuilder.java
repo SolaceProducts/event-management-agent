@@ -50,7 +50,6 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .process(processor)
-                .log("${body}")
                 .recipientList().header("RECIPIENTS").delimiter(";")
                 .shareUnitOfWork()
                 .split(body()).streaming().shareUnitOfWork()
