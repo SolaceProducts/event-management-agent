@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
@@ -43,9 +44,9 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
         from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 .routeId(routeId)
-                .log("EXECUTION TIMER: ${header.EXECUTION_TIMER}")
+                .log("EXECUTION TIMER: ${header" + SchedulerConstants.SCHEDULER_TERMINATION_TIMER + "}")
                 .choice()
-                .when(simple("${header.EXECUTION_TIMER} == true"))
+                .when(simple("${header." + SchedulerConstants.SCHEDULER_TERMINATION_TIMER + "} == true"))
                 .setBody(exchange -> {
                     String scanId = exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class);
                     String scanType = exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class);

@@ -1,6 +1,8 @@
 package com.solace.maas.ep.event.management.agent.route.scheduler;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -10,24 +12,29 @@ public class SchedulerRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
         from("seda://jobScheduler")
                 .choice()
-                .when(simple("${header.SCHEDULER_TYPE} == 'CRON'"))
+                .when(simple("${header." + SchedulerConstants.SCHEDULER_TYPE + "} == '" + SchedulerType.CRON.name() + "'"))
                 .bean(this, "createCronRoute(${header." + RouteConstants.SCHEDULE_ID + "}," +
-                        "${header.CRON_EXPRESSION}, ${header.DESTINATION}, ${body})")
+                        "${header." + SchedulerConstants.CRON_EXPRESSION + "}, ${header." +
+                        SchedulerConstants.SCHEDULER_DESTINATION + "}, ${body})")
                 .otherwise()
                 .bean(this, "createIntervalRoute(${header." + RouteConstants.SCHEDULE_ID + "}," +
-                        "${header.DESTINATION}, ${header.SCHEDULER_INTERVAL}, ${header.SCHEDULER_REPEAT_COUNT}," +
+                        "${header." + SchedulerConstants.SCHEDULER_DESTINATION + "}, " +
+                        "${header." + SchedulerConstants.SCHEDULER_START_DELAY + "}, " +
+                        "${header." + SchedulerConstants.SCHEDULER_INTERVAL + "}, " +
+                        "${header." + SchedulerConstants.SCHEDULER_REPEAT_COUNT + "}," +
                         "${body})")
                 .end();
 
         from("seda://stopScheduler")
-                .toD("${header.DESTINATION}")
+                .toD("${header." + SchedulerConstants.SCHEDULER_DESTINATION + "}")
                 .bean(this, "stopScheduler(${header." + RouteConstants.SCHEDULE_ID + "})");
     }
 
-    public void createIntervalRoute(String schedulerId, String destination, Integer interval, Integer repeatCount,
-                                    Object signal) throws Exception {
+    public void createIntervalRoute(String schedulerId, String destination, Integer startDelay, Integer interval,
+                                    Integer repeatCount, Object signal) throws Exception {
         addRoutes(getContext(), rbc -> rbc.from("quartz://intervalScheduler/" + schedulerId +
-                        "?triggerStartDelay=" + interval + "&trigger.repeatCount=" + repeatCount)
+                        "?triggerStartDelay=" + startDelay + "&trigger.repeatInterval=" + interval +
+                        "&trigger.repeatCount=" + repeatCount)
                 .routeId(schedulerId)
                 .setHeader(RouteConstants.SCHEDULE_ID, constant(schedulerId))
                 .setHeader("SIGNAL", constant(signal))
