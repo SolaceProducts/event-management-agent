@@ -1,9 +1,11 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -31,7 +33,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
      * @param mdcProcessor        The Processor handling the MDC data for logging.
      */
     public DataAggregationRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager,
-                                       AggregationStrategy aggregationStrategy, Integer aggregationSize, MDCProcessor mdcProcessor) {
+                                       AggregationStrategy aggregationStrategy, Integer aggregationSize,
+                                       MDCProcessor mdcProcessor) {
         super(processor, routeId, routeType, routeManager, mdcProcessor);
 
         this.aggregationStrategy = aggregationStrategy;
@@ -57,6 +60,9 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
+                .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
+                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .to("seda:scanStatusPublisher")
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
@@ -100,7 +106,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .log("destinations ${body}")
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
-                .shareUnitOfWork();
+                .shareUnitOfWork()
+                .to("seda:processScanStatus");
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);

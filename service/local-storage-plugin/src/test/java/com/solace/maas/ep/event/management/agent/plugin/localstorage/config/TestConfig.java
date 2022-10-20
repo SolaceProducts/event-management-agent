@@ -1,13 +1,10 @@
 package com.solace.maas.ep.event.management.agent.plugin.localstorage.config;
 
-import com.solace.maas.ep.event.management.agent.plugin.localstorage.config.processor.RouteCompleteProcessorImpl;
-import com.solace.maas.ep.event.management.agent.plugin.localstorage.config.processor.ScanCompleteProcessorImpl;
+import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.route.manager.FileStoreManager;
-import com.solace.maas.ep.event.management.agent.plugin.processor.logging.RouteCompleteProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.processor.logging.ScanCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.AggregatedFileEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.DataCollectionFileEvent;
+import com.solace.maas.ep.event.management.agent.plugin.route.manager.FileStoreManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,12 +29,7 @@ public class TestConfig {
 
     @Bean
     public RouteCompleteProcessor routeCompleteProcessor() {
-        return new RouteCompleteProcessorImpl();
-    }
-
-    @Bean
-    public ScanCompleteProcessor scanCompleteProcessor() {
-        return new ScanCompleteProcessorImpl();
+        return mock(RouteCompleteProcessor.class);
     }
 
     @Bean

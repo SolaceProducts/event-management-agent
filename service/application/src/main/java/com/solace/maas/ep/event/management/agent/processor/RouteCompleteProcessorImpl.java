@@ -1,44 +1,45 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.processor.logging.RouteCompleteProcessor;
-import com.solace.maas.ep.event.management.agent.service.lifecycle.ScanLifecycleService;
+import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.springframework.stereotype.Component;
-
-import static org.apache.camel.util.function.Suppliers.constant;
 
 @Slf4j
 @Component
-public class RouteCompleteProcessorImpl implements RouteCompleteProcessor, Processor {
-    private final ScanLifecycleService scanLifecycleService;
+public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
+    private final ScanStatusRepository scanStatusRepository;
 
-    public RouteCompleteProcessorImpl(ScanLifecycleService scanLifecycleService) {
-        this.scanLifecycleService = scanLifecycleService;
+    public RouteCompleteProcessorImpl(ScanStatusRepository scanStatusRepository) {
+        this.scanStatusRepository = scanStatusRepository;
     }
 
     @Override
     public void process(Exchange exchange) throws Exception {
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.COMPLETE);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
+
         String scanId = (String) exchange.getIn().getHeader(RouteConstants.SCAN_ID);
         String scanType = (String) exchange.getIn().getHeader(RouteConstants.SCAN_TYPE);
 
-        Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+        ScanStatusEntity scanStatusEntity = ScanStatusEntity.builder()
+                .scanId(scanId)
+                .scanType(scanType)
+                .status(ScanStatus.COMPLETE.name())
+                .build();
 
-        if (cause != null) {
-            log.error("Error has occurred: ", cause);
+        save(scanStatusEntity);
 
-            // Sending Error message to client
-            exchange.getIn().setHeader("SCAN_ERROR", constant(true));
-        } else {
-            log.info("Route {} completed for scan request: {}.", scanType, scanId);
-            if (scanLifecycleService.scanRouteCompleted(scanId)) {
-                // Just in case we're chaining more stuff at the end, set the header to
-                // show we're done
-                exchange.getIn().setHeader("SCAN_COMPLETE", true);
-                log.info("Scan request {} completed.", scanId);
-            }
-        }
+        log.info("Route {} completed for scan request {}", scanType, scanId);
+
+    }
+
+    protected ScanStatusEntity save(ScanStatusEntity scanStatusEntity) {
+        return scanStatusRepository.save(scanStatusEntity);
     }
 }

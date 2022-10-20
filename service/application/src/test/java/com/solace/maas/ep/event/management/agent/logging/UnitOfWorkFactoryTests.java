@@ -1,7 +1,7 @@
 package com.solace.maas.ep.event.management.agent.logging;
 
-import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RabbitMqQueueDataPublisherRoute extends DataPublisherRouteBuilder {
-    public RabbitMqQueueDataPublisherRoute(RabbitMqQueueProcessor processor, RouteManager routeManager, MDCProcessor mdcProcessor) {
-        super(processor, RabbitMqRouteId.RABBIT_MQ_QUEUE.label, RabbitMqRouteType.RABBIT_MQ_QUEUE.label, routeManager, mdcProcessor);
+    public RabbitMqQueueDataPublisherRoute(RabbitMqQueueProcessor processor, RouteManager routeManager,
+                                           MDCProcessor mdcProcessor) {
+        super(processor, RabbitMqRouteId.RABBIT_MQ_QUEUE.label, RabbitMqRouteType.RABBIT_MQ_QUEUE.label,
+                routeManager, mdcProcessor);
     }
 }

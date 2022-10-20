@@ -5,20 +5,26 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class ScanDataMessage extends MOPMessage {
+public class ScanStatusMessage extends MOPMessage {
+    // Status of the overall scan.
+
     String orgId;
 
     String scanId;
 
-    String scanType;
+    String status;
 
-    String data;
+    String description;
 
-    private String timestamp;
+    private List<String> scanTypes;
 
-    public ScanDataMessage(String orgId, String scanId, String scanType, String data, String timestamp) {
+    public ScanStatusMessage(String orgId, String scanId, String status, String description, List<String> scanTypes) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)
@@ -27,8 +33,8 @@ public class ScanDataMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.scanId = scanId;
-        this.scanType = scanType;
-        this.data = data;
-        this.timestamp = timestamp;
+        this.status = status;
+        this.description = description;
+        this.scanTypes = scanTypes;
     }
 }

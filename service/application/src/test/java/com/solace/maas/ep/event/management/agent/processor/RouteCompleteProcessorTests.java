@@ -1,11 +1,13 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.service.lifecycle.ScanLifecycleService;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
@@ -34,7 +36,10 @@ public class RouteCompleteProcessorTests {
     RouteCompleteProcessorImpl routeCompleteProcessor;
 
     @Mock
-    ScanLifecycleService scanLifecycleService;
+    ScanStatusRepository scanStatusRepository;
+
+    @Mock
+    ProducerTemplate producerTemplate;
 
     @SneakyThrows
     @Test
@@ -42,10 +47,13 @@ public class RouteCompleteProcessorTests {
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scanId");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "scanType");
+        exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, "groupId");
+        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
+
         exchange.getIn().setBody("test exchange");
 
-        when(scanLifecycleService.scanRouteCompleted(any(String.class)))
-                .thenReturn(true);
+        when(scanStatusRepository.save(any(ScanStatusEntity.class)))
+                .thenReturn(ScanStatusEntity.builder().build());
 
         routeCompleteProcessor.process(exchange);
 
