@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -119,24 +120,26 @@ public class ScanService {
 
         ScanEntity savedScanEntity = null;
 
+        String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
+
         for (RouteBundle routeBundle : routeBundles) {
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
-            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
+            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanEntityId);
 
-            scanAsync(groupId, scanId, route, routeBundle.getMessagingServiceId());
+            scanAsync(groupId, scanEntityId, route, routeBundle.getMessagingServiceId());
             savedScanEntity = returnedScanEntity;
         }
 
         if (savedScanEntity != null) {
             ScanLifecycleEntity scannedLifecycleEntity = ScanLifecycleEntity.builder()
-                    .scanId(scanId)
+                    .scanId(scanEntityId)
                     .numExpectedCompletionMessages(numExpectedCompletionMessages)
                     .build();
 
             scanLifecycleService.addScanLifecycleEntity(scannedLifecycleEntity);
-            return scanId;
+            return scanEntityId;
         }
         log.error("Unable to process scan request");
         return null;
@@ -326,6 +329,12 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
+
+            exchange.getIn().setHeader("EXECUTION_TIMER", true);
+            exchange.getIn().setHeader("SCHEDULER_TYPE", "INTERVAL");
+            exchange.getIn().setHeader("DESTINATION", "seda:terminateAsyncProcess");
+            exchange.getIn().setHeader("SCHEDULER_INTERVAL", 20000);
+            exchange.getIn().setHeader("SCHEDULER_REPEAT_COUNT", 0);
 
             MDC.put(RouteConstants.SCAN_ID, scanId);
             MDC.put(RouteConstants.SCHEDULE_ID, groupId);

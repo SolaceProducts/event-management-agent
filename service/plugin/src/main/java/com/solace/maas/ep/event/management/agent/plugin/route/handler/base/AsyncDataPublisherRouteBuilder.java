@@ -12,6 +12,8 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
@@ -41,6 +43,21 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
         from("seda:" + routeId + "?blockWhenFull=true&size=1000000")
                 .routeId(routeId)
+                .log("EXECUTION TIMER: ${header.EXECUTION_TIMER}")
+                .choice()
+                .when(simple("${header.EXECUTION_TIMER} == true"))
+                .setBody(exchange -> {
+                    String scanId = exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class);
+                    String scanType = exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class);
+
+                    Map<String, Object> signal = new HashMap<>();
+                    signal.put(RouteConstants.SCAN_ID, scanId);
+                    signal.put(RouteConstants.SCAN_TYPE, scanType);
+
+                    return signal;
+                })
+                .to("seda://jobScheduler")
+                .end()
                 .to("reactive-streams:asyncProcessing_" + routeId);
 
         from("reactive-streams:asyncEvent_" + routeId)
