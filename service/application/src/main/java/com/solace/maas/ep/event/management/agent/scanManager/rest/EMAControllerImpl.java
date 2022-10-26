@@ -1,9 +1,11 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.common.model.ScanRequestDTO;
+import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,31 +18,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.UUID;
 
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/api/v2/ema/messagingServices")
+@RequestMapping(RestEndpoint.BASE_URL)
 public class EMAControllerImpl implements EMAController {
 
     private final ScanRequestMapper scanRequestMapper;
     private final ScanManager scanManager;
+    private final IDGenerator idGenerator;
 
     @Autowired
-    public EMAControllerImpl(ScanRequestMapper scanRequestMapper, ScanManager scanManager) {
+    public EMAControllerImpl(ScanRequestMapper scanRequestMapper, ScanManager scanManager, IDGenerator idGenerator) {
         this.scanRequestMapper = scanRequestMapper;
         this.scanManager = scanManager;
+        this.idGenerator = idGenerator;
     }
 
     @Override
-    @PostMapping(value = "{messagingServiceId}/scan")
+    @PostMapping(value = "/{messagingServiceId}/scan")
     public ResponseEntity<String> scan(@PathVariable(value = "messagingServiceId") String messagingServiceId,
                                        @RequestBody @Valid ScanRequestDTO body) {
         try {
             ScanRequestBO scanRequestBO = scanRequestMapper.map(body);
             scanRequestBO.setMessagingServiceId(messagingServiceId);
-            scanRequestBO.setScanId(UUID.randomUUID().toString());
+            scanRequestBO.setScanId(idGenerator.generateRandomUniqueId());
 
             log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
 
