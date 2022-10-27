@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.AsyncManager;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.ExchangeBuilder;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreamsService;
 import org.reactivestreams.Publisher;
@@ -29,7 +30,11 @@ public abstract class AsyncRoutePublisherImpl implements AsyncRoutePublisher {
 
     public Publisher<Exchange> sendMesage(Object body, Exchange exchange) {
         String routeId = exchange.getFromRouteId();
-        exchange.getIn().setBody(body);
-        return camel.toStream("asyncEvent_" + routeId, exchange);
+        Exchange newExchange = ExchangeBuilder.anExchange(camel.getCamelContext())
+                .withBody(body)
+                .build();
+
+        newExchange.getIn().setHeaders(exchange.getIn().getHeaders());
+        return camel.to("seda:asyncEvent_" + routeId, newExchange);
     }
 }
