@@ -40,15 +40,15 @@ public class TopicRoutePublisherImpl extends AsyncRoutePublisherImpl {
 
         String subscription = ">";
 
-        SolaceSubscriber subscriber = SolaceSubscriber.builder()
+        SolaceSubscriberNoThread subscriber = SolaceSubscriberNoThread.builder()
                 .service(messagingService)
                 .subscription(subscription)
                 .maxMessages(50000)
                 .publisher(this)
                 .exchange(exchange)
                 .build();
-
-        Future<Integer> future = executor.submit(subscriber);
+        subscriber.consumerMessages();
+        //Future<Integer> future = executor.submit(subscriber);
 
 //        Disposable subscription = Flux.interval(Duration.of(1, ChronoUnit.SECONDS))
 //                .map(i -> sendMesage(i, exchange))
@@ -56,7 +56,6 @@ public class TopicRoutePublisherImpl extends AsyncRoutePublisherImpl {
 
         return TopicWrapperImpl.builder()
                 .solaceSubscriber(subscriber)
-                .subscriberResult(future)
                 .build();
     }
 }

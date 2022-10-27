@@ -12,8 +12,7 @@ import java.util.concurrent.Future;
 @Data
 @Builder
 public class TopicWrapperImpl implements AsyncWrapper {
-    private final SolaceSubscriber solaceSubscriber;
-    private final Future<Integer> subscriberResult;
+    private final SolaceSubscriberNoThread solaceSubscriber;
 
     @Override
     public void terminate() {
