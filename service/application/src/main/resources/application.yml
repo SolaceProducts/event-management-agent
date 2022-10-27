@@ -58,22 +58,22 @@ eventPortal:
 
 # Below is an example of how to set up messaging service configuration in the application.yml file.
 
-#plugins:
-#  messagingServices:
-#    # A solace service with both management and messaging credentials
-#    - id: solaceDefaultService
-#      type: SOLACE
-#      name: staging service
-#      management:
-#        connections:
-#          - name: mySolaceServiceSemp
-#            authenticationType: basicAuthentication
-#            url: ${SOLACE_SEMP_URL}
-#            msgVpn: ${SOLACE_MSGVPN_NAME}
-#            users:
-#              - name: sempuser
-#                username: ${SOLACE_SEMP_USERNAME}
-#                password: ${SOLACE_SEMP_PASSWORD}
+plugins:
+  messagingServices:
+    # A solace service with both management and messaging credentials
+    - id: solaceDefaultService
+      type: SOLACE
+      name: staging service
+      management:
+        connections:
+          - name: mySolaceServiceSemp
+            authenticationType: basicAuthentication
+            url: ${SOLACE_SEMP_URL}
+            msgVpn: ${SOLACE_MSGVPN_NAME}
+            users:
+              - name: sempuser
+                username: ${SOLACE_SEMP_USERNAME}
+                password: ${SOLACE_SEMP_PASSWORD}
 #      properties:
 #        semp:
 #          pageSize: 100

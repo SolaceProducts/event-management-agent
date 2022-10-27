@@ -11,6 +11,7 @@ import java.util.List;
 import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_QUEUE_CONFIG;
 import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_QUEUE_LISTING;
 import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_SUBSCRIPTION_CONFIG;
+import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_TOPIC_COLLECTION;
 
 @Component
 public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
@@ -36,6 +37,9 @@ public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
                 break;
             case SOLACE_SUBSCRIPTION_CONFIG:
                 result.add(subscriptionConfigRouteBundle(destinations, recipients, messagingServiceId));
+
+            case SOLACE_TOPIC_COLLECTION:
+                result.add(topicRouteBundle(destinations, recipients, messagingServiceId));
 
                 break;
             case SOLACE_ALL:
@@ -67,4 +71,13 @@ public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
         return createRouteBundle(destinations, recipients, SOLACE_QUEUE_CONFIG.name(), messagingServiceId,
                 "solaceQueueConfiguration", true);
     }
+
+    private RouteBundle topicRouteBundle(List<RouteBundle> destinations, List<RouteBundle> recipients,
+                                                      String messagingServiceId) {
+        return createRouteBundle(destinations, recipients,
+                SOLACE_TOPIC_COLLECTION.name(), messagingServiceId,
+                "topicSubscriber",
+                true);
+    }
+
 }
