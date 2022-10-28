@@ -29,26 +29,24 @@ public class ScanDataImportGroupFilesProcessor implements Processor {
         String fileName = (String) exchange.getIn().getHeader("CamelFileName");
         log.trace("reading file: {}", fileName);
 
-        if (fileName.contains(".json")) {
-            String groupId = (String) exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID);
-            String scanId = StringUtils.split(fileName, '/')[2];
-            String messagingServiceId = (String) exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID);
-            String body = (String) exchange.getIn().getBody();
+        String groupId = (String) exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID);
+        String scanId = StringUtils.split(fileName, '/')[2];
+        String messagingServiceId = (String) exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID);
+        String body = (String) exchange.getIn().getBody();
 
-            String scanType = StringUtils.substringAfterLast(fileName, "/").replace(".json", "");
+        String scanType = StringUtils.substringAfterLast(fileName, "/").replace(".json", "");
 
-            ManualImportEntity manualImportEntity = ManualImportEntity.builder()
-                    .fileName(fileName)
-                    .groupId(groupId)
-                    .scanId(scanId)
-                    .scanType(scanType)
-                    .build();
+        ManualImportEntity manualImportEntity = ManualImportEntity.builder()
+                .fileName(fileName)
+                .groupId(groupId)
+                .scanId(scanId)
+                .scanType(scanType)
+                .build();
 
-            save(manualImportEntity);
+        save(manualImportEntity);
 
-            log.info("Importing data for schedule Id: {} scan request: {}", groupId, scanId);
-            sendImportData.sendImportDataAsync(groupId, scanId, scanType, messagingServiceId, body);
-        }
+        log.info("Importing {} for schedule Id: {} scan request: {}", scanType, groupId, scanId);
+        sendImportData.sendImportDataAsync(groupId, scanId, scanType, messagingServiceId, body);
     }
 
     private void save(ManualImportEntity manualImportEntity) {

@@ -53,9 +53,10 @@ public class ScanDataImportAllFilesProcessor implements Processor {
             save(manualImportEntity);
 
             log.info("Importing data file {}", fileName);
+            log.info("Importing {} for schedule Id: {} scan request: {}", scanType, groupId, scanId);
 
             sendImportData.sendImportDataAsync(groupId, scanId, scanType, messagingServiceId, body);
-        } else if (fileName.contains(".log") && !fileName.contains("general-logs")) {
+        } else if (fileName.contains(".log")) {
             String body = (String) exchange.getIn().getBody();
             String scanId = StringUtils.substringAfterLast(fileName, "/").replace(".log", "");
 

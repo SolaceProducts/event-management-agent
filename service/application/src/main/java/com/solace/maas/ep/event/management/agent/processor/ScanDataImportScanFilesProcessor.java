@@ -46,7 +46,7 @@ public class ScanDataImportScanFilesProcessor implements Processor {
 
         save(manualImportEntity);
 
-        log.info("Importing data for schedule Id: {} scan request: {}", groupId, scanId);
+        log.info("Importing {} for schedule Id: {} scan request: {}", scanType, groupId, scanId);
         sendImportData.sendImportDataAsync(groupId, scanId, scanType, messagingServiceId, body);
     }
 

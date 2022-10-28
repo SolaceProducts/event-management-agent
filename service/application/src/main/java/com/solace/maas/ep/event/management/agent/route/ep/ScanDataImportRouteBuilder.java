@@ -10,6 +10,7 @@ import com.solace.maas.ep.event.management.agent.processor.ScanDataImportScanFil
 import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanDataImportExceptionHandler;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
+import org.apache.camel.Expression;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.camel.support.builder.PredicateBuilder.and;
+import static org.apache.camel.support.builder.PredicateBuilder.not;
+import static org.apache.camel.support.builder.PredicateBuilder.or;
 
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanDataImportRouteBuilder extends RouteBuilder {
+    private static final List<String> fileList = new ArrayList<>();
     private final ScanDataImportScanFilesProcessor scanDataImportScanFilesProcessor;
-
     private final ScanDataImportGroupFilesProcessor scanDataImportGroupFilesProcessor;
-
     private final ScanDataImportAllFilesProcessor scanDataImportAllFilesProcessor;
-
     private final ScanDataImportProcessor scanDataImportProcessor;
 
     @Autowired
@@ -48,42 +49,53 @@ public class ScanDataImportRouteBuilder extends RouteBuilder {
     public void configure() {
         from("seda:manualImport?blockWhenFull=true&size=100")
                 .routeId("manualImport")
-                .setHeader(RouteConstants.AGGREGATION_ID, constant("id"))
                 .onException(Exception.class)
                 .process(new ScanDataImportExceptionHandler())
                 .continued(true)
                 .end()
                 .split(new ZipSplitter())
                 .streaming()
-                .convertBodyTo(String.class)
+                .aggregationStrategy(new FileListAggregationStrategy())
+                .filter(or(header("CamelFileName").endsWith(".json"),
+                        and(header("CamelFileName").endsWith(".log"),
+                                not(header("CamelFileName").contains("general-log")))))
 
+                .convertBodyTo(String.class)
+                .to("file://unzip_data_collection")
+                .end()
+                .to("seda:readFiles");
+
+        from("seda:readFiles")
+                .pollEnrich()
+                .simple("file://unzip_data_collection?noop=true&recursive=true&idempotent=false")
+                .aggregationStrategy(new FileParseAggregationStrategy())
+                .setHeader("FILE_NAMES", constant(fileList))
+                .to("seda:processFiles");
+
+        from("seda:processFiles")
+                .convertBodyTo(String.class)
+                .split().tokenize("\\n").streaming()
                 .choice()
                 // Covers the scenario where schedule id scan id and scan are specified.
                 .when(and(header("CamelFileName").contains(header(RouteConstants.SCHEDULE_ID)),
                         header("CamelFileName").contains(header(RouteConstants.SCAN_ID))))
-                .aggregate(header("CamelFileName"), new ArrayListAggregationStrategy())
-                .completionTimeout(500)
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.OVERALL))
                 .process(scanDataImportScanFilesProcessor)
                 .endChoice()
 
                 // Covers the scenario where only schedule is specified. All scanId folders in the schedule directory will be processed.
                 .when(and(header("CamelFileName").contains(header(RouteConstants.SCHEDULE_ID)),
                         header(RouteConstants.SCAN_ID).isNull()))
-                .aggregate(header("CamelFileName"), new ArrayListAggregationStrategy())
-                .completionTimeout(500)
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.OVERALL))
                 .process(scanDataImportGroupFilesProcessor)
                 .endChoice()
 
                 // Nothing is specified. Imports all scan data and log data
                 .when(and(header(RouteConstants.SCHEDULE_ID).isNull(), header(RouteConstants.SCAN_ID).isNull()))
-                .aggregate(header("CamelFileName"), new ArrayListAggregationStrategy())
-                .completionTimeout(500)
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.OVERALL))
                 .process(scanDataImportAllFilesProcessor)
                 .endChoice()
 
@@ -98,14 +110,30 @@ public class ScanDataImportRouteBuilder extends RouteBuilder {
                 .end();
     }
 
-    public static class ArrayListAggregationStrategy implements AggregationStrategy {
-        List<String> fileList = new ArrayList<>();
-
+    public static class FileListAggregationStrategy implements AggregationStrategy {
         @Override
         public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
             String filename = (String) newExchange.getIn().getHeader("CamelFileName");
-            fileList.add(filename);
-            newExchange.getIn().setHeader("FILE_NAMES", fileList);
+            if (filename.endsWith(".json") || (filename.endsWith(".log") && !filename.contains("general-logs"))) {
+                fileList.add(filename);
+            }
+            return newExchange;
+        }
+    }
+
+    public static class FileParseAggregationStrategy implements AggregationStrategy {
+
+        @Override
+        public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
+            newExchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID,
+                    oldExchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID));
+            newExchange.getIn().setHeader(RouteConstants.SCAN_ID,
+                    oldExchange.getIn().getHeader(RouteConstants.SCAN_ID));
+            newExchange.getIn().setHeader(RouteConstants.SCHEDULE_ID,
+                    oldExchange.getIn().getHeader(RouteConstants.SCHEDULE_ID));
+            newExchange.getIn().setHeader(RouteConstants.SCAN_TYPE,
+                    oldExchange.getIn().getHeader(RouteConstants.SCAN_TYPE));
+
             return newExchange;
         }
     }
