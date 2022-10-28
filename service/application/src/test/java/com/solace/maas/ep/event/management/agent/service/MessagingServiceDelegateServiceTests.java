@@ -3,15 +3,14 @@ package com.solace.maas.ep.event.management.agent.service;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
-import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
-import org.apache.commons.lang.ArrayUtils;
+import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -49,7 +48,7 @@ public class MessagingServiceDelegateServiceTests {
 
         ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
                 .name("connectionDetails")
-                .connectionUrl("localhost:9090")
+                .url("localhost:9090")
                 .authenticationDetails(List.of(authenticationDetailsEvent))
                 .build();
 
@@ -61,7 +60,7 @@ public class MessagingServiceDelegateServiceTests {
 
         when(repository.save(any(MessagingServiceEntity.class)))
                 .thenReturn(MessagingServiceEntity.builder()
-                        .messagingServiceType(MessagingServiceType.SOLACE.name())
+//                        .messagingServiceType(MessagingServiceType.SOLACE.name())
                         .name("service1")
                         .build());
 
@@ -80,23 +79,23 @@ public class MessagingServiceDelegateServiceTests {
 
         AuthenticationDetailsEntity authenticationDetailsEntity = AuthenticationDetailsEntity.builder()
                 .id(UUID.randomUUID().toString())
-                .username("username")
-                .password(ArrayUtils.toObject(encryptedPassword))
+//                .username("username")
+//                .password(ArrayUtils.toObject(encryptedPassword))
                 .build();
 
         ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
                 .id(UUID.randomUUID().toString())
                 .name("testConnectionName")
-                .connectionUrl("localhost:9090")
-                .authenticationDetails(List.of(authenticationDetailsEntity))
+//                .connectionUrl("localhost:9090")
+//                .authenticationDetails(List.of(authenticationDetailsEntity))
                 .build();
 
         when(repository.findById(any(String.class)))
                 .thenReturn(Optional.of(MessagingServiceEntity.builder()
-                        .messagingServiceType(MessagingServiceType.KAFKA.name())
+//                        .messagingServiceType(MessagingServiceType.KAFKA.name())
                         .name("service1")
                         .id(UUID.randomUUID().toString())
-                        .managementDetails(List.of(connectionDetailsEntity))
+//                        .managementDetails(List.of(connectionDetailsEntity))
                         .build()));
         when(clientManager.getClient(any(ConnectionDetailsEvent.class)))
                 .thenReturn(mock(AdminClient.class));

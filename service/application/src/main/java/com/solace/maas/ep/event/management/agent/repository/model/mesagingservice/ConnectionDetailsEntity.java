@@ -35,15 +35,15 @@ public class ConnectionDetailsEntity {
     private String name;
 
     @Column(name = "CONNECTION_URL", nullable = false)
-    private String connectionUrl;
-
-    @Column(name = "VPN")
-    private String msgVpn;
+    private String url;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
     @JoinColumn(name = "MESSAGING_SERVICE_ID", referencedColumnName = "ID", nullable = false)
     private MessagingServiceEntity messagingService;
 
+    @OneToMany(mappedBy = "connections", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AuthenticationDetailsEntity> authentication;
+
     @OneToMany(mappedBy = "connectionDetails", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AuthenticationDetailsEntity> authenticationDetails;
+    private List<ConnectionPropertiesEntity> properties;
 }

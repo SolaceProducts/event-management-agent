@@ -22,25 +22,28 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-@Table(name = "AUTHENTICATION_DETAILS")
+@Table(name = "CREDENTIAL_DETAILS")
 @Entity
-public class AuthenticationDetailsEntity {
+public class CredentialDetailsEntity {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "PROTOCOL")
-    private String protocol;
+    @Column(name = "TYPE", nullable = false)
+    private String type;
+
+    @Column(name = "SOURCE", nullable = false)
+    private String source;
+
+    @OneToMany(mappedBy = "credentials", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CredentialOperationsEntity> operations;
+
+    @OneToMany(mappedBy = "credentials", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CredentialPropertiesEntity> properties;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "CONNECTION_DETAILS_ID", referencedColumnName = "ID", nullable = false)
-    private ConnectionDetailsEntity connections;
-
-    @OneToMany(mappedBy = "authentication", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CredentialDetailsEntity> credentials;
-
-    @OneToMany(mappedBy = "authentication", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AuthenticationPropertiesEntity> properties;
+    @JoinColumn(name = "AUTHENTICATION_DETAILS_ID", referencedColumnName = "ID", nullable = false)
+    private AuthenticationDetailsEntity authentication;
 }

@@ -1,9 +1,8 @@
 package com.solace.maas.ep.event.management.agent.service;
 
+import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.ConnectionDetailsRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
-import com.solace.maas.ep.event.management.agent.TestConfig;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -38,8 +37,8 @@ public class ConnectionDetailsServiceTests {
 
         ConnectionDetailsEntity result = connectionDetailsService.save(connectionDetailsEntity);
 
-        assertThat(result.getConnectionUrl())
-                .isEqualTo(connectionDetailsEntity.getConnectionUrl());
+        assertThat(result.getUrl())
+                .isEqualTo(connectionDetailsEntity.getUrl());
     }
 
     @Test

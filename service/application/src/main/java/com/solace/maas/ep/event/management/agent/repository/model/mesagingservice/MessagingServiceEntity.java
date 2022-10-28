@@ -28,8 +28,8 @@ public class MessagingServiceEntity {
     private String name;
 
     @Column(name = "MESSAGING_SERVICE_TYPE", nullable = false)
-    private String messagingServiceType;
+    private String type;
 
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConnectionDetailsEntity> managementDetails;
+    private List<ConnectionDetailsEntity> connections;
 }

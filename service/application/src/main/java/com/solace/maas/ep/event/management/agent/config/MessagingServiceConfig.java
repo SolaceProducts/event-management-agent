@@ -1,11 +1,15 @@
 package com.solace.maas.ep.event.management.agent.config;
 
 import com.solace.maas.ep.event.management.agent.config.plugin.ClientConnectionDetails;
-import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
-import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationOperationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialDetailsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceConfigurationUtil;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -30,43 +34,75 @@ import java.util.stream.Collectors;
 public class MessagingServiceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ClientConnectionDetails clientConnectionDetails;
-    private List<MessagingServicePluginProperties> messagingServices;
+    //    private List<MessagingServicePluginProperties> messagingServices;
+    private List<MessagingServiceEntity> messagingServices;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if (Objects.nonNull(messagingServices)) {
-
             log.info(
                     String.format("Creating messaging service(s): %s.",
                             messagingServices.stream()
-                                    .map(MessagingServicePluginProperties::getName)
+                                    .map(MessagingServiceEntity::getName)
                                     .collect(Collectors.joining(", ")))
             );
+//            messagingServiceDelegateService.addMessagingServiceEntities(messagingServices);
+//
+//            messagingServiceDelegateService.getMessagingServiceById(messagingServices.get(0).getId());
+
 
             List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
                     .map(messagingService -> {
                         List<ConnectionDetailsEvent> connectionDetails = new ArrayList<>();
 
-                        messagingService.getManagement().getConnections()
-                                .forEach(messagingServiceConnection -> {
-                                    ConnectionDetailsEvent connectionDetailsEvent = clientConnectionDetails.createConnectionDetails(
-                                            messagingService.getId(), messagingServiceConnection, MessagingServiceType.SOLACE);
-
-                                    connectionDetails.add(connectionDetailsEvent);
-                                });
-
-                        return MessagingServiceEvent.builder()
-                                .id(messagingService.getId())
-                                .name(messagingService.getName())
-                                .messagingServiceType(messagingService.getType())
-                                .connectionDetails(connectionDetails)
-                                .build();
-                    }).collect(Collectors.toUnmodifiableList());
+//                        messagingService.getConnections()
+//                                .forEach(messagingServiceConnection -> {
+////                                    ConnectionDetailsEvent connectionDetailsEvent = clientConnectionDetails.createConnectionDetails(
+////                                            messagingService.getId(), messagingServiceConnection, MessagingServiceType.SOLACE);
+//
+//
+//                                    List<AuthenticationDetailsEvent> authenticationDetailsEvents = messagingServiceConnection.getAuthentication().stream()
+//                                            .map(authenticationDetailsEntity -> {
+//                                                CredentialDetailsEntity credentialDetails = authenticationDetailsEntity
+//                                                        .getCredentials().stream().findFirst().get();
+//
+//                                                return AuthenticationDetailsEvent.builder()
+//                                                        .id(authenticationDetailsEntity.getId())
+//                                                        .username(MessagingServiceConfigurationUtil.getUsername(credentialDetails))
+//                                                        .password(MessagingServiceConfigurationUtil.getPassword(credentialDetails))
+//                                                        .protocol(authenticationDetailsEntity.getProtocol())
+//                                                        .authType(MessagingServiceConfigurationUtil.getAuthenticationType(authenticationDetailsEntity))
+//                                                        .operations(credentialDetails.getOperations().stream()
+//                                                                .map(op ->
+//                                                                        AuthenticationOperationDetailsEvent.builder()
+//                                                                                .name(op.getName())
+//                                                                                .build())
+//                                                                .collect(Collectors.toList()))
+//                                                        .build();
+//                                            }).collect(Collectors.toList());
+//
+//                                    ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
+//                                            .name(messagingServiceConnection.getName())
+//                                            .url(messagingServiceConnection.getUrl())
+//                                            .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(messagingServiceConnection))
+//                                            .sempPageSize(MessagingServiceConfigurationUtil.getSempPageSize(messagingServiceConnection))
+//                                            .authenticationDetails(authenticationDetailsEvents)
+//                                            .build();
+//                                    connectionDetails.add(connectionDetailsEvent);
+//                                });
+//
+//                        return MessagingServiceEvent.builder()
+//                                .id(messagingService.getId())
+//                                .name(messagingService.getName())
+//                                .messagingServiceType(messagingService.getType())
+//                                .connectionDetails(connectionDetails)
+//                                .build();
+//                    }).collect(Collectors.toUnmodifiableList());
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
                     .forEach(messagingServiceEntity ->
                             log.info("Created {} Messaging Service with id: {} and name: {}.",
-                                    messagingServiceEntity.getMessagingServiceType(),
+                                    messagingServiceEntity.getType(),
                                     messagingServiceEntity.getId(), messagingServiceEntity.getName()));
         } else {
             log.info("No Messaging Service(s) created.");

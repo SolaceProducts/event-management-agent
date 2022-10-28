@@ -22,7 +22,7 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
 
         try {
             Properties properties = new Properties();
-            properties.put("bootstrap.servers", connectionDetailsEvent.getConnectionUrl());
+            properties.put("bootstrap.servers", connectionDetailsEvent.getUrl());
             properties.put("connections.max.idle.ms", 10_000);
             properties.put("request.timeout.ms", 5000);
 

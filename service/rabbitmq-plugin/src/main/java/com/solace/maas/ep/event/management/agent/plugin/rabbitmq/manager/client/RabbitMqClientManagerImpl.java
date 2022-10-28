@@ -22,7 +22,7 @@ public class RabbitMqClientManagerImpl implements MessagingServiceClientManager<
         try {
             return new Client(
                     new ClientParameters()
-                            .url(connectionDetailsEvent.getConnectionUrl())
+                            .url(connectionDetailsEvent.getUrl())
                             .username(authenticationDetailsEvent.getUsername())
                             .password(authenticationDetailsEvent.getPassword())
             );
