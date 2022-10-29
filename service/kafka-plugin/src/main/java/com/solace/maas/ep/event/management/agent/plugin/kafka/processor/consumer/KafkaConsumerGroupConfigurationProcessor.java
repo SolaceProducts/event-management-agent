@@ -1,14 +1,15 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.consumer;
 
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaAclEvent;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaNodeEvent;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.consumer.ConsumerEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.consumer.ConsumerTopicPartitionEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.consumer.KafkaConsumerGroupConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.consumer.KafkaConsumerGroupEvent;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaAclEvent;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaNodeEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.DescribeConsumerGroupsResult;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class KafkaConsumerGroupConfigurationProcessor extends
         ResultProcessorImpl<List<KafkaConsumerGroupConfigurationEvent>, List<KafkaConsumerGroupEvent>> {
@@ -107,6 +109,11 @@ public class KafkaConsumerGroupConfigurationProcessor extends
     @Override
     public List<KafkaConsumerGroupConfigurationEvent> handleEvent(Map<String, Object> properties, List<KafkaConsumerGroupEvent> body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
+
+        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
+                properties.get(RouteConstants.SCAN_ID),
+                properties.get(RouteConstants.SCAN_TYPE),
+                messagingServiceId);
 
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 

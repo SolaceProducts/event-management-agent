@@ -71,6 +71,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
                 .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
                 .to("seda:scanStatusPublisher")
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.

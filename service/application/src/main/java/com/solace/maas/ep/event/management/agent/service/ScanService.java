@@ -10,6 +10,7 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntit
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.MDC;
@@ -110,17 +111,24 @@ public class ScanService {
      * @return The id of the scan.
      */
     public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId) {
-        log.info("Starting single scan request {}.", scanId);
+        log.info("Scan request [{}]: Starting a single scan.", scanId);
 
         ScanEntity savedScanEntity = null;
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
+        log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
+                scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
+
         send(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
                 routeBundles.stream().findFirst().orElseThrow().getScanType(),
                 ScanStatus.IN_PROGRESS, ScanStatusType.OVERALL, scanTypes);
 
+        log.trace("RouteBundles to be processed: {}", routeBundles);
+
         for (RouteBundle routeBundle : routeBundles) {
+            log.trace("Processing RouteBundles: {}", routeBundle);
+
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
@@ -253,7 +261,7 @@ public class ScanService {
             if (exception != null) {
                 log.error("Exception occurred while executing route {} for scan request: {}.", route.getId(), scanId, exception);
             } else {
-                log.debug("Successfully completed route {} for scan request: {}", route.getId(), scanId);
+                log.trace("Camel route {} for scan request: {} has been executed successfully.", route.getId(), scanId);
             }
             routeService.stopRoute(route);
         });

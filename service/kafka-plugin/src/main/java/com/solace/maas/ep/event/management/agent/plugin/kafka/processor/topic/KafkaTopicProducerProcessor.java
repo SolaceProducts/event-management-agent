@@ -1,12 +1,13 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.producer.KafkaProducerEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.producer.KafkaProducerStateEvent;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeProducersResult;
 import org.apache.kafka.common.TopicPartition;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ExcludeFromJacocoGeneratedReport
 @Component
 @SuppressWarnings("PMD")
@@ -34,6 +36,11 @@ public class KafkaTopicProducerProcessor extends ResultProcessorImpl<List<KafkaP
     @Override
     public List<KafkaProducerEvent> handleEvent(Map<String, Object> properties, List<KafkaTopicConfigurationEvent> body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
+
+        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
+                properties.get(RouteConstants.SCAN_ID),
+                properties.get(RouteConstants.SCAN_TYPE),
+                messagingServiceId);
 
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 

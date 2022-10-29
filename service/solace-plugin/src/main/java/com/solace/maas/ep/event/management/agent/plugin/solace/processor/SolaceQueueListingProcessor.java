@@ -31,6 +31,11 @@ public class SolaceQueueListingProcessor extends ResultProcessorImpl<List<Solace
     public List<SolaceQueueNameEvent> handleEvent(Map<String, Object> properties, Void body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
+        log.info("Scan request [{}]: Retrieving [{}] details from Solace messaging service [{}].",
+                properties.get(RouteConstants.SCAN_ID),
+                properties.get(RouteConstants.SCAN_TYPE),
+                messagingServiceId);
+
         SolaceHttpSemp sempClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 
         Map<String, Map<String, Object>> queueMap = new HashMap<>();

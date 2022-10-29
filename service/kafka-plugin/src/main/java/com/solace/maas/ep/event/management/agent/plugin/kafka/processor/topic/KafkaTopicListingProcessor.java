@@ -1,9 +1,10 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.TopicListing;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class KafkaTopicListingProcessor extends ResultProcessorImpl<List<KafkaTopicEvent>, Void> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
@@ -31,6 +33,11 @@ public class KafkaTopicListingProcessor extends ResultProcessorImpl<List<KafkaTo
     @SuppressWarnings("PMD")
     public List<KafkaTopicEvent> handleEvent(Map<String, Object> properties, Void body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
+
+        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
+                properties.get(RouteConstants.SCAN_ID),
+                properties.get(RouteConstants.SCAN_TYPE),
+                messagingServiceId);
 
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 

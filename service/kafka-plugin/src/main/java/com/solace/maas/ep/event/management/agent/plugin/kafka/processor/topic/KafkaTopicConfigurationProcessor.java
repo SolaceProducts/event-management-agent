@@ -1,14 +1,15 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaAclEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaNodeEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicPartitionEvent;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ExcludeFromJacocoGeneratedReport
 @Component
 @SuppressWarnings("PMD")
@@ -91,9 +93,14 @@ public class KafkaTopicConfigurationProcessor extends ResultProcessorImpl<List<K
     public List<KafkaTopicConfigurationEvent> handleEvent(Map<String, Object> properties, List<KafkaTopicEvent> body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
+        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
+                properties.get(RouteConstants.SCAN_ID),
+                properties.get(RouteConstants.SCAN_TYPE),
+                messagingServiceId);
+
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 
-        if(!body.isEmpty()) {
+        if (!body.isEmpty()) {
             List<String> topicNames = body.stream()
                     .map(KafkaTopicEvent::getName)
                     .collect(Collectors.toUnmodifiableList());
