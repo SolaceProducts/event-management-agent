@@ -28,11 +28,6 @@ public class SolaceSubscriptionProcessor extends ResultProcessorImpl<List<Map<St
     public List<Map<String, Object>> handleEvent(Map<String, Object> properties, List<SolaceQueueNameEvent> data) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        log.info("Scan request [{}]: Retrieving [{}] details from Solace messaging service [{}].",
-                properties.get(RouteConstants.SCAN_ID),
-                properties.get(RouteConstants.SCAN_TYPE),
-                messagingServiceId);
-
         SolaceHttpSemp sempClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
         List<Map<String, Object>> subscriptionsRaw = new ArrayList<>();
 

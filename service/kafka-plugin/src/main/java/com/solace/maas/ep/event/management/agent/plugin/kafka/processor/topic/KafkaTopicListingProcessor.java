@@ -34,11 +34,6 @@ public class KafkaTopicListingProcessor extends ResultProcessorImpl<List<KafkaTo
     public List<KafkaTopicEvent> handleEvent(Map<String, Object> properties, Void body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
-                properties.get(RouteConstants.SCAN_ID),
-                properties.get(RouteConstants.SCAN_TYPE),
-                messagingServiceId);
-
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 
         ListTopicsResult listTopicsResult = adminClient.listTopics();

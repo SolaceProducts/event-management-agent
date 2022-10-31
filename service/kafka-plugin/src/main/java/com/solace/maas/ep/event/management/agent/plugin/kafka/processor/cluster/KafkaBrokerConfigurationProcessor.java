@@ -38,11 +38,6 @@ public class KafkaBrokerConfigurationProcessor extends ResultProcessorImpl<List<
                                                            List<KafkaClusterConfigurationEvent> body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
-                properties.get(RouteConstants.SCAN_ID),
-                properties.get(RouteConstants.SCAN_TYPE),
-                messagingServiceId);
-
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 
         List<ConfigResource> brokers = body.stream()

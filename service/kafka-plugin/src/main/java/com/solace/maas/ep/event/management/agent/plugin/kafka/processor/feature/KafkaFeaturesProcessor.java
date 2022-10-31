@@ -31,11 +31,6 @@ public class KafkaFeaturesProcessor extends ResultProcessorImpl<List<KafkaFeatur
     public List<KafkaFeatureEvent> handleEvent(Map<String, Object> properties, Void body) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        log.info("Scan request [{}]: Retrieving [{}] details from Kafka messaging service [{}].",
-                properties.get(RouteConstants.SCAN_ID),
-                properties.get(RouteConstants.SCAN_TYPE),
-                messagingServiceId);
-
         AdminClient adminClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 
         List<KafkaFeatureEvent> finalizedFeatures = new ArrayList<>(adminClient.describeFeatures()
