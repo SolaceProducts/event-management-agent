@@ -7,13 +7,16 @@ import com.solace.messaging.config.SolaceConstants;
 import com.solace.messaging.config.SolaceProperties;
 import com.solacesystems.solclientj.core.handle.SessionHandle;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
+@Slf4j
 @Data
 @Configuration
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
@@ -61,22 +64,28 @@ public class VMRProperties {
     }
 
     public void parseVmrProperties() {
-        MessagingServiceConnectionProperties vmrConnectionProperties =
-                eventPortalPluginProperties.getGateway().getMessaging().getConnections().stream()
-                        .findFirst().orElseThrow(() -> new IllegalArgumentException("Could not find the VMR connection properties"));
+        try {
+            MessagingServiceConnectionProperties vmrConnectionProperties =
+                    eventPortalPluginProperties.getGateway().getMessaging().getConnections().stream()
+                            .findFirst().orElseThrow(() ->
+                                    new NoSuchElementException("Could not find the connection properties."));
 
-        MessagingServiceUsersProperties messagingServiceUsersProperties = vmrConnectionProperties.getUsers().stream()
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Could not find the VMR user properties"));
+            MessagingServiceUsersProperties messagingServiceUsersProperties = vmrConnectionProperties.getUsers().stream()
+                    .findFirst().orElseThrow(() ->
+                            new NoSuchElementException("Could not find the user properties."));
 
-        url = vmrConnectionProperties.getUrl();
-        msgVpn = vmrConnectionProperties.getMsgVpn();
+            url = vmrConnectionProperties.getUrl();
+            msgVpn = vmrConnectionProperties.getMsgVpn();
 
-        if (eventPortalPluginProperties.getGateway().getMessaging().isRtoSession()) {
-            trustStoreDir = vmrConnectionProperties.getTrustStoreDir();
+            if (eventPortalPluginProperties.getGateway().getMessaging().isRtoSession()) {
+                trustStoreDir = vmrConnectionProperties.getTrustStoreDir();
+            }
+            username = messagingServiceUsersProperties.getUsername();
+            password = messagingServiceUsersProperties.getPassword();
+            clientName = messagingServiceUsersProperties.getClientName();
+        } catch (NullPointerException | NoSuchElementException e) {
+            log.error("An error occurred while connecting to EP gateway: {}", e.getMessage());
         }
-        username = messagingServiceUsersProperties.getUsername();
-        password = messagingServiceUsersProperties.getPassword();
-        clientName = messagingServiceUsersProperties.getClientName();
     }
 
     public Properties getVmrProperties() {

@@ -14,4 +14,16 @@ public class RouteBundle {
     private String routeId;
     private String scanType;
     private boolean firstRouteInChain;
+
+    @Override
+    public String toString() {
+        return "RouteBundle{" +
+                "destinations={" + destinations + "}" +
+                ", recipients={" + recipients + "}" +
+                ", messagingServiceId=[" + messagingServiceId + ']' +
+                ", routeId=[" + routeId + ']' +
+                ", scanType=[" + scanType + ']' +
+                ", firstRouteInChain=[" + firstRouteInChain +
+                "]}";
+    }
 }

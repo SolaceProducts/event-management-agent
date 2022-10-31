@@ -18,7 +18,7 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
 
     @Override
     public AdminClient getClient(ConnectionDetailsEvent connectionDetailsEvent) {
-        log.info("Creating Kafka admin client for messaging service {}.", connectionDetailsEvent.getMessagingServiceId());
+        log.trace("Creating Kafka admin client for messaging service {}.", connectionDetailsEvent.getMessagingServiceId());
 
         try {
             Properties properties = new Properties();
@@ -28,7 +28,7 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
 
             AdminClient adminClient = AdminClient.create(properties);
 
-            log.info("Kafka admin client created for {}.", connectionDetailsEvent.getMessagingServiceId());
+            log.trace("Kafka admin client created for {}.", connectionDetailsEvent.getMessagingServiceId());
             return adminClient;
         } catch (KafkaException e) {
             log.error("Could not create Kafka admin client for messaging service {}. Error: {}, cause: {}",
