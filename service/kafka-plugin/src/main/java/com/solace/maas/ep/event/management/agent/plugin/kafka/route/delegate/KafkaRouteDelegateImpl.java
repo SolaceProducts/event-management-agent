@@ -23,11 +23,6 @@ public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
         final KafkaScanType kafkaScanType = KafkaScanType.valueOf(scanType);
 
         switch (kafkaScanType) {
-            case KAFKA_ASYNC:
-                result.add(createRouteBundle(destinations, recipients,
-                        scanType, messagingServiceId, "asyncTopic", true));
-
-                break;
             case KAFKA_TOPIC_LISTING:
                 result.add(topicListingRouteBundle(destinations, recipients, messagingServiceId));
 
@@ -75,8 +70,6 @@ public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
                 result.add(completeTopicConfigurationRouteBundle(destinations, recipients, messagingServiceId));
                 result.add(consumerGroupsConfigRouteBundle(destinations, recipients, messagingServiceId,
                         KafkaScanType.KAFKA_ALL.name()));
-                result.add(createRouteBundle(destinations, recipients,
-                        scanType, messagingServiceId, "asyncTopic", true));
 
                 break;
         }
