@@ -1,7 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.config;
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.util.Map;

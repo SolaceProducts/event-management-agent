@@ -1,5 +1,9 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 public enum KafkaScanType {
     KAFKA_TOPIC_LISTING,
     KAFKA_TOPIC_CONFIGURATION,

@@ -3,6 +3,8 @@ package com.solace.maas.ep.event.management.agent.service;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
@@ -19,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -126,15 +130,17 @@ public class ScanService {
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
+        String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
+
         for (RouteBundle routeBundle : routeBundles) {
             log.trace("Processing RouteBundles: {}", routeBundle);
 
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
-            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
+            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanEntityId);
 
-            scanAsync(groupId, scanId, route, routeBundle.getMessagingServiceId());
+            scanAsync(groupId, scanEntityId, route, routeBundle.getMessagingServiceId());
             savedScanEntity = returnedScanEntity;
         }
 
@@ -253,6 +259,13 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
+
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TERMINATION_TIMER, true);
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TYPE, SchedulerType.INTERVAL.name());
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_DESTINATION, "seda:terminateAsyncProcess");
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_START_DELAY, 5000);
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_INTERVAL, 5000);
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_REPEAT_COUNT, 0);
 
             MDC.put(RouteConstants.SCAN_ID, scanId);
             MDC.put(RouteConstants.SCHEDULE_ID, groupId);

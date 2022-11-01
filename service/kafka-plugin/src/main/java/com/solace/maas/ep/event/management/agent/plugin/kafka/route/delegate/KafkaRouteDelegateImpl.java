@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaRouteId;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaRouteType;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaScanType;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 @Component("kafkaRouteDelegateImpl")
 public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
     public KafkaRouteDelegateImpl() {

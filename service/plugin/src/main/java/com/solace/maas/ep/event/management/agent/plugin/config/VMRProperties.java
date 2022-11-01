@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.config;
 
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
 import com.solace.messaging.config.SolaceConstants;
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 @Slf4j
 @Data
 @Configuration

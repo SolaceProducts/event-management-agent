@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.route.delegate;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.delegate.base.MessagingServiceRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceRouteId;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 @Component
 public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
     public SolaceRouteDelegateImpl() {
