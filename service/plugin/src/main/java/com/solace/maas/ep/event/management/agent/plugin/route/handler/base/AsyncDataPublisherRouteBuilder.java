@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
@@ -17,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
     private final AsyncRoutePublisherImpl asyncRoutePublisher;
 
