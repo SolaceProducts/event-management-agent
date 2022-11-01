@@ -65,7 +65,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
 
             message = (T) objectMapper.readValue(messageAsString, messageClass);
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
-            log.debug("onMessage: {} {}", inboundMessage.getDestinationName(), message);
+            log.trace("onMessage: {} {}", inboundMessage.getDestinationName(), message);
             receiveMessage(inboundMessage.getDestinationName(), message);
         } catch (ClassNotFoundException | JsonProcessingException e) {
             throw new RuntimeException(e);

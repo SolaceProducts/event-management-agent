@@ -73,7 +73,7 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, routes.size(), groupId, scanId);
+        return scanService.singleScan(routes, groupId, scanId);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

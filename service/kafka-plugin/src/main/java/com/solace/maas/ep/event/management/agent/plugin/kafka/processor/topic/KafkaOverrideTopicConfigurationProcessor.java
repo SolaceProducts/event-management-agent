@@ -1,12 +1,13 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaOverrideTopicConfigurationEvent;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaConfigurationEntryEvent;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaOverrideTopicConfigurationEvent;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.common.config.ConfigResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ExcludeFromJacocoGeneratedReport
 @Component
 @SuppressWarnings("PMD")

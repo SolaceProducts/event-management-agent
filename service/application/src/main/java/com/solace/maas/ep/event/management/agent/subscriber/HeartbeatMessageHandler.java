@@ -26,6 +26,6 @@ public class HeartbeatMessageHandler extends SolaceMessageHandler<HeartbeatMessa
 
     @Override
     public void receiveMessage(String destinationName, HeartbeatMessage message) {
-        log.debug("receiveMessage {}", message);
+        log.trace("receiveMessage {}", message);
     }
 }

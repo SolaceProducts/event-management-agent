@@ -1,9 +1,10 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.TopicListing;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class KafkaTopicListingProcessor extends ResultProcessorImpl<List<KafkaTopicEvent>, Void> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
