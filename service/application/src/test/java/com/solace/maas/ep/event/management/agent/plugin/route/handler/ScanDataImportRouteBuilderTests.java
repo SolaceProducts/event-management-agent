@@ -1,10 +1,9 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportAllFilesProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportGroupFilesProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportScanFilesProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportLogEventsProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanDataImportRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -94,17 +93,16 @@ public class ScanDataImportRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
-            ScanDataImportScanFilesProcessor scanDataImportScanFilesProcessor =
-                    mock(ScanDataImportScanFilesProcessor.class);
-            ScanDataImportGroupFilesProcessor scanDataImportGroupFilesProcessor =
-                    mock(ScanDataImportGroupFilesProcessor.class);
-            ScanDataImportAllFilesProcessor scanDataImportAllFilesProcessor =
-                    mock(ScanDataImportAllFilesProcessor.class);
-            ScanDataImportProcessor scanDataImportProcessor =
-                    mock(ScanDataImportProcessor.class);
+            ScanDataImportFileProcessor scanDataImportFileProcessor =
+                    mock(ScanDataImportFileProcessor.class);
+            ScanLogsImportLogEventsProcessor scanLogsImportLogEventsProcessor =
+                    mock(ScanLogsImportLogEventsProcessor.class);
+            ScanLogsImportProcessor scanLogsImportProcessor =
+                    mock(ScanLogsImportProcessor.class);
 
-            return new ScanDataImportRouteBuilder(scanDataImportScanFilesProcessor, scanDataImportGroupFilesProcessor,
-                    scanDataImportAllFilesProcessor, scanDataImportProcessor);
+            return new ScanDataImportRouteBuilder(scanDataImportFileProcessor,
+                    scanLogsImportProcessor,
+                    scanLogsImportLogEventsProcessor);
         }
     }
 }

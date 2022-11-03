@@ -17,13 +17,31 @@ public class ScanDataPublisher {
         this.solacePublisher = solacePublisher;
     }
 
+    /**
+     * Sends the scan data to EP.
+     * <p>
+     * The topic for UI-triggered scan:
+     * sc/ep/runtime/{orgId}/{runtimeAgentId}/scan/status/v1/{messagingServiceId}/{scanId}
+     * <p>
+     * The topic for imported scan data:
+     * sc/ep/runtime/{orgId}/{runtimeAgentId}/importScan/v1/{messagingServiceId}
+     */
+
     public void sendScanData(ScanDataMessage message, Map<String, String> topicDetails) {
-        String topicString = String.format("sc/ep/runtime/%s/%s/scan/data/v1/%s/%s/%s",
-                topicDetails.get("orgId"),
-                topicDetails.get("runtimeAgentId"),
-                topicDetails.get("messagingServiceId"),
-                topicDetails.get("scanId"),
-                topicDetails.get("dataCollectionType"));
+        boolean isImport = Boolean.parseBoolean(topicDetails.get("isImportOp"));
+
+        String topicString = isImport ?
+                String.format("sc/ep/runtime/%s/%s/importScan/v1/%s",
+                        topicDetails.get("orgId"),
+                        topicDetails.get("runtimeAgentId"),
+                        topicDetails.get("messagingServiceId"))
+                :
+                String.format("sc/ep/runtime/%s/%s/scan/data/v1/%s/%s/%s",
+                        topicDetails.get("orgId"),
+                        topicDetails.get("runtimeAgentId"),
+                        topicDetails.get("messagingServiceId"),
+                        topicDetails.get("scanId"),
+                        topicDetails.get("scanType"));
 
         solacePublisher.publish(message, topicString);
     }

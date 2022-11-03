@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,4 +58,30 @@ public class DataImportControllerImpl implements DataImportController {
                     .body(e.getMessage());
         }
     }
+
+    //  @Override
+    @PostMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
+    public ResponseEntity<String> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
+                                      @PathVariable(value = "scanId") String scanId) {
+        try {
+            ZipRequestBO zipRequestBO = ZipRequestBO.builder()
+                    .messagingServiceId(messagingServiceId)
+                    .scanId(scanId)
+                    .build();
+
+            log.info("Received zip request for scan: {}", scanId);
+
+            importService.zip(zipRequestBO);
+
+            String message = String.format("Zipping complete for scan request: %s.", scanId != null ? scanId : "\"\"");
+
+            log.info(message);
+
+            return ResponseEntity.ok().body(message);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+
 }

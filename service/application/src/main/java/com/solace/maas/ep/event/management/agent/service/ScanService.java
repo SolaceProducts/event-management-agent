@@ -117,8 +117,7 @@ public class ScanService {
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
         send(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
-                routeBundles.stream().findFirst().orElseThrow().getScanType(),
-                ScanStatus.IN_PROGRESS, ScanStatusType.OVERALL, scanTypes);
+                scanTypes, ScanStatus.IN_PROGRESS, ScanStatusType.OVERALL);
 
         for (RouteBundle routeBundle : routeBundles) {
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
@@ -220,22 +219,20 @@ public class ScanService {
      * @param scanId             The Scan ID to set.
      * @param groupId            Not used at the moment. This will be the grouped Scan IDs.
      * @param messagingServiceId The ID of the Messaging Service being scanned.
-     * @param scanType           The type of scan.
+     * @param scanTypes          List of scan types.
      * @param status             The status of scan.
      * @param statusType         The type of scan status. Either the overall scan status, or the route status.
      * @param scanTypes          The list of scan types included in the scan request.
      */
-    public void send(String scanId, String groupId, String messagingServiceId, String scanType,
-                     ScanStatus status, ScanStatusType statusType, List<String> scanTypes) {
+    public void send(String scanId, String groupId, String messagingServiceId, List<String> scanTypes,
+                     ScanStatus status, ScanStatusType statusType) {
         producerTemplate.send("seda:scanStatusPublisher", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
+            exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, statusType);
-
-            exchange.getIn().setBody(scanTypes);
         });
     }
 

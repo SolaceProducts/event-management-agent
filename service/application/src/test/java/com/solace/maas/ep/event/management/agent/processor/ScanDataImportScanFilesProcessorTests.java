@@ -2,7 +2,6 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.processor.util.SendImportData;
 import com.solace.maas.ep.event.management.agent.repository.manualimport.ManualImportRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportEntity;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
@@ -42,35 +41,33 @@ public class ScanDataImportScanFilesProcessorTests {
     IDGenerator idGenerator;
 
     @InjectMocks
-    ScanDataImportScanFilesProcessor scanDataImportScanFilesProcessor;
-
-    @Mock
-    SendImportData sendImportData;
+    ScanDataImportFileProcessor scanDataImportFileProcessor;
 
     @SneakyThrows
     @Test
     public void testScanDataImportScanFilesProcessor() {
         String groupId = UUID.randomUUID().toString();
         String scanId = idGenerator.generateRandomUniqueId();
+        String scanType = "subscriptionConfiguration";
+        String fileName = "data/" + groupId + "/" + scanId + "/" + scanType + ".json";
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "scanType");
         exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
-        exchange.getIn().setHeader("CamelFileName", "data/" + groupId + "/" + scanId);
-
+        exchange.getIn().setHeader("CamelFileName", fileName);
         exchange.getIn().setBody("test exchange");
 
         when(manualImportRepository.save(any(ManualImportEntity.class)))
                 .thenReturn(ManualImportEntity.builder().build());
 
-        scanDataImportScanFilesProcessor.process(exchange);
+        scanDataImportFileProcessor.process(exchange);
 
         assertThatNoException();
 
         exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new Exception());
-        scanDataImportScanFilesProcessor.process(exchange);
+        scanDataImportFileProcessor.process(exchange);
 
         exception.expect(Exception.class);
     }

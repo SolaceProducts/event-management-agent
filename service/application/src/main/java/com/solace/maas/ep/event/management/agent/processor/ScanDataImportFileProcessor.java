@@ -1,7 +1,8 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.processor.util.SendImportData;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.repository.manualimport.ManualImportRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -14,13 +15,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataImportGroupFilesProcessor implements Processor {
-    private final SendImportData sendImportData;
+public class ScanDataImportFileProcessor implements Processor {
     private final ManualImportRepository manualImportRepository;
 
-    public ScanDataImportGroupFilesProcessor(SendImportData sendImportData,
-                                             ManualImportRepository manualImportRepository) {
-        this.sendImportData = sendImportData;
+    public ScanDataImportFileProcessor(ManualImportRepository manualImportRepository) {
         this.manualImportRepository = manualImportRepository;
     }
 
@@ -29,12 +27,16 @@ public class ScanDataImportGroupFilesProcessor implements Processor {
         String fileName = (String) exchange.getIn().getHeader("CamelFileName");
         log.trace("reading file: {}", fileName);
 
-        String groupId = (String) exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID);
-        String scanId = StringUtils.split(fileName, '/')[2];
-        String messagingServiceId = (String) exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID);
-        String body = (String) exchange.getIn().getBody();
+        String[] scanDetails = StringUtils.split(fileName, '/');
+        String groupId = scanDetails[1];
+        String scanId = scanDetails[2];
+        String scanType = scanDetails[3].replace(".json", "");
 
-        String scanType = StringUtils.substringAfterLast(fileName, "/").replace(".json", "");
+        exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+        exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
+        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
 
         ManualImportEntity manualImportEntity = ManualImportEntity.builder()
                 .fileName(fileName)
@@ -44,13 +46,9 @@ public class ScanDataImportGroupFilesProcessor implements Processor {
                 .build();
 
         save(manualImportEntity);
-
-        log.info("Importing {} for schedule Id: {} scan request: {}", scanType, groupId, scanId);
-        sendImportData.sendImportDataAsync(groupId, scanId, scanType, messagingServiceId, body);
     }
 
     private void save(ManualImportEntity manualImportEntity) {
         manualImportRepository.save(manualImportEntity);
     }
 }
-

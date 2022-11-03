@@ -18,4 +18,6 @@ public class RouteConstants {
     public static final String AGGREGATION_ID = "AGGREGATION_ID";
 
     public static final String MESSAGING_SERVICE_ID = "MESSAGING_SERVICE_ID";
+
+    public static final String IS_IMPORTED_DATA = "IS_IMPORTED_DATA";
 }

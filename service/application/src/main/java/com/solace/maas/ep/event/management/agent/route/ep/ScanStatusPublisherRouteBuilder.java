@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import static org.apache.camel.support.builder.PredicateBuilder.or;
+
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
@@ -26,7 +28,8 @@ public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
     @Override
     public void configure() {
         from("seda:processScanStatus?blockWhenFull=true&size=100")
-                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .choice().when(or(header("DATA_PROCESSING_COMPLETE").isEqualTo(true),
+                        header("IMPORT_PROCESSING_COMPLETE").isEqualTo(true)))
                 .to("seda:processEndOfRoute")
                 .endChoice()
                 .end();
