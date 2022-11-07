@@ -35,4 +35,25 @@ public interface DataImportController {
             }
     )
     ResponseEntity<String> read(String messagingServiceId, MultipartFile file, String scheduleId, String scanId);
+
+    @Operation(
+            summary = "Zips data collection files",
+            description = "Use this API to zip the data collection files for the specified messaging service.",
+            parameters = {
+                    @Parameter(name = "messagingServiceId", description = "The ID of the messaging service.", required = true),
+                    @Parameter(name = "scanId", description = "The ID of the scan request.", required = true),
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Scan data is zipped successfully."
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            content = @Content(schema = @Schema(implementation = EventErrorDTO.class), mediaType = "application/json"),
+                            description = "Bad request."
+                    )
+            }
+    )
+    ResponseEntity<String> zip(String messagingServiceId, String scanId);
 }

@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportMetaInfFileProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportLogEventsProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanDataImportRouteBuilder;
@@ -99,6 +100,8 @@ public class ScanDataImportRouteBuilderTests {
                     mock(ScanLogsImportLogEventsProcessor.class);
             ScanLogsImportProcessor scanLogsImportProcessor =
                     mock(ScanLogsImportProcessor.class);
+            ScanDataImportMetaInfFileProcessor scanDataImportMetaInfFileProcessor =
+                    mock(ScanDataImportMetaInfFileProcessor.class);
 
             return new ScanDataImportRouteBuilder(scanDataImportFileProcessor,
                     scanLogsImportProcessor,

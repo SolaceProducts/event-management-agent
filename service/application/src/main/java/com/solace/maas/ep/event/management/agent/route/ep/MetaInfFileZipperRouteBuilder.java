@@ -1,14 +1,13 @@
-package com.solace.maas.ep.event.management.agent.plugin.localstorage.route.handler;
+package com.solace.maas.ep.event.management.agent.route.ep;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import org.apache.camel.AggregationStrategy;
-import org.apache.camel.Exchange;
+import com.solace.maas.ep.event.management.agent.route.ep.aggregation.FileParseAggregationStrategy;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.aggregate.zipfile.ZipAggregationStrategy;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MetaInfFileWriterRouteBuilder extends RouteBuilder {
+public class MetaInfFileZipperRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
@@ -33,22 +32,5 @@ public class MetaInfFileWriterRouteBuilder extends RouteBuilder {
                 .completionFromBatchConsumer()
                 .eagerCheckCompletion()
                 .to("file://data_collection/zip");
-    }
-
-    public static class FileParseAggregationStrategy implements AggregationStrategy {
-
-        @Override
-        public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-            newExchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID,
-                    oldExchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID));
-            newExchange.getIn().setHeader(RouteConstants.SCAN_ID,
-                    oldExchange.getIn().getHeader(RouteConstants.SCAN_ID));
-            newExchange.getIn().setHeader(RouteConstants.SCHEDULE_ID,
-                    oldExchange.getIn().getHeader(RouteConstants.SCHEDULE_ID));
-            newExchange.getIn().setHeader(RouteConstants.SCAN_TYPE,
-                    oldExchange.getIn().getHeader(RouteConstants.SCAN_TYPE));
-
-            return newExchange;
-        }
     }
 }

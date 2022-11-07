@@ -19,5 +19,5 @@ public class RouteConstants {
 
     public static final String MESSAGING_SERVICE_ID = "MESSAGING_SERVICE_ID";
 
-    public static final String IS_IMPORTED_DATA = "IS_IMPORTED_DATA";
+    public static final String IS_DATA_IMPORT = "IS_DATA_IMPORT";
 }

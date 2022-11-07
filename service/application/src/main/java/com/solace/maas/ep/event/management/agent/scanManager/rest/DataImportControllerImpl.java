@@ -48,7 +48,7 @@ public class DataImportControllerImpl implements DataImportController {
             importService.importData(importRequestBO);
 
             String message = String.format("Import complete for schedule: %s, scan request: %s.",
-                    scheduleId != null ? scanId : "\"\"", scanId != null ? scanId : "\"\"");
+                    scheduleId != null ? scheduleId : "\"\"", scanId != null ? scanId : "\"\"");
 
             log.info(message);
 
@@ -59,7 +59,7 @@ public class DataImportControllerImpl implements DataImportController {
         }
     }
 
-    //  @Override
+      @Override
     @PostMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
     public ResponseEntity<String> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
                                       @PathVariable(value = "scanId") String scanId) {
@@ -74,7 +74,6 @@ public class DataImportControllerImpl implements DataImportController {
             importService.zip(zipRequestBO);
 
             String message = String.format("Zipping complete for scan request: %s.", scanId != null ? scanId : "\"\"");
-
             log.info(message);
 
             return ResponseEntity.ok().body(message);
@@ -83,5 +82,4 @@ public class DataImportControllerImpl implements DataImportController {
                     .body(e.getMessage());
         }
     }
-
 }

@@ -43,7 +43,7 @@ public class ScanDataProcessorTests {
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.TOPIC, "test/ep/v1");
-        exchange.getIn().setHeader(RouteConstants.IS_IMPORTED_DATA, false);
+        exchange.getIn().setHeader(RouteConstants.IS_DATA_IMPORT, false);
 
         exchange.getIn().setBody("test data");
 
