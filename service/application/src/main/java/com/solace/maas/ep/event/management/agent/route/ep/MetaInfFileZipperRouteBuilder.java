@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.route.ep;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.route.ep.aggregation.FileParseAggregationStrategy;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.aggregate.zipfile.ZipAggregationStrategy;
 import org.springframework.stereotype.Component;
@@ -21,16 +22,16 @@ public class MetaInfFileZipperRouteBuilder extends RouteBuilder {
                         "}/${header." + RouteConstants.SCAN_TYPE + "}.json")
                 .to("seda:zipFiles");
 
-
         from("seda:zipFiles?blockWhenFull=true")
                 .setBody(simple("${exchangeProperty.FILES}"))
-                .split().body().streaming()
+                .split().body()
+                .setHeader("FILE_LIST_SIZE", header(Exchange.SPLIT_SIZE))
                 .pollEnrich()
                 .simple("file://${body.path}?fileName=${body.name}&noop=true&idempotent=false")
                 .aggregationStrategy(new FileParseAggregationStrategy())
-                .aggregate(constant(true), new ZipAggregationStrategy())
+                .setProperty(Exchange.BATCH_SIZE, header("FILE_LIST_SIZE"))
+                .aggregate(header(RouteConstants.SCAN_ID), new ZipAggregationStrategy(true, true))
                 .completionFromBatchConsumer()
-                .eagerCheckCompletion()
                 .to("file://data_collection/zip");
     }
 }
