@@ -3,6 +3,8 @@ package com.solace.maas.ep.event.management.agent.service;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
@@ -10,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntit
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.MDC;
@@ -18,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -110,22 +115,31 @@ public class ScanService {
      * @return The id of the scan.
      */
     public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId) {
-        log.info("Starting single scan request {}.", scanId);
+        log.info("Scan request [{}]: Starting a single scan.", scanId);
 
         ScanEntity savedScanEntity = null;
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
+        log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
+                scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
+
         send(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
                 scanTypes, ScanStatus.IN_PROGRESS, ScanStatusType.OVERALL);
 
+        log.trace("RouteBundles to be processed: {}", routeBundles);
+
+        String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
+
         for (RouteBundle routeBundle : routeBundles) {
+            log.trace("Processing RouteBundles: {}", routeBundle);
+
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
-            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanId);
+            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanEntityId);
 
-            scanAsync(groupId, scanId, route, routeBundle.getMessagingServiceId());
+            scanAsync(groupId, scanEntityId, route, routeBundle.getMessagingServiceId());
             savedScanEntity = returnedScanEntity;
         }
 
@@ -243,6 +257,13 @@ public class ScanService {
             exchange.getIn().setHeader(SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
 
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TERMINATION_TIMER, true);
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TYPE, SchedulerType.INTERVAL.name());
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_DESTINATION, "seda:terminateAsyncProcess");
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_START_DELAY, 5000);
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_INTERVAL, 5000);
+            exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_REPEAT_COUNT, 0);
+
             MDC.put(RouteConstants.SCAN_ID, scanId);
             MDC.put(RouteConstants.SCHEDULE_ID, groupId);
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
@@ -250,7 +271,7 @@ public class ScanService {
             if (exception != null) {
                 log.error("Exception occurred while executing route {} for scan request: {}.", route.getId(), scanId, exception);
             } else {
-                log.debug("Successfully completed route {} for scan request: {}", route.getId(), scanId);
+                log.trace("Camel route {} for scan request: {} has been executed successfully.", route.getId(), scanId);
             }
             routeService.stopRoute(route);
         });

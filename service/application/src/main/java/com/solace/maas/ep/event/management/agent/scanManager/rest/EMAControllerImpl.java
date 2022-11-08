@@ -45,11 +45,11 @@ public class EMAControllerImpl implements EMAController {
             scanRequestBO.setMessagingServiceId(messagingServiceId);
             scanRequestBO.setScanId(idGenerator.generateRandomUniqueId());
 
-            log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
+            log.info("Scan request [{}]: Received, request details: {}", scanRequestBO.getScanId(), scanRequestBO);
 
-            String scanResult = scanManager.scan(scanRequestBO);
+            String scanId = scanManager.scan(scanRequestBO);
 
-            String message = String.format("started scan request %s.", scanResult);
+            String message = String.format("Scan request [%s]: Scan started.", scanId);
             log.info(message);
 
             return ResponseEntity.ok().body(message);

@@ -37,10 +37,10 @@ public class MessagingServiceConfig implements ApplicationRunner {
         if (Objects.nonNull(messagingServices)) {
 
             log.info(
-                    String.format("Creating messaging service(s): %s.",
+                    String.format("Creating messaging service(s): [%s].",
                             messagingServices.stream()
                                     .map(MessagingServicePluginProperties::getName)
-                                    .collect(Collectors.joining(", ")))
+                                    .collect(Collectors.joining("],[")))
             );
 
             List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
@@ -65,7 +65,7 @@ public class MessagingServiceConfig implements ApplicationRunner {
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
                     .forEach(messagingServiceEntity ->
-                            log.info("Created {} Messaging Service with id: {} and name: {}.",
+                            log.info("Created [{}] Messaging Service with id: [{}] and name: [{}].",
                                     messagingServiceEntity.getMessagingServiceType(),
                                     messagingServiceEntity.getId(), messagingServiceEntity.getName()));
         } else {

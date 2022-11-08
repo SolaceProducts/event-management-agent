@@ -1,9 +1,10 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.feature;
 
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.feature.KafkaFeatureEvent;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.feature.KafkaFeatureEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class KafkaFeaturesProcessor extends ResultProcessorImpl<List<KafkaFeatureEvent>, Void> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;

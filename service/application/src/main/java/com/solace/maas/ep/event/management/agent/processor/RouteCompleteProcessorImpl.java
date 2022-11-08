@@ -1,8 +1,8 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
@@ -34,6 +34,8 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
                 .build();
 
         save(scanStatusEntity);
+
+        log.info("Scan request [{}]: The status of [{}] is: [{}].", scanId, scanType, ScanStatus.COMPLETE.name());
     }
 
     protected ScanStatusEntity save(ScanStatusEntity scanStatusEntity) {

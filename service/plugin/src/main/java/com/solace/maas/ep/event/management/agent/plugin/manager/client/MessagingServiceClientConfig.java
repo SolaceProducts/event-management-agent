@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client;
+package com.solace.maas.ep.event.management.agent.plugin.manager.client;
 
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
 
