@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.processor.ScanDataImportFilePro
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportLogEventsProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanDataImportExceptionHandler;
+import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
@@ -55,7 +56,9 @@ public class ScanDataImportRouteBuilder extends RouteBuilder {
                 .split(new ZipSplitter())
                 .streaming()
                 .filter(filesFilter)
-                .convertBodyTo(String.class)
+                // send scan status message here.
+                .split().tokenize("\\n").streaming()
+//                .convertBodyTo(String.class)
                 .to("seda:processImportFiles");
 
 
@@ -87,11 +90,9 @@ public class ScanDataImportRouteBuilder extends RouteBuilder {
                 .continued(true)
                 .end()
                 .process(scanDataImportFileProcessor)
-                .to("seda:scanStatusPublisher")
-
-                .split().tokenize("\\n").streaming()
+//                .to("seda:scanStatusPublisher")
                 .to("seda:eventPortal")
-                .end()
+                //                .header(Exchange.SPLIT_COMPLETE)
                 .to("seda:processEndOfImportStatus");
 
 
