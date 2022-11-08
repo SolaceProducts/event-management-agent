@@ -38,9 +38,6 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                 .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
                 .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
                 .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
-//                .username(authenticationDetailsEvent.getUsername())
-//                .password(authenticationDetailsEvent.getPassword())
-//                .msgVpn(connectionDetailsEvent.getMsgVpn())
                 .connectionUrl(connectionDetailsEvent.getUrl())
                 .build();
 

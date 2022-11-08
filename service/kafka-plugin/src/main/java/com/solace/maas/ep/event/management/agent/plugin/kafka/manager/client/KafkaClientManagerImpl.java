@@ -36,8 +36,6 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
             properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionDetailsEvent.getUrl());
             properties.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 10_000);
             properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 5000);
-//            properties.put("connections.max.idle.ms", 10_000);
-//            properties.put("request.timeout.ms", 5000);
 
             Optional<AuthenticationDetailsEvent> authenticationDetailsEvent =
                     connectionDetailsEvent.getAuthenticationDetails().stream().findFirst();

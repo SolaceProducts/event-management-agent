@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 public class MessagingServiceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ClientConnectionDetails clientConnectionDetails;
-    //    private List<MessagingServicePluginProperties> messagingServices;
     private List<MessagingServiceEntity> messagingServices;
     private final MessagingServiceEntityToEventConverter entityToEventConverter;
 
@@ -42,60 +41,10 @@ public class MessagingServiceConfig implements ApplicationRunner {
                                     .map(MessagingServiceEntity::getName)
                                     .collect(Collectors.joining(", ")))
             );
-//            messagingServiceDelegateService.addMessagingServiceEntities(messagingServices);
-//
-//            messagingServiceDelegateService.getMessagingServiceById(messagingServices.get(0).getId());
 
             List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
                     .map(entityToEventConverter::convert)
                     .collect(Collectors.toUnmodifiableList());
-//            List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
-//                    .map(messagingService -> {
-//                        List<ConnectionDetailsEvent> connectionDetails = new ArrayList<>();
-
-//                        messagingService.getConnections()
-//                                .forEach(messagingServiceConnection -> {
-////                                    ConnectionDetailsEvent connectionDetailsEvent = clientConnectionDetails.createConnectionDetails(
-////                                            messagingService.getId(), messagingServiceConnection, MessagingServiceType.SOLACE);
-//
-//
-//                                    List<AuthenticationDetailsEvent> authenticationDetailsEvents = messagingServiceConnection.getAuthentication().stream()
-//                                            .map(authenticationDetailsEntity -> {
-//                                                CredentialDetailsEntity credentialDetails = authenticationDetailsEntity
-//                                                        .getCredentials().stream().findFirst().get();
-//
-//                                                return AuthenticationDetailsEvent.builder()
-//                                                        .id(authenticationDetailsEntity.getId())
-//                                                        .username(MessagingServiceConfigurationUtil.getUsername(credentialDetails))
-//                                                        .password(MessagingServiceConfigurationUtil.getPassword(credentialDetails))
-//                                                        .protocol(authenticationDetailsEntity.getProtocol())
-//                                                        .authType(MessagingServiceConfigurationUtil.getAuthenticationType(authenticationDetailsEntity))
-//                                                        .operations(credentialDetails.getOperations().stream()
-//                                                                .map(op ->
-//                                                                        AuthenticationOperationDetailsEvent.builder()
-//                                                                                .name(op.getName())
-//                                                                                .build())
-//                                                                .collect(Collectors.toList()))
-//                                                        .build();
-//                                            }).collect(Collectors.toList());
-//
-//                                    ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
-//                                            .name(messagingServiceConnection.getName())
-//                                            .url(messagingServiceConnection.getUrl())
-//                                            .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(messagingServiceConnection))
-//                                            .sempPageSize(MessagingServiceConfigurationUtil.getSempPageSize(messagingServiceConnection))
-//                                            .authenticationDetails(authenticationDetailsEvents)
-//                                            .build();
-//                                    connectionDetails.add(connectionDetailsEvent);
-//                                });
-//
-//                        return MessagingServiceEvent.builder()
-//                                .id(messagingService.getId())
-//                                .name(messagingService.getName())
-//                                .messagingServiceType(messagingService.getType())
-//                                .connectionDetails(connectionDetails)
-//                                .build();
-//                    }).collect(Collectors.toUnmodifiableList());
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
                     .forEach(messagingServiceEntity ->

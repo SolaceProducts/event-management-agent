@@ -14,14 +14,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessagingServicePluginProperties implements Serializable {
-    //    private String id;
-//
-//    private String name;
-//
-//    private String type;
-//
-//    private MessagingServiceManagementProperties management;
-//
-//    private Map<String, Object> properties;
     List<MessagingServiceEntity> messagingServices;
 }

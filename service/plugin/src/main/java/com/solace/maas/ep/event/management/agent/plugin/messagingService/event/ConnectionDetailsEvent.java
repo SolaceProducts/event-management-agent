@@ -20,10 +20,6 @@ public class ConnectionDetailsEvent implements Serializable {
 
     private String url;
 
-//    private String msgVpn;
-
-//    private String sempPageSize;
-
     private List<AuthenticationDetailsEvent> authenticationDetails;
 
     private List<EventProperty> properties;

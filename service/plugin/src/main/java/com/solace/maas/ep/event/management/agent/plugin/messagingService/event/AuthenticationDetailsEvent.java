@@ -15,17 +15,9 @@ import java.util.List;
 public class AuthenticationDetailsEvent implements Serializable {
     private String id;
 
-//    private String username;
-
-//    private String password;
-
     private String protocol;
-
-//    private String authType;
 
     private List<CredentialDetailsEvent> credentials;
 
     private List<EventProperty> properties;
-
-    //    private List<AuthenticationOperationDetailsEvent> operations;
 }

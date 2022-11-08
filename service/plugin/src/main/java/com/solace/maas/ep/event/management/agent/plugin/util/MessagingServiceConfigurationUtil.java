@@ -32,7 +32,6 @@ public class MessagingServiceConfigurationUtil {
                 .findFirst().
                 map(credential -> getProperty(credential.getProperties(), "username"))
                 .orElse(null);
-//        return getProperty(credentialDetails.getProperties(), "username");
     }
 
     public static String getPassword(AuthenticationDetailsEvent authenticationDetailsEvent) {
@@ -40,7 +39,6 @@ public class MessagingServiceConfigurationUtil {
                 .findFirst().
                 map(credential -> getProperty(credential.getProperties(), "password"))
                 .orElse(null);
-//        return getProperty(credentialDetails.getProperties(), "password");
     }
 
     public static String getAuthenticationType(AuthenticationDetailsEvent authenticationDetailsEvent) {
