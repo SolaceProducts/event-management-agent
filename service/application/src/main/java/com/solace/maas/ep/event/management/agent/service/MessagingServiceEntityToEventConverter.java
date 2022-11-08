@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.A
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationOperationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
-import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,7 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
                             .name(messagingServiceConnection.getName())
                             .url(messagingServiceConnection.getUrl())
                             .properties(ensureList(messagingServiceConnection.getProperties()).stream()
-                                    .map(prop -> (EventProperty) convertPropertyEntityToEvent(prop))
+                                    .map(this::convertPropertyEntityToEvent)
                                     .collect(Collectors.toUnmodifiableList()))
                             .authenticationDetails(authenticationDetailsEvents)
                             .build();
@@ -51,6 +50,9 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
         return AuthenticationDetailsEvent.builder()
                 .id(authenticationDetailsEntity.getId())
                 .protocol(authenticationDetailsEntity.getProtocol())
+                .properties(ensureList(authenticationDetailsEntity.getProperties()).stream()
+                        .map(this::convertPropertyEntityToEvent)
+                        .collect(Collectors.toUnmodifiableList()))
                 .credentials(ensureList(authenticationDetailsEntity.getCredentials()).stream()
                         .map(credentialDetailsEntity -> CredentialDetailsEvent.builder()
                                 .id(credentialDetailsEntity.getId())
@@ -62,7 +64,7 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
                                                 .build())
                                         .collect(Collectors.toUnmodifiableList()))
                                 .properties(ensureList(credentialDetailsEntity.getProperties()).stream()
-                                        .map(prop -> (EventProperty) convertPropertyEntityToEvent(prop))
+                                        .map(this::convertPropertyEntityToEvent)
                                         .collect(Collectors.toUnmodifiableList()))
                                 .build())
                         .collect(Collectors.toUnmodifiableList()))

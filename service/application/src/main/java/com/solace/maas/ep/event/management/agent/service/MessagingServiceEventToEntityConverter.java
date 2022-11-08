@@ -39,10 +39,17 @@ public class MessagingServiceEventToEntityConverter extends MessagingServiceConv
                             .messagingService(messagingServiceEntity)
                             .name(connEvent.getName())
                             .url(connEvent.getUrl())
-                            .properties(connEvent.getProperties().stream()
-                                    .map(prop -> (ConnectionPropertiesEntity) convertPropertyEntityToEvent(prop))
-                                    .collect(Collectors.toUnmodifiableList()))
                             .build();
+
+                    connection.setProperties(connEvent.getProperties().stream()
+                            .map(prop ->
+                                    ConnectionPropertiesEntity.builder()
+                                            .id(prop.getId())
+                                            .name(prop.getName())
+                                            .value(prop.getValue())
+                                            .connectionDetails(connection)
+                                            .build())
+                            .collect(Collectors.toUnmodifiableList()));
 
                     List<AuthenticationDetailsEntity> authenticationDetailsEntities =
                             convertAuthenticationDetailsEntities(connection, connEvent);
@@ -64,8 +71,13 @@ public class MessagingServiceEventToEntityConverter extends MessagingServiceConv
 
                     List<AuthenticationPropertiesEntity> authenticationPropertiesEntities =
                             ensureList(authEvent.getProperties()).stream()
-                                    .map(prop -> (AuthenticationPropertiesEntity) convertPropertyEntityToEvent(prop))
-                                    .peek(prop -> prop.setAuthentication(auth))
+                                    .map(prop ->
+                                            AuthenticationPropertiesEntity.builder()
+                                                    .id(prop.getId())
+                                                    .name(prop.getName())
+                                                    .value(prop.getValue())
+                                                    .authentication(auth)
+                                                    .build())
                                     .collect(Collectors.toUnmodifiableList());
 
                     List<CredentialDetailsEntity> credentialDetailsEntities = convertCredentials(auth, authEvent);
@@ -89,8 +101,12 @@ public class MessagingServiceEventToEntityConverter extends MessagingServiceConv
 
                     List<CredentialPropertiesEntity> credentialProperties =
                             ensureList(credEvent.getProperties()).stream()
-                                    .map(prop -> (CredentialPropertiesEntity) convertPropertyEntityToEvent(prop))
-                                    .peek(prop -> prop.setCredentials(credentialDetails))
+                                    .map(prop -> CredentialPropertiesEntity.builder()
+                                            .id(prop.getId())
+                                            .name(prop.getName())
+                                            .value(prop.getValue())
+                                            .credentials(credentialDetails)
+                                            .build())
                                     .collect(Collectors.toUnmodifiableList());
 
                     List<CredentialOperationsEntity> operationsEntities =

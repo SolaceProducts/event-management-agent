@@ -7,11 +7,11 @@ import java.util.List;
 
 public abstract class MessagingServiceConverter {
     @SuppressWarnings("unchecked")
-    public <T extends EventProperty, R extends EventProperty> R convertPropertyEntityToEvent(T property) {
-        return (R) EventProperty.builder()
+    public <T extends EventProperty> EventProperty convertPropertyEntityToEvent(T property) {
+        return EventProperty.builder()
                 .id(property.getId())
                 .name(property.getName())
-                .property(property.getProperty())
+                .value(property.getValue())
                 .build();
     }
 

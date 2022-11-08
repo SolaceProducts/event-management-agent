@@ -1,17 +1,16 @@
 package com.solace.maas.ep.event.management.agent.plugin.messagingService.event;
 
-import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServicePropertyIf;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventProperty implements MessagingServicePropertyIf {
+public class EventProperty {
     private String id;
     private String name;
-    private String property;
+    private String value;
 }

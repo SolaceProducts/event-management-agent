@@ -2,9 +2,9 @@ package com.solace.maas.ep.event.management.agent.repository.model.mesagingservi
 
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.CascadeType;
@@ -20,7 +20,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
+@SuperBuilder
 @Table(name = "CREDENTIAL_PROPERTIES")
 @Entity
 public class CredentialPropertiesEntity extends EventProperty {
@@ -33,8 +33,8 @@ public class CredentialPropertiesEntity extends EventProperty {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "PROPERTY", nullable = false)
-    private String property;
+    @Column(name = "[VALUE]", nullable = false)
+    private String value;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "CREDENTIAL_DETAILS_ID", referencedColumnName = "ID", nullable = false)

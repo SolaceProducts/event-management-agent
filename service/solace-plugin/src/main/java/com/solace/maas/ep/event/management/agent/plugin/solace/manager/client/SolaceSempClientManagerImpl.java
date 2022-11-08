@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.A
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
+import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -34,9 +35,12 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
 
         SempClient sempClient = SempClient.builder()
                 .webClient(WebClient.builder().build())
-                .username(authenticationDetailsEvent.getUsername())
-                .password(authenticationDetailsEvent.getPassword())
-                .msgVpn(connectionDetailsEvent.getMsgVpn())
+                .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
+                .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
+                .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
+//                .username(authenticationDetailsEvent.getUsername())
+//                .password(authenticationDetailsEvent.getPassword())
+//                .msgVpn(connectionDetailsEvent.getMsgVpn())
                 .connectionUrl(connectionDetailsEvent.getUrl())
                 .build();
 
