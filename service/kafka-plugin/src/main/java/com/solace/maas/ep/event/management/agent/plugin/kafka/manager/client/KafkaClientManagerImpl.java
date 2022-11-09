@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
-import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -11,13 +10,10 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.KafkaException;
-import org.apache.kafka.common.config.SslConfigs;
+import org.springframework.util.CollectionUtils;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Properties;
-
-import static com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil.getProperty;
 
 /**
  * The KafkaClientManagerImpl class is a temporary placeholder being used to create a Kafka AdminClient.
@@ -40,9 +36,15 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
             Optional<AuthenticationDetailsEvent> authenticationDetailsEvent =
                     connectionDetailsEvent.getAuthenticationDetails().stream().findFirst();
             authenticationDetailsEvent.ifPresent(auth -> {
-                String authType = MessagingServiceConfigurationUtil.getAuthenticationType(auth);
-                if ("mtls".equals(authType)) {
-                    populateMTLSProperties(auth, properties, connectionDetailsEvent.getMessagingServiceId());
+                if (StringUtils.isNotBlank(auth.getProtocol())) {
+                    properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, auth.getProtocol());
+                }
+                if (!CollectionUtils.isEmpty(auth.getCredentials())) {
+                    CredentialDetailsEvent credentialDetailsEvent = auth.getCredentials().stream().findFirst().get();
+                    if (!CollectionUtils.isEmpty(credentialDetailsEvent.getProperties())) {
+                        credentialDetailsEvent.getProperties()
+                                .forEach(prop -> properties.put(prop.getName(), prop.getValue()));
+                    }
                 }
             });
 
@@ -55,37 +57,5 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
                     connectionDetailsEvent.getMessagingServiceId(), e.getMessage(), String.valueOf(e.getCause()));
             throw e;
         }
-    }
-
-    private void populateMTLSProperties(AuthenticationDetailsEvent authenticationDetailsEvent,
-                                        Properties properties, String messagingServiceId) {
-        CredentialDetailsEvent credentialDetailsEvent = authenticationDetailsEvent.getCredentials().stream()
-                .findFirst().orElseThrow(() -> new NoSuchElementException(
-                        String.format("No credentials configured for authentication details for service with id %s",
-                                messagingServiceId)));
-
-        properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
-
-        addProperty(credentialDetailsEvent, properties, "truststoreLocation",
-                SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, messagingServiceId);
-        addProperty(credentialDetailsEvent, properties, "truststorePassword",
-                SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, messagingServiceId);
-        addProperty(credentialDetailsEvent, properties, "keystoreLocation",
-                SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, messagingServiceId);
-        addProperty(credentialDetailsEvent, properties, "keystorePassword",
-                SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, messagingServiceId);
-        addProperty(credentialDetailsEvent, properties, "keyPassword",
-                SslConfigs.SSL_KEY_PASSWORD_CONFIG, messagingServiceId);
-    }
-
-    private void addProperty(CredentialDetailsEvent credentialDetailsEvent, Properties properties,
-                             String credentialKey, String propertyKey, String messagingServiceId) {
-        String value = getProperty(credentialDetailsEvent.getProperties(), credentialKey);
-        if (StringUtils.isEmpty(value)) {
-            throw new NoSuchElementException(
-                    String.format("No '%s' configured in the credential properties for service with id %s",
-                            credentialKey, messagingServiceId));
-        }
-        properties.put(propertyKey, value);
     }
 }

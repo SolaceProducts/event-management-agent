@@ -31,9 +31,6 @@ public class CredentialDetailsEntity {
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "TYPE", nullable = false)
-    private String type;
-
     @Column(name = "SOURCE", nullable = false)
     private String source;
 

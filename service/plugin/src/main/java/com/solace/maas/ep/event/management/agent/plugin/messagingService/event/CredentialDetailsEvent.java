@@ -14,7 +14,6 @@ import java.util.List;
 @Builder
 public class CredentialDetailsEvent implements Serializable {
     private String id;
-    private String type;
     private String source;
     private List<AuthenticationOperationDetailsEvent> operations;
     private List<EventProperty> properties;

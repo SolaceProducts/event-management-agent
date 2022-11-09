@@ -95,7 +95,6 @@ public class MessagingServiceEventToEntityConverter extends MessagingServiceConv
                     CredentialDetailsEntity credentialDetails = CredentialDetailsEntity.builder()
                             .id(credEvent.getId())
                             .authentication(auth)
-                            .type(credEvent.getType())
                             .source(credEvent.getSource())
                             .build();
 

@@ -56,7 +56,6 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
                 .credentials(ensureList(authenticationDetailsEntity.getCredentials()).stream()
                         .map(credentialDetailsEntity -> CredentialDetailsEvent.builder()
                                 .id(credentialDetailsEntity.getId())
-                                .type(credentialDetailsEntity.getType())
                                 .source(credentialDetailsEntity.getSource())
                                 .operations(ensureList(credentialDetailsEntity.getOperations()).stream()
                                         .map(opEntity -> AuthenticationOperationDetailsEvent.builder()
