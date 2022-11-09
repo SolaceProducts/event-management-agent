@@ -2,7 +2,8 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportFileProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportMetaInfFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportLogEventsProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanDataImportRouteBuilder;
@@ -94,18 +95,18 @@ public class ScanDataImportRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
+            ScanDataImportPublishProcessor scanDataImportPublishProcessor =
+                    mock(ScanDataImportPublishProcessor.class);
             ScanDataImportFileProcessor scanDataImportFileProcessor =
                     mock(ScanDataImportFileProcessor.class);
             ScanLogsImportLogEventsProcessor scanLogsImportLogEventsProcessor =
                     mock(ScanLogsImportLogEventsProcessor.class);
             ScanLogsImportProcessor scanLogsImportProcessor =
                     mock(ScanLogsImportProcessor.class);
-            ScanDataImportMetaInfFileProcessor scanDataImportMetaInfFileProcessor =
-                    mock(ScanDataImportMetaInfFileProcessor.class);
+            ScanDataImportStatusProcessor scanDataImportStatusProcessor =
+                    mock(ScanDataImportStatusProcessor.class);
 
-            return new ScanDataImportRouteBuilder(scanDataImportFileProcessor,
-                    scanLogsImportProcessor,
-                    scanLogsImportLogEventsProcessor);
+            return new ScanDataImportRouteBuilder(scanDataImportPublishProcessor, scanDataImportFileProcessor, scanDataImportStatusProcessor);
         }
     }
 }

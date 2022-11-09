@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
@@ -15,16 +14,13 @@ public class ScanDataImportMetaInfFileProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        String fileName = (String) exchange.getIn().getHeader("CamelFileName");
-        log.trace("reading file: {}", fileName);
+        String camelFileName = (String) exchange.getIn().getHeader("CamelFileName");
+        log.trace("reading file: {}", camelFileName);
 
-        String[] scanDetails = StringUtils.split(fileName, '/');
-        String filepath = scanDetails[0];
-        String groupId = scanDetails[1];
-        String scanId = scanDetails[2];
+        String filepath = StringUtils.substringBefore(camelFileName, "/");
+        String fileName = StringUtils.substringAfterLast(camelFileName, "/");
 
         exchange.getIn().setHeader("filepath", filepath);
-        exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
-        exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+        exchange.getIn().setHeader("fileName", fileName);
     }
 }

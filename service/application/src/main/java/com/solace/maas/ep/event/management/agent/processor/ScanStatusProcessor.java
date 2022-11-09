@@ -48,9 +48,7 @@ public class ScanStatusProcessor implements Processor {
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
 
         ScanStatusType statusType = (ScanStatusType) properties.get(RouteConstants.SCAN_STATUS_TYPE);
-        log.info("ScanStatusProcessor: " + statusType + " " + status + " " + properties.get(RouteConstants.SCAN_TYPE) +
-                " SCAN_ID: " + scanId +
-                ", SCHEDULE_ID: " + properties.get(RouteConstants.SCHEDULE_ID));
+        log.info(properties.get(RouteConstants.SCAN_TYPE) + " ---> " + status);
 
         if (statusType == ScanStatusType.OVERALL) {
             List<String> scanTypes = (List<String>) properties.get(RouteConstants.SCAN_TYPE);

@@ -32,6 +32,7 @@ public class MetaInfFileZipperRouteBuilder extends RouteBuilder {
                 .setProperty(Exchange.BATCH_SIZE, header("FILE_LIST_SIZE"))
                 .aggregate(header(RouteConstants.SCAN_ID), new ZipAggregationStrategy(true, true))
                 .completionFromBatchConsumer()
+                .setHeader(Exchange.FILE_NAME, simple("${header." + RouteConstants.SCAN_ID + "}.zip"))
                 .to("file://data_collection/zip");
     }
 }

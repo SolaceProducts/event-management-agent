@@ -1,16 +1,15 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.repository.manualimport.ManualImportRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportEntity;
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -24,19 +23,14 @@ public class ScanDataImportFileProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+        Map<String, Object> properties = exchange.getIn().getHeaders();
+
+        String fileName = (String) properties.get("CamelFileName");
+        String groupId = (String) properties.get(RouteConstants.SCHEDULE_ID);
+        String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
+
         log.trace("reading file: {}", fileName);
-
-        String[] scanDetails = StringUtils.split(fileName, '/');
-        String groupId = scanDetails[1];
-        String scanId = scanDetails[2];
-        String scanType = scanDetails[3].replace(".json", "");
-
-        exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-        exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
-        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
 
         ManualImportEntity manualImportEntity = ManualImportEntity.builder()
                 .fileName(fileName)

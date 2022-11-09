@@ -16,12 +16,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,19 +42,18 @@ public class ImportService {
 
     public void importData(ImportRequestBO importRequestBO) throws IOException {
         InputStream inProgressStatusStream = importRequestBO.getDataFile().getInputStream();
-        InputStream completeStatusStream = importRequestBO.getDataFile().getInputStream();
         InputStream importStream = importRequestBO.getDataFile().getInputStream();
+
         String messagingServiceId = importRequestBO.getMessagingServiceId();
         String scheduleId = importRequestBO.getScheduleId();
         String scanId = importRequestBO.getScanId();
 
-        sendOverAllStatus(inProgressStatusStream, messagingServiceId, scheduleId, scanId, ScanStatus.IN_PROGRESS)
-                .thenCompose(exchange -> initiateImport(importStream, messagingServiceId, scheduleId, scanId))
-                .thenCompose(exchange -> sendOverAllStatus(completeStatusStream, messagingServiceId, scheduleId, scanId, ScanStatus.COMPLETE));
+        sendOverAllStatus(inProgressStatusStream, messagingServiceId, scheduleId, scanId)
+                .thenCompose(exchange -> initiateImport(importStream, messagingServiceId, scheduleId, scanId));
     }
 
     private CompletableFuture<Exchange> sendOverAllStatus(InputStream files, String messagingServiceId,
-                                                          String scheduleId, String scanId, ScanStatus scanStatus) {
+                                                          String scheduleId, String scanId) {
         RouteEntity route = RouteEntity.builder()
                 .id("processOverAllImportStatus")
                 .active(true)
@@ -61,7 +63,7 @@ public class ImportService {
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, scanStatus);
+            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
 
             exchange.getIn().setBody(files);
@@ -79,13 +81,12 @@ public class ImportService {
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
 
             exchange.getIn().setBody(files);
         });
     }
 
-    public void zip(ZipRequestBO zipRequestBO) {
+    public File zip(ZipRequestBO zipRequestBO) throws ExecutionException, InterruptedException {
         String messagingServiceId = zipRequestBO.getMessagingServiceId();
         String scanId = zipRequestBO.getScanId();
 
@@ -106,7 +107,7 @@ public class ImportService {
         json.put("scanId", scanId);
         json.put("files", filesArr);
 
-        List<DataCollectionFileEvent> events = files.stream()
+        List<DataCollectionFileEvent> fileEvents = files.stream()
                 .map(file -> {
                     Path path = Paths.get(file.getPath());
 
@@ -116,19 +117,30 @@ public class ImportService {
                             .path(path.getParent().toString())
                             .scanId(scanId).purged(false)
                             .build();
-                }).collect(Collectors.toUnmodifiableList());
+                }).collect(Collectors.toList());
 
-        initiateZip(messagingServiceId, scheduleId, scanId, json.toString(), events);
+        fileEvents.add(DataCollectionFileEvent.builder()
+                .id(UUID.randomUUID().toString())
+                .name("META_INF.json")
+                .path(fileEvents.stream().findFirst().orElseThrow().getPath())
+                .scanId(scanId).purged(false)
+                .build());
+
+        CompletableFuture<Exchange> exchange = initiateZip(messagingServiceId, scheduleId, scanId, json.toString(), fileEvents);
+
+        File file = (File) exchange.get().getIn().getHeader("ZIP_FILE");
+
+        return file;
     }
 
-    private void initiateZip(String messagingServiceId, String scheduleId, String scanId, String details,
-                             List<DataCollectionFileEvent> files) {
+    private CompletableFuture<Exchange> initiateZip(String messagingServiceId, String scheduleId, String scanId, String details,
+                                                    List<DataCollectionFileEvent> files) {
         RouteEntity route = RouteEntity.builder()
-                .id("metaInfFileWrite")
+                .id("metaInfCollectionFileWrite")
                 .active(true)
                 .build();
 
-        producerTemplate.send("seda:" + route.getId(), exchange -> {
+        return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);

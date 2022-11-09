@@ -29,7 +29,7 @@ public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
     public void configure() {
         from("seda:processScanStatus?blockWhenFull=true&size=100")
                 .choice().when(or(header("DATA_PROCESSING_COMPLETE").isEqualTo(true),
-                        header("IMPORT_PROCESSING_COMPLETE").isEqualTo(true)))
+                        header("FILE_IMPORTING_COMPLETE").isEqualTo(true)))
                 .to("seda:processEndOfRoute")
                 .endChoice()
                 .end();

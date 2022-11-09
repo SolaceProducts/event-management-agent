@@ -1,6 +1,6 @@
 package com.solace.maas.ep.event.management.agent.publisher;
 
-import com.solace.maas.ep.common.messages.ScanDataMessage;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class ScanDataPublisher {
      * sc/ep/runtime/{orgId}/{runtimeAgentId}/importScan/v1/{messagingServiceId}
      */
 
-    public void sendScanData(ScanDataMessage message, Map<String, String> topicDetails) {
+    public void sendScanData(MOPMessage message, Map<String, String> topicDetails) {
         boolean isImport = Boolean.parseBoolean(topicDetails.get("isImportOp"));
 
         String topicString = isImport ?

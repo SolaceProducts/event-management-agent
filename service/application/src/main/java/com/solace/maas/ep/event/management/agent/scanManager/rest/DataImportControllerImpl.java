@@ -50,7 +50,7 @@ public class DataImportControllerImpl implements DataImportController {
             String message = String.format("Import complete for schedule: %s, scan request: %s.",
                     scheduleId != null ? scheduleId : "\"\"", scanId != null ? scanId : "\"\"");
 
-            log.info(message);
+//            log.info(message);
 
             return ResponseEntity.ok().body(message);
         } catch (Exception e) {
@@ -59,7 +59,7 @@ public class DataImportControllerImpl implements DataImportController {
         }
     }
 
-      @Override
+    @Override
     @PostMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
     public ResponseEntity<String> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
                                       @PathVariable(value = "scanId") String scanId) {

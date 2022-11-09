@@ -35,7 +35,7 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
 
         save(scanStatusEntity);
 
-        log.info("Scan request [{}]: The status of [{}] is: [{}].", scanId, scanType, ScanStatus.COMPLETE.name());
+        log.trace("Scan request [{}]: The status of [{}] is: [{}].", scanId, scanType, ScanStatus.COMPLETE.name());
     }
 
     protected ScanStatusEntity save(ScanStatusEntity scanStatusEntity) {
