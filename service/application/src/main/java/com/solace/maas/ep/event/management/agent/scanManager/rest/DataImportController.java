@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,5 +56,5 @@ public interface DataImportController {
                     )
             }
     )
-    ResponseEntity<String> zip(String messagingServiceId, String scanId);
+    ResponseEntity<InputStreamResource> zip(String messagingServiceId, String scanId);
 }

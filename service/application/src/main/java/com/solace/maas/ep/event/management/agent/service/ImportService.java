@@ -12,11 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.file.GenericFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -86,7 +89,7 @@ public class ImportService {
         });
     }
 
-    public File zip(ZipRequestBO zipRequestBO) throws ExecutionException, InterruptedException {
+    public InputStream zip(ZipRequestBO zipRequestBO) throws ExecutionException, InterruptedException, FileNotFoundException {
         String messagingServiceId = zipRequestBO.getMessagingServiceId();
         String scanId = zipRequestBO.getScanId();
 
@@ -126,21 +129,23 @@ public class ImportService {
                 .scanId(scanId).purged(false)
                 .build());
 
-        CompletableFuture<Exchange> exchange = initiateZip(messagingServiceId, scheduleId, scanId, json.toString(), fileEvents);
+        initiateZip(messagingServiceId, scheduleId, scanId, json.toString(), fileEvents);
 
-        File file = (File) exchange.get().getIn().getHeader("ZIP_FILE");
+        Exchange exchange = downloadZip(scanId);
+        GenericFile<?> genericFile = exchange.getIn().getBody(GenericFile.class);
+        File file = (File) genericFile.getFile();
 
-        return file;
+        return new FileInputStream(file);
     }
 
-    private CompletableFuture<Exchange> initiateZip(String messagingServiceId, String scheduleId, String scanId, String details,
+    private Exchange initiateZip(String messagingServiceId, String scheduleId, String scanId, String details,
                                                     List<DataCollectionFileEvent> files) {
         RouteEntity route = RouteEntity.builder()
                 .id("metaInfCollectionFileWrite")
                 .active(true)
                 .build();
 
-        return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
+        return producerTemplate.send("direct:" + route.getId(), exchange -> {
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
@@ -148,6 +153,17 @@ public class ImportService {
             exchange.setProperty("FILES", files);
 
             exchange.getIn().setBody(details);
+        });
+    }
+
+    private Exchange downloadZip(String scanId) {
+        RouteEntity route = RouteEntity.builder()
+                .id("downloadZip")
+                .active(true)
+                .build();
+
+        return producerTemplate.send("direct:" + route.getId(), exchange -> {
+            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
         });
     }
 }
