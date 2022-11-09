@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.logging;
 
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -8,6 +9,8 @@ import org.apache.camel.impl.engine.DefaultUnitOfWork;
 import org.apache.camel.spi.UnitOfWork;
 import org.slf4j.MDC;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 public class CustomUnitOfWork extends DefaultUnitOfWork implements UnitOfWork {
     public CustomUnitOfWork(Exchange exchange) {
         super(exchange);

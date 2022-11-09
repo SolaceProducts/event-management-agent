@@ -2,7 +2,7 @@ package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
@@ -73,8 +73,11 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     @Transactional
     public MessagingServiceEntity getMessagingServiceById(String messagingServiceId) {
         Optional<MessagingServiceEntity> messagingServiceEntityOpt = repository.findById(messagingServiceId);
-        return messagingServiceEntityOpt.orElseThrow(() ->
-                new NoSuchElementException(String.format("Could not find messaging service with id %s", messagingServiceId)));
+        return messagingServiceEntityOpt.orElseThrow(() -> {
+            String message = String.format("Could not find messaging service with id [%s].", messagingServiceId);
+            log.error(message);
+            return new NoSuchElementException(message);
+        });
     }
 
     /**
@@ -89,7 +92,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     @SuppressWarnings("unchecked")
     @Transactional
     public <T> T getMessagingServiceClient(String messagingServiceId) {
-        log.info("Retrieving connection details for messaging service {}.", messagingServiceId);
+        log.trace("Retrieving connection details for messaging service {}.", messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = getMessagingServiceById(messagingServiceId);
 
@@ -107,16 +110,23 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
             MessagingServiceEvent messagingServiceEvent = entityToEventConverter.convert(messagingServiceEntity);
             ConnectionDetailsEvent connectionDetailsEvent = messagingServiceEvent.getConnectionDetails().stream()
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException(String.format(
-                            "Could not retrieve the messaging service client for %s.", messagingServiceId)));
+                    .orElseThrow(() -> {
+                        String message = String.format("Could not find connection details for [%s] messaging service with name: [%s], id: [%s].",
+                                messagingServiceEntity.getType(),
+                                messagingServiceEntity.getName(),
+                                messagingServiceId);
+                        log.error(message);
+                        return new NoSuchElementException(message);
+                    });
 
             T messagingServiceClient = (T) clientManager.getClient(connectionDetailsEvent);
             messagingServiceClients.put(messagingServiceId, messagingServiceClient);
 
             return messagingServiceClient;
         } else {
-            throw new RuntimeException(String.format(
-                    "Could not retrieve or create the messaging service client for %s.", messagingServiceId));
+            String message = String.format("Could not retrieve or create the messaging service client for [%s].", messagingServiceId);
+            log.error(message);
+            throw new RuntimeException(message);
         }
     }
 }

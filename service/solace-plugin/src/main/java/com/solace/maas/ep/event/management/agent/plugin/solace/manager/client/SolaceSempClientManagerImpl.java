@@ -1,7 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.manager.client;
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.manager.client.MessagingServiceClientManager;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
@@ -23,15 +23,18 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
 
     @Override
     public SolaceHttpSemp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
-        log.info("Creating Solace SEMP client for messaging service {}.",
+        log.trace("Creating Solace SEMP client for messaging service [{}].",
                 connectionDetailsEvent.getMessagingServiceId());
 
         AuthenticationDetailsEvent authenticationDetailsEvent =
                 connectionDetailsEvent.getAuthenticationDetails()
                         .stream()
-                        .findFirst().orElseThrow(() -> new NoSuchElementException(
-                                String.format("Could not find authentication details for service with id %s",
-                                        connectionDetailsEvent.getMessagingServiceId())));
+                        .findFirst().orElseThrow(() -> {
+                            String message = String.format("Could not find authentication details for service with id [%s].",
+                                    connectionDetailsEvent.getMessagingServiceId());
+                            log.error(message);
+                            return new NoSuchElementException(message);
+                        });
 
         SempClient sempClient = SempClient.builder()
                 .webClient(WebClient.builder().build())
@@ -41,7 +44,7 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                 .connectionUrl(connectionDetailsEvent.getUrl())
                 .build();
 
-        log.info("Solace SEMP client created for {}.", connectionDetailsEvent.getMessagingServiceId());
+        log.trace("Solace SEMP client created for {}.", connectionDetailsEvent.getMessagingServiceId());
         return new SolaceHttpSemp(sempClient);
     }
 }

@@ -12,13 +12,13 @@ public class ScanDataMessage extends MOPMessage {
 
     String scanId;
 
-    String dataCollectionType;
+    String scanType;
 
     String data;
 
     private String timestamp;
 
-    public ScanDataMessage(String orgId, String scanId, String dataCollectionType, String data, String timestamp) {
+    public ScanDataMessage(String orgId, String scanId, String scanType, String data, String timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)
@@ -27,7 +27,7 @@ public class ScanDataMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.scanId = scanId;
-        this.dataCollectionType = dataCollectionType;
+        this.scanType = scanType;
         this.data = data;
         this.timestamp = timestamp;
     }

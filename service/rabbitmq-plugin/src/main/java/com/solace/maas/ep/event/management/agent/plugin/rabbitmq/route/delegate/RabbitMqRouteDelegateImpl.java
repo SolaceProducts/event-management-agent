@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.rabbitmq.route.delegate;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.rabbitmq.route.enumeration.RabbitMqScanType;
 import com.solace.maas.ep.event.management.agent.plugin.rabbitmq.route.enumeration.RabbitMqRouteId;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 @Component("rabbitMqRouteDelegateImpl")
 public class RabbitMqRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
     public RabbitMqRouteDelegateImpl() {

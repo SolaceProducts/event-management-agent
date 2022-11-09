@@ -1,9 +1,11 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -67,6 +69,14 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
+                .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
+                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
+                .to("seda:scanStatusPublisher")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
+                        + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
+
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .process(processor)
@@ -84,7 +94,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .end()
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
-                .shareUnitOfWork();
+                .shareUnitOfWork()
+                .to("seda:processScanStatus");
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
