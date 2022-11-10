@@ -49,6 +49,6 @@ public class ScanDataImportMetaInfFileRouteBuilder extends RouteBuilder {
         from("seda:parseMetaInfAndSendStatus")
                 .unmarshal().json(JsonLibrary.Jackson)
                 .setHeader(RouteConstants.SCAN_TYPE, simple("${body.get('files')}"))
-                .to("seda:scanStatusPublisher");
+                .to("direct:scanStatusPublisher");
     }
 }

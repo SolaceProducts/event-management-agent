@@ -27,7 +27,7 @@ public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("seda:processScanStatus?blockWhenFull=true&size=100")
+        from("direct:processScanStatus?blockWhenFull=true&size=100")
                 .choice().when(or(header("DATA_PROCESSING_COMPLETE").isEqualTo(true),
                         header("FILE_IMPORTING_COMPLETE").isEqualTo(true)))
                 .to("seda:processEndOfRoute")
@@ -40,9 +40,9 @@ public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
                 .process(new ScanStatusExceptionHandler())
                 .continued(true)
                 .end()
-                .to("seda:scanStatusPublisher");
+                .to("direct:scanStatusPublisher");
 
-        from("seda:scanStatusPublisher?blockWhenFull=true&size=1000000")
+        from("direct:scanStatusPublisher?blockWhenFull=true&size=1000000")
                 .routeId("scanStatusPublisher")
                 .process(scanStatusProcessor)
                 .onException(Exception.class)

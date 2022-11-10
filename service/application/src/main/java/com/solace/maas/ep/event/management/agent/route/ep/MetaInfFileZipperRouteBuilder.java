@@ -16,7 +16,7 @@ public class MetaInfFileZipperRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from("direct:metaInfCollectionFileWrite") //?blockWhenFull=true&size=" + Integer.MAX_VALUE)
+        from("direct:metaInfCollectionFileWrite")
                 .unmarshal().json(true)
                 .marshal().json(true)
                 .to("file://data_collection/?fileExist=append&charset=utf-8&fileName=" +
@@ -25,7 +25,7 @@ public class MetaInfFileZipperRouteBuilder extends RouteBuilder {
                         "}/${header." + RouteConstants.SCAN_TYPE + "}.json")
                 .to("direct:zipFiles");
 
-        from("direct:zipFiles") //?blockWhenFull=true")
+        from("direct:zipFiles")
                 .setBody(simple("${exchangeProperty.FILES}"))
                 .split().body()
                 .aggregationStrategy(new ShareUnitOfWorkAggregationStrategy(new UseLatestAggregationStrategy()))
@@ -42,7 +42,6 @@ public class MetaInfFileZipperRouteBuilder extends RouteBuilder {
 
         from("direct:downloadZip")
                 .pollEnrich()
-                .simple("file://data_collection/zip?fileName=${header." + RouteConstants.SCAN_ID + "}.zip&noop=true&idempotent=false")
-                .log("getting file");
+                .simple("file://data_collection/zip?fileName=${header." + RouteConstants.SCAN_ID + "}.zip&noop=true&idempotent=false");
     }
 }

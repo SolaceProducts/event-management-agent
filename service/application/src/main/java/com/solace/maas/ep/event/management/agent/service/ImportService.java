@@ -55,6 +55,16 @@ public class ImportService {
                 .thenCompose(exchange -> initiateImport(importStream, messagingServiceId, scheduleId, scanId));
     }
 
+    public void importZip(ImportRequestBO importRequestBO) throws IOException {
+        InputStream importStream = importRequestBO.getDataFile().getInputStream();
+
+        producerTemplate.asyncSend("seda:importScanData", exchange -> {
+            exchange.getIn().setHeader("IMPORT_ID", UUID.randomUUID().toString());
+
+            exchange.getIn().setBody(importStream);
+        });
+    }
+
     private CompletableFuture<Exchange> sendOverAllStatus(InputStream files, String messagingServiceId,
                                                           String scheduleId, String scanId) {
         RouteEntity route = RouteEntity.builder()

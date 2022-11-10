@@ -47,7 +47,7 @@ public class ScanDataImportRouteBuilder extends RouteBuilder {
                         not(header("CamelFileName").contains("META_INF"))))
 
                 .process(scanDataImportStatusProcessor)
-                .to("seda:scanStatusPublisher")
+                .to("direct:scanStatusPublisher")
 
                 .process(scanDataImportFileProcessor)
                 .split().tokenize("\\n").streaming()
@@ -70,7 +70,7 @@ public class ScanDataImportRouteBuilder extends RouteBuilder {
         from("seda:processEndOfFileImportStatus")
                 .routeId("processEndOfImportStatus")
                 .setHeader("FILE_IMPORTING_COMPLETE", constant(true))
-                .to("seda:processScanStatus");
+                .to("direct:processScanStatus");
 
     }
 }

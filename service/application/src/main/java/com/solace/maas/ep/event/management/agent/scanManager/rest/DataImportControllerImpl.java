@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,7 +51,8 @@ public class DataImportControllerImpl implements DataImportController {
 
             log.info("Received import request. Request details: {}", importRequestBO);
 
-            importService.importData(importRequestBO);
+            importService.importZip(importRequestBO);
+//            importService.importData(importRequestBO);
 
             String message = String.format("Import complete for schedule: %s, scan request: %s.",
                     scheduleId != null ? scheduleId : "\"\"", scanId != null ? scanId : "\"\"");
@@ -65,7 +67,7 @@ public class DataImportControllerImpl implements DataImportController {
     }
 
     @Override
-    @PostMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
+    @GetMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
                                       @PathVariable(value = "scanId") String scanId) {
         try {
