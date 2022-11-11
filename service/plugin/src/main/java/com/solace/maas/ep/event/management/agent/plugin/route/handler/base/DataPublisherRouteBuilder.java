@@ -73,7 +73,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
                         + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
-                .to("direct:scanStatusPublisher")
+                .to("direct:scanStatusPublisher?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
                         + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
 
@@ -95,7 +95,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork()
-                .to("direct:processScanStatus");
+                .to("direct:processScanStatus?block=false&failIfNoConsumers=false");
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
