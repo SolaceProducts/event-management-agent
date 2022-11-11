@@ -14,10 +14,10 @@ import java.util.Map;
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataImportFileProcessor implements Processor {
+public class ScanDataImportPersistScanFilesProcessor implements Processor {
     private final ManualImportRepository manualImportRepository;
 
-    public ScanDataImportFileProcessor(ManualImportRepository manualImportRepository) {
+    public ScanDataImportPersistScanFilesProcessor(ManualImportRepository manualImportRepository) {
         this.manualImportRepository = manualImportRepository;
     }
 

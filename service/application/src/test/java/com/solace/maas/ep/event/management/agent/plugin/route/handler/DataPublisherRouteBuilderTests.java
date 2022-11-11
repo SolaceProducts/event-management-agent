@@ -11,6 +11,7 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.component.directvm.DirectVmEndpoint;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.mock;
 public class DataPublisherRouteBuilderTests {
 
     @Autowired
-    private ProducerTemplate template;
+    private ProducerTemplate producerTemplate;
 
     @Autowired
     private CamelContext camelContext;
@@ -59,15 +60,20 @@ public class DataPublisherRouteBuilderTests {
 
     @Test
     public void testMockRoute() throws Exception {
+        DirectVmEndpoint ep = new DirectVmEndpoint("scanStatusPublisher", null);
+        camelContext.addEndpoint("direct:scanStatusPublisher", ep);
+
         AdviceWith.adviceWith(camelContext, "dataPublisherRoute",
                 route -> {
                     route.replaceFromWith("direct:dataPublisherRoute");
+                    route.weaveByToUri("direct:scanStatusPublisher").replace().to("mock:test");
+                    route.weaveByToUri("direct:processScanStatus").replace().to("mock:test");
                     route.weaveAddLast().to("mock:direct:result");
                 });
 
         mockResult.expectedMessageCount(1);
 
-        template.sendBody("direct:dataPublisherRoute", null);
+        producerTemplate.sendBody("direct:dataPublisherRoute", null);
 
         mockResult.assertIsSatisfied();
     }

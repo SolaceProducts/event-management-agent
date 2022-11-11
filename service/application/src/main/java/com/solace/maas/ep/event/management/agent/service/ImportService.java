@@ -1,8 +1,6 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.DataCollectionFileEvent;
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
@@ -27,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,82 +41,70 @@ public class ImportService {
     }
 
     public void importData(ImportRequestBO importRequestBO) throws IOException {
-        InputStream inProgressStatusStream = importRequestBO.getDataFile().getInputStream();
         InputStream importStream = importRequestBO.getDataFile().getInputStream();
+        String importId = UUID.randomUUID().toString();
 
-        String messagingServiceId = importRequestBO.getMessagingServiceId();
-        String scheduleId = importRequestBO.getScheduleId();
-        String scanId = importRequestBO.getScanId();
-
-        sendOverAllStatus(inProgressStatusStream, messagingServiceId, scheduleId, scanId)
-                .thenCompose(exchange -> initiateImport(importStream, messagingServiceId, scheduleId, scanId));
+        initiateImport(importStream, importId);
     }
 
-    public void importZip(ImportRequestBO importRequestBO) throws IOException {
-        InputStream importStream = importRequestBO.getDataFile().getInputStream();
-
-        producerTemplate.asyncSend("seda:importScanData", exchange -> {
-            exchange.getIn().setHeader("IMPORT_ID", UUID.randomUUID().toString());
-
-            exchange.getIn().setBody(importStream);
-        });
-    }
-
-    private CompletableFuture<Exchange> sendOverAllStatus(InputStream files, String messagingServiceId,
-                                                          String scheduleId, String scanId) {
+    private CompletableFuture<Exchange> initiateImport(InputStream files, String importId) {
         RouteEntity route = RouteEntity.builder()
-                .id("processOverAllImportStatus")
+                .id("importScanData")
                 .active(true)
                 .build();
 
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
-            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
-            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
-            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
-
+            exchange.getIn().setHeader("IMPORT_ID", importId);
             exchange.getIn().setBody(files);
         });
     }
 
-    private CompletableFuture<Exchange> initiateImport(InputStream files, String messagingServiceId,
-                                                       String scheduleId, String scanId) {
-        RouteEntity route = RouteEntity.builder()
-                .id("manualImport")
-                .active(true)
-                .build();
-
-        return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
-            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
-            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-
-            exchange.getIn().setBody(files);
-        });
-    }
-
-    public InputStream zip(ZipRequestBO zipRequestBO) throws ExecutionException, InterruptedException, FileNotFoundException {
+    public InputStream zip(ZipRequestBO zipRequestBO) throws FileNotFoundException {
         String messagingServiceId = zipRequestBO.getMessagingServiceId();
         String scanId = zipRequestBO.getScanId();
 
         List<DataCollectionFileEntity> files = dataCollectionFileService.findAllByScanId(scanId);
 
-        List<String> dataFiles = files.stream()
-                .map(DataCollectionFileEntity::getPath)
-                .collect(Collectors.toUnmodifiableList());
+        String scheduleId = StringUtils.substringBetween(files.stream().findFirst().orElseThrow().getPath(), "/");
 
-        String scheduleId = StringUtils.substringBetween(dataFiles.stream().findFirst().orElseThrow(), "/");
+        String json = prepareMetaInfJson(files, messagingServiceId, scheduleId, scanId);
+
+        List<DataCollectionFileEvent> fileEvents = prepareFileEvents(files, scanId);
+
+        initiateZip(messagingServiceId, scheduleId, scanId, json, fileEvents);
+
+        Exchange exchange = downloadZipFile(scanId);
+        GenericFile<?> downloadedGenericFile = exchange.getIn().getBody(GenericFile.class);
+        File downloadedFile = (File) downloadedGenericFile.getFile();
+
+        return new FileInputStream(downloadedFile);
+    }
+
+    private String prepareMetaInfJson(List<DataCollectionFileEntity> files, String messagingServiceId,
+                                      String scheduleId, String scanId) {
 
         JSONObject json = new JSONObject();
         JSONArray filesArr = new JSONArray();
 
-        dataFiles.forEach(filesArr::put);
+        files.forEach(file -> {
+            JSONObject fileOj = new JSONObject();
+            String filePath = file.getPath();
+            String fileName = StringUtils.substringAfterLast(filePath, "/");
+            String dataEntityType = fileName.replace(".json", "");
+            fileOj.put("fileName", fileName);
+            fileOj.put("dataEntityType", dataEntityType);
+            filesArr.put(fileOj);
+        });
+
         json.put("messagingServiceId", messagingServiceId);
         json.put("scheduleId", scheduleId);
         json.put("scanId", scanId);
         json.put("files", filesArr);
 
+        return json.toString();
+    }
+
+    private List<DataCollectionFileEvent> prepareFileEvents(List<DataCollectionFileEntity> files, String scanId) {
         List<DataCollectionFileEvent> fileEvents = files.stream()
                 .map(file -> {
                     Path path = Paths.get(file.getPath());
@@ -132,30 +117,24 @@ public class ImportService {
                             .build();
                 }).collect(Collectors.toList());
 
-        fileEvents.add(DataCollectionFileEvent.builder()
-                .id(UUID.randomUUID().toString())
+        DataCollectionFileEvent metaInfFileEvent = DataCollectionFileEvent.builder()
                 .name("META_INF.json")
                 .path(fileEvents.stream().findFirst().orElseThrow().getPath())
                 .scanId(scanId).purged(false)
-                .build());
+                .build();
 
-        initiateZip(messagingServiceId, scheduleId, scanId, json.toString(), fileEvents);
-
-        Exchange exchange = downloadZip(scanId);
-        GenericFile<?> genericFile = exchange.getIn().getBody(GenericFile.class);
-        File file = (File) genericFile.getFile();
-
-        return new FileInputStream(file);
+        fileEvents.add(metaInfFileEvent);
+        return fileEvents;
     }
 
     private Exchange initiateZip(String messagingServiceId, String scheduleId, String scanId, String details,
-                                                    List<DataCollectionFileEvent> files) {
+                                 List<DataCollectionFileEvent> files) {
         RouteEntity route = RouteEntity.builder()
-                .id("metaInfCollectionFileWrite")
+                .id("writeMetaInfAndZipFiles")
                 .active(true)
                 .build();
 
-        return producerTemplate.send("direct:" + route.getId(), exchange -> {
+        return producerTemplate.send("seda:" + route.getId(), exchange -> {
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
@@ -166,9 +145,9 @@ public class ImportService {
         });
     }
 
-    private Exchange downloadZip(String scanId) {
+    private Exchange downloadZipFile(String scanId) {
         RouteEntity route = RouteEntity.builder()
-                .id("downloadZip")
+                .id("downloadZipFile")
                 .active(true)
                 .build();
 

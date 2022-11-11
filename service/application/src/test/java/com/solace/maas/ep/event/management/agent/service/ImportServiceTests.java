@@ -1,50 +1,105 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
+import lombok.SneakyThrows;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.file.GenericFile;
+import org.apache.camel.support.DefaultExchange;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.concurrent.CompletableFuture;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 @SuppressWarnings("CPD-START")
 public class ImportServiceTests {
+    @TempDir
+    Path tempDir;
+
+    @Autowired
+    private CamelContext camelContext;
 
     @Mock
     private ProducerTemplate producerTemplate;
 
+    @Mock
+    private DataCollectionFileService dataCollectionFileService;
+
     @InjectMocks
     private ImportService importService;
 
+    @SneakyThrows
     @Test
-    public void testSingleScanWithRouteBundle() throws Exception {
+    public void testImportData() {
         MultipartFile multipartFile = new MockMultipartFile("file.tmp", "test".getBytes());
 
         ImportRequestBO importRequestBO = ImportRequestBO.builder()
                 .messagingServiceId("service1")
                 .dataFile(multipartFile)
-                .scheduleId("scheduleId")
+                .build();
+
+        importService.importData(importRequestBO);
+
+        assertThatNoException();
+    }
+
+    @SneakyThrows
+    @Test
+    public void testZipData() {
+        ZipRequestBO zipRequestBO = ZipRequestBO.builder()
+                .messagingServiceId("service1")
                 .scanId("scanId")
                 .build();
 
-        when(producerTemplate.asyncSend(any(String.class), any(Processor.class)))
-                .thenReturn(CompletableFuture.completedFuture(null));
+        when(dataCollectionFileService.findAllByScanId("scanId"))
+                .thenReturn(List.of(DataCollectionFileEntity.builder()
+                        .id(UUID.randomUUID().toString())
+                        .path("data_collection/" + UUID.randomUUID() + "/" + UUID.randomUUID() + "/topicListing.json")
+                        .scan(ScanEntity.builder()
+                                .id(UUID.randomUUID().toString())
+                                .active(true)
+                                .scanType("KAFKA_ALL")
+                                .build())
+                        .purged(false)
+                        .build()));
 
-        importService.importData(importRequestBO);
+        Path file = tempDir.resolve("test.txt");
+        Files.write(file, Collections.singleton("test data"));
+
+        GenericFile<File> genericFile = new GenericFile<>(false);
+        genericFile.setFile(file.toFile());
+
+        Exchange exchange = new DefaultExchange(camelContext);
+        exchange.getIn().setBody(genericFile);
+
+        when(producerTemplate.send(any(String.class), any(Processor.class)))
+                .thenReturn(exchange);
+
+        importService.zip(zipRequestBO);
 
         assertThatNoException();
     }

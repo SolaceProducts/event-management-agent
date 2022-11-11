@@ -19,16 +19,11 @@ public class ImportRequestBO extends AbstractBaseBO<String> {
 
     private String messagingServiceId;
 
-    private String scanId;
-
-    private String scheduleId;
-
     @Override
     public String toString() {
         return "ImportRequestBO{" +
-                "messagingServiceId='" + messagingServiceId + '\'' +
-                ", scanId='" + scanId + '\'' +
-                ", scheduleId='" + scheduleId + '\'' +
+                "dataFile=" + dataFile +
+                ", messagingServiceId='" + messagingServiceId + '\'' +
                 '}';
     }
 }

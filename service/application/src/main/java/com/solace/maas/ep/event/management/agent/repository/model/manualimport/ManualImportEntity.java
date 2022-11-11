@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.repository.model.manualimport;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+@ExcludeFromJacocoGeneratedReport
 @AllArgsConstructor
 @NoArgsConstructor
 @Data

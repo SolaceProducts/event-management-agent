@@ -38,26 +38,19 @@ public class DataImportControllerImpl implements DataImportController {
     @Override
     @PostMapping(value = "/{messagingServiceId}/import")
     public ResponseEntity<String> read(@PathVariable(value = "messagingServiceId") String messagingServiceId,
-                                       @RequestParam("file") MultipartFile file,
-                                       @RequestParam(value = "scheduleId", required = false) String scheduleId,
-                                       @RequestParam(value = "scanId", required = false) String scanId) {
+                                       @RequestParam("file") MultipartFile file) {
         try {
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
                     .messagingServiceId(messagingServiceId)
-                    .scheduleId(scheduleId)
-                    .scanId(scanId)
                     .build();
 
             log.info("Received import request. Request details: {}", importRequestBO);
 
-            importService.importZip(importRequestBO);
-//            importService.importData(importRequestBO);
+            importService.importData(importRequestBO);
 
-            String message = String.format("Import complete for schedule: %s, scan request: %s.",
-                    scheduleId != null ? scheduleId : "\"\"", scanId != null ? scanId : "\"\"");
-
-//            log.info(message);
+            String message = "File import complete.";
+            log.info(message);
 
             return ResponseEntity.ok().body(message);
         } catch (Exception e) {
@@ -69,7 +62,7 @@ public class DataImportControllerImpl implements DataImportController {
     @Override
     @GetMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
-                                      @PathVariable(value = "scanId") String scanId) {
+                                                   @PathVariable(value = "scanId") String scanId) {
         try {
             ZipRequestBO zipRequestBO = ZipRequestBO.builder()
                     .messagingServiceId(messagingServiceId)

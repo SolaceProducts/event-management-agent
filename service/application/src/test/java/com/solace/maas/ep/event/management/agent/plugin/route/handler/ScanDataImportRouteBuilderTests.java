@@ -1,12 +1,8 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportFileProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataImportStatusProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportLogEventsProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanLogsImportProcessor;
-import com.solace.maas.ep.event.management.agent.route.ep.ScanDataImportRouteBuilder;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataPublishImportScanEventProcessor;
+import com.solace.maas.ep.event.management.agent.route.manualImport.ImportRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -79,14 +75,14 @@ public class ScanDataImportRouteBuilderTests {
 
         exchange.getIn().setBody(getZippedText("file"));
 
-        AdviceWith.adviceWith(camelContext, "manualImport",
+        AdviceWith.adviceWith(camelContext, "importScanData",
                 route -> {
-                    route.replaceFromWith("direct:manualImport");
+                    route.replaceFromWith("direct:importScanData");
                     route.weaveAddLast().to("mock:direct:result");
                 });
 
         mockResult.expectedMessageCount(1);
-        producerTemplate.send("direct:manualImport", exchange);
+        producerTemplate.send("direct:importScanData", exchange);
         mockResult.assertIsSatisfied();
     }
 
@@ -95,18 +91,10 @@ public class ScanDataImportRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
-            ScanDataImportPublishProcessor scanDataImportPublishProcessor =
-                    mock(ScanDataImportPublishProcessor.class);
-            ScanDataImportFileProcessor scanDataImportFileProcessor =
-                    mock(ScanDataImportFileProcessor.class);
-            ScanLogsImportLogEventsProcessor scanLogsImportLogEventsProcessor =
-                    mock(ScanLogsImportLogEventsProcessor.class);
-            ScanLogsImportProcessor scanLogsImportProcessor =
-                    mock(ScanLogsImportProcessor.class);
-            ScanDataImportStatusProcessor scanDataImportStatusProcessor =
-                    mock(ScanDataImportStatusProcessor.class);
+            ScanDataPublishImportScanEventProcessor scanDataPublishImportScanEventProcessor =
+                    mock(ScanDataPublishImportScanEventProcessor.class);
 
-            return new ScanDataImportRouteBuilder(scanDataImportPublishProcessor, scanDataImportFileProcessor, scanDataImportStatusProcessor);
+            return new ImportRouteBuilder(scanDataPublishImportScanEventProcessor);
         }
     }
 }

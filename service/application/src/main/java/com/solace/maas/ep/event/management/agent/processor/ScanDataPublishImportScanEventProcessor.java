@@ -17,14 +17,14 @@ import java.util.Map;
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataImportPublishProcessor implements Processor {
+public class ScanDataPublishImportScanEventProcessor implements Processor {
     private final String orgId;
     private final String runtimeAgentId;
 
     private final ScanDataPublisher scanDataPublisher;
 
     @Autowired
-    public ScanDataImportPublishProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
+    public ScanDataPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
         super();
 
         this.scanDataPublisher = scanDataPublisher;
@@ -48,6 +48,7 @@ public class ScanDataImportPublishProcessor implements Processor {
         ImportDataMessage importDataMessage =
                 new ImportDataMessage(orgId, scanId, messagingServiceId);
 
+        log.info("PUBLISHING THE IMPORT SCAN MOP MESSAGE ---> " + importDataMessage);
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);

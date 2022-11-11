@@ -5,20 +5,23 @@ import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacoco
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 
-import java.util.Objects;
-
 @ExcludeFromJacocoGeneratedReport
 public class FileParseAggregationStrategy implements AggregationStrategy {
 
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-        if(Objects.isNull(newExchange)) {
-            return oldExchange;
-        } else {
-            String scanId = oldExchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class);
-            newExchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            newExchange.getIn().setHeader("FILE_LIST_SIZE", oldExchange.getIn().getHeader("FILE_LIST_SIZE"));
-        }
+        newExchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID,
+                oldExchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID));
+        newExchange.getIn().setHeader(RouteConstants.SCAN_ID,
+                oldExchange.getIn().getHeader(RouteConstants.SCAN_ID));
+        newExchange.getIn().setHeader(RouteConstants.SCHEDULE_ID,
+                oldExchange.getIn().getHeader(RouteConstants.SCHEDULE_ID));
+        newExchange.getIn().setHeader(RouteConstants.SCAN_TYPE,
+                oldExchange.getIn().getHeader(RouteConstants.SCAN_TYPE));
+        newExchange.getIn().setHeader(RouteConstants.SCAN_STATUS,
+                oldExchange.getIn().getHeader(RouteConstants.SCAN_STATUS));
+        newExchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE,
+                oldExchange.getIn().getHeader(RouteConstants.SCAN_STATUS_TYPE));
 
         return newExchange;
     }

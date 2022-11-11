@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
 import lombok.SneakyThrows;
 import org.junit.Rule;
@@ -9,16 +10,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
@@ -32,15 +37,51 @@ public class DataImportControllerTests {
 
     @SneakyThrows
     @Test
-    public void testDataImportController() {
+    public void testDataImportControllerRead() {
 
         DataImportController controller = new DataImportControllerImpl(importService);
 
         ResponseEntity<String> reply =
-                controller.read("messagingServiceId", null, "scheduleId", "scanId");
+                controller.read("messagingServiceId", null);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(reply.getBody()).contains("Import complete");
+        assertThat(reply.getBody()).contains("File import complete.");
+
+        assertThatNoException();
+    }
+
+    @SneakyThrows
+    @Test
+    public void testDataImportControllerZip() {
+
+        DataImportController controller = new DataImportControllerImpl(importService);
+
+        ZipRequestBO zipRequestBO = ZipRequestBO.builder()
+                .messagingServiceId("messagingServiceId")
+                .scanId("scanId")
+                .build();
+
+        when(importService.zip(zipRequestBO))
+                .thenReturn(mock(InputStream.class));
+
+        ResponseEntity<InputStreamResource> reply =
+                controller.zip("messagingServiceId", "scanId");
+
+        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThatNoException();
+    }
+
+    @SneakyThrows
+    @Test
+    public void testDataImportControllerZipWithBadRequest() {
+
+        DataImportController controller = new DataImportControllerImpl(importService);
+
+        ResponseEntity<InputStreamResource> reply =
+                controller.zip("messagingServiceId", "scanId");
+
+        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         assertThatNoException();
     }
@@ -55,7 +96,7 @@ public class DataImportControllerTests {
                 .importData(any(ImportRequestBO.class));
 
         ResponseEntity<String> reply =
-                controller.read("messagingServiceId", null, "scheduleId", "scanId");
+                controller.read("messagingServiceId", null);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(reply.getBody()).contains("Exception occurred");

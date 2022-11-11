@@ -10,17 +10,21 @@ import org.apache.camel.Processor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataImportStatusProcessor implements Processor {
+public class ScanDataImportOverAllStatusProcessor implements Processor {
+
     @Override
     public void process(Exchange exchange) throws Exception {
-        MetaInfFileDetailsBO fileName = (MetaInfFileDetailsBO) exchange.getIn().getBody();
-        String scanType = fileName.getDataEntityType();
+        List<MetaInfFileDetailsBO> files = (List<MetaInfFileDetailsBO>) exchange.getIn().getBody();
+        List<String> scanTypes = files.stream().map(MetaInfFileDetailsBO::getDataEntityType).collect(Collectors.toUnmodifiableList());
 
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
-        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
+        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
     }
 }
