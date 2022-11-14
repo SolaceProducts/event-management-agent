@@ -48,7 +48,6 @@ public class ScanDataPublishImportScanEventProcessor implements Processor {
         ImportDataMessage importDataMessage =
                 new ImportDataMessage(orgId, scanId, messagingServiceId);
 
-        log.info("PUBLISHING THE IMPORT SCAN MOP MESSAGE ---> " + importDataMessage);
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);

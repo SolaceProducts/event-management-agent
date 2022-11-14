@@ -43,7 +43,6 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
 
         from("direct:sendOverAllInProgressImportStatus")
                 .routeId("sendOverAllInProgressImportStatus")
-                .log("SEND OVERALL STATUS HERE!")
                 .process(scanDataImportOverAllStatusProcessor)
                 .to("direct:scanStatusPublisher");
     }

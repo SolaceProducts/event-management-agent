@@ -46,8 +46,6 @@ public class ScanDataProcessor implements Processor {
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
-        log.info(properties.get(RouteConstants.SCAN_TYPE) + " ---> Streaming");
-
         ScanDataMessage scanDataMessage =
                 new ScanDataMessage(orgId, scanId, scanType, body, Instant.now().toString());
 

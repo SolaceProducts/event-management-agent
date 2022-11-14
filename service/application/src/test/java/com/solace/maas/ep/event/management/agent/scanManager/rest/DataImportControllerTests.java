@@ -12,8 +12,11 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +31,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class DataImportControllerTests {
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -41,8 +43,11 @@ public class DataImportControllerTests {
 
         DataImportController controller = new DataImportControllerImpl(importService);
 
-        ResponseEntity<String> reply =
-                controller.read(null);
+        MultipartFile multipartFile =
+                new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
+                        "test file contents".getBytes());
+
+        ResponseEntity<String> reply = controller.read(multipartFile);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(reply.getBody()).contains("Manual import completed.");
@@ -91,12 +96,16 @@ public class DataImportControllerTests {
     public void testDataImportControllerException() {
         DataImportController controller = new DataImportControllerImpl(importService);
 
+        MultipartFile multipartFile =
+                new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
+                        "test file contents".getBytes());
+
         doThrow(new IOException("Exception occurred"))
                 .when(importService)
                 .importData(any(ImportRequestBO.class));
 
         ResponseEntity<String> reply =
-                controller.read(null);
+                controller.read(multipartFile);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(reply.getBody()).contains("Exception occurred");

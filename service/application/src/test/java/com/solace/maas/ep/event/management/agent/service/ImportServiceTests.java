@@ -118,7 +118,7 @@ public class ImportServiceTests {
                         .purged(false)
                         .build()));
 
-        Path file = tempDir.resolve("test.txt");
+        Path file = tempDir.resolve("test.json");
         Files.write(file, Collections.singleton("test data"));
 
         GenericFile<File> genericFile = new GenericFile<>(false);

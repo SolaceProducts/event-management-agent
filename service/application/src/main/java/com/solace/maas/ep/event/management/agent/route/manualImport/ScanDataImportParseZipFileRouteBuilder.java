@@ -28,7 +28,6 @@ public class ScanDataImportParseZipFileRouteBuilder extends RouteBuilder {
                 .aggregate(exchangeProperty("IMPORT_ID"), new UseLatestAggregationStrategy())
                 .completionPredicate(header(Exchange.SPLIT_COMPLETE).isEqualTo(true))
                 .setProperty("FILE_LIST_SIZE", header(Exchange.SPLIT_SIZE))
-                .log("FILE SIZE = ${exchangeProperty.FILE_LIST_SIZE}")
                 .to("direct:unzipImportFiles");
 
         from("direct:unzipImportFiles")

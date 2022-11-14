@@ -43,7 +43,7 @@ public class DataImportControllerImpl implements DataImportController {
                     .dataFile(file)
                     .build();
 
-            log.info("Received import request. Request details: {}", importRequestBO);
+            log.info("Received import request for data file: {}", importRequestBO.getDataFile().getOriginalFilename());
 
             importService.importData(importRequestBO);
 

@@ -38,10 +38,7 @@ public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
                         "fileName=${body.fileName}&noop=true&idempotent=false")
                 .aggregationStrategy(new FileParseAggregationStrategy())
                 .process(scanDataImportPersistScanFilesProcessor)
-
-                .log("CAMEL FILE ${header.CamelFileName} ")
                 .split().tokenize("\\n").streaming()
-                .log("${body}")
                 .to("direct:streamImportFiles")
                 .end();
 
