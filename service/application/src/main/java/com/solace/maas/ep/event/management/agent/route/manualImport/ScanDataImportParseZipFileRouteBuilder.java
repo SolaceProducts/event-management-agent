@@ -22,7 +22,7 @@ public class ScanDataImportParseZipFileRouteBuilder extends RouteBuilder {
         from("direct:checkZipSizeAndUnzipFiles")
                 .routeId("checkZipSizeAndUnzipFiles")
                 .pollEnrich()
-                .simple("file://data_collection/import/compressed?fileName=${header." + Exchange.FILE_NAME + "}&noop=true&idempotent=false")
+                .simple("file://data_collection/import/compressed_data_collection?fileName=${header." + Exchange.FILE_NAME + "}&noop=true&idempotent=false")
                 .unmarshal(zipFileDataFormat)
                 .split(bodyAs(Iterator.class))
                 .aggregate(exchangeProperty("IMPORT_ID"), new UseLatestAggregationStrategy())
@@ -36,7 +36,7 @@ public class ScanDataImportParseZipFileRouteBuilder extends RouteBuilder {
                 .simple("file://${header." + Exchange.FILE_PARENT + "}?fileName=${header." + Exchange.FILE_NAME_ONLY + "}&noop=true&idempotent=false")
                 .split(new ZipSplitter())
                 .streaming()
-                .toD("file://data_collection/unzip_data_collection/${header.IMPORT_ID}")
+                .toD("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}")
                 .aggregate(exchangeProperty("IMPORT_ID"), new UseLatestAggregationStrategy())
                 .completionSize(exchangeProperty("FILE_LIST_SIZE"))
                 .to("direct:continueParsingUnzippedFiles");

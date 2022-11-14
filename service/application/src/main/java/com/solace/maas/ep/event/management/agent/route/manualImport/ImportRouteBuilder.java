@@ -28,7 +28,7 @@ public class ImportRouteBuilder extends RouteBuilder {
                 .process(scanDataImportPublishProcessor)
                 .setProperty("IMPORT_ID", header("IMPORT_ID"))
                 .setHeader(Exchange.FILE_NAME, simple("${header.IMPORT_ID}.zip"))
-                .toD("file://data_collection/import/compressed")
+                .toD("file://data_collection/import/compressed_data_collection")
                 .to("direct:checkZipSizeAndUnzipFiles");
 
         from("direct:continueParsingUnzippedFiles")

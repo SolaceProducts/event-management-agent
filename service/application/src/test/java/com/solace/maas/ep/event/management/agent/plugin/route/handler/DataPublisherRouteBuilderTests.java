@@ -66,8 +66,6 @@ public class DataPublisherRouteBuilderTests {
         AdviceWith.adviceWith(camelContext, "dataPublisherRoute",
                 route -> {
                     route.replaceFromWith("direct:dataPublisherRoute");
-                    route.weaveByToUri("direct:scanStatusPublisher").replace().to("mock:test");
-                    route.weaveByToUri("direct:processScanStatus").replace().to("mock:test");
                     route.weaveAddLast().to("mock:direct:result");
                 });
 

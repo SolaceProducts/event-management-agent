@@ -33,7 +33,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
                 .continued(true)
                 .end()
                 .pollEnrich()
-                .simple("file://data_collection/unzip_data_collection/${header.IMPORT_ID}" +
+                .simple("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}" +
                         "?fileName=META_INF.json&noop=true&idempotent=false")
                 .aggregationStrategy(new UseLatestAggregationStrategy())
                 .convertBodyTo(String.class)

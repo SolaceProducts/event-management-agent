@@ -36,20 +36,18 @@ public class DataImportControllerImpl implements DataImportController {
     }
 
     @Override
-    @PostMapping(value = "/{messagingServiceId}/import")
-    public ResponseEntity<String> read(@PathVariable(value = "messagingServiceId") String messagingServiceId,
-                                       @RequestParam("file") MultipartFile file) {
+    @PostMapping(value = "/import")
+    public ResponseEntity<String> read(@RequestParam("file") MultipartFile file) {
         try {
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
-                    .messagingServiceId(messagingServiceId)
                     .build();
 
             log.info("Received import request. Request details: {}", importRequestBO);
 
             importService.importData(importRequestBO);
 
-            String message = "File import complete.";
+            String message = "Manual import completed.";
             log.info(message);
 
             return ResponseEntity.ok().body(message);
@@ -60,7 +58,7 @@ public class DataImportControllerImpl implements DataImportController {
     }
 
     @Override
-    @GetMapping(value = "/{messagingServiceId}/scans/{scanId}/zip")
+    @GetMapping(value = "/{messagingServiceId}/export/{scanId}/zip")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
                                                    @PathVariable(value = "scanId") String scanId) {
         try {
@@ -71,8 +69,8 @@ public class DataImportControllerImpl implements DataImportController {
 
             log.info("Received zip request for scan: {}", scanId);
 
-            InputStream inputStream = importService.zip(zipRequestBO);
-            InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+            InputStream zipInputStream = importService.zip(zipRequestBO);
+            InputStreamResource inputStreamResource = new InputStreamResource(zipInputStream);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
             httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + scanId + ".zip");

@@ -1,18 +1,20 @@
 package com.solace.maas.ep.event.management.agent.service;
 
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.DataCollectionFileEvent;
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDetailsBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.file.GenericFile;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -33,18 +36,25 @@ public class ImportService {
 
     private final ProducerTemplate producerTemplate;
     private final DataCollectionFileService dataCollectionFileService;
+    private final EventPortalProperties eventPortalProperties;
 
     public ImportService(ProducerTemplate producerTemplate,
-                         DataCollectionFileService dataCollectionFileService) {
+                         DataCollectionFileService dataCollectionFileService, EventPortalProperties eventPortalProperties) {
         this.producerTemplate = producerTemplate;
         this.dataCollectionFileService = dataCollectionFileService;
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     public void importData(ImportRequestBO importRequestBO) throws IOException {
+        boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
         InputStream importStream = importRequestBO.getDataFile().getInputStream();
         String importId = UUID.randomUUID().toString();
 
-        initiateImport(importStream, importId);
+        if (isEMAStandalone) {
+            throw new FileUploadException("Scan data could not be imported in standalone mode.");
+        } else {
+            initiateImport(importStream, importId);
+        }
     }
 
     private CompletableFuture<Exchange> initiateImport(InputStream files, String importId) {
@@ -65,13 +75,18 @@ public class ImportService {
 
         List<DataCollectionFileEntity> files = dataCollectionFileService.findAllByScanId(scanId);
 
-        String scheduleId = StringUtils.substringBetween(files.stream().findFirst().orElseThrow().getPath(), "/");
+        String scheduleId = StringUtils.substringBetween(files.stream().findFirst()
+                .orElseThrow(() -> {
+                    String message = "Scan files could not be found.";
+                    log.error(message);
+                    return new FileNotFoundException(message);
+                }).getPath(), "/");
 
-        String json = prepareMetaInfJson(files, messagingServiceId, scheduleId, scanId);
+        MetaInfFileBO metaInfJson = prepareMetaInfJson(files, messagingServiceId, scheduleId, scanId);
 
         List<DataCollectionFileEvent> fileEvents = prepareFileEvents(files, scanId);
 
-        initiateZip(messagingServiceId, scheduleId, scanId, json, fileEvents);
+        initiateZip(messagingServiceId, scheduleId, scanId, metaInfJson, fileEvents);
 
         Exchange exchange = downloadZipFile(scanId);
         GenericFile<?> downloadedGenericFile = exchange.getIn().getBody(GenericFile.class);
@@ -80,28 +95,29 @@ public class ImportService {
         return new FileInputStream(downloadedFile);
     }
 
-    private String prepareMetaInfJson(List<DataCollectionFileEntity> files, String messagingServiceId,
-                                      String scheduleId, String scanId) {
+    private MetaInfFileBO prepareMetaInfJson(List<DataCollectionFileEntity> files, String messagingServiceId,
+                                             String scheduleId, String scanId) {
 
-        JSONObject json = new JSONObject();
-        JSONArray filesArr = new JSONArray();
-
+        List<MetaInfFileDetailsBO> metaInfFileDetailsBOFiles = new ArrayList<>();
         files.forEach(file -> {
-            JSONObject fileOj = new JSONObject();
             String filePath = file.getPath();
             String fileName = StringUtils.substringAfterLast(filePath, "/");
             String dataEntityType = fileName.replace(".json", "");
-            fileOj.put("fileName", fileName);
-            fileOj.put("dataEntityType", dataEntityType);
-            filesArr.put(fileOj);
+
+            MetaInfFileDetailsBO metaInfFileDetailsBOFile =
+                    MetaInfFileDetailsBO.builder()
+                            .fileName(fileName)
+                            .dataEntityType(dataEntityType)
+                            .build();
+            metaInfFileDetailsBOFiles.add(metaInfFileDetailsBOFile);
         });
 
-        json.put("messagingServiceId", messagingServiceId);
-        json.put("scheduleId", scheduleId);
-        json.put("scanId", scanId);
-        json.put("files", filesArr);
-
-        return json.toString();
+        return MetaInfFileBO.builder()
+                .files(metaInfFileDetailsBOFiles)
+                .scheduleId(scheduleId)
+                .scanId(scanId)
+                .messagingServiceId(messagingServiceId)
+                .build();
     }
 
     private List<DataCollectionFileEvent> prepareFileEvents(List<DataCollectionFileEntity> files, String scanId) {
@@ -127,7 +143,7 @@ public class ImportService {
         return fileEvents;
     }
 
-    private Exchange initiateZip(String messagingServiceId, String scheduleId, String scanId, String details,
+    private Exchange initiateZip(String messagingServiceId, String scheduleId, String scanId, MetaInfFileBO metaInfJson,
                                  List<DataCollectionFileEvent> files) {
         RouteEntity route = RouteEntity.builder()
                 .id("writeMetaInfAndZipFiles")
@@ -141,7 +157,7 @@ public class ImportService {
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "META_INF");
             exchange.setProperty("FILES", files);
 
-            exchange.getIn().setBody(details);
+            exchange.getIn().setBody(metaInfJson);
         });
     }
 

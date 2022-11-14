@@ -34,12 +34,9 @@ public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
                 .to("direct:scanStatusPublisher")
 
                 .pollEnrich()
-                .simple("file://data_collection/unzip_data_collection/${header.IMPORT_ID}?" +
+                .simple("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}?" +
                         "fileName=${body.fileName}&noop=true&idempotent=false")
                 .aggregationStrategy(new FileParseAggregationStrategy())
-
-                .process(exchange ->
-                        System.out.println(""))
                 .process(scanDataImportPersistScanFilesProcessor)
 
                 .log("CAMEL FILE ${header.CamelFileName} ")

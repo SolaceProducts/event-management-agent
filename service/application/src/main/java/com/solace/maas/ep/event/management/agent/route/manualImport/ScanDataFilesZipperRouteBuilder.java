@@ -2,8 +2,11 @@ package com.solace.maas.ep.event.management.agent.route.manualImport;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.route.ep.aggregation.FileZipperAggregationStrategy;
+import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanDataImportExceptionHandler;
+import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.processor.aggregate.ShareUnitOfWorkAggregationStrategy;
 import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
 import org.apache.camel.processor.aggregate.zipfile.ZipAggregationStrategy;
@@ -17,8 +20,11 @@ public class ScanDataFilesZipperRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         from("seda:writeMetaInfAndZipFiles?blockWhenFull=true&size=100")
-                .unmarshal().json(true)
-                .marshal().json(true)
+                .onException(Exception.class)
+                .process(new ScanDataImportExceptionHandler())
+                .continued(true)
+                .end()
+                .marshal().json(JsonLibrary.Jackson, MetaInfFileBO.class, true)
                 .to("file://data_collection/?charset=utf-8&fileName=" +
                         "${header." + RouteConstants.SCHEDULE_ID +
                         "}/${header." + RouteConstants.SCAN_ID +
@@ -26,6 +32,10 @@ public class ScanDataFilesZipperRouteBuilder extends RouteBuilder {
                 .to("direct:zipScanFiles");
 
         from("direct:zipScanFiles")
+                .onException(Exception.class)
+                .process(new ScanDataImportExceptionHandler())
+                .continued(true)
+                .end()
                 .setBody(simple("${exchangeProperty.FILES}"))
                 .split().body()
                 .aggregationStrategy(new ShareUnitOfWorkAggregationStrategy(new UseLatestAggregationStrategy()))

@@ -42,10 +42,10 @@ public class DataImportControllerTests {
         DataImportController controller = new DataImportControllerImpl(importService);
 
         ResponseEntity<String> reply =
-                controller.read("messagingServiceId", null);
+                controller.read(null);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(reply.getBody()).contains("File import complete.");
+        assertThat(reply.getBody()).contains("Manual import completed.");
 
         assertThatNoException();
     }
@@ -96,7 +96,7 @@ public class DataImportControllerTests {
                 .importData(any(ImportRequestBO.class));
 
         ResponseEntity<String> reply =
-                controller.read("messagingServiceId", null);
+                controller.read(null);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(reply.getBody()).contains("Exception occurred");

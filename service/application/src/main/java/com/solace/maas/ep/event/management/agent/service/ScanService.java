@@ -240,7 +240,7 @@ public class ScanService {
      */
     public void send(String scanId, String groupId, String messagingServiceId, List<String> scanTypes,
                      ScanStatus status, ScanStatusType statusType) {
-        producerTemplate.send("seda:scanStatusPublisher", exchange -> {
+        producerTemplate.send("direct:scanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);

@@ -16,14 +16,4 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImportRequestBO extends AbstractBaseBO<String> {
 
     private MultipartFile dataFile;
-
-    private String messagingServiceId;
-
-    @Override
-    public String toString() {
-        return "ImportRequestBO{" +
-                "dataFile=" + dataFile +
-                ", messagingServiceId='" + messagingServiceId + '\'' +
-                '}';
-    }
 }

@@ -18,7 +18,6 @@ public interface DataImportController {
             summary = "Imports data collection files",
             description = "Use this API to trigger manual import of data collection for the specified messaging service.",
             parameters = {
-                    @Parameter(name = "messagingServiceId", description = "The ID of the messaging service.", required = true),
                     @Parameter(name = "file", description = "The scan data zip file to be imported.", in = ParameterIn.QUERY)
             },
             responses = {
@@ -33,7 +32,7 @@ public interface DataImportController {
                     )
             }
     )
-    ResponseEntity<String> read(String messagingServiceId, MultipartFile file);
+    ResponseEntity<String> read(MultipartFile file);
 
     @Operation(
             summary = "Zips data collection files",
