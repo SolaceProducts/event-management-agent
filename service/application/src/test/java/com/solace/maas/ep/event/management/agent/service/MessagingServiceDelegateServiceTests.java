@@ -6,7 +6,10 @@ import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationOperationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
@@ -32,6 +35,8 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 @SuppressWarnings("PMD")
 public class MessagingServiceDelegateServiceTests {
+    private final MessagingServiceEventToEntityConverter messagingServiceEventToEntityConverter =
+            new MessagingServiceEventToEntityConverter();
     @Mock
     private MessagingServiceRepository repository;
 
@@ -42,8 +47,21 @@ public class MessagingServiceDelegateServiceTests {
     public void testAddMessagingService() {
         AuthenticationDetailsEvent authenticationDetailsEvent = AuthenticationDetailsEvent.builder()
                 .id(UUID.randomUUID().toString())
-                .username("username")
-                .password("password")
+                .protocol("SEMP")
+                .credentials(List.of(CredentialDetailsEvent.builder()
+                        .operations(List.of(AuthenticationOperationDetailsEvent.builder()
+                                .name("ALL")
+                                .build()))
+                        .properties(List.of(
+                                EventProperty.builder()
+                                        .name("username")
+                                        .value("username")
+                                        .build(),
+                                EventProperty.builder()
+                                        .name("password")
+                                        .value("password")
+                                        .build()))
+                        .build()))
                 .build();
 
         ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
@@ -58,11 +76,9 @@ public class MessagingServiceDelegateServiceTests {
                 .connectionDetails(List.of(connectionDetailsEvent))
                 .build();
 
+        MessagingServiceEntity messagingServiceEntity = messagingServiceEventToEntityConverter.convert(messagingServiceEvent);
         when(repository.save(any(MessagingServiceEntity.class)))
-                .thenReturn(MessagingServiceEntity.builder()
-//                        .messagingServiceType(MessagingServiceType.SOLACE.name())
-                        .name("service1")
-                        .build());
+                .thenReturn(messagingServiceEntity);
 
         messagingServiceDelegateService.addMessagingService(messagingServiceEvent);
 

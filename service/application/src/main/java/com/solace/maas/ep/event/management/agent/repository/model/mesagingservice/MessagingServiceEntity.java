@@ -12,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,7 +21,7 @@ import java.util.List;
 @Builder
 @Table(name = "MESSAGING_SERVICE")
 @Entity
-public class MessagingServiceEntity {
+public class MessagingServiceEntity implements Serializable {
     @Id
     private String id;
 

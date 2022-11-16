@@ -36,6 +36,7 @@ public class MessagingServiceEventToEntityConverter extends MessagingServiceConv
         return ensureList(messagingServiceEvent.getConnectionDetails()).stream()
                 .map(connEvent -> {
                     ConnectionDetailsEntity connection = ConnectionDetailsEntity.builder()
+                            .id(connEvent.getId())
                             .messagingService(messagingServiceEntity)
                             .name(connEvent.getName())
                             .url(connEvent.getUrl())

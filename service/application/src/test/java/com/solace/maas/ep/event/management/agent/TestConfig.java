@@ -2,17 +2,17 @@ package com.solace.maas.ep.event.management.agent;
 
 import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
-import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
-import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolaceWebPublisher;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
+import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
+import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
@@ -136,15 +136,15 @@ public class TestConfig {
         MessagingServiceRepository repository = mock(MessagingServiceRepository.class);
         ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
                 .id(UUID.randomUUID().toString())
-                .connectionUrl("localhost:9090")
+                .url("localhost:9090")
                 .build();
 
         when(repository.findById(any(String.class)))
                 .thenReturn(Optional.of(MessagingServiceEntity.builder()
-                        .messagingServiceType(MessagingServiceType.SOLACE.name())
+                        .type(MessagingServiceType.SOLACE.name())
                         .name("service1")
                         .id(UUID.randomUUID().toString())
-                        .managementDetails(List.of(connectionDetailsEntity))
+                        .connections(List.of(connectionDetailsEntity))
                         .build()));
         return repository;
     }

@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,7 +24,7 @@ import javax.persistence.Table;
 @SuperBuilder
 @Table(name = "CREDENTIAL_PROPERTIES")
 @Entity
-public class CredentialPropertiesEntity extends EventProperty {
+public class CredentialPropertiesEntity extends EventProperty implements Serializable {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")

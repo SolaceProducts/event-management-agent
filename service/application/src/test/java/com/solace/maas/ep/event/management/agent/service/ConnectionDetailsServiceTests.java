@@ -28,7 +28,7 @@ public class ConnectionDetailsServiceTests {
     @Test
     public void testSave() {
         ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
-                .connectionUrl("localhost:9090")
+                .url("localhost:9090")
                 .id(UUID.randomUUID().toString())
                 .build();
 
@@ -44,7 +44,7 @@ public class ConnectionDetailsServiceTests {
     @Test
     public void testFindByMessagingServiceId() {
         ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
-                .connectionUrl("localhost:9090")
+                .url("localhost:9090")
                 .id(UUID.randomUUID().toString())
                 .build();
 

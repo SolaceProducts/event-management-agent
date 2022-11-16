@@ -29,6 +29,8 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
                             .id(messagingServiceConnection.getId())
                             .name(messagingServiceConnection.getName())
                             .url(messagingServiceConnection.getUrl())
+                            .messagingServiceId(messagingServiceConnection.getMessagingService() == null ?
+                                    null : messagingServiceConnection.getMessagingService().getId())
                             .properties(ensureList(messagingServiceConnection.getProperties()).stream()
                                     .map(this::convertPropertyEntityToEvent)
                                     .collect(Collectors.toUnmodifiableList()))
@@ -59,6 +61,7 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
                                 .source(credentialDetailsEntity.getSource())
                                 .operations(ensureList(credentialDetailsEntity.getOperations()).stream()
                                         .map(opEntity -> AuthenticationOperationDetailsEvent.builder()
+                                                .id(opEntity.getId())
                                                 .name(opEntity.getName())
                                                 .build())
                                         .collect(Collectors.toUnmodifiableList()))

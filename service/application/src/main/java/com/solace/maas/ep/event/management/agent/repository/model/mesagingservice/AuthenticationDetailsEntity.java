@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.List;
 
 @AllArgsConstructor
@@ -24,7 +25,7 @@ import java.util.List;
 @Builder
 @Table(name = "AUTHENTICATION_DETAILS")
 @Entity
-public class AuthenticationDetailsEntity {
+public class AuthenticationDetailsEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")

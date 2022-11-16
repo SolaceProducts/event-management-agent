@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,7 +23,7 @@ import javax.persistence.Table;
 @SuperBuilder
 @Table(name = "CREDENTIAL_OPERATIONS")
 @Entity
-public class CredentialOperationsEntity {
+public class CredentialOperationsEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
