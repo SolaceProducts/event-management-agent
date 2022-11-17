@@ -27,7 +27,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,13 +56,13 @@ public class ImportService {
         }
     }
 
-    private CompletableFuture<Exchange> initiateImport(InputStream files, String importId) {
+    private void initiateImport(InputStream files, String importId) {
         RouteEntity route = RouteEntity.builder()
                 .id("importScanData")
                 .active(true)
                 .build();
 
-        return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
+        producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             exchange.getIn().setHeader("IMPORT_ID", importId);
             exchange.getIn().setBody(files);
         });
@@ -143,14 +142,14 @@ public class ImportService {
         return fileEvents;
     }
 
-    private Exchange initiateZip(String messagingServiceId, String scheduleId, String scanId, MetaInfFileBO metaInfJson,
-                                 List<DataCollectionFileEvent> files) {
+    private void initiateZip(String messagingServiceId, String scheduleId, String scanId, MetaInfFileBO metaInfJson,
+                             List<DataCollectionFileEvent> files) {
         RouteEntity route = RouteEntity.builder()
                 .id("writeMetaInfAndZipFiles")
                 .active(true)
                 .build();
 
-        return producerTemplate.send("seda:" + route.getId(), exchange -> {
+        producerTemplate.send("seda:" + route.getId(), exchange -> {
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, scheduleId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
@@ -167,8 +166,8 @@ public class ImportService {
                 .active(true)
                 .build();
 
-        return producerTemplate.send("direct:" + route.getId(), exchange -> {
-            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-        });
+        return producerTemplate.send("direct:" + route.getId(), exchange ->
+                exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId)
+        );
     }
 }
