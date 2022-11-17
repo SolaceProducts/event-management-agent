@@ -39,7 +39,7 @@ public class ScanDataPublishImportScanEventProcessorTests {
     EventPortalProperties eventPortalProperties;
 
     @InjectMocks
-    ScanDataPublishImportScanEventProcessor scanDataPublishImportScanEventProcessor;
+    ScanDataImportPublishImportScanEventProcessor scanDataPublishImportScanEventProcessor;
 
 
     @SneakyThrows

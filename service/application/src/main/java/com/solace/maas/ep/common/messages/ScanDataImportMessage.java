@@ -9,14 +9,14 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ImportDataMessage extends MOPMessage {
+public class ScanDataImportMessage extends MOPMessage {
     String orgId;
 
     String scanId;
 
     String messagingServiceId;
 
-    public ImportDataMessage(String orgId, String scanId, String messagingServiceId) {
+    public ScanDataImportMessage(String orgId, String scanId, String messagingServiceId) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)

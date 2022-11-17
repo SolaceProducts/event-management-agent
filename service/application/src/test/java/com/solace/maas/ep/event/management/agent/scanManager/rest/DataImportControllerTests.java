@@ -50,7 +50,7 @@ public class DataImportControllerTests {
         ResponseEntity<String> reply = controller.read(multipartFile);
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(reply.getBody()).contains("Manual import completed.");
+        assertThat(reply.getBody()).contains("Manual import started.");
 
         assertThatNoException();
     }

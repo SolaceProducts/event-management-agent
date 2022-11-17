@@ -47,7 +47,7 @@ public class DataImportControllerImpl implements DataImportController {
 
             importService.importData(importRequestBO);
 
-            String message = "Manual import completed.";
+            String message = "Manual import started.";
             log.info(message);
 
             return ResponseEntity.ok().body(message);

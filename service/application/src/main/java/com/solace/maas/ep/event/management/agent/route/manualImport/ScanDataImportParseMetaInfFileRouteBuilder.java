@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.route.manualImport;
 
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportOverAllStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMetaInfFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishImportScanEventProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanDataImportExceptionHandler;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
 import org.apache.camel.builder.RouteBuilder;
@@ -16,11 +17,14 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
 
     private final ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor;
     private final ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor;
+    private final ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor;
 
     public ScanDataImportParseMetaInfFileRouteBuilder(ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor,
-                                                      ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor) {
+                                                      ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor,
+                                                      ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor) {
         this.scanDataImportParseMetaInfFileProcessor = scanDataImportParseMetaInfFileProcessor;
         this.scanDataImportOverAllStatusProcessor = scanDataImportOverAllStatusProcessor;
+        this.scanDataImportPublishImportScanEventProcessor = scanDataImportPublishImportScanEventProcessor;
     }
 
     @Override
@@ -39,6 +43,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
                 .convertBodyTo(String.class)
                 .unmarshal().json(JsonLibrary.Jackson, MetaInfFileBO.class)
                 .process(scanDataImportParseMetaInfFileProcessor)
+                .process(scanDataImportPublishImportScanEventProcessor)
                 .to("direct:sendOverAllInProgressImportStatus");
 
         from("direct:sendOverAllInProgressImportStatus")

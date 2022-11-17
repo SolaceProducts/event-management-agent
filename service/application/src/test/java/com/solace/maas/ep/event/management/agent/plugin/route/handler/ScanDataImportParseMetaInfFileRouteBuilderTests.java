@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportOverAllStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMetaInfFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishImportScanEventProcessor;
 import com.solace.maas.ep.event.management.agent.route.manualImport.ScanDataImportParseMetaInfFileRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -100,9 +101,11 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
                     = mock(ScanDataImportParseMetaInfFileProcessor.class);
             ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor
                     = mock(ScanDataImportOverAllStatusProcessor.class);
+            ScanDataImportPublishImportScanEventProcessor scanDataImportPublishProcessor
+                    = mock(ScanDataImportPublishImportScanEventProcessor.class);
 
             return new ScanDataImportParseMetaInfFileRouteBuilder(scanDataImportParseMetaInfFileProcessor,
-                    scanDataImportOverAllStatusProcessor);
+                    scanDataImportOverAllStatusProcessor, scanDataImportPublishProcessor);
         }
 
         public static String getMetaInfJson() throws JSONException {

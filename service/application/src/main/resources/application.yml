@@ -9,7 +9,7 @@ server:
   port: 8180
 
 idGenerator:
-  originId: event_management_agent_${EP_RUNTIME_AGENT_ID}
+  originId: event_management_agent_${EP_EVENT_MANAGEMENT_AGENT_ID}
 
 spring:
   datasource:

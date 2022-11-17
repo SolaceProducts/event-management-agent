@@ -1,7 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.processor.ScanDataPublishImportScanEventProcessor;
 import com.solace.maas.ep.event.management.agent.route.manualImport.ImportRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -29,8 +28,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static org.mockito.Mockito.mock;
 
 
 @CamelSpringBootTest
@@ -91,10 +88,7 @@ public class ScanDataImportRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
-            ScanDataPublishImportScanEventProcessor scanDataPublishImportScanEventProcessor =
-                    mock(ScanDataPublishImportScanEventProcessor.class);
-
-            return new ImportRouteBuilder(scanDataPublishImportScanEventProcessor);
+            return new ImportRouteBuilder();
         }
     }
 }

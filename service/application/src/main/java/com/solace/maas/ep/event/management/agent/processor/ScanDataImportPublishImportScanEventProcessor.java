@@ -1,6 +1,6 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
-import com.solace.maas.ep.common.messages.ImportDataMessage;
+import com.solace.maas.ep.common.messages.ScanDataImportMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
@@ -17,14 +17,14 @@ import java.util.Map;
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataPublishImportScanEventProcessor implements Processor {
+public class ScanDataImportPublishImportScanEventProcessor implements Processor {
     private final String orgId;
     private final String runtimeAgentId;
 
     private final ScanDataPublisher scanDataPublisher;
 
     @Autowired
-    public ScanDataPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
+    public ScanDataImportPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
         super();
 
         this.scanDataPublisher = scanDataPublisher;
@@ -45,8 +45,8 @@ public class ScanDataPublishImportScanEventProcessor implements Processor {
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
-        ImportDataMessage importDataMessage =
-                new ImportDataMessage(orgId, scanId, messagingServiceId);
+        ScanDataImportMessage importDataMessage =
+                new ScanDataImportMessage(orgId, scanId, messagingServiceId);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
