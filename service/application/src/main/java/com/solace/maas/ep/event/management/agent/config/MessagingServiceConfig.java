@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.config;
 
-import com.solace.maas.ep.event.management.agent.config.plugin.ClientConnectionDetails;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
@@ -28,7 +27,6 @@ import java.util.stream.Collectors;
 @Profile("!TEST")
 public class MessagingServiceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
-    private final ClientConnectionDetails clientConnectionDetails;
     private List<MessagingServiceEntity> messagingServices;
     private final MessagingServiceEntityToEventConverter entityToEventConverter;
 
