@@ -11,12 +11,12 @@ import com.solace.maas.ep.event.management.agent.repository.model.mesagingservic
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialOperationsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialPropertiesEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class MessagingServiceEventToEntityConverter extends MessagingServiceConverter {
     public MessagingServiceEntity convert(MessagingServiceEvent messagingServiceEvent) {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
@@ -42,7 +42,7 @@ public class MessagingServiceEventToEntityConverter extends MessagingServiceConv
                             .url(connEvent.getUrl())
                             .build();
 
-                    connection.setProperties(connEvent.getProperties().stream()
+                    connection.setProperties(ensureList(connEvent.getProperties()).stream()
                             .map(prop ->
                                     ConnectionPropertiesEntity.builder()
                                             .id(prop.getId())

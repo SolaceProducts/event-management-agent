@@ -13,6 +13,8 @@ import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceEntityToEventConverter;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceEventToEntityConverter;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
@@ -147,5 +149,17 @@ public class TestConfig {
                         .connections(List.of(connectionDetailsEntity))
                         .build()));
         return repository;
+    }
+
+    @Bean
+    @Primary
+    public MessagingServiceEntityToEventConverter entityToEventConverter() {
+        return new MessagingServiceEntityToEventConverter();
+    }
+
+    @Bean
+    @Primary
+    public MessagingServiceEventToEntityConverter eventToEntityConverter() {
+        return new MessagingServiceEventToEntityConverter();
     }
 }

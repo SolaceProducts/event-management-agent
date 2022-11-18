@@ -13,11 +13,16 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.E
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialDetailsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialOperationsEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialPropertiesEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import net.logstash.logback.encoder.org.apache.commons.lang3.ArrayUtils;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -35,13 +40,20 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 @SuppressWarnings("PMD")
 public class MessagingServiceDelegateServiceTests {
-    private final MessagingServiceEventToEntityConverter messagingServiceEventToEntityConverter =
-            new MessagingServiceEventToEntityConverter();
+    @Autowired
+    private MessagingServiceEventToEntityConverter eventToEntityConverter;
+    @Autowired
+    private MessagingServiceEntityToEventConverter entityToEventConverter;
     @Mock
     private MessagingServiceRepository repository;
 
-    @InjectMocks
     private MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
+
+    @BeforeEach
+    public void setUp() {
+        messagingServiceDelegateService =
+                new MessagingServiceDelegateServiceImpl(repository, entityToEventConverter, eventToEntityConverter);
+    }
 
     @Test
     public void testAddMessagingService() {
@@ -76,7 +88,7 @@ public class MessagingServiceDelegateServiceTests {
                 .connectionDetails(List.of(connectionDetailsEvent))
                 .build();
 
-        MessagingServiceEntity messagingServiceEntity = messagingServiceEventToEntityConverter.convert(messagingServiceEvent);
+        MessagingServiceEntity messagingServiceEntity = eventToEntityConverter.convert(messagingServiceEvent);
         when(repository.save(any(MessagingServiceEntity.class)))
                 .thenReturn(messagingServiceEntity);
 
@@ -93,26 +105,49 @@ public class MessagingServiceDelegateServiceTests {
 
         byte[] encryptedPassword = "encryptedPassword".getBytes();
 
-        AuthenticationDetailsEntity authenticationDetailsEntity = AuthenticationDetailsEntity.builder()
-                .id(UUID.randomUUID().toString())
-//                .username("username")
-//                .password(ArrayUtils.toObject(encryptedPassword))
+        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
+                .name("service1")
+                .id("testService")
+                .type(MessagingServiceType.KAFKA.name())
                 .build();
 
         ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
-                .id(UUID.randomUUID().toString())
-                .name("testConnectionName")
-//                .connectionUrl("localhost:9090")
-//                .authenticationDetails(List.of(authenticationDetailsEntity))
+                .messagingService(messagingServiceEntity)
+                .name("connectionDetails")
+                .url("localhost:9090")
                 .build();
+        messagingServiceEntity.setConnections(List.of(connectionDetailsEntity));
+
+        AuthenticationDetailsEntity authenticationDetailsEntity = AuthenticationDetailsEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .connections(connectionDetailsEntity)
+                .protocol("PLAINTEXT")
+                .build();
+        connectionDetailsEntity.setAuthentication(List.of(authenticationDetailsEntity));
+
+        CredentialDetailsEntity credentialDetailsEntity = CredentialDetailsEntity.builder()
+                .authentication(authenticationDetailsEntity)
+                .properties(List.of(
+                        CredentialPropertiesEntity.builder()
+                                .name("username")
+                                .value("username")
+                                .build(),
+                        CredentialPropertiesEntity.builder()
+                                .name("password")
+                                .value(ArrayUtils.toString(encryptedPassword))
+                                .build()))
+                .build();
+        authenticationDetailsEntity.setCredentials(List.of(credentialDetailsEntity));
+
+        CredentialOperationsEntity credentialOperationsEntity = CredentialOperationsEntity.builder()
+                .credentials(credentialDetailsEntity)
+                .name("ALL")
+                .build();
+        credentialDetailsEntity.setOperations(List.of(credentialOperationsEntity));
 
         when(repository.findById(any(String.class)))
-                .thenReturn(Optional.of(MessagingServiceEntity.builder()
-//                        .messagingServiceType(MessagingServiceType.KAFKA.name())
-                        .name("service1")
-                        .id(UUID.randomUUID().toString())
-//                        .managementDetails(List.of(connectionDetailsEntity))
-                        .build()));
+                .thenReturn(Optional.of(messagingServiceEntity));
+
         when(clientManager.getClient(any(ConnectionDetailsEvent.class)))
                 .thenReturn(mock(AdminClient.class));
 
