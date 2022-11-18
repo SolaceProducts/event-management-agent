@@ -18,7 +18,7 @@ public class MessagingServiceEntityToEventConverter extends MessagingServiceConv
     public MessagingServiceEvent convert(MessagingServiceEntity messagingService) {
         List<ConnectionDetailsEvent> connectionDetails = new ArrayList<>();
 
-        messagingService.getConnections()
+        ensureList(messagingService.getConnections())
                 .forEach(messagingServiceConnection -> {
                     List<AuthenticationDetailsEvent> authenticationDetailsEvents =
                             ensureList(messagingServiceConnection.getAuthentication()).stream()

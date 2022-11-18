@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -156,6 +157,36 @@ public class MessagingServiceDelegateServiceTests {
         result.close();
 
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    public void testGetMessagingServiceClientNoConnection() {
+        MessagingServiceClientManager clientManager = mock(MessagingServiceClientManager.class);
+
+        MessagingServiceTypeConfig.getMessagingServiceManagers().put("KAFKA", clientManager);
+
+        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
+                .name("service1")
+                .id("testService")
+                .type(MessagingServiceType.KAFKA.name())
+                .build();
+
+        when(repository.findById(any(String.class)))
+                .thenReturn(Optional.of(messagingServiceEntity));
+
+        when(clientManager.getClient(any(ConnectionDetailsEvent.class)))
+                .thenReturn(mock(AdminClient.class));
+
+        String errorMessage = "";
+        try {
+            AdminClient result = messagingServiceDelegateService.getMessagingServiceClient("testService");
+            result.close();
+        } catch (NoSuchElementException e) {
+            errorMessage = e.getMessage();
+        }
+
+        assertThat(errorMessage)
+                .isEqualTo("Could not find connection details for [KAFKA] messaging service with name: [service1], id: [testService].");
     }
 
 }

@@ -23,10 +23,6 @@ public class MessagingServiceConfigurationUtil {
         return getProperty(connectionDetailsEvent.getProperties(), "msgVpn");
     }
 
-    public static String getSempPageSize(ConnectionDetailsEvent connectionDetailsEvent) {
-        return getProperty(connectionDetailsEvent.getProperties(), "sempPageSize");
-    }
-
     public static String getUsername(AuthenticationDetailsEvent authenticationDetailsEvent) {
         return authenticationDetailsEvent.getCredentials().stream()
                 .findFirst().
@@ -39,9 +35,5 @@ public class MessagingServiceConfigurationUtil {
                 .findFirst().
                 map(credential -> getProperty(credential.getProperties(), "password"))
                 .orElse(null);
-    }
-
-    public static String getAuthenticationType(AuthenticationDetailsEvent authenticationDetailsEvent) {
-        return getProperty(authenticationDetailsEvent.getProperties(), "type");
     }
 }
