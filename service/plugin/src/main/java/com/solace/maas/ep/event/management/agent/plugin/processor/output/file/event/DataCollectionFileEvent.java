@@ -16,6 +16,8 @@ public class DataCollectionFileEvent implements Serializable {
 
     private String path;
 
+    private String name;
+
     private String scanId;
 
     private boolean purged;

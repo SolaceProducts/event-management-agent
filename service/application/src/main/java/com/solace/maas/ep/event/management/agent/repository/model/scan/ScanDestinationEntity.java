@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.repository.model.scan;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.CascadeType;
 import javax.persistence.FetchType;
 
+@ExcludeFromJacocoGeneratedReport
 @AllArgsConstructor
 @NoArgsConstructor
 @Data

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import static org.apache.camel.support.builder.PredicateBuilder.or;
+
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
@@ -25,21 +27,22 @@ public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("seda:processScanStatus?blockWhenFull=true&size=100")
-                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
-                .to("seda:processEndOfRoute")
+        from("direct:processScanStatus")
+                .choice().when(or(header("DATA_PROCESSING_COMPLETE").isEqualTo(true),
+                        header("FILE_IMPORTING_COMPLETE").isEqualTo(true)))
+                .to("direct:processEndOfRoute")
                 .endChoice()
                 .end();
 
-        from("seda:processEndOfRoute?blockWhenFull=true&size=100")
+        from("direct:processEndOfRoute")
                 .process(routeCompleteProcessor)
                 .onException(Exception.class)
                 .process(new ScanStatusExceptionHandler())
                 .continued(true)
                 .end()
-                .to("seda:scanStatusPublisher");
+                .to("direct:scanStatusPublisher");
 
-        from("seda:scanStatusPublisher?blockWhenFull=true&size=1000000")
+        from("direct:scanStatusPublisher")
                 .routeId("scanStatusPublisher")
                 .process(scanStatusProcessor)
                 .onException(Exception.class)
