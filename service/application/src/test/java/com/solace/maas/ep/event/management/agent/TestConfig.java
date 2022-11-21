@@ -15,12 +15,15 @@ import com.solace.maas.ep.event.management.agent.repository.model.mesagingservic
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceEntityToEventConverter;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceEventToEntityConverter;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
+import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
 import com.solace.messaging.resources.Topic;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -31,6 +34,7 @@ import org.springframework.context.annotation.Profile;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Random;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -42,6 +46,8 @@ import static org.mockito.Mockito.when;
 @Profile("TEST")
 public class TestConfig {
 
+    @Autowired
+    ProducerTemplate producerTemplate;
     @Autowired
     private CamelContext camelContext;
 
@@ -161,5 +167,27 @@ public class TestConfig {
     @Primary
     public MessagingServiceEventToEntityConverter eventToEntityConverter() {
         return new MessagingServiceEventToEntityConverter();
+    }
+
+    @Bean
+    @Primary
+    public IDGeneratorProperties idGeneratorProperties() {
+        IDGeneratorProperties idGeneratorProperties = mock(IDGeneratorProperties.class);
+        when(idGeneratorProperties.getOriginId()).thenReturn("12345");
+        return idGeneratorProperties;
+    }
+
+    @Bean
+    @Primary
+    public Random random() {
+        return new Random();
+    }
+
+    @Bean
+    @Primary
+    public IDGenerator idGenerator() {
+        IDGenerator idGenerator = new IDGenerator(idGeneratorProperties());
+        idGenerator.setRandom(random());
+        return idGenerator;
     }
 }

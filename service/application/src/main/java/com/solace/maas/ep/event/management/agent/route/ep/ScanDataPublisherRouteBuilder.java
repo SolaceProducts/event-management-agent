@@ -24,5 +24,11 @@ public class ScanDataPublisherRouteBuilder extends RouteBuilder {
                 .transform(body().append("\n"))
                 .process(processor)
                 .to("seda:eventPortalEndOfRoute");
+
+        from("direct:importToEP")
+                .routeId("importDataPublisher")
+                .transform(body().append("\n"))
+                .process(processor);
+
     }
 }

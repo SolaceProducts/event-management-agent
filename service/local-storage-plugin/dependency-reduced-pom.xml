@@ -103,6 +103,7 @@
   <properties>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
+    <org.json.version>20210307</org.json.version>
     <camel.version>3.16.0</camel.version>
   </properties>
 </project>

@@ -50,7 +50,7 @@ public class ScanStatusProcessor implements Processor {
         ScanStatusType statusType = (ScanStatusType) properties.get(RouteConstants.SCAN_STATUS_TYPE);
 
         if (statusType == ScanStatusType.OVERALL) {
-            List<String> scanTypes = (List<String>) exchange.getIn().getBody();
+            List<String> scanTypes = (List<String>) properties.get(RouteConstants.SCAN_TYPE);
 
             topicDetails.put("orgId", orgId);
             topicDetails.put("runtimeAgentId", runtimeAgentId);
