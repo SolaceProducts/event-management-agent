@@ -110,7 +110,7 @@ eventPortal:
 #                      value: ${KEYSTORE_LOCATION}
 #                    - name: ssl.key.password
 #                      value: ${KEY_PASSWORD}
-#    # SASL SCRAM with bonus IAM example
+#    # SASL SCRAM
 #    - id: kafkaSASLSCRAMServiceExample
 #      name: sasl scram kafka cluster example
 #      type: KAFKA
@@ -129,13 +129,69 @@ eventPortal:
 #                    - name: ssl.truststore.password
 #                      value: ${TRUSTSTORE_PASSWORD}
 #                    - name: sasl.jaas.config
-#                      value: org.apache.kafka.common.security.scram.ScramLoginModule required username=admin password=admin-secret-256;
+#                      value: org.apache.kafka.common.security.scram.ScramLoginModule required username=<username> password=<password>;
 #                    - name: sasl.mechanism
 #                      value: SCRAM-SHA-256
-#                    # Add the below values when dealing with IAM
-#                    # - name: sasl.mechanism
-#                    #  value: AWS_MSK_IAM
-#                    #- name: sasl.jaas.config
-#                    #  value: software.amazon.msk.auth.iam.IAMLoginModule required;
-#                    #- name: sasl.client.callback.handler.class
-#                    #  value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+#      # SASL Plain example
+#      - id: saslplain
+#        name: saslplain
+#        type: KAFKA
+#        connections:
+#          - name: saslplainconn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9092}
+#            authentication:
+#              - protocol: SASL_PLAINTEXT
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: sasl.mechanism
+#                        value: PLAIN
+#                      - name: sasl.jaas.config
+#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
+#      # SASL Plain over SSL
+#      - id: saslplainssl
+#        name: saslplainssl
+#        type: KAFKA
+#        connections:
+#          - name: saslplainsslconn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:13091,kafka2:13092}
+#            authentication:
+#              - protocol: SASL_SSL
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: ssl.truststore.location
+#                        value: /home/ubuntu/confluent/scripts/security/kafka.appSA.truststore.jks
+#                      - name: sasl.mechanism
+#                        value: PLAIN
+#                      - name: sasl.jaas.config
+#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
+#      # AWS IAM Example.
+#      # NOTE: Remember to set the aws access id and password in the environment or credentials!
+#      - id: iam
+#        name: iam
+#        type: KAFKA
+#        connections:
+#          - name: iamConn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:awsservers:9098}
+#            authentication:
+#              - protocol: SASL_SSL
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: ssl.truststore.location
+#                        value: /home/ubuntu/kafka.client.truststore.jks
+#                      - name: security.protocol
+#                        value: SASL_SSL
+#                      - name: sasl.mechanism
+#                        value: AWS_MSK_IAM
+#                      - name: sasl.jaas.config
+#                        value: software.amazon.msk.auth.iam.IAMLoginModule required;
+#                      - name: sasl.client.callback.handler.class
+#                        value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
