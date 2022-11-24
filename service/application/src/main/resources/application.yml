@@ -165,7 +165,7 @@ eventPortal:
 #                      - name: ALL
 #                    properties:
 #                      - name: ssl.truststore.location
-#                        value: /home/ubuntu/confluent/scripts/security/kafka.appSA.truststore.jks
+#                        value: ${TRUSTSTORE_LOCATION}
 #                      - name: sasl.mechanism
 #                        value: PLAIN
 #                      - name: sasl.jaas.config
@@ -186,7 +186,7 @@ eventPortal:
 #                      - name: ALL
 #                    properties:
 #                      - name: ssl.truststore.location
-#                        value: /home/ubuntu/kafka.client.truststore.jks
+#                        value: ${TRUSTSTORE_LOCATION}
 #                      - name: security.protocol
 #                        value: SASL_SSL
 #                      - name: sasl.mechanism
