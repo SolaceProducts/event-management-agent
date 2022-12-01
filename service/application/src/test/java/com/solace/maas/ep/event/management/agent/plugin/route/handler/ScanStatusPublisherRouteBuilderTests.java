@@ -3,12 +3,10 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
-import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
-import com.solace.maas.ep.event.management.agent.processor.ScanStatusProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanStatusOverAllProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanStatusPerRouteProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanStatusPublisherRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -47,13 +45,19 @@ public class ScanStatusPublisherRouteBuilderTests {
     @Autowired
     private CamelContext camelContext;
 
-    @EndpointInject("mock:direct:result")
-    private MockEndpoint mockResult;
+    @EndpointInject("mock:direct:mockPerRouteScanStatusPublisherResult")
+    private MockEndpoint mockPerRouteScanStatusPublisherResult;
+
+    @EndpointInject("mock:direct:mockPerRouteInProgressScanStatusPublisherResult")
+    private MockEndpoint mockPerRouteInProgressScanStatusPublisherResult;
+
+    @EndpointInject("mock:direct:mockOverallScanStatusPublisher")
+    private MockEndpoint mockOverallScanStatusPublisher;
 
 
     @Test
     @SneakyThrows
-    public void testMockRouteWithCompleteStatus() throws Exception {
+    public void testMockRouteWithCompleteStatus() {
         Exchange exchange = new DefaultExchange(camelContext);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
@@ -61,41 +65,62 @@ public class ScanStatusPublisherRouteBuilderTests {
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
 
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.COMPLETE);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
 
-        AdviceWith.adviceWith(camelContext, "scanStatusPublisher",
+        AdviceWith.adviceWith(camelContext, "perRouteScanStatusPublisher",
                 route -> {
-                    route.replaceFromWith("direct:scanStatusPublisher");
-                    route.weaveAddLast().to("mock:direct:result");
+                    route.replaceFromWith("direct:perRouteScanStatusPublisher");
+                    route.weaveAddLast().to("mock:direct:mockPerRouteScanStatusPublisherResult");
                 });
 
-        mockResult.expectedMessageCount(1);
-        producerTemplate.send("direct:scanStatusPublisher", exchange);
-        mockResult.assertIsSatisfied();
+        mockPerRouteScanStatusPublisherResult.expectedMessageCount(1);
+        producerTemplate.send("direct:perRouteScanStatusPublisher", exchange);
+        mockPerRouteScanStatusPublisherResult.assertIsSatisfied();
     }
 
     @Test
     @SneakyThrows
-    public void testMockRouteWithInProgressStatus() throws Exception {
+    public void testMockRouteWithInProgressStatus() {
         Exchange exchange = new DefaultExchange(camelContext);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
 
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
 
         exchange.getIn().setBody(List.of("queueListing"));
 
-        AdviceWith.adviceWith(camelContext, "scanStatusPublisher",
+        AdviceWith.adviceWith(camelContext, "perRouteScanStatusPublisher",
                 route -> {
-                    route.replaceFromWith("direct:scanStatusPublisher");
-                    route.weaveAddLast().to("mock:direct:result");
+                    route.replaceFromWith("direct:perRouteScanStatusPublisher");
+                    route.weaveAddLast().to("mock:direct:mockPerRouteInProgressScanStatusPublisherResult");
                 });
 
-        mockResult.expectedMessageCount(1);
-        producerTemplate.send("direct:scanStatusPublisher", exchange);
-        mockResult.assertIsSatisfied();
+        mockPerRouteInProgressScanStatusPublisherResult.expectedMessageCount(1);
+        producerTemplate.send("direct:perRouteScanStatusPublisher", exchange);
+        mockPerRouteInProgressScanStatusPublisherResult.assertIsSatisfied();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testMockRouteOverallStatus() {
+        Exchange exchange = new DefaultExchange(camelContext);
+
+        exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
+
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
+
+        exchange.getIn().setBody(List.of("queueListing"));
+
+        AdviceWith.adviceWith(camelContext, "overallScanStatusPublisher",
+                route -> {
+                    route.replaceFromWith("direct:overallScanStatusPublisher");
+                    route.weaveAddLast().to("mock:direct:mockOverallScanStatusPublisher");
+                });
+
+        mockOverallScanStatusPublisher.expectedMessageCount(1);
+        producerTemplate.send("direct:overallScanStatusPublisher", exchange);
+        mockOverallScanStatusPublisher.assertIsSatisfied();
     }
 
     @Configuration
@@ -106,10 +131,13 @@ public class ScanStatusPublisherRouteBuilderTests {
             SolacePublisher solacePublisher = mock(SolacePublisher.class);
             EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
 
-            ScanStatusPublisher scanStatusPublisher = new ScanStatusPublisher(solacePublisher);
-            ScanStatusProcessor scanStatusProcessor = new ScanStatusProcessor(scanStatusPublisher, eventPortalProperties);
-            RouteCompleteProcessorImpl routeCompleteProcessor = new RouteCompleteProcessorImpl(mock(ScanStatusRepository.class));
-            return new ScanStatusPublisherRouteBuilder(scanStatusProcessor, routeCompleteProcessor);
+            ScanStatusPublisher scanStatusPublisher =
+                    new ScanStatusPublisher(solacePublisher);
+            ScanStatusPerRouteProcessor scanStatusPerRouteProcessor =
+                    new ScanStatusPerRouteProcessor(scanStatusPublisher, eventPortalProperties);
+            ScanStatusOverAllProcessor scanStatusOverAllStatusProcessor =
+                    new ScanStatusOverAllProcessor(scanStatusPublisher, eventPortalProperties);
+            return new ScanStatusPublisherRouteBuilder(scanStatusOverAllStatusProcessor, scanStatusPerRouteProcessor);
         }
     }
 }

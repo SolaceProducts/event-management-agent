@@ -1,12 +1,11 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
-import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
+import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ScanStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -22,14 +21,14 @@ import java.util.Map;
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 @SuppressWarnings("unchecked")
-public class ScanStatusProcessor implements Processor {
+public class ScanStatusPerRouteProcessor implements Processor {
     private final String orgId;
     private final String runtimeAgentId;
 
     private final ScanStatusPublisher scanStatusPublisher;
 
     @Autowired
-    public ScanStatusProcessor(ScanStatusPublisher scanStatusPublisher, EventPortalProperties eventPortalProperties) {
+    public ScanStatusPerRouteProcessor(ScanStatusPublisher scanStatusPublisher, EventPortalProperties eventPortalProperties) {
         super();
 
         this.scanStatusPublisher = scanStatusPublisher;
@@ -45,36 +44,25 @@ public class ScanStatusProcessor implements Processor {
 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
+        String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
 
-        ScanStatusType statusType = (ScanStatusType) properties.get(RouteConstants.SCAN_STATUS_TYPE);
+        topicDetails.put("orgId", orgId);
+        topicDetails.put("runtimeAgentId", runtimeAgentId);
+        topicDetails.put("messagingServiceId", messagingServiceId);
+        topicDetails.put("scanId", scanId);
+        topicDetails.put("status", status.name());
+        topicDetails.put("scanDataType", scanType);
 
-        if (statusType == ScanStatusType.OVERALL) {
-            List<String> scanTypes = (List<String>) properties.get(RouteConstants.SCAN_TYPE);
+        ScanDataStatusMessage scanDataStatusMessage = new
+                ScanDataStatusMessage(orgId, scanId, status.name(), description, scanType);
 
-            topicDetails.put("orgId", orgId);
-            topicDetails.put("runtimeAgentId", runtimeAgentId);
-            topicDetails.put("messagingServiceId", messagingServiceId);
-            topicDetails.put("scanId", scanId);
-
-            ScanStatusMessage generalStatusMessage = new
-                    ScanStatusMessage(orgId, scanId, status.name(), "", scanTypes);
-
-            scanStatusPublisher.sendOverallScanStatus(generalStatusMessage, topicDetails);
-        } else {
-            String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
-
-            topicDetails.put("orgId", orgId);
-            topicDetails.put("runtimeAgentId", runtimeAgentId);
-            topicDetails.put("messagingServiceId", messagingServiceId);
-            topicDetails.put("scanId", scanId);
-            topicDetails.put("status", status.name());
-            topicDetails.put("scanDataType", scanType);
-
-            ScanDataStatusMessage scanDataStatusMessage = new
-                    ScanDataStatusMessage(orgId, scanId, status.name(), "", scanType);
-
+        try {
             scanStatusPublisher.sendScanDataStatus(scanDataStatusMessage, topicDetails);
+        } catch (Exception e) {
+            throw new ScanStatusException("Scan status per route processor exception: " + e.getMessage(),
+                    Map.of(scanId, List.of(e)), "Per route status", List.of(scanType), status);
         }
     }
 }

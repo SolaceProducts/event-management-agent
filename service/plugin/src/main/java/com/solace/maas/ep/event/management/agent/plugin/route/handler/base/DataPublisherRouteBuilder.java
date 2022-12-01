@@ -2,8 +2,8 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
@@ -32,6 +32,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
 
     protected final MDCProcessor mdcProcessor;
 
+    protected final EmptyScanEntityProcessor emptyScanEntityProcessor;
+
     /**
      * @param processor    The Processor handling the Data Collection for a Scan.
      * @param routeId      The Unique Identifier for this Route.
@@ -40,7 +42,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
      */
     public DataPublisherRouteBuilder(Processor processor, String routeId,
                                      String routeType, RouteManager routeManager,
-                                     MDCProcessor mdcProcessor) {
+                                     MDCProcessor mdcProcessor,
+                                     EmptyScanEntityProcessor emptyScanEntityProcessor) {
         super();
 
         this.processor = processor;
@@ -48,6 +51,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
         this.routeType = routeType;
         this.routeManager = routeManager;
         this.mdcProcessor = mdcProcessor;
+        this.emptyScanEntityProcessor = emptyScanEntityProcessor;
     }
 
     /**
@@ -70,10 +74,9 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
                         + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
-                .to("direct:scanStatusPublisher?block=false&failIfNoConsumers=false")
+                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
                         + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
 
@@ -84,6 +87,10 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // to this Route.
                 .recipientList().header("RECIPIENTS").delimiter(";")
                 .shareUnitOfWork()
+                .choice().when(simple("${body.size} == 0"))
+                .process(emptyScanEntityProcessor)
+                .endChoice()
+                .end()
                 .split(body()).streaming().shareUnitOfWork()
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
@@ -95,7 +102,12 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork()
-                .to("direct:processScanStatus?block=false&failIfNoConsumers=false");
+                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .endChoice()
+                .end();
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);

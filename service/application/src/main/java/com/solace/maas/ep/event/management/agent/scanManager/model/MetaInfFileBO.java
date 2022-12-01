@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager.model;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 
+@ExcludeFromJacocoGeneratedReport
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

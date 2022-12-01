@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.common.model.ScanRequestDTO;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @Validated
@@ -28,12 +30,15 @@ public class EMAControllerImpl implements EMAController {
     private final ScanRequestMapper scanRequestMapper;
     private final ScanManager scanManager;
     private final IDGenerator idGenerator;
+    private final EventPortalProperties eventPortalProperties;
 
     @Autowired
-    public EMAControllerImpl(ScanRequestMapper scanRequestMapper, ScanManager scanManager, IDGenerator idGenerator) {
+    public EMAControllerImpl(ScanRequestMapper scanRequestMapper, ScanManager scanManager,
+                             IDGenerator idGenerator, EventPortalProperties eventPortalProperties) {
         this.scanRequestMapper = scanRequestMapper;
         this.scanManager = scanManager;
         this.idGenerator = idGenerator;
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     @Override
@@ -44,6 +49,13 @@ public class EMAControllerImpl implements EMAController {
             ScanRequestBO scanRequestBO = scanRequestMapper.map(body);
             scanRequestBO.setMessagingServiceId(messagingServiceId);
             scanRequestBO.setScanId(idGenerator.generateRandomUniqueId());
+
+            boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
+            List<String> destinations = scanRequestBO.getDestinations();
+
+            if (isEMAStandalone && destinations.contains("EVENT_PORTAL")) {
+                throw new RestErrorHandler.RestException("Scan data could not be streamed to EP in standalone mode.");
+            }
 
             log.info("Scan request [{}]: Received, request details: {}", scanRequestBO.getScanId(), scanRequestBO);
 

@@ -1,9 +1,11 @@
 package com.solace.maas.ep.event.management.agent.route.manualImport;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistScanFilesProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportStatusProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.aggregation.FileParseAggregationStrategy;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanDataImportExceptionHandler;
+import com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers.ScanDataImportExceptionHandler;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -31,7 +33,7 @@ public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
                 .split().body()
                 .streaming()
                 .process(scanDataImportStatusProcessor)
-                .to("direct:scanStatusPublisher")
+                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
 
                 .pollEnrich()
                 .simple("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}?" +
@@ -57,6 +59,8 @@ public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
         from("direct:processEndOfFileImportStatus")
                 .routeId("processEndOfFileImportStatus")
                 .setHeader("FILE_IMPORTING_COMPLETE", constant(true))
-                .to("direct:processScanStatus");
+                .to("direct:processScanStatusAsComplete")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].");
     }
 }
