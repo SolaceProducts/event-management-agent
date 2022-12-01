@@ -85,7 +85,7 @@ eventPortal.gateway.messaging.connections.users.clientName= <your client name>
 1. Clone the event-management-agent repository
 
 ```
-git clone git@github.com:SolaceLabs/event-management-agent.git
+git clone https://github.com/SolaceLabs/event-management-agent.git
 ```
 
 2. Install maven dependencies
@@ -106,7 +106,7 @@ Alternatively, to build and run the service in IDE
 1. Clone the event-management-agent repository
 
 ```
-git clone git@github.com:SolaceLabs/event-management-agent.git
+git clone https://github.com/SolaceLabs/event-management-agent.git
 ```
 
 2. The Event Management Agent uses H2 database by default. The H2 console is available at `http://localhost:8180/h2`.
