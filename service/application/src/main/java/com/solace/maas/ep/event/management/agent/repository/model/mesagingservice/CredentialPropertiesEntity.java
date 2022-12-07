@@ -1,9 +1,10 @@
 package com.solace.maas.ep.event.management.agent.repository.model.mesagingservice;
 
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.CascadeType;
@@ -14,18 +15,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
-@Table(name = "CONNECTION_DETAILS")
+@SuperBuilder
+@Table(name = "CREDENTIAL_PROPERTIES")
 @Entity
-public class ConnectionDetailsEntity implements Serializable {
+public class CredentialPropertiesEntity extends EventProperty implements Serializable {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
@@ -35,16 +34,10 @@ public class ConnectionDetailsEntity implements Serializable {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "CONNECTION_URL", nullable = false)
-    private String url;
+    @Column(name = "[VALUE]", nullable = false)
+    private String value;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
-    @JoinColumn(name = "MESSAGING_SERVICE_ID", referencedColumnName = "ID", nullable = false)
-    private MessagingServiceEntity messagingService;
-
-    @OneToMany(mappedBy = "connections", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AuthenticationDetailsEntity> authentication;
-
-    @OneToMany(mappedBy = "connectionDetails", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConnectionPropertiesEntity> properties;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "CREDENTIAL_DETAILS_ID", referencedColumnName = "ID", nullable = false)
+    private CredentialDetailsEntity credentials;
 }

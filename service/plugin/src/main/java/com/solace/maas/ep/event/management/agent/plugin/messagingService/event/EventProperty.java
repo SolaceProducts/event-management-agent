@@ -1,23 +1,18 @@
 package com.solace.maas.ep.event.management.agent.plugin.messagingService.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationDetailsEvent implements Serializable {
+public class EventProperty implements Serializable {
     private String id;
-
-    private String protocol;
-
-    private List<CredentialDetailsEvent> credentials;
-
-    private List<EventProperty> properties;
+    private String name;
+    private String value;
 }
