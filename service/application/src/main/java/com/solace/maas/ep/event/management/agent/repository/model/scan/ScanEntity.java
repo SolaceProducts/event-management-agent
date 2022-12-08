@@ -2,21 +2,27 @@ package com.solace.maas.ep.event.management.agent.repository.model.scan;
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.Instant;
 import java.util.List;
 
 @ExcludeFromJacocoGeneratedReport
@@ -26,6 +32,7 @@ import java.util.List;
 @Builder
 @Table(name = "SCAN")
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class ScanEntity {
     @Id
     @Column(name = "ID")
@@ -41,6 +48,10 @@ public class ScanEntity {
     @JoinColumn(name = "ROUTE_ID", referencedColumnName = "ROUTE_ID")
     private List<RouteEntity> route;
 
+    @CreationTimestamp
+    @Column(name = "CREATED_AT")
+    private Instant createdAt;
+
     @OneToMany(mappedBy = "scan", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private List<ScanDestinationEntity> destinations;
 
@@ -49,6 +60,9 @@ public class ScanEntity {
 
     @OneToMany(mappedBy = "scan", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private List<DataCollectionFileEntity> dataCollectionFiles;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private MessagingServiceEntity messagingService;
 
     public String toString() {
         return "ScanEntity " + id;
