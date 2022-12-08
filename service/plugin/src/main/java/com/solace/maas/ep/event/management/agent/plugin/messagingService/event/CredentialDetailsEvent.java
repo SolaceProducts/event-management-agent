@@ -12,15 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class ConnectionDetailsEvent implements Serializable {
+public class CredentialDetailsEvent implements Serializable {
     private String id;
-    private String messagingServiceId;
-
-    private String name;
-
-    private String url;
-
-    private List<AuthenticationDetailsEvent> authenticationDetails;
-
+    private String source;
+    private List<AuthenticationOperationDetailsEvent> operations;
     private List<EventProperty> properties;
 }

@@ -6,18 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationDetailsEvent implements Serializable {
+public class AuthenticationOperationDetailsEvent implements Serializable {
     private String id;
-
-    private String protocol;
-
-    private List<CredentialDetailsEvent> credentials;
-
-    private List<EventProperty> properties;
+    private String name;
 }

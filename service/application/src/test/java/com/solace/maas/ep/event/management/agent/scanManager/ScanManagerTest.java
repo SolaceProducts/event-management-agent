@@ -36,8 +36,8 @@ public class ScanManagerTest {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id("id")
                 .name("name")
-                .messagingServiceType("TEST_SERVICE")
-                .managementDetails(List.of())
+                .type("TEST_SERVICE")
+                .connections(List.of())
                 .build();
 
         when(messagingServiceDelegateService.getMessagingServiceById("id"))

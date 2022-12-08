@@ -43,7 +43,7 @@ public class ScanControllerTest {
                         .messagingService(MessagingServiceEntity.builder()
                                 .id("msg_svc_id")
                                 .name("messaging service")
-                                .messagingServiceType("SOLACE")
+                                .type("SOLACE")
                                 .build())
                         .build()));
 

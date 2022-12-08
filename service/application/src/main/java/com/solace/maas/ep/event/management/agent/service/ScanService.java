@@ -311,7 +311,7 @@ public class ScanService {
                         .createdAt(se.getCreatedAt())
                         .messagingServiceId(se.getMessagingService().getId())
                         .messagingServiceName(se.getMessagingService().getName())
-                        .messagingServiceType(se.getMessagingService().getMessagingServiceType())
+                        .messagingServiceType(se.getMessagingService().getType())
                         .build())
                 .collect(Collectors.toUnmodifiableList());
     }
