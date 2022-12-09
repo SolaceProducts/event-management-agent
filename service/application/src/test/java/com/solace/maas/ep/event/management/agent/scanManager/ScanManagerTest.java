@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -42,7 +43,7 @@ public class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), "groupId", "scanId")).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), "groupId", "scanId", mock(MessagingServiceEntity.class))).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
                 new ScanRequestBO("id", "scanId", List.of("topics"), List.of());
