@@ -22,6 +22,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
@@ -33,7 +34,7 @@ import java.util.List;
 @Table(name = "SCAN")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class ScanEntity {
+public class ScanEntity implements Serializable {
     @Id
     @Column(name = "ID")
     private String id;
