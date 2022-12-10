@@ -69,7 +69,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "parseAndStreamImportFiles",
                 route -> {
-                    route.weaveByToUri("direct:perRouteScanStatusPublisher")
+                    route.weaveByToUri("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
                             .replace().to("mock:perRouteScanStatusPublisher");
                     route.weaveByType(PollEnrichDefinition.class).replace().process(exchange1 ->
                             exchange1.getIn().setHeader("CamelFileName", "topicListing.json"));

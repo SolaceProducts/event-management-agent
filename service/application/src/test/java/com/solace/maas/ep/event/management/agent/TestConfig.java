@@ -13,6 +13,8 @@ import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceEntityToEventConverter;
+import com.solace.maas.ep.event.management.agent.service.MessagingServiceEventToEntityConverter;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
 import com.solace.messaging.MessagingService;
@@ -142,17 +144,29 @@ public class TestConfig {
         MessagingServiceRepository repository = mock(MessagingServiceRepository.class);
         ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
                 .id(UUID.randomUUID().toString())
-                .connectionUrl("localhost:9090")
+                .url("localhost:9090")
                 .build();
 
         when(repository.findById(any(String.class)))
                 .thenReturn(Optional.of(MessagingServiceEntity.builder()
-                        .messagingServiceType(MessagingServiceType.SOLACE.name())
+                        .type(MessagingServiceType.SOLACE.name())
                         .name("service1")
                         .id(UUID.randomUUID().toString())
-                        .managementDetails(List.of(connectionDetailsEntity))
+                        .connections(List.of(connectionDetailsEntity))
                         .build()));
         return repository;
+    }
+
+    @Bean
+    @Primary
+    public MessagingServiceEntityToEventConverter entityToEventConverter() {
+        return new MessagingServiceEntityToEventConverter();
+    }
+
+    @Bean
+    @Primary
+    public MessagingServiceEventToEntityConverter eventToEntityConverter() {
+        return new MessagingServiceEventToEntityConverter();
     }
 
     @Bean

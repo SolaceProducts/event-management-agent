@@ -13,13 +13,14 @@ import java.util.List;
 @Data
 @Builder
 public class ConnectionDetailsEvent implements Serializable {
+    private String id;
     private String messagingServiceId;
 
     private String name;
 
-    private String connectionUrl;
-
-    private String msgVpn;
+    private String url;
 
     private List<AuthenticationDetailsEvent> authenticationDetails;
+
+    private List<EventProperty> properties;
 }

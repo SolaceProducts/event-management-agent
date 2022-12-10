@@ -83,7 +83,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "sendOverAllInProgressImportStatus",
                 route -> {
-                    route.weaveByToUri("direct:overallScanStatusPublisher")
+                    route.weaveByToUri("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false")
                             .replace().to("mock:overallScanStatusPublisher");
                     route.weaveAddLast().to("mock:direct:mockSendOverAllInProgressImportStatusResult");
                 });

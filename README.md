@@ -85,7 +85,7 @@ eventPortal.gateway.messaging.connections.users.clientName= <your client name>
 1. Clone the event-management-agent repository
 
 ```
-git clone git@github.com:SolaceLabs/event-management-agent.git
+git clone https://github.com/SolaceLabs/event-management-agent.git
 ```
 
 2. Install maven dependencies
@@ -106,7 +106,7 @@ Alternatively, to build and run the service in IDE
 1. Clone the event-management-agent repository
 
 ```
-git clone git@github.com:SolaceLabs/event-management-agent.git
+git clone https://github.com/SolaceLabs/event-management-agent.git
 ```
 
 2. The Event Management Agent uses H2 database by default. The H2 console is available at `http://localhost:8180/h2`.
@@ -186,6 +186,25 @@ The Event Management Agent comes with the following event or message broker plug
 * Confluent
 * MSK
 
+The default application.yml provides various plugin examples. For KAFKA, the properties section under credentials
+is passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
+
+If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present.
+Two ways is either via environment or credentials file as shown below:
+
+Put a file with the following contents into a ~/.aws/credentials file
+```
+[default]
+aws_access_key_id = <aws_access_key>
+aws_secret_access_key = <aws_secret_key>
+```
+
+Can alternatively make these environment variables (these will also override the credentials file if present)
+```
+export AWS_ACCESS_KEY_ID=<aws_access_key>
+export AWS_SECRET_ACCESS_KEY=<aws_secret_key>
+```
+
 ## Deployment
 
 There are essentially 2 main modes of deployment:
@@ -261,4 +280,4 @@ the agent framework then please contribute!
 
 ## Contributors
 
-@gregmeldrum @slunelsolace @AHabes @MichaelDavisSolace
+@gregmeldrum @slunelsolace @AHabes @MichaelDavisSolace @helrac

@@ -43,7 +43,7 @@ public class ScanStatusPerRouteProcessorTests {
 
     @SneakyThrows
     @Test
-    public void testScanStatusProcessor() {
+    public void testScanStatusPerRouteProcessor() {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
@@ -51,9 +51,10 @@ public class ScanStatusPerRouteProcessorTests {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "description");
 
         ScanDataStatusMessage scanDataStatusMessage = new
-                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "", "queueListing");
+                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", "queueListing");
 
         HashMap<String, String> topicDetails = new HashMap<>();
         topicDetails.put("orgId", null);

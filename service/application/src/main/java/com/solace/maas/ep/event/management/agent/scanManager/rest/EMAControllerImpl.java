@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping(RestEndpoint.BASE_URL)
+@RequestMapping(RestEndpoint.MESSAGING_SERVICE_URL)
 public class EMAControllerImpl implements EMAController {
 
     private final ScanRequestMapper scanRequestMapper;

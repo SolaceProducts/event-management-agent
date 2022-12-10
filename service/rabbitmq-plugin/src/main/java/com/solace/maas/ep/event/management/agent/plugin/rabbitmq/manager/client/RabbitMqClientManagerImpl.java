@@ -5,6 +5,7 @@ import com.rabbitmq.http.client.ClientParameters;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
+import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,9 +30,9 @@ public class RabbitMqClientManagerImpl implements MessagingServiceClientManager<
         try {
             return new Client(
                     new ClientParameters()
-                            .url(connectionDetailsEvent.getConnectionUrl())
-                            .username(authenticationDetailsEvent.getUsername())
-                            .password(authenticationDetailsEvent.getPassword())
+                            .url(connectionDetailsEvent.getUrl())
+                            .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
+                            .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
             );
         } catch (URISyntaxException | MalformedURLException e) {
             log.error(e.getMessage(), e);

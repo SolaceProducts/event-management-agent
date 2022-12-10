@@ -25,7 +25,7 @@ import java.io.InputStream;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping(RestEndpoint.BASE_URL)
+@RequestMapping(RestEndpoint.MESSAGING_SERVICE_URL)
 public class DataImportControllerImpl implements DataImportController {
 
     private final ImportService importService;

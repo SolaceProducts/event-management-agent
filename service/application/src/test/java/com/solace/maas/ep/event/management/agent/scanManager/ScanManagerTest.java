@@ -48,14 +48,15 @@ public class ScanManagerTest {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id("id")
                 .name("name")
-                .messagingServiceType("TEST_SERVICE")
-                .managementDetails(List.of())
+                .type("TEST_SERVICE")
+                .connections(List.of())
                 .build();
 
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), "groupId", "scanId")).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), "groupId", "scanId",
+                mock(MessagingServiceEntity.class))).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
                 new ScanRequestBO("id", "scanId", List.of("topics"), List.of());
@@ -81,8 +82,8 @@ public class ScanManagerTest {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id(messagingServiceId)
                 .name("name")
-                .messagingServiceType("kafka")
-                .managementDetails(List.of())
+                .type("kafka")
+                .connections(List.of())
                 .build();
 
         KafkaRouteDelegateImpl scanDelegate =
@@ -110,14 +111,14 @@ public class ScanManagerTest {
                     .thenReturn(destinations);
             when(scanDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
-            when(scanService.singleScan(List.of(), "groupId", "scanId"))
+            when(scanService.singleScan(List.of(), "groupId", "scanId", mock(MessagingServiceEntity.class)))
                     .thenReturn(Mockito.anyString());
 
             scanManager.scan(scanRequestBO);
 
             assertThatNoException();
             verify(scanService, times(1))
-                    .singleScan(eq(routes), any(String.class), eq(scanRequestBO.getScanId()));
+                    .singleScan(eq(routes), any(String.class), eq(scanRequestBO.getScanId()), any(MessagingServiceEntity.class));
         }
     }
 

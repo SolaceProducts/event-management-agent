@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
 import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
@@ -172,7 +173,8 @@ public class ScanServiceTests {
         when(scanRecipientHierarchyRepository.save(any(ScanRecipientHierarchyEntity.class)))
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
 
-        scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle), "groupId", "scanId");
+        scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
+                "groupId", "scanId", mock(MessagingServiceEntity.class));
 
         assertThatNoException();
     }

@@ -22,8 +22,6 @@ public class ClientConnectionDetailsImpl implements ClientConnectionDetails {
                 messagingServiceConnection.getUsers().stream()
                         .map(messagingServiceUser ->
                                 AuthenticationDetailsEvent.builder()
-                                        .username(messagingServiceUser.getUsername())
-                                        .password(messagingServiceUser.getPassword())
                                         .build())
                         .collect(Collectors.toList());
 
@@ -35,10 +33,9 @@ public class ClientConnectionDetailsImpl implements ClientConnectionDetails {
                         .build();
 
         if (messagingServiceType == MessagingServiceType.SOLACE) {
-            connectionDetailsEvent.setConnectionUrl(messagingServiceConnection.getUrl());
-            connectionDetailsEvent.setMsgVpn(messagingServiceConnection.getMsgVpn());
+            connectionDetailsEvent.setUrl(messagingServiceConnection.getUrl());
         } else if (messagingServiceType == MessagingServiceType.KAFKA) {
-            connectionDetailsEvent.setConnectionUrl(messagingServiceConnection.getBootstrapServer());
+            connectionDetailsEvent.setUrl(messagingServiceConnection.getBootstrapServer());
         }
 
         return connectionDetailsEvent;
