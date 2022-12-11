@@ -107,6 +107,7 @@ public class ScanStatusPublisherRouteBuilderTests {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
+        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
 
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
 

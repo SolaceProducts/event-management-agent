@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import lombok.SneakyThrows;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultExchange;
@@ -50,7 +51,7 @@ public class ScanStatusOverAllProcessorTests {
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
-        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
+        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, StringUtils.join(scanTypes, ","));
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "description");
 

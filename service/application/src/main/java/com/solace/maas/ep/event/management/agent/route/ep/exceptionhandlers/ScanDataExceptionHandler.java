@@ -14,7 +14,6 @@ public class ScanDataExceptionHandler implements Processor {
 
         log.error("An error has occurred while streaming scan data to EP: {}", cause.toString());
 
-        // Sending Error message to client
         exchange.getIn().setHeader("SCAN_DATA_ERROR", constant(true));
     }
 }

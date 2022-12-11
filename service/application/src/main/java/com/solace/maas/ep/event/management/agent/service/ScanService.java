@@ -124,7 +124,8 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId, MessagingServiceEntity messagingServiceEntity) {
+    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId,
+                             MessagingServiceEntity messagingServiceEntity) {
         log.info("Scan request [{}]: Starting a single scan.", scanId);
 
         ScanEntity savedScanEntity = null;
@@ -140,7 +141,7 @@ public class ScanService {
                 scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
         sendScanStatus(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
-                scanTypes, ScanStatus.IN_PROGRESS);
+                StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
@@ -252,10 +253,10 @@ public class ScanService {
      * @param scanId             The Scan ID to set.
      * @param groupId            Not used at the moment. This will be the grouped Scan IDs.
      * @param messagingServiceId The ID of the Messaging Service being scanned.
-     * @param scanTypes          The list of scan types included in the scan request.
+     * @param scanTypes          The scan types included in the scan request.
      * @param status             The status of scan.
      */
-    public void sendScanStatus(String scanId, String groupId, String messagingServiceId, List<String> scanTypes,
+    public void sendScanStatus(String scanId, String groupId, String messagingServiceId, String scanTypes,
                                ScanStatus status) {
         producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);

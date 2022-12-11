@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,8 @@ public class ScanStatusOverAllProcessor implements Processor {
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
 
-        List<String> scanTypes = (List<String>) properties.get(RouteConstants.SCAN_TYPE);
+        String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
+        List<String> scanTypes = Arrays.asList(scanType.split(","));
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
@@ -61,8 +63,8 @@ public class ScanStatusOverAllProcessor implements Processor {
         try {
             scanStatusPublisher.sendOverallScanStatus(generalStatusMessage, topicDetails);
         } catch (Exception e) {
-            throw new ScanStatusException("Scan status per route processor exception: " + e.getMessage(),
-                    Map.of(scanId, List.of(e)), "overall status", scanTypes, status);
+            throw new ScanStatusException("Over all status exception: " + e.getMessage(),
+                    Map.of(scanId, List.of(e)), "Overall status", scanTypes, status);
         }
     }
 }

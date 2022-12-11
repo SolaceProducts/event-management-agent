@@ -256,7 +256,8 @@ public class ScanServiceTests {
     public void testSendScanStatus() {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanRouteService.class), mock(RouteService.class), template);
-        service.sendScanStatus("scanId", "groupId", "messagingServiceId", List.of(), ScanStatus.IN_PROGRESS);
+        service.sendScanStatus("scanId", "groupId", "messagingServiceId",
+                "queueListing", ScanStatus.IN_PROGRESS);
 
         assertThatNoException();
     }

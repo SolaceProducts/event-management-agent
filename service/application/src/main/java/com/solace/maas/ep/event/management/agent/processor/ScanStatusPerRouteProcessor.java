@@ -61,8 +61,8 @@ public class ScanStatusPerRouteProcessor implements Processor {
         try {
             scanStatusPublisher.sendScanDataStatus(scanDataStatusMessage, topicDetails);
         } catch (Exception e) {
-            throw new ScanStatusException("Scan status per route processor exception: " + e.getMessage(),
-                    Map.of(scanId, List.of(e)), "Per route status", List.of(scanType), status);
+            throw new ScanStatusException("Route status exception: " + e.getMessage(),
+                    Map.of(scanId, List.of(e)), "Route status", List.of(scanType), status);
         }
     }
 }

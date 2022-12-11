@@ -61,7 +61,7 @@ public class ScanDataProcessor implements Processor {
         try {
             scanDataPublisher.sendScanData(scanDataMessage, topicDetails);
         } catch (Exception e) {
-            throw new ScanDataException("Scan data processor exception: " + e.getCause(),
+            throw new ScanDataException("Scan data processor exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), body);
         }
     }

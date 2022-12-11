@@ -25,7 +25,7 @@ public class ScanStatusException extends ClientException {
     public String toString() {
         return "ScanStatusException{message=" + this.getMessage() +
                 ", exceptionStore=" + this.getExceptionStore() +
-                "statusType='" + statusType + '\'' +
+                ", statusType='" + statusType + '\'' +
                 ", scanType='" + scanTypes + '\'' +
                 ", scanStatus=" + scanStatus +
                 '}';
