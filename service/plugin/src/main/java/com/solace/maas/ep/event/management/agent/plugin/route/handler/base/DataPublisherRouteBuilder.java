@@ -89,8 +89,13 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .shareUnitOfWork()
                 .choice().when(simple("${body.size} == 0"))
                 .process(emptyScanEntityProcessor)
-                .endChoice()
+                .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
+                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
                 .end()
+                .endChoice()
+                .otherwise()
                 .split(body()).streaming().shareUnitOfWork()
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
@@ -106,6 +111,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
                         + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .endChoice()
+                .end()
                 .endChoice()
                 .end();
 

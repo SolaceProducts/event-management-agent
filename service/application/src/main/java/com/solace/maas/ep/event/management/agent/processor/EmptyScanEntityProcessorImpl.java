@@ -1,13 +1,11 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -19,35 +17,34 @@ import java.util.Map;
 @Slf4j
 @Component
 public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
-    private final ProducerTemplate producerTemplate;
 
     private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
 
-    public EmptyScanEntityProcessorImpl(ProducerTemplate producerTemplate,
-                                        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository) {
-        this.producerTemplate = producerTemplate;
+    public EmptyScanEntityProcessorImpl(ScanRecipientHierarchyRepository scanRecipientHierarchyRepository) {
         this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
     }
 
     @Transactional
     @Override
     public void process(Exchange exchange) throws Exception {
+        List<String> emptyScanTypes = new ArrayList<>();
         Map<String, Object> properties = exchange.getIn().getHeaders();
 
-        String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
 
         log.info("Scan request [{}]: Encountered an empty scan type [{}].", scanId, scanType);
 
-        sendCompleteStatusForScanType(scanId, messagingServiceId, scanType);
+        emptyScanTypes.add(scanType);
 
-        log.info("Scan request [{}]: The status of [{}]" + " is: [{}].", scanId, scanType, ScanStatus.COMPLETE);
+        List<String> emptyDescendents = checkScanTypeDescendents(scanId, scanType);
+        emptyScanTypes.addAll(emptyDescendents);
 
-        checkScanTypeDescendent(scanId, messagingServiceId, scanType);
+        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, emptyScanTypes);
     }
 
-    private void checkScanTypeDescendent(String scanId, String messagingServiceId, String scanType) {
+    private List<String> checkScanTypeDescendents(String scanId, String scanType) {
+        List<String> emptyDescendentsForScanType = new ArrayList<>();
         List<ScanRecipientHierarchyEntity> scanRecipientHierarchyEntities =
                 scanRecipientHierarchyRepository.findScanRecipientHierarchyEntitiesByScanId(scanId);
 
@@ -66,18 +63,10 @@ public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
 
                 childScanTypes.forEach(childScanType -> {
                     log.info("Scan request [{}]: Encountered an empty scan type [{}].", scanId, childScanType);
-                    sendCompleteStatusForScanType(scanId, messagingServiceId, childScanType);
-                    log.info("Scan request [{}]: The status of [{}]" + " is: [{}].", scanId, childScanType, ScanStatus.COMPLETE);
+                    emptyDescendentsForScanType.add(childScanType);
                 });
             }
         });
-    }
-
-    public void sendCompleteStatusForScanType(String scanId, String messagingServiceId, String scanType) {
-        producerTemplate.send("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false", exchange -> {
-            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
-            exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
-        });
+        return emptyDescendentsForScanType;
     }
 }

@@ -7,7 +7,6 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHi
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -45,9 +42,6 @@ public class EmptyScanEntityProcessorTests {
     @Mock
     private ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
 
-    @Mock
-    private ProducerTemplate producerTemplate;
-
     @SneakyThrows
     @Test
     public void testEmptyScanEntityProcessor() {
@@ -55,7 +49,6 @@ public class EmptyScanEntityProcessorTests {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scanId");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "topicListing");
-        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
 
         exchange.getIn().setBody(new ArrayList<>());
 
@@ -79,14 +72,26 @@ public class EmptyScanEntityProcessorTests {
         emptyScanEntityProcessor.process(exchange);
 
         assertThatNoException();
+    }
 
-        verify(emptyScanEntityProcessor, times(1))
-                .sendCompleteStatusForScanType("scanId", "messagingServiceId", "topicListing");
-        verify(emptyScanEntityProcessor, times(1))
-                .sendCompleteStatusForScanType("scanId", "messagingServiceId", "topicConfiguration");
-        verify(emptyScanEntityProcessor, times(1))
-                .sendCompleteStatusForScanType("scanId", "messagingServiceId", "overrideTopicConfiguration");
+    @SneakyThrows
+    @Test
+    public void testEmptyScanEntityProcessorException() {
+        Exchange exchange = new DefaultExchange(camelContext);
 
+        exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scanId");
+        exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "topicListing");
+
+        exchange.getIn().setBody(new ArrayList<>());
+
+        ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
+                ScanRecipientHierarchyEntity.builder()
+                        .scanId("scanId")
+                        .store(new LinkedHashMap<>())
+                        .build();
+
+        when(scanRecipientHierarchyRepository.findScanRecipientHierarchyEntitiesByScanId("scanId"))
+                .thenReturn(List.of(scanRecipientHierarchyEntity));
 
         exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new Exception());
         emptyScanEntityProcessor.process(exchange);
