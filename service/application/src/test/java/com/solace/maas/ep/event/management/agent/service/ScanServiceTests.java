@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.logging.StreamingAppender;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
@@ -23,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -106,7 +108,7 @@ public class ScanServiceTests {
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
 
-        scanService.singleScan(List.of(routeBundle), "groupId", "scanId");
+        scanService.singleScan(List.of(routeBundle), "groupId", "scanId", mock(MessagingServiceEntity.class));
 
         assertThatNoException();
     }

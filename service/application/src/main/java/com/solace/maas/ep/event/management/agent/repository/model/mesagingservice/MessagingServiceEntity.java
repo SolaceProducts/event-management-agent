@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.repository.model.mesagingservice;
 
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,4 +34,7 @@ public class MessagingServiceEntity implements Serializable {
 
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConnectionDetailsEntity> connections;
+
+    @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ScanEntity> scanEntities;
 }
