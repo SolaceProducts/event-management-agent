@@ -21,6 +21,7 @@ public abstract class AbstractRouteBuilder extends RouteBuilder {
 
         onException(ScanDataException.class)
                 .process(new ScanDataExceptionHandler())
+                .to("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false")
                 .continued(true)
                 .end();
     }

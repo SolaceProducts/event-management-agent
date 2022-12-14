@@ -50,7 +50,7 @@ public class ScanDataProcessor implements Processor {
 
         ScanDataMessage scanDataMessage =
                 new ScanDataMessage(orgId, scanId, scanType, body, Instant.now().toString());
-        log.info("{} sending --> {}", scanType, body);
+
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
@@ -61,8 +61,7 @@ public class ScanDataProcessor implements Processor {
         try {
             scanDataPublisher.sendScanData(scanDataMessage, topicDetails);
         } catch (Exception e) {
-            throw new ScanDataException("Scan data processor exception: " + e.getMessage(),
-                    Map.of(scanId, List.of(e)), body);
+            throw new ScanDataException("Scan data exception: " + e, Map.of(scanId, List.of(e)), body);
         }
     }
 }
