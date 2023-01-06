@@ -1,11 +1,10 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
+import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
-import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -17,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
@@ -25,10 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 @SuppressWarnings("PMD")
-public class ScanStatusProcessorTests {
-
-    @Mock
-    ScanStatusPublisher scanStatusPublisher;
+public class ScanStatusPerRouteProcessorTests {
 
     @Mock
     EventPortalProperties eventPortalProperties;
@@ -37,37 +33,32 @@ public class ScanStatusProcessorTests {
     private CamelContext camelContext;
 
     @InjectMocks
-    private ScanStatusProcessor scanStatusProcessor;
+    private ScanStatusPerRouteProcessor scanStatusPerRouteProcessor;
 
     @SneakyThrows
     @Test
-    public void testScanStatusProcessor() {
+    public void testScanStatusPerRouteProcessor() {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
-        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.OVERALL);
+        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
 
-        exchange.getIn().setBody(List.of("queueListing"));
-
-        scanStatusProcessor.process(exchange);
-
-        assertThatNoException();
-    }
-
-    @SneakyThrows
-    @Test
-    public void testScanDataStatusProcessor() {
-
-        Exchange exchange = new DefaultExchange(camelContext);
-        exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
-        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.COMPLETE);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
+        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "description");
 
-        scanStatusProcessor.process(exchange);
+        ScanDataStatusMessage scanDataStatusMessage = new
+                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", "queueListing");
+
+        HashMap<String, String> topicDetails = new HashMap<>();
+        topicDetails.put("orgId", null);
+        topicDetails.put("runtimeAgentId", null);
+        topicDetails.put("messagingServiceId", "messagingServiceId");
+        topicDetails.put("scanId", "scan1");
+        topicDetails.put("status", ScanStatus.IN_PROGRESS.name());
+        topicDetails.put("scanDataType", "queueListing");
+
+        scanStatusPerRouteProcessor.process(exchange);
 
         assertThatNoException();
     }

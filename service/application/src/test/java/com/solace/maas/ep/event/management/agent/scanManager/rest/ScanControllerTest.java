@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.scanManager.rest;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapper;
@@ -26,13 +27,16 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class ScanControllerTest {
+
     @Autowired
     private ScanItemMapper scanItemMapper;
 
     @Test
     public void scanListTest() {
         ScanRepository repository = mock(ScanRepository.class);
-        ScanService scanService = new ScanService(repository, null, null, null);
+        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository = mock(ScanRecipientHierarchyRepository.class);
+        ScanService scanService = new ScanService(repository, scanRecipientHierarchyRepository,
+                null, null, null);
 
         ScanManager scanManager = new ScanManager(null, scanService);
 

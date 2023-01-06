@@ -2,13 +2,14 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.processor.RouteCompleteProcessor;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -22,10 +23,17 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
     @Override
     public void process(Exchange exchange) throws Exception {
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.COMPLETE);
-        exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, ScanStatusType.PER_ROUTE);
 
         String scanId = (String) exchange.getIn().getHeader(RouteConstants.SCAN_ID);
-        String scanType = (String) exchange.getIn().getHeader(RouteConstants.SCAN_TYPE);
+
+        String scanType;
+
+        if (exchange.getIn().getHeader(RouteConstants.SCAN_TYPE) instanceof List<?>) {
+            scanType = (String) exchange.getIn().getBody();
+            exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
+        } else {
+            scanType = (String) exchange.getIn().getHeader(RouteConstants.SCAN_TYPE);
+        }
 
         ScanStatusEntity scanStatusEntity = ScanStatusEntity.builder()
                 .scanId(scanId)
@@ -34,8 +42,6 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
                 .build();
 
         save(scanStatusEntity);
-
-        log.info("Scan request [{}]: The status of [{}] is: [{}].", scanId, scanType, ScanStatus.COMPLETE.name());
     }
 
     protected ScanStatusEntity save(ScanStatusEntity scanStatusEntity) {

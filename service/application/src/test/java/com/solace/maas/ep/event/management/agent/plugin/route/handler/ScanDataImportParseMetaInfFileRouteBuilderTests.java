@@ -64,7 +64,8 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
                         exchange1.getIn().setHeader("CamelFileName", "META_INF.json");
                         exchange1.getIn().setBody(getMetaInfJson());
                     });
-                    route.weaveByToUri("direct:sendOverAllInProgressImportStatus").replace().to("mock:sendOverAllInProgressImportStatus");
+                    route.weaveByToUri("direct:sendOverAllInProgressImportStatus")
+                            .replace().to("mock:sendOverAllInProgressImportStatus");
                     route.weaveAddLast().to("mock:direct:mockParseMetaInfoResult");
                 });
 
@@ -82,7 +83,8 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "sendOverAllInProgressImportStatus",
                 route -> {
-                    route.weaveByToUri("direct:scanStatusPublisher").replace().to("mock:scanStatusPublisher");
+                    route.weaveByToUri("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false")
+                            .replace().to("mock:overallScanStatusPublisher");
                     route.weaveAddLast().to("mock:direct:mockSendOverAllInProgressImportStatusResult");
                 });
 
