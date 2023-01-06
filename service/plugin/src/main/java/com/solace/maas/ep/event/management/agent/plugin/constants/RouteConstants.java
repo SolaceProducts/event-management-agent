@@ -20,4 +20,10 @@ public class RouteConstants {
     public static final String MESSAGING_SERVICE_ID = "MESSAGING_SERVICE_ID";
 
     public static final String IS_DATA_IMPORT = "IS_DATA_IMPORT";
+
+    public static final String GENERAL_STATUS_MESSAGE = "GENERAL_STATUS_MESSAGE";
+
+    public static final String SCAN_DATA_STATUS_MESSAGE = "SCAN_DATA_STATUS_MESSAGE";
+
+    public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
 }

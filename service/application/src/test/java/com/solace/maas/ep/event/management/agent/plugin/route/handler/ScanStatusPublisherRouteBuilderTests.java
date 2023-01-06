@@ -3,11 +3,9 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusOverAllProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusPerRouteProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
-import com.solace.maas.ep.event.management.agent.route.ep.ScanStatusPublisherRouteBuilder;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -15,6 +13,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
@@ -129,16 +128,34 @@ public class ScanStatusPublisherRouteBuilderTests {
         @Bean
         @Primary
         public static RoutesBuilder createRouteBuilder() {
-            SolacePublisher solacePublisher = mock(SolacePublisher.class);
             EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
+            ScanStatusPublisher scanStatusPublisher = mock(ScanStatusPublisher.class);
 
-            ScanStatusPublisher scanStatusPublisher =
-                    new ScanStatusPublisher(solacePublisher);
             ScanStatusPerRouteProcessor scanStatusPerRouteProcessor =
-                    new ScanStatusPerRouteProcessor(scanStatusPublisher, eventPortalProperties);
-            ScanStatusOverAllProcessor scanStatusOverAllStatusProcessor =
-                    new ScanStatusOverAllProcessor(scanStatusPublisher, eventPortalProperties);
-            return new ScanStatusPublisherRouteBuilder(scanStatusOverAllStatusProcessor, scanStatusPerRouteProcessor);
+                    new ScanStatusPerRouteProcessor(eventPortalProperties);
+            ScanStatusOverAllProcessor scanStatusOverallProcessor =
+                    new ScanStatusOverAllProcessor(eventPortalProperties);
+
+            return new RouteBuilder() {
+                @Override
+                public void configure() {
+                    getCamelContext().getRegistry().bind("scanStatusPublisher", scanStatusPublisher);
+
+                    from("direct:perRouteScanStatusPublisher")
+                            .routeId("perRouteScanStatusPublisher")
+                            .process(scanStatusPerRouteProcessor)
+                            .to("bean:scanStatusPublisher?method=sendScanDataStatus(" +
+                                    "${header." + RouteConstants.SCAN_DATA_STATUS_MESSAGE + "}," +
+                                    "${header." + RouteConstants.TOPIC_DETAILS + "})");
+
+                    from("direct:overallScanStatusPublisher")
+                            .routeId("overallScanStatusPublisher")
+                            .process(scanStatusOverallProcessor)
+                            .to("bean:scanStatusPublisher?method=sendOverallScanStatus(" +
+                                    "${header." + RouteConstants.GENERAL_STATUS_MESSAGE + "}," +
+                                    "${header." + RouteConstants.TOPIC_DETAILS + "})");
+                }
+            };
         }
     }
 }

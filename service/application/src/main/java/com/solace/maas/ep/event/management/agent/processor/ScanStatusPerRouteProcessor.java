@@ -4,8 +4,6 @@ import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ScanStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -14,7 +12,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -25,13 +22,9 @@ public class ScanStatusPerRouteProcessor implements Processor {
     private final String orgId;
     private final String runtimeAgentId;
 
-    private final ScanStatusPublisher scanStatusPublisher;
-
     @Autowired
-    public ScanStatusPerRouteProcessor(ScanStatusPublisher scanStatusPublisher, EventPortalProperties eventPortalProperties) {
+    public ScanStatusPerRouteProcessor(EventPortalProperties eventPortalProperties) {
         super();
-
-        this.scanStatusPublisher = scanStatusPublisher;
 
         orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
@@ -58,11 +51,7 @@ public class ScanStatusPerRouteProcessor implements Processor {
         ScanDataStatusMessage scanDataStatusMessage = new
                 ScanDataStatusMessage(orgId, scanId, status.name(), description, scanType);
 
-        try {
-            scanStatusPublisher.sendScanDataStatus(scanDataStatusMessage, topicDetails);
-        } catch (Exception e) {
-            throw new ScanStatusException("Route status exception: " + e.getMessage(),
-                    Map.of(scanId, List.of(e)), "Route status", List.of(scanType), status);
-        }
+        exchange.getIn().setHeader(RouteConstants.SCAN_DATA_STATUS_MESSAGE, scanDataStatusMessage);
+        exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);
     }
 }

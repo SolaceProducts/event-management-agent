@@ -4,8 +4,6 @@ import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ScanStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -27,13 +25,9 @@ public class ScanStatusOverAllProcessor implements Processor {
     private final String orgId;
     private final String runtimeAgentId;
 
-    private final ScanStatusPublisher scanStatusPublisher;
-
     @Autowired
-    public ScanStatusOverAllProcessor(ScanStatusPublisher scanStatusPublisher, EventPortalProperties eventPortalProperties) {
+    public ScanStatusOverAllProcessor(EventPortalProperties eventPortalProperties) {
         super();
-
-        this.scanStatusPublisher = scanStatusPublisher;
 
         orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
@@ -56,15 +50,13 @@ public class ScanStatusOverAllProcessor implements Processor {
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
+        topicDetails.put("scanType", scanType);
+        topicDetails.put("status", status.name());
 
         ScanStatusMessage generalStatusMessage = new
                 ScanStatusMessage(orgId, scanId, status.name(), description, scanTypes);
 
-        try {
-            scanStatusPublisher.sendOverallScanStatus(generalStatusMessage, topicDetails);
-        } catch (Exception e) {
-            throw new ScanStatusException("Over all status exception: " + e.getMessage(),
-                    Map.of(scanId, List.of(e)), "Overall status", scanTypes, status);
-        }
+        exchange.getIn().setHeader(RouteConstants.GENERAL_STATUS_MESSAGE, generalStatusMessage);
+        exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);
     }
 }

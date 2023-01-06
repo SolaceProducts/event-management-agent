@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -20,17 +19,12 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 @SuppressWarnings("PMD")
 public class ScanStatusPerRouteProcessorTests {
-
-    @Mock
-    ScanStatusPublisher scanStatusPublisher;
 
     @Mock
     EventPortalProperties eventPortalProperties;
@@ -67,6 +61,5 @@ public class ScanStatusPerRouteProcessorTests {
         scanStatusPerRouteProcessor.process(exchange);
 
         assertThatNoException();
-        verify(scanStatusPublisher, times(1)).sendScanDataStatus(scanDataStatusMessage, topicDetails);
     }
 }
