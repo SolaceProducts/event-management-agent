@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
@@ -25,12 +26,14 @@ public class ScanManager {
 
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
+    private final String runtimeAgentId;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                       ScanService scanService) {
+                       ScanService scanService, EventPortalProperties eventPortalProperties) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
+        this.runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -74,7 +77,7 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity);
+        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity, runtimeAgentId);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

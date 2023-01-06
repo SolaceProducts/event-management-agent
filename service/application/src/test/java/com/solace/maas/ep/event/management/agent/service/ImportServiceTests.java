@@ -113,7 +113,7 @@ public class ImportServiceTests {
                         .scan(ScanEntity.builder()
                                 .id(UUID.randomUUID().toString())
                                 .active(true)
-                                .scanType("KAFKA_ALL")
+//                                .scanType("KAFKA_ALL")
                                 .build())
                         .purged(false)
                         .build()));

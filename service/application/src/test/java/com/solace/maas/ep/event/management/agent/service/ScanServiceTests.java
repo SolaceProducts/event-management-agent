@@ -7,8 +7,11 @@ import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcesso
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,9 @@ public class ScanServiceTests {
     private ScanRepository scanRepository;
 
     @Mock
+    private ScanTypeRepository scanTypeRepository;
+
+    @Mock
     private RouteService routeService;
 
     @Mock
@@ -53,6 +59,9 @@ public class ScanServiceTests {
 
     @Mock
     private RouteCompleteProcessorImpl routeCompleteProcessor;
+
+    @Mock
+    private IDGenerator idGenerator;
 
     @InjectMocks
     private ScanService scanService;
@@ -95,6 +104,14 @@ public class ScanServiceTests {
                 .active(true)
                 .build();
 
+        ScanTypeEntity scanType = ScanTypeEntity.builder()
+                .id("scan1")
+                .name("scanType")
+                .scan(scanEntity)
+                .build();
+
+        when(idGenerator.generateRandomUniqueId())
+                .thenReturn("abc123");
         when(routeService.findById(any(String.class)))
                 .thenReturn(Optional.of(returnedEntity));
         when(scanRouteService.saveDestinations(any(List.class)))
@@ -107,8 +124,11 @@ public class ScanServiceTests {
                 .thenReturn(CompletableFuture.completedFuture(null));
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
+        when(scanTypeRepository.save(scanType))
+                .thenReturn(scanType);
 
-        scanService.singleScan(List.of(routeBundle), "groupId", "scanId", mock(MessagingServiceEntity.class));
+        scanService.singleScan(List.of(routeBundle), "groupId", "scanId", mock(MessagingServiceEntity.class),
+                "runtimeAgent1");
 
         assertThatNoException();
     }

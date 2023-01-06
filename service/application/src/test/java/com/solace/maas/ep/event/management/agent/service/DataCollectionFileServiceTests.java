@@ -42,7 +42,7 @@ public class DataCollectionFileServiceTests {
 
         ScanEntity scanEntity = ScanEntity.builder()
                 .id(scanId)
-                .scanType("topicListing")
+//                .scanType("topicListing")
                 .active(true)
                 .dataCollectionFiles(List.of())
                 .build();
@@ -90,7 +90,7 @@ public class DataCollectionFileServiceTests {
     public void testSave() {
         ScanEntity scanEntity = ScanEntity.builder()
                 .id(UUID.randomUUID().toString())
-                .scanType("topicListing")
+//                .scanType("topicListing")
                 .active(true)
                 .dataCollectionFiles(List.of())
                 .build();

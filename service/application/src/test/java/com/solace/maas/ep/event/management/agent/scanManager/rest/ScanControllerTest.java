@@ -1,13 +1,16 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemDTO;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,12 +32,20 @@ public class ScanControllerTest {
     @Autowired
     private ScanItemMapper scanItemMapper;
 
+    @Autowired
+    private IDGenerator idGenerator;
+
+    @Autowired
+    private EventPortalProperties eventPortalProperties;
+
     @Test
     public void scanListTest() {
         ScanRepository repository = mock(ScanRepository.class);
-        ScanService scanService = new ScanService(repository, null, null, null);
+        ScanTypeRepository scanTypeRepository = mock(ScanTypeRepository.class);
 
-        ScanManager scanManager = new ScanManager(null, scanService);
+        ScanService scanService = new ScanService(repository, scanTypeRepository, null, null, null, idGenerator);
+
+        ScanManager scanManager = new ScanManager(null, scanService, eventPortalProperties);
 
         when(repository.findAll())
                 .thenReturn(List.of(ScanEntity.builder()
