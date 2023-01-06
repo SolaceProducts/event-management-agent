@@ -1,53 +1,47 @@
 package com.solace.maas.ep.event.management.agent.route.ep;
 
-import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
-import com.solace.maas.ep.event.management.agent.processor.ScanStatusProcessor;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanStatusExceptionHandler;
-import org.apache.camel.builder.RouteBuilder;
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.processor.ScanStatusOverAllProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanStatusPerRouteProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
-import static org.apache.camel.support.builder.PredicateBuilder.or;
 
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanStatusPublisherRouteBuilder extends RouteBuilder {
-    private final ScanStatusProcessor scanStatusProcessor;
+@Profile("!TEST")
+public class ScanStatusPublisherRouteBuilder extends AbstractRouteBuilder {
 
-    private final RouteCompleteProcessorImpl routeCompleteProcessor;
+    private final ScanStatusOverAllProcessor scanStatusOverallProcessor;
+
+    private final ScanStatusPerRouteProcessor scanStatusPerRouteProcessor;
+
 
     @Autowired
-    public ScanStatusPublisherRouteBuilder(ScanStatusProcessor scanStatusProcessor,
-                                           RouteCompleteProcessorImpl routeCompleteProcessor) {
+    public ScanStatusPublisherRouteBuilder(ScanStatusOverAllProcessor scanStatusOverallProcessor,
+                                           ScanStatusPerRouteProcessor scanStatusPerRouteProcessor) {
         super();
-        this.scanStatusProcessor = scanStatusProcessor;
-        this.routeCompleteProcessor = routeCompleteProcessor;
+        this.scanStatusOverallProcessor = scanStatusOverallProcessor;
+        this.scanStatusPerRouteProcessor = scanStatusPerRouteProcessor;
     }
 
     @Override
-    public void configure() {
-        from("direct:processScanStatus")
-                .choice().when(or(header("DATA_PROCESSING_COMPLETE").isEqualTo(true),
-                        header("FILE_IMPORTING_COMPLETE").isEqualTo(true)))
-                .to("direct:processEndOfRoute")
-                .endChoice()
-                .end();
+    public void configure() throws Exception {
+        super.configure();
 
-        from("direct:processEndOfRoute")
-                .process(routeCompleteProcessor)
-                .onException(Exception.class)
-                .process(new ScanStatusExceptionHandler())
-                .continued(true)
-                .end()
-                .to("direct:scanStatusPublisher");
+        from("direct:perRouteScanStatusPublisher")
+                .routeId("perRouteScanStatusPublisher")
+                .process(scanStatusPerRouteProcessor)
+                .to("bean:scanStatusPublisher?method=sendScanDataStatus(" +
+                        "${header." + RouteConstants.SCAN_DATA_STATUS_MESSAGE + "}," +
+                        "${header." + RouteConstants.TOPIC_DETAILS + "})");
 
-        from("direct:scanStatusPublisher")
-                .routeId("scanStatusPublisher")
-                .process(scanStatusProcessor)
-                .onException(Exception.class)
-                .process(new ScanStatusExceptionHandler())
-                .continued(true)
-                .end();
+        from("direct:overallScanStatusPublisher")
+                .routeId("overallScanStatusPublisher")
+                .process(scanStatusOverallProcessor)
+                .to("bean:scanStatusPublisher?method=sendOverallScanStatus(" +
+                        "${header." + RouteConstants.GENERAL_STATUS_MESSAGE + "}," +
+                        "${header." + RouteConstants.TOPIC_DETAILS + "})");
     }
 }

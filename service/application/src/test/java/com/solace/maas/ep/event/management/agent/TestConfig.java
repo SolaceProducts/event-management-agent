@@ -10,6 +10,7 @@ import com.solace.maas.ep.event.management.agent.plugin.publisher.SolaceWebPubli
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
+import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
@@ -118,6 +119,12 @@ public class TestConfig {
     @Primary
     public ScanLogsPublisher scanLogsPublisher() {
         return mock(ScanLogsPublisher.class);
+    }
+
+    @Bean
+    @Primary
+    public ScanStatusPublisher scanStatusPublisher() {
+        return mock(ScanStatusPublisher.class);
     }
 
     @Bean

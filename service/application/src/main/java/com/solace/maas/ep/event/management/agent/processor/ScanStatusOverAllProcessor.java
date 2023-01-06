@@ -1,10 +1,9 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
-import com.solace.maas.ep.common.messages.ScanDataMessage;
+import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ScanDataException;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -12,25 +11,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataProcessor implements Processor {
+public class ScanStatusOverAllProcessor implements Processor {
 
-    private final ScanDataPublisher scanDataPublisher;
     private final String orgId;
     private final String runtimeAgentId;
 
     @Autowired
-    public ScanDataProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
+    public ScanStatusOverAllProcessor(EventPortalProperties eventPortalProperties) {
         super();
-
-        this.scanDataPublisher = scanDataPublisher;
 
         orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
@@ -38,30 +35,28 @@ public class ScanDataProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        Map<String, String> topicDetails = new HashMap<>();
-
+        HashMap<String, String> topicDetails = new HashMap<>();
         Map<String, Object> properties = exchange.getIn().getHeaders();
-        String body = (String) exchange.getIn().getBody();
 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
-        String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
-        Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
+        ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
+        String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
 
-        ScanDataMessage scanDataMessage =
-                new ScanDataMessage(orgId, scanId, scanType, body, Instant.now().toString());
+        String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
+        List<String> scanTypes = Arrays.asList(scanType.split(","));
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
         topicDetails.put("scanType", scanType);
-        topicDetails.put("isImportOp", String.valueOf(isImportOp));
+        topicDetails.put("status", status.name());
 
-        try {
-            scanDataPublisher.sendScanData(scanDataMessage, topicDetails);
-        } catch (Exception e) {
-            throw new ScanDataException("Scan data exception: " + e, Map.of(scanId, List.of(e)), body);
-        }
+        ScanStatusMessage generalStatusMessage = new
+                ScanStatusMessage(orgId, scanId, status.name(), description, scanTypes);
+
+        exchange.getIn().setHeader(RouteConstants.GENERAL_STATUS_MESSAGE, generalStatusMessage);
+        exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);
     }
 }

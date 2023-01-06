@@ -2,7 +2,7 @@ package com.solace.maas.ep.event.management.agent.route.manualImport;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.route.ep.aggregation.FileZipperAggregationStrategy;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptionHandlers.ScanDataImportExceptionHandler;
+import com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers.ScanDataImportExceptionHandler;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;

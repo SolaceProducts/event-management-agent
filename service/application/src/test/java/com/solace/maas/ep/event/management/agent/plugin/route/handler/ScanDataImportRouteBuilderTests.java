@@ -48,7 +48,7 @@ public class ScanDataImportRouteBuilderTests {
     private MockEndpoint mockResult;
 
     private static byte[] getZippedText(String entryName) throws IOException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream("TEXT".getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream("TEXT" .getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
         try {
@@ -75,6 +75,8 @@ public class ScanDataImportRouteBuilderTests {
         AdviceWith.adviceWith(camelContext, "importScanData",
                 route -> {
                     route.replaceFromWith("direct:importScanData");
+                    route.weaveByToUri("direct:checkZipSizeAndUnzipFiles")
+                            .replace().to("mock:checkZipSizeAndUnzipFiles");
                     route.weaveAddLast().to("mock:direct:result");
                 });
 

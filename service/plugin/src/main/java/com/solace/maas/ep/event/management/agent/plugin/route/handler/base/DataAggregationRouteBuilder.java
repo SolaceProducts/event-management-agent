@@ -2,8 +2,8 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.AggregationStrategy;
@@ -35,8 +35,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
      */
     public DataAggregationRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager,
                                        AggregationStrategy aggregationStrategy, Integer aggregationSize,
-                                       MDCProcessor mdcProcessor) {
-        super(processor, routeId, routeType, routeManager, mdcProcessor);
+                                       MDCProcessor mdcProcessor, EmptyScanEntityProcessor emptyScanEntityProcessor) {
+        super(processor, routeId, routeType, routeManager, mdcProcessor, emptyScanEntityProcessor);
 
         this.aggregationStrategy = aggregationStrategy;
         this.aggregationSize = aggregationSize;
@@ -62,11 +62,9 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .setHeader(RouteConstants.SCAN_STATUS_TYPE, constant(ScanStatusType.PER_ROUTE))
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
                         + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
-                .to("direct:scanStatusPublisher?block=false&failIfNoConsumers=false")
-
+                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
                         + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
 
@@ -114,7 +112,12 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork()
-                .to("direct:processScanStatus?block=false&failIfNoConsumers=false");
+                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .endChoice()
+                .end();
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);

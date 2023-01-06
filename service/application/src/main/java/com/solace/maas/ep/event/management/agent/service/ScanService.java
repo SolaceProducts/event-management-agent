@@ -2,15 +2,17 @@ package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatusType;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
+import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
@@ -44,6 +46,8 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 public class ScanService {
     private final ScanRepository repository;
 
+    private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
+
     private final ScanTypeRepository scanTypeRepository;
 
     private final ScanRouteService scanRouteService;
@@ -52,12 +56,17 @@ public class ScanService {
 
     private final ProducerTemplate producerTemplate;
 
+    public ScanService(ScanRepository repository,
+                       ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
+                       ScanRouteService scanRouteService,
+                       RouteService routeService, ProducerTemplate producerTemplate) {
     private final IDGenerator idGenerator;
 
     public ScanService(ScanRepository repository, ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
                        IDGenerator idGenerator) {
         this.repository = repository;
+        this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
         this.scanTypeRepository = scanTypeRepository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
@@ -133,11 +142,16 @@ public class ScanService {
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
+        RouteBundleHierarchyStore routeBundleHierarchy =
+                parseRouteRecipients(routeBundles, new RouteBundleHierarchyStore());
+
+        save(routeBundleHierarchy, scanId);
+
         log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
                 scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
-        send(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
-                scanTypes, ScanStatus.IN_PROGRESS, ScanStatusType.OVERALL);
+        sendScanStatus(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+                StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
@@ -246,20 +260,18 @@ public class ScanService {
      * @param scanId             The Scan ID to set.
      * @param groupId            Not used at the moment. This will be the grouped Scan IDs.
      * @param messagingServiceId The ID of the Messaging Service being scanned.
-     * @param scanTypes          List of scan types.
+     * @param scanTypes          The scan types included in the scan request.
      * @param status             The status of scan.
-     * @param statusType         The type of scan status. Either the overall scan status, or the route status.
-     * @param scanTypes          The list of scan types included in the scan request.
      */
-    public void send(String scanId, String groupId, String messagingServiceId, List<String> scanTypes,
-                     ScanStatus status, ScanStatusType statusType) {
-        producerTemplate.send("direct:scanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
+    public void sendScanStatus(String scanId, String groupId, String messagingServiceId, String scanTypes,
+                               ScanStatus status) {
+        producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
-            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_TYPE, statusType);
+            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
         });
     }
 
@@ -300,6 +312,16 @@ public class ScanService {
         return repository.save(scanEntity);
     }
 
+    protected ScanRecipientHierarchyEntity save(RouteBundleHierarchyStore routeBundleHierarchy, String scanId) {
+        ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
+                ScanRecipientHierarchyEntity.builder()
+                        .store(routeBundleHierarchy.getStore())
+                        .scanId(scanId)
+                        .build();
+
+        return scanRecipientHierarchyRepository.save(scanRecipientHierarchyEntity);
+    }
+
     protected List<String> parseRouteBundle(List<RouteBundle> routeBundles, List<String> scanTypes) {
         for (RouteBundle routeBundle : routeBundles) {
             scanTypes.add(routeBundle.getScanType());
@@ -320,5 +342,50 @@ public class ScanService {
                         .messagingServiceType(se.getMessagingService().getType())
                         .build())
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    protected RouteBundleHierarchyStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleHierarchyStore pathStore) {
+        for (RouteBundle routeBundle : routeBundles) {
+            if (routeBundle.getRecipients() != null && !routeBundle.getRecipients().isEmpty()) {
+                pathStore = registerRouteRecipients(routeBundle, pathStore);
+                parseRouteRecipients(routeBundle.getRecipients(), pathStore);
+            }
+        }
+        return pathStore;
+    }
+
+    protected RouteBundleHierarchyStore registerRouteRecipients(RouteBundle routeBundle, RouteBundleHierarchyStore pathStore) {
+        boolean parentExistsInStore = false;
+        List<String> keys = new ArrayList<>(pathStore.getStore().keySet());
+        String parentScanType = routeBundle.getScanType();
+
+        List<String> recipients = routeBundle.getRecipients().stream()
+                .map(RouteBundle::getScanType).collect(Collectors.toList());
+
+        for (String key : keys) {
+            String hierarchyPath = pathStore.getStore().get(key);
+            String lastChild = StringUtils.substringAfterLast(hierarchyPath, ",");
+
+            if (lastChild.equals(parentScanType)) {
+                String firstRecipient = recipients.get(0);
+                recipients.remove(0);
+                String firstRecipientPath = pathStore.getStore().get(key) + "," + firstRecipient;
+                pathStore.getStore().put(String.valueOf(key), firstRecipientPath);
+
+                String basePath = pathStore.getStore().get(key).split(parentScanType, 2)[0];
+                recipients.forEach(recipient -> {
+                    String path = basePath + parentScanType + "," + recipient;
+                    pathStore.getStore().put(String.valueOf(RouteBundleHierarchyStore.getStoreKey()), path);
+                });
+                parentExistsInStore = true;
+                break;
+            }
+        }
+        if (!parentExistsInStore) {
+            recipients.forEach(recipient ->
+                    pathStore.getStore().put(String.valueOf(RouteBundleHierarchyStore.getStoreKey()),
+                            parentScanType + "," + recipient));
+        }
+        return pathStore;
     }
 }
