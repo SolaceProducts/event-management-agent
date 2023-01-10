@@ -1,6 +1,8 @@
 package com.solace.maas.ep.event.management.agent.repository.file;
 
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +14,6 @@ public interface DataCollectionFileRepository extends CrudRepository<DataCollect
     Optional<DataCollectionFileEntity> findByPath(String path);
 
     List<DataCollectionFileEntity> findDataCollectionFileEntitiesByScanId(String scanId);
+
+    Page<DataCollectionFileEntity> findDataCollectionFileEntitiesByScanId(String scanId, Pageable pageable);
 }

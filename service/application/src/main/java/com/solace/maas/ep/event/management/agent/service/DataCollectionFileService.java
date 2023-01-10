@@ -7,7 +7,10 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntit
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.AggregatedFileEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.DataCollectionFileEvent;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.FileStoreManager;
+import com.solace.maas.ep.event.management.agent.scanManager.model.DataCollectionFileBO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +79,15 @@ public class DataCollectionFileService implements FileStoreManager {
 
     public List<DataCollectionFileEntity> findAllByScanId(String scanId) {
         return repository.findDataCollectionFileEntitiesByScanId(scanId);
+    }
+
+    public Page<DataCollectionFileBO> findByScanId(String scanId, Pageable pageable) {
+        return repository.findDataCollectionFileEntitiesByScanId(scanId, pageable)
+                .map(dataCollectionFileEntity -> DataCollectionFileBO.builder()
+                        .id(dataCollectionFileEntity.getId())
+                        .path(dataCollectionFileEntity.getPath())
+                        .purged(dataCollectionFileEntity.isPurged())
+                        .build());
     }
 
     public List<DataCollectionFileEntity> findAll() {

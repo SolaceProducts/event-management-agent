@@ -7,10 +7,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @ExcludeFromJacocoGeneratedReport
@@ -27,21 +31,10 @@ public class ScanStatusEntity {
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "SCAN_ID")
-    private String scanId;
-
-    @Column(name = "SCAN_TYPE")
-    private String scanType;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @JoinColumn(name = "SCAN_TYPE_ID", referencedColumnName = "ID", nullable = false)
+    private ScanTypeEntity scanType;
 
     @Column(name = "STATUS")
     private String status;
-
-    @Override
-    public String toString() {
-        return "scanStatusEntity{" +
-                "id='" + id + '\'' +
-                ", scanId='" + scanId + '\'' +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }

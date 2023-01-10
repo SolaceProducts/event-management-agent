@@ -17,12 +17,15 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeE
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ScanTypeBO;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.MDC;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,8 +175,8 @@ public class ScanService {
     }
 
     @Transactional
-    protected ScanEntity setupScan(String scanId, MessagingServiceEntity messagingServiceEntity, String runtimeAgentId) {
-        return saveScanEntity(scanId, messagingServiceEntity, runtimeAgentId);
+    protected ScanEntity setupScan(String scanId, MessagingServiceEntity messagingServiceEntity, String emaId) {
+        return saveScanEntity(scanId, messagingServiceEntity, emaId);
     }
 
     @Transactional
@@ -208,12 +211,11 @@ public class ScanService {
     }
 
     private ScanEntity saveScanEntity(String scanId, MessagingServiceEntity messagingServiceEntity,
-                                      String runtimeAgentId) {
+                                      String emaId) {
         ScanEntity scan = ScanEntity.builder()
                 .id(scanId)
-                .active(true)
                 .messagingService(messagingServiceEntity)
-                .runtimeAgentId(runtimeAgentId)
+                .emaId(emaId)
                 .build();
 
         return save(scan);
@@ -340,6 +342,52 @@ public class ScanService {
                         .messagingServiceType(se.getMessagingService().getType())
                         .build())
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    public Page<ScanItemBO> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(se -> {
+                    List<ScanTypeBO> scanTypes = se.getScanTypes()
+                            .stream()
+                            .map(scanTypeEntity -> ScanTypeBO.builder()
+                                    .name(scanTypeEntity.getName())
+                                    .status(scanTypeEntity.getStatus().getStatus())
+                                    .build())
+                            .collect(Collectors.toUnmodifiableList());
+
+                    return ScanItemBO.builder()
+                            .id(se.getId())
+                            .createdAt(se.getCreatedAt())
+                            .messagingServiceId(se.getMessagingService().getId())
+                            .messagingServiceName(se.getMessagingService().getName())
+                            .messagingServiceType(se.getMessagingService().getType())
+                            .emaId(se.getEmaId())
+                            .scanTypes(scanTypes)
+                            .build();
+                });
+    }
+
+    public Page<ScanItemBO> findByMessagingServiceId(String messagingServiceId, Pageable pageable) {
+        return repository.findAllByMessagingServiceId(messagingServiceId, pageable)
+                .map(se -> {
+                    List<ScanTypeBO> scanTypes = se.getScanTypes()
+                            .stream()
+                            .map(scanTypeEntity -> ScanTypeBO.builder()
+                                    .name(scanTypeEntity.getName())
+                                    .status(scanTypeEntity.getStatus().getStatus())
+                                    .build())
+                            .collect(Collectors.toUnmodifiableList());
+
+                    return ScanItemBO.builder()
+                            .id(se.getId())
+                            .createdAt(se.getCreatedAt())
+                            .messagingServiceId(se.getMessagingService().getId())
+                            .messagingServiceName(se.getMessagingService().getName())
+                            .messagingServiceType(se.getMessagingService().getType())
+                            .emaId(se.getEmaId())
+                            .scanTypes(scanTypes)
+                            .build();
+                });
     }
 
     protected RouteBundleHierarchyStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleHierarchyStore pathStore) {

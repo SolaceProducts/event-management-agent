@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Builder
@@ -13,5 +14,7 @@ public class ScanItemBO extends AbstractBaseBO<String> {
     private String messagingServiceId;
     private String messagingServiceName;
     private String messagingServiceType;
+    private String emaId;
+    private List<ScanTypeBO> scanTypes;
     private Instant createdAt;
 }

@@ -164,7 +164,6 @@ public class ScanServiceTests {
         ScanEntity scanEntity = ScanEntity.builder()
                 .id(UUID.randomUUID().toString())
                 .route(List.of(returnedEntity))
-                .active(true)
                 .build();
 
         ScanTypeEntity scanType = ScanTypeEntity.builder()

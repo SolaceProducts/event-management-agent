@@ -39,11 +39,8 @@ public class ScanEntity implements Serializable {
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "ACTIVE", nullable = false)
-    private boolean active;
-
-    @Column(name = "RUNTIME_AGENT_ID", nullable = false)
-    private String runtimeAgentId;
+    @Column(name = "EVENTMANAGEMENT_AGENT_ID", nullable = false)
+    private String emaId;
 
     @OneToMany(mappedBy = "scan", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ScanTypeEntity> scanTypes;

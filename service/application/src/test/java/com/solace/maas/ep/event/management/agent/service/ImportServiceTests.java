@@ -112,7 +112,6 @@ public class ImportServiceTests {
                         .path("data_collection/" + UUID.randomUUID() + "/" + UUID.randomUUID() + "/topicListing.json")
                         .scan(ScanEntity.builder()
                                 .id(UUID.randomUUID().toString())
-                                .active(true)
 //                                .scanType("KAFKA_ALL")
                                 .build())
                         .purged(false)

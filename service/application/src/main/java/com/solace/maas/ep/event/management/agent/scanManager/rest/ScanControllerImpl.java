@@ -6,10 +6,13 @@ import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapp
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,12 +34,26 @@ public class ScanControllerImpl implements ScanController {
         this.scanItemMapper = scanItemMapper;
     }
 
+//    @Override
+//    @GetMapping
+//    public ResponseEntity<List<ScanItemDTO>> list() {
+//
+//        return ResponseEntity.ok().body(scanManager.listScans().stream()
+//                .map(scanItemMapper::map)
+//                .collect(Collectors.toUnmodifiableList()));
+//    }
+
     @Override
     @GetMapping
-    public ResponseEntity<List<ScanItemDTO>> list() {
+    public ResponseEntity<Page<ScanItemDTO>> list(Pageable pageable) {
+        return ResponseEntity.ok().body(scanManager.findAll(pageable)
+                .map(scanItemMapper::map));
+    }
 
-        return ResponseEntity.ok().body(scanManager.listScans().stream()
-                .map(scanItemMapper::map)
-                .collect(Collectors.toUnmodifiableList()));
+    @GetMapping("/query")
+    public ResponseEntity<Page<ScanItemDTO>> list(@RequestParam("messagingServiceId") String messagingServiceId,
+                                                  Pageable pageable) {
+        return ResponseEntity.ok().body(scanManager.findByMessagingServiceId(messagingServiceId, pageable)
+                .map(scanItemMapper::map));
     }
 }
