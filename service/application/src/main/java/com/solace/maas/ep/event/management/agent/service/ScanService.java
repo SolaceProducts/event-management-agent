@@ -56,13 +56,11 @@ public class ScanService {
 
     private final ProducerTemplate producerTemplate;
 
-    public ScanService(ScanRepository repository,
-                       ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
-                       ScanRouteService scanRouteService,
-                       RouteService routeService, ProducerTemplate producerTemplate) {
     private final IDGenerator idGenerator;
 
-    public ScanService(ScanRepository repository, ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
+    public ScanService(ScanRepository repository,
+                       ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
+                       ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
                        IDGenerator idGenerator) {
         this.repository = repository;

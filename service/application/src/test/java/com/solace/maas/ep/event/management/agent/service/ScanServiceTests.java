@@ -192,10 +192,8 @@ public class ScanServiceTests {
         when(scanRecipientHierarchyRepository.save(any(ScanRecipientHierarchyEntity.class)))
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
 
-        scanService.singleScan(List.of(routeBundle), "groupId", "scanId", mock(MessagingServiceEntity.class),
-                "runtimeAgent1");
         scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
-                "groupId", "scanId", mock(MessagingServiceEntity.class));
+                "groupId", "scanId", mock(MessagingServiceEntity.class), "runtimeAgent1");
 
         assertThatNoException();
     }
@@ -276,7 +274,8 @@ public class ScanServiceTests {
     @SneakyThrows
     public void testSendScanStatus() {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
-                mock(ScanRouteService.class), mock(RouteService.class), template);
+                mock(ScanTypeRepository.class),
+                mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
         service.sendScanStatus("scanId", "groupId", "messagingServiceId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 

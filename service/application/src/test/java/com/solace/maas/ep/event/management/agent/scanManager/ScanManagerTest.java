@@ -51,7 +51,7 @@ public class ScanManagerTest {
     @Mock
     private ScanService scanService;
 
-//    @Test
+    //    @Test
 //    public void testScanManager() {
 //        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
 //                .id("id")
@@ -93,7 +93,7 @@ public class ScanManagerTest {
                 .thenReturn(messagingServiceEntity);
 
         when(scanService.singleScan(List.of(), "groupId", "scanId",
-                mock(MessagingServiceEntity.class))).thenReturn(Mockito.anyString());
+                mock(MessagingServiceEntity.class), "runtimeAgent1")).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO =
                 new ScanRequestBO("id", "scanId", List.of("topics"), List.of());
@@ -148,14 +148,16 @@ public class ScanManagerTest {
                     .thenReturn(destinations);
             when(scanDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
-            when(scanService.singleScan(List.of(), "groupId", "scanId", mock(MessagingServiceEntity.class)))
+            when(scanService.singleScan(List.of(), "groupId", "scanId", mock(MessagingServiceEntity.class),
+                    "runtimeAgent1"))
                     .thenReturn(Mockito.anyString());
 
             scanManager.scan(scanRequestBO);
 
             assertThatNoException();
             verify(scanService, times(1))
-                    .singleScan(eq(routes), any(String.class), eq(scanRequestBO.getScanId()), any(MessagingServiceEntity.class));
+                    .singleScan(eq(routes), any(String.class), eq(scanRequestBO.getScanId()), any(MessagingServiceEntity.class),
+                            "runtimeAgent1");
         }
     }
 

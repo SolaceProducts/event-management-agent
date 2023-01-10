@@ -12,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapp
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemDTO;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
+import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,15 +41,16 @@ public class ScanControllerTest {
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
+    @Autowired
+    private ProducerTemplate producerTemplate;
+
     @Test
     public void scanListTest() {
         ScanRepository repository = mock(ScanRepository.class);
         ScanTypeRepository scanTypeRepository = mock(ScanTypeRepository.class);
         ScanRecipientHierarchyRepository scanRecipientHierarchyRepository = mock(ScanRecipientHierarchyRepository.class);
         ScanService scanService = new ScanService(repository, scanRecipientHierarchyRepository,
-                null, null, null);
-
-        ScanService scanService = new ScanService(repository, scanTypeRepository, null, null, null, idGenerator);
+                null, null, null, producerTemplate, idGenerator);
 
         ScanManager scanManager = new ScanManager(null, scanService, eventPortalProperties);
 
