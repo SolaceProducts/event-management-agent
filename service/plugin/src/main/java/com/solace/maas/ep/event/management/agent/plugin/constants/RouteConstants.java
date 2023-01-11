@@ -13,11 +13,17 @@ public class RouteConstants {
 
     public static final String SCAN_STATUS = "SCAN_STATUS";
 
-    public static final String SCAN_STATUS_TYPE = "SCAN_STATUS_TYPE";
+    public static final String SCAN_STATUS_DESC = "SCAN_STATUS_DESCRIPTION";
 
     public static final String AGGREGATION_ID = "AGGREGATION_ID";
 
     public static final String MESSAGING_SERVICE_ID = "MESSAGING_SERVICE_ID";
 
     public static final String IS_DATA_IMPORT = "IS_DATA_IMPORT";
+
+    public static final String GENERAL_STATUS_MESSAGE = "GENERAL_STATUS_MESSAGE";
+
+    public static final String SCAN_DATA_STATUS_MESSAGE = "SCAN_DATA_STATUS_MESSAGE";
+
+    public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
 }

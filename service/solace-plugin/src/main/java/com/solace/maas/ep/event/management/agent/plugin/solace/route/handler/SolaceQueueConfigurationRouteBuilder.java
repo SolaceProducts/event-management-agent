@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
@@ -16,8 +17,8 @@ public class SolaceQueueConfigurationRouteBuilder extends DataPublisherRouteBuil
      */
     @Autowired
     public SolaceQueueConfigurationRouteBuilder(SolaceQueueConfigurationProcessor processor, RouteManager routeManager,
-                                                MDCProcessor mdcProcessor) {
+                                                MDCProcessor mdcProcessor, EmptyScanEntityProcessor emptyScanEntityProcessor) {
         super(processor, SolaceRouteId.SOLACE_QUEUE_CONFIG.label, SolaceRouteType.SOLACE_QUEUE_CONFIG.label,
-                routeManager, mdcProcessor);
+                routeManager, mdcProcessor, emptyScanEntityProcessor);
     }
 }
