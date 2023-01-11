@@ -1,151 +1,197 @@
 springdoc:
-  packages-to-scan: com.solace.maas.ep.runtime.agent.scanManager.rest
+  packages-to-scan: com.solace.maas.ep.event.management.agent.scanManager.rest
   api-docs:
-    path: /docs/runtime-agent
+    path: /docs/event-management-agent
   swagger-ui:
-    path: runtime-agent/swagger-ui.html
+    path: /event-management-agent/swagger-ui.html
+
 server:
   port: 8180
+
+idGenerator:
+  originId: event_management_agent_${EP_EVENT_MANAGEMENT_AGENT_ID}
+
 spring:
-  main:
-    allow-bean-definition-overriding: true
-  h2:
-    console:
-      settings:
-        web-allow-others: true
-      path: /h2
-      enabled: true
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.H2Dialect
-    defer-datasource-initialization: true
   datasource:
     url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
     password: password
     driver-class-name: org.h2.Driver
-    username: sa
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  h2:
+    console:
+      path: /h2
+      enabled: true
+      settings:
+        web-allow-others: true
+  main:
+    allow-bean-definition-overriding: true
+
 camel:
   springboot:
     use-mdc-logging: true
+
 eventPortal:
-  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:f5w5j7ed69c}
+  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:defaultAgentId}
+  organizationId: ${EP_ORGANIZATION_ID:defaultOrgId}
   topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
   gateway:
-    id: g527g4hnak7
-    name: US East EVMR
+    id: gateway
+    name: evmr1
     messaging:
-      standalone: false
+      standalone: true
       rtoSession: false
-      enableHeartbeats: true
-      testHeartbeats: true
+      enableHeartbeats: false
+      testHeartbeats: false
       connections:
-      - name: eventPortalGateway
-        authenticationType: ${EP_GATEWAY_AUTH:basicAuthentication}
-        msgVpn: ${EP_GATEWAY_MSGVPN:runtime-agent-evmr}
-        url: ${EP_GATEWAY_URL:tcps://mrg1qbaza00z0.messaging.solace.cloud:55443}
-        users:
-        - clientName: client_f5w5j7ed69c
-          name: messaging1
-          password: BMvUCsvxTvy!}xm=18QFwbBg
-          username: ${EP_GATEWAY_USERNAME:maasdev-67tr8tktyr-f5w5j7ed69c}
-  organizationId: ${EP_ORGANIZATION_ID:maasdev}
-plugins:
-  messagingServices:
-  - id: ojvoelkrj2w
-    type: solace
-    name: abdullah-empty-broker
-    connections:
-    - name: abdullah-empty-broker
-      url: https://mrurvyzpl9y98.messaging.solace.cloud:943
-      properties:
-      - name: msgVpn
-        value: abdullah-empty-broker
-      - name: sempPageSize
-        value: 100
-      authentication:
-      - protocol: SEMP
-        credentials:
-        - type: USERNAME_PASSWORD
-          source: ENVIRONMENT_VARIABLE
-          operations:
-          - name: ALL
-          properties:
-          - name: username
-            value: abdullah-empty-broker-admin
-          - name: password
-            value: o51gh1h1625bsrfi2ggqvanudt
-        properties:
-        - name: type
-          value: basicAuthentication
-  - id: 5ujuqshtbuz
-    type: kafka
-    name: confluent Kafka cluster
-    connections:
-    - name: confluent Kafka cluster
-      url: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-      authentication:
-      - credentials:
-  - id: ebp6alma25g
-    type: kafka
-    name: gregKafkaNoAuth
-    connections:
-    - name: kafkaNoAuthConnection
-      url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:12091}
-      authentication:
-      - protocol: PLAINTEXT
-        credentials:
-        - type: USERNAME_PASSWORD
-          source: ENVIRONMENT_VARIABLE
-          operations:
-          - name: ALL
-  - id: 37o1yj73k9m
-    type: solace
-    name: Gregs ivmr
-    connections:
-    - name: Gregs ivmr
-      url: https://mr-connection-ofdjrwxkphk.messaging.solace.cloud:943
-      properties:
-      - name: msgVpn
-        value: gregs-ivmr
-      - name: sempPageSize
-        value: 100
-      authentication:
-      - protocol: SEMP
-        credentials:
-        - type: USERNAME_PASSWORD
-          source: ENVIRONMENT_VARIABLE
-          operations:
-          - name: ALL
-          properties:
-          - name: username
-            value: gregs-ivmr-admin
-          - name: password
-            value: maacmpghig094gn1ld3ukd026h
-        properties:
-        - name: type
-          value: basicAuthentication
-  - id: df7efq67k45
-    type: kafka
-    name: kafkaMtlsService
-    connections:
-    - name: kafkaMTLSConnection
-      url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:11091}
-      authentication:
-      - protocol: SSL
-        credentials:
-        - type: mtls
-          source: ENVIRONMENT_VARIABLE
-          operations:
-          - name: ALL
-          properties:
-          - name: ssl.truststore.location
-            value: /Users/gmeldrum/Downloads/kafka.appSA.truststore.jks
-          - name: ssl.truststore.password
-            value: ${TRUSTSTORE_PASSWORD}
-          - name: ssl.keystore.password
-            value: ${KEYSTORE_PASSWORD}
-          - name: ssl.keystore.location
-            value: /Users/gmeldrum/Downloads/kafka.appSA.keystore.jks
-          - name: ssl.key.password
-            value: ${KEY_PASSWORD}
+        - name: eventPortalGateway
+          authenticationType: ${EP_GATEWAY_AUTH}
+          url: ${EP_GATEWAY_URL}
+          msgVpn: ${EP_GATEWAY_MSGVPN}
+          trustStoreDir: ${SSL_STORE_DIR}
+          users:
+            - name: messaging1
+              username: ${EP_GATEWAY_USERNAME}
+              password: ${EP_GATEWAY_PASSWORD}
+              clientName: runtime_agent_${EP_RUNTIME_AGENT_ID}  # 'client_' + runtimeAgentId
+
+# Below is an example of how to set up messaging service configuration in the application.yml file.
+
+#plugins:
+#  messagingServices:
+#    # Solace example
+#    - id: solaceDefaultService
+#      type: SOLACE
+#      name: staging service
+#      connections:
+#        - name: mySolaceServiceSemp
+#          url: ${SOLACE_SEMP_URL}
+#          authentication:
+#            - protocol: SEMP
+#              credentials:
+#                - source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#                  properties:
+#                    - name: username
+#                      value: ${SOLACE_SEMP_USERNAME}
+#                    - name: password
+#                      value: ${SOLACE_SEMP_PASSWORD}
+#          properties:
+#            - name: msgVpn
+#              value: ${SOLACE_VPN_NAME}
+#            - name: sempPageSize
+#              value: 100
+#    # MTLS example
+#    - id: kafkaMTLSServiceExample
+#      name: mtls kafka cluster example
+#      type: KAFKA
+#      connections:
+#        - name: kafkaMTLSConnection
+#          url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:11091,kafka2:11092}
+#          authentication:
+#            - protocol: SSL
+#              credentials:
+#                - source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#                  properties:
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                    - name: ssl.keystore.password
+#                      value: ${KEYSTORE_PASSWORD}
+#                    - name: ssl.keystore.location
+#                      value: ${KEYSTORE_LOCATION}
+#                    - name: ssl.key.password
+#                      value: ${KEY_PASSWORD}
+#    # SASL SCRAM
+#    - id: kafkaSASLSCRAMServiceExample
+#      name: sasl scram kafka cluster example
+#      type: KAFKA
+#      connections:
+#        - name: kafkaSASLSCRAMConnection
+#          url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:14091,kafka2:14092}
+#          authentication:
+#            - protocol: SASL_SSL
+#              credentials:
+#                - source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#                  properties:
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                    - name: sasl.jaas.config
+#                      value: org.apache.kafka.common.security.scram.ScramLoginModule required username=<username> password=<password>;
+#                    - name: sasl.mechanism
+#                      value: SCRAM-SHA-256
+#      # SASL Plain example
+#      - id: saslplain
+#        name: saslplain
+#        type: KAFKA
+#        connections:
+#          - name: saslplainconn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9092}
+#            authentication:
+#              - protocol: SASL_PLAINTEXT
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: sasl.mechanism
+#                        value: PLAIN
+#                      - name: sasl.jaas.config
+#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
+#      # SASL Plain over SSL
+#      - id: saslplainssl
+#        name: saslplainssl
+#        type: KAFKA
+#        connections:
+#          - name: saslplainsslconn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:13091,kafka2:13092}
+#            authentication:
+#              - protocol: SASL_SSL
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: ssl.truststore.location
+#                        value: ${TRUSTSTORE_LOCATION}
+#                      - name: sasl.mechanism
+#                        value: PLAIN
+#                      - name: sasl.jaas.config
+#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
+#      # AWS IAM Example.
+#      # NOTE: Remember to set the aws access id and password in the environment or credentials!
+#      - id: iam
+#        name: iam
+#        type: KAFKA
+#        connections:
+#          - name: iamConn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:awsservers:9098}
+#            authentication:
+#              - protocol: SASL_SSL
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: ssl.truststore.location
+#                        value: ${TRUSTSTORE_LOCATION}
+#                      - name: security.protocol
+#                        value: SASL_SSL
+#                      - name: sasl.mechanism
+#                        value: AWS_MSK_IAM
+#                      - name: sasl.jaas.config
+#                        value: software.amazon.msk.auth.iam.IAMLoginModule required;
+#                      - name: sasl.client.callback.handler.class
+#                        value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
