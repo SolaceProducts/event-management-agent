@@ -21,7 +21,7 @@
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>http-client</artifactId>
-            <version>4.1.2</version>
+            <version>4.2.0</version>
         </dependency>
 
         <dependency>
