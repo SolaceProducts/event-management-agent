@@ -35,7 +35,7 @@ public class ConnectionDetailsEntity implements Serializable {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "CONNECTION_URL", nullable = false)
+    @Column(name = "CONNECTION_URL", length = 4096, nullable = false)
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
