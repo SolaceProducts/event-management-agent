@@ -1,17 +1,22 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
+import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanLifecycleEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
-import com.solace.maas.ep.event.management.agent.service.lifecycle.ScanLifecycleService;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.MDC;
@@ -25,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
@@ -37,22 +43,23 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 public class ScanService {
     private final ScanRepository repository;
 
+    private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
+
     private final ScanRouteService scanRouteService;
 
     private final RouteService routeService;
 
     private final ProducerTemplate producerTemplate;
 
-    private final ScanLifecycleService scanLifecycleService;
-
-    public ScanService(ScanRepository repository, ScanRouteService scanRouteService,
-                       RouteService routeService, ProducerTemplate producerTemplate,
-                       ScanLifecycleService scanLifecycleService) {
+    public ScanService(ScanRepository repository,
+                       ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
+                       ScanRouteService scanRouteService,
+                       RouteService routeService, ProducerTemplate producerTemplate) {
         this.repository = repository;
+        this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
-        this.scanLifecycleService = scanLifecycleService;
     }
 
     /**
@@ -117,39 +124,53 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, int numExpectedCompletionMessages, String groupId, String scanId) {
-        log.info("Starting single scan request {}.", scanId);
+    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId,
+                             MessagingServiceEntity messagingServiceEntity) {
+        log.info("Scan request [{}]: Starting a single scan.", scanId);
 
         ScanEntity savedScanEntity = null;
+
+        List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
+
+        RouteBundleHierarchyStore routeBundleHierarchy =
+                parseRouteRecipients(routeBundles, new RouteBundleHierarchyStore());
+
+        save(routeBundleHierarchy, scanId);
+
+        log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
+                scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
+
+        sendScanStatus(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+                StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
+
+        log.trace("RouteBundles to be processed: {}", routeBundles);
 
         String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
 
         for (RouteBundle routeBundle : routeBundles) {
+            log.trace("Processing RouteBundles: {}", routeBundle);
+
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
-            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanEntityId);
+            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanEntityId, messagingServiceEntity);
 
             scanAsync(groupId, scanEntityId, route, routeBundle.getMessagingServiceId());
             savedScanEntity = returnedScanEntity;
         }
 
         if (savedScanEntity != null) {
-            ScanLifecycleEntity scannedLifecycleEntity = ScanLifecycleEntity.builder()
-                    .scanId(scanEntityId)
-                    .numExpectedCompletionMessages(numExpectedCompletionMessages)
-                    .build();
-
-            scanLifecycleService.addScanLifecycleEntity(scannedLifecycleEntity);
-            return scanEntityId;
+            return scanId;
         }
+
         log.error("Unable to process scan request");
         return null;
     }
 
     @Transactional
-    protected ScanEntity setupScan(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity, String scanId) {
-        ScanEntity savedScanEntity = saveScanEntity(route, routeBundle, scanEntity, scanId);
+    protected ScanEntity setupScan(RouteEntity route, RouteBundle routeBundle,
+                                   ScanEntity scanEntity, String scanId, MessagingServiceEntity messagingServiceEntity) {
+        ScanEntity savedScanEntity = saveScanEntity(route, routeBundle, scanEntity, scanId, messagingServiceEntity);
 
         List<ScanDestinationEntity> destinationEntities = routeBundle.getDestinations().stream()
                 .map(destination -> ScanDestinationEntity.builder()
@@ -175,12 +196,13 @@ public class ScanService {
             scanRouteService.saveRecipients(recipientEntities);
         }
 
-        setupRecipientsForScan(savedScanEntity, routeBundle, scanId);
+        setupRecipientsForScan(savedScanEntity, routeBundle, scanId, messagingServiceEntity);
 
         return savedScanEntity;
     }
 
-    private ScanEntity saveScanEntity(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity, String scanId) {
+    private ScanEntity saveScanEntity(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity,
+                                      String scanId, MessagingServiceEntity messagingServiceEntity) {
         ScanEntity returnScanEntity = scanEntity;
         if (returnScanEntity == null) {
             returnScanEntity = save(ScanEntity.builder()
@@ -188,6 +210,7 @@ public class ScanService {
                     .route(List.of(route))
                     .active(true)
                     .scanType(routeBundle.getScanType())
+                    .messagingService(messagingServiceEntity)
                     .build());
         } else {
             if (routeBundle.isFirstRouteInChain()) {
@@ -200,104 +223,13 @@ public class ScanService {
         return returnScanEntity;
     }
 
-    protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle, String scanId) {
+    protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle,
+                                          String scanId, MessagingServiceEntity messagingServiceEntity) {
 
         for (RouteBundle recipient : routeBundle.getRecipients()) {
             RouteEntity route = routeService.findById(recipient.getRouteId())
                     .orElseThrow();
-            setupScan(route, recipient, scanEntity, scanId);
-        }
-    }
-
-
-    /**
-     * Attempts to initiate a single "one time" scan. This scan does NOT get repeated.
-     *
-     * @param destinations       A list of Destinations to send the scan results to.
-     * @param messagingServiceId The ID of the Messaging Service that is being scanned.
-     * @param routeId            The ID of the Route.
-     * @param scanType           The Type of Scan being executed.
-     * @return The ID of this scan.
-     * @throws Exception Any exception that could be thrown.
-     */
-    @Deprecated
-    public String singleScan(List<String> destinations, List<String> recipients, String messagingServiceId,
-                             String routeId, String scanType) {
-        RouteEntity route = routeService.findById(routeId)
-                .orElseThrow();
-
-        String groupId = UUID.randomUUID().toString();
-
-        ScanEntity savedScanEntity = setupScan(route, destinations, recipients, scanType);
-
-
-        scanAsync(groupId, savedScanEntity.getId(), route, messagingServiceId)
-                .whenComplete((exchange, exception) -> findById(savedScanEntity.getId())
-                        .ifPresent(scanEntity -> {
-                            scanEntity.setActive(false);
-
-                            save(scanEntity);
-                        }));
-
-        return savedScanEntity.getId();
-    }
-
-    @Transactional
-    protected ScanEntity setupScan(RouteEntity route, List<String> destinations, List<String> recipients,
-                                   String scanType) {
-        ScanEntity savedScanEntity = save(ScanEntity.builder()
-                .route(List.of(route))
-                .active(true)
-                .scanType(scanType)
-                .build());
-
-        List<ScanDestinationEntity> destinationEntities = destinations.stream()
-                .map(destination -> ScanDestinationEntity.builder()
-                        .scan(savedScanEntity)
-                        .route(route)
-                        .destination(destination)
-                        .build())
-                .collect(Collectors.toUnmodifiableList());
-
-        if (!destinationEntities.isEmpty()) {
-            scanRouteService.saveDestinations(destinationEntities);
-        }
-
-        List<ScanRecipientEntity> recipientEntities = recipients.stream()
-                .map(recipient -> ScanRecipientEntity.builder()
-                        .scan(savedScanEntity)
-                        .route(route)
-                        .recipient(recipient)
-                        .build())
-                .collect(Collectors.toUnmodifiableList());
-
-        if (!recipientEntities.isEmpty()) {
-            scanRouteService.saveRecipients(recipientEntities);
-        }
-
-        setupConfigScan(savedScanEntity, destinations, recipients);
-
-        return savedScanEntity;
-    }
-
-    protected void setupConfigScan(ScanEntity scanEntity, List<String> destinations, List<String> recipients) {
-
-        for (String recipient : recipients) {
-            String recipientPath = recipient.split(":")[1];
-            RouteEntity route = routeService.findById(recipientPath)
-                    .orElseThrow();
-
-            List<ScanDestinationEntity> destinationEntities = destinations.stream()
-                    .map(destination -> ScanDestinationEntity.builder()
-                            .scan(scanEntity)
-                            .route(route)
-                            .destination(destination)
-                            .build())
-                    .collect(Collectors.toUnmodifiableList());
-
-            if (!destinationEntities.isEmpty()) {
-                scanRouteService.saveDestinations(destinationEntities);
-            }
+            setupScan(route, recipient, scanEntity, scanId, messagingServiceEntity);
         }
     }
 
@@ -316,16 +248,27 @@ public class ScanService {
     }
 
     /**
-     * Initials an asynchronous Messaging Service scan.
+     * Sends the initial scan  status message to signal the start of Messaging Service scan.
      *
-     * @param groupId            Not used at the moment. This will be the grouped Scan IDs.
      * @param scanId             The Scan ID to set.
-     * @param route              Details about the Camel Route being invoked.
+     * @param groupId            Not used at the moment. This will be the grouped Scan IDs.
      * @param messagingServiceId The ID of the Messaging Service being scanned.
-     * @return A Future of the Route result.
+     * @param scanTypes          The scan types included in the scan request.
+     * @param status             The status of scan.
      */
-    public CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route,
-                                                 String messagingServiceId) {
+    public void sendScanStatus(String scanId, String groupId, String messagingServiceId, String scanTypes,
+                               ScanStatus status) {
+        producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
+            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
+            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
+            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
+            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
+        });
+    }
+
+    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route, String messagingServiceId) {
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
@@ -346,7 +289,7 @@ public class ScanService {
             if (exception != null) {
                 log.error("Exception occurred while executing route {} for scan request: {}.", route.getId(), scanId, exception);
             } else {
-                log.debug("Successfully completed route {} for scan request: {}", route.getId(), scanId);
+                log.trace("Camel route {} for scan request: {} has been executed successfully.", route.getId(), scanId);
             }
             routeService.stopRoute(route);
         });
@@ -360,5 +303,82 @@ public class ScanService {
      */
     protected ScanEntity save(ScanEntity scanEntity) {
         return repository.save(scanEntity);
+    }
+
+    protected ScanRecipientHierarchyEntity save(RouteBundleHierarchyStore routeBundleHierarchy, String scanId) {
+        ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
+                ScanRecipientHierarchyEntity.builder()
+                        .store(routeBundleHierarchy.getStore())
+                        .scanId(scanId)
+                        .build();
+
+        return scanRecipientHierarchyRepository.save(scanRecipientHierarchyEntity);
+    }
+
+    protected List<String> parseRouteBundle(List<RouteBundle> routeBundles, List<String> scanTypes) {
+        for (RouteBundle routeBundle : routeBundles) {
+            scanTypes.add(routeBundle.getScanType());
+            if (routeBundle.getRecipients() != null && !routeBundle.getRecipients().isEmpty()) {
+                parseRouteBundle(routeBundle.getRecipients(), scanTypes);
+            }
+        }
+        return scanTypes;
+    }
+
+    public List<ScanItemBO> listScans() {
+        return StreamSupport.stream(repository.findAll().spliterator(), false)
+                .map(se -> ScanItemBO.builder()
+                        .id(se.getId())
+                        .createdAt(se.getCreatedAt())
+                        .messagingServiceId(se.getMessagingService().getId())
+                        .messagingServiceName(se.getMessagingService().getName())
+                        .messagingServiceType(se.getMessagingService().getType())
+                        .build())
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    protected RouteBundleHierarchyStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleHierarchyStore pathStore) {
+        for (RouteBundle routeBundle : routeBundles) {
+            if (routeBundle.getRecipients() != null && !routeBundle.getRecipients().isEmpty()) {
+                pathStore = registerRouteRecipients(routeBundle, pathStore);
+                parseRouteRecipients(routeBundle.getRecipients(), pathStore);
+            }
+        }
+        return pathStore;
+    }
+
+    protected RouteBundleHierarchyStore registerRouteRecipients(RouteBundle routeBundle, RouteBundleHierarchyStore pathStore) {
+        boolean parentExistsInStore = false;
+        List<String> keys = new ArrayList<>(pathStore.getStore().keySet());
+        String parentScanType = routeBundle.getScanType();
+
+        List<String> recipients = routeBundle.getRecipients().stream()
+                .map(RouteBundle::getScanType).collect(Collectors.toList());
+
+        for (String key : keys) {
+            String hierarchyPath = pathStore.getStore().get(key);
+            String lastChild = StringUtils.substringAfterLast(hierarchyPath, ",");
+
+            if (lastChild.equals(parentScanType)) {
+                String firstRecipient = recipients.get(0);
+                recipients.remove(0);
+                String firstRecipientPath = pathStore.getStore().get(key) + "," + firstRecipient;
+                pathStore.getStore().put(String.valueOf(key), firstRecipientPath);
+
+                String basePath = pathStore.getStore().get(key).split(parentScanType, 2)[0];
+                recipients.forEach(recipient -> {
+                    String path = basePath + parentScanType + "," + recipient;
+                    pathStore.getStore().put(String.valueOf(RouteBundleHierarchyStore.getStoreKey()), path);
+                });
+                parentExistsInStore = true;
+                break;
+            }
+        }
+        if (!parentExistsInStore) {
+            recipients.forEach(recipient ->
+                    pathStore.getStore().put(String.valueOf(RouteBundleHierarchyStore.getStoreKey()),
+                            parentScanType + "," + recipient));
+        }
+        return pathStore;
     }
 }

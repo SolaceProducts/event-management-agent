@@ -2,6 +2,8 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
@@ -17,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
     private final AsyncRoutePublisherImpl asyncRoutePublisher;
 
@@ -28,8 +32,9 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
      * @param mdcProcessor The Processor handling the MDC data for logging.
      */
     public AsyncDataPublisherRouteBuilder(Processor processor, AsyncRoutePublisherImpl asyncRoutePublisher, String routeId,
-                                          String routeType, RouteManager routeManager, MDCProcessor mdcProcessor) {
-        super(processor, routeId, routeType, routeManager, mdcProcessor);
+                                          String routeType, RouteManager routeManager, MDCProcessor mdcProcessor,
+                                          EmptyScanEntityProcessor emptyScanEntityProcessor) {
+        super(processor, routeId, routeType, routeManager, mdcProcessor, emptyScanEntityProcessor);
 
         this.asyncRoutePublisher = asyncRoutePublisher;
     }
@@ -61,7 +66,7 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
                 .end()
                 .to("reactive-streams:asyncProcessing_" + routeId);
 
-        from("seda:asyncEvent_" + routeId+ "?blockWhenFull=true&size=1000000")
+        from("seda:asyncEvent_" + routeId + "?blockWhenFull=true&size=1000000")
                 .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
                 .setHeader("RECIPIENTS", method(this, "getRecipients(${header."
                         + RouteConstants.SCAN_ID + "})"))

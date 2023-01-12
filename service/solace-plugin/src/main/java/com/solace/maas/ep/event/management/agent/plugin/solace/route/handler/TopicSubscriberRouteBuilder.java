@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AsyncDataPublisherRouteBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
@@ -12,8 +13,9 @@ public class TopicSubscriberRouteBuilder extends AsyncDataPublisherRouteBuilder 
     @Autowired
     public TopicSubscriberRouteBuilder(TopicSubscriberProcessor processor,
                                        TopicRoutePublisherImpl topicRoutePublisher, RouteManager routeManager,
-                                       MDCProcessor mdcProcessor) {
+                                       MDCProcessor mdcProcessor, EmptyScanEntityProcessor emptyScanEntityProcessor) {
         super(processor, topicRoutePublisher, "topicSubscriber","topicSubscriber",
-                routeManager, mdcProcessor);
+                routeManager, mdcProcessor, emptyScanEntityProcessor);
+
     }
 }

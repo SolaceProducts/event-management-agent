@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoa
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
@@ -44,11 +45,11 @@ public class ScanManager {
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
         MessagingServiceRouteDelegate scanDelegate =
-                PluginLoader.findPlugin(messagingServiceEntity.getMessagingServiceType());
+                PluginLoader.findPlugin(messagingServiceEntity.getType());
 
         Objects.requireNonNull(scanDelegate,
                 String.format("Unable to find messaging service plugin for plugin type %s. Valid types are %s.",
-                        messagingServiceEntity.getMessagingServiceType(),
+                        messagingServiceEntity.getType(),
                         String.join(", ", PluginLoader.getKeys())));
 
         List<String> scanDestinations = scanRequestBO.getDestinations();
@@ -73,10 +74,14 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, routes.size(), groupId, scanId);
+        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {
         return messagingServiceDelegateService.getMessagingServiceById(messagingServiceId);
+    }
+
+    public List<ScanItemBO> listScans() {
+        return scanService.listScans();
     }
 }

@@ -8,6 +8,9 @@ springdoc:
 server:
   port: 8180
 
+idGenerator:
+  originId: event_management_agent_${EP_EVENT_MANAGEMENT_AGENT_ID}
+
 spring:
   datasource:
     url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
@@ -58,34 +61,137 @@ eventPortal:
 
 # Below is an example of how to set up messaging service configuration in the application.yml file.
 
-plugins:
-  messagingServices:
-    # A solace service with both management and messaging credentials
-    - id: solaceDefaultService
-      type: SOLACE
-      name: staging service
-      management:
-        connections:
-          - name: mySolaceServiceSemp
-            authenticationType: basicAuthentication
-            url: ${SOLACE_SEMP_URL}
-            msgVpn: ${SOLACE_MSGVPN_NAME}
-            users:
-              - name: sempuser
-                username: ${SOLACE_SEMP_USERNAME}
-                password: ${SOLACE_SEMP_PASSWORD}
-#      properties:
-#        semp:
-#          pageSize: 100
-#    - id: kafkaDefaultService
-#      name: confluent kafka cluster
+#plugins:
+#  messagingServices:
+#    # Solace example
+#    - id: solaceDefaultService
+#      type: SOLACE
+#      name: staging service
+#      connections:
+#        - name: mySolaceServiceSemp
+#          url: ${SOLACE_SEMP_URL}
+#          authentication:
+#            - protocol: SEMP
+#              credentials:
+#                - source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#                  properties:
+#                    - name: username
+#                      value: ${SOLACE_SEMP_USERNAME}
+#                    - name: password
+#                      value: ${SOLACE_SEMP_PASSWORD}
+#          properties:
+#            - name: msgVpn
+#              value: ${SOLACE_VPN_NAME}
+#            - name: sempPageSize
+#              value: 100
+#    # MTLS example
+#    - id: kafkaMTLSServiceExample
+#      name: mtls kafka cluster example
 #      type: KAFKA
-#      management:
+#      connections:
+#        - name: kafkaMTLSConnection
+#          url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:11091,kafka2:11092}
+#          authentication:
+#            - protocol: SSL
+#              credentials:
+#                - source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#                  properties:
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                    - name: ssl.keystore.password
+#                      value: ${KEYSTORE_PASSWORD}
+#                    - name: ssl.keystore.location
+#                      value: ${KEYSTORE_LOCATION}
+#                    - name: ssl.key.password
+#                      value: ${KEY_PASSWORD}
+#    # SASL SCRAM
+#    - id: kafkaSASLSCRAMServiceExample
+#      name: sasl scram kafka cluster example
+#      type: KAFKA
+#      connections:
+#        - name: kafkaSASLSCRAMConnection
+#          url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:14091,kafka2:14092}
+#          authentication:
+#            - protocol: SASL_SSL
+#              credentials:
+#                - source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#                  properties:
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                    - name: sasl.jaas.config
+#                      value: org.apache.kafka.common.security.scram.ScramLoginModule required username=<username> password=<password>;
+#                    - name: sasl.mechanism
+#                      value: SCRAM-SHA-256
+#      # SASL Plain example
+#      - id: saslplain
+#        name: saslplain
+#        type: KAFKA
 #        connections:
-#          - name: noAuth
-#            authenticationType: NO_AUTH
-#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9091}
-#            users:
-#              - name: noauthKafkaUser
-#                username: admin
-#                password: admin
+#          - name: saslplainconn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9092}
+#            authentication:
+#              - protocol: SASL_PLAINTEXT
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: sasl.mechanism
+#                        value: PLAIN
+#                      - name: sasl.jaas.config
+#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
+#      # SASL Plain over SSL
+#      - id: saslplainssl
+#        name: saslplainssl
+#        type: KAFKA
+#        connections:
+#          - name: saslplainsslconn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:13091,kafka2:13092}
+#            authentication:
+#              - protocol: SASL_SSL
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: ssl.truststore.location
+#                        value: ${TRUSTSTORE_LOCATION}
+#                      - name: sasl.mechanism
+#                        value: PLAIN
+#                      - name: sasl.jaas.config
+#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
+#      # AWS IAM Example.
+#      # NOTE: Remember to set the aws access id and password in the environment or credentials!
+#      - id: iam
+#        name: iam
+#        type: KAFKA
+#        connections:
+#          - name: iamConn
+#            url: ${KAFKA_BOOTSTRAP_SERVERS:awsservers:9098}
+#            authentication:
+#              - protocol: SASL_SSL
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    operations:
+#                      - name: ALL
+#                    properties:
+#                      - name: ssl.truststore.location
+#                        value: ${TRUSTSTORE_LOCATION}
+#                      - name: security.protocol
+#                        value: SASL_SSL
+#                      - name: sasl.mechanism
+#                        value: AWS_MSK_IAM
+#                      - name: sasl.jaas.config
+#                        value: software.amazon.msk.auth.iam.IAMLoginModule required;
+#                      - name: sasl.client.callback.handler.class
+#                        value: software.amazon.msk.auth.iam.IAMClientCallbackHandler

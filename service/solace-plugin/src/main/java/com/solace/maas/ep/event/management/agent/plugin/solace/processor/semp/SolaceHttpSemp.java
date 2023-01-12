@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,6 +28,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+@ExcludeFromJacocoGeneratedReport
+@SuppressWarnings("CPD-START")
 @Slf4j
 @Getter
 public class SolaceHttpSemp {

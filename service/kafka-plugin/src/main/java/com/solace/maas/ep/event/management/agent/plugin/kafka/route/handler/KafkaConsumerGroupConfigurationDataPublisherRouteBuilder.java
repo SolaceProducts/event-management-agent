@@ -1,9 +1,10 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.route.handler;
 
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.consumer.KafkaConsumerGroupConfigurationProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaRouteId;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaRouteType;
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.consumer.KafkaConsumerGroupConfigurationProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.aggregation.GenericListScanIdAggregationStrategy;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.DataAggregationRouteBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
@@ -19,9 +20,10 @@ public class KafkaConsumerGroupConfigurationDataPublisherRouteBuilder extends Da
 
     @Autowired
     public KafkaConsumerGroupConfigurationDataPublisherRouteBuilder(KafkaConsumerGroupConfigurationProcessor processor,
-                                                                    RouteManager routeManager, MDCProcessor mdcProcessor) {
+                                                                    RouteManager routeManager, MDCProcessor mdcProcessor,
+                                                                    EmptyScanEntityProcessor emptyScanEntityProcessor) {
         super(processor, KafkaRouteId.KAFKA_CONSUMER_GROUP_CONFIGURATION.label,
                 KafkaRouteType.KAFKA_CONSUMER_GROUP_CONFIGURATION.label, routeManager,
-                new GenericListScanIdAggregationStrategy(), 1000, mdcProcessor);
+                new GenericListScanIdAggregationStrategy(), 1000, mdcProcessor, emptyScanEntityProcessor);
     }
 }

@@ -3,21 +3,15 @@ package com.solace.maas.ep.event.management.agent.service;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
-import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.encoder.org.apache.commons.lang3.ArrayUtils;
-import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +26,18 @@ import java.util.stream.Collectors;
 @Service
 public class MessagingServiceDelegateServiceImpl implements MessagingServiceDelegateService {
     private final MessagingServiceRepository repository;
-
+    private final MessagingServiceEntityToEventConverter entityToEventConverter;
+    private final MessagingServiceEventToEntityConverter eventToEntityConverter;
     private final Map<String, Object> messagingServiceClients;
 
+
     @Autowired
-    public MessagingServiceDelegateServiceImpl(MessagingServiceRepository repository) {
+    public MessagingServiceDelegateServiceImpl(MessagingServiceRepository repository,
+                                               MessagingServiceEntityToEventConverter entityToEventConverter,
+                                               MessagingServiceEventToEntityConverter eventToEntityConverter) {
         this.repository = repository;
+        this.entityToEventConverter = entityToEventConverter;
+        this.eventToEntityConverter = eventToEntityConverter;
         messagingServiceClients = new HashMap<>();
     }
 
@@ -49,7 +49,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
      */
     @Transactional
     public MessagingServiceEntity addMessagingService(MessagingServiceEvent messagingServiceEvent) {
-        MessagingServiceEntity messagingServiceEntity = createMessagingServiceEntity(messagingServiceEvent);
+        MessagingServiceEntity messagingServiceEntity = eventToEntityConverter.convert(messagingServiceEvent);
 
         return repository.save(messagingServiceEntity);
     }
@@ -57,7 +57,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     @Transactional
     public Iterable<MessagingServiceEntity> addMessagingServices(List<MessagingServiceEvent> messagingServiceEvents) {
         List<MessagingServiceEntity> messagingServiceEntities = messagingServiceEvents.stream()
-                .map(this::createMessagingServiceEntity)
+                .map(eventToEntityConverter::convert)
                 .collect(Collectors.toUnmodifiableList());
 
         return repository.saveAll(messagingServiceEntities);
@@ -73,8 +73,11 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     @Transactional
     public MessagingServiceEntity getMessagingServiceById(String messagingServiceId) {
         Optional<MessagingServiceEntity> messagingServiceEntityOpt = repository.findById(messagingServiceId);
-        return messagingServiceEntityOpt.orElseThrow(() ->
-                new NoSuchElementException(String.format("Could not find messaging service with id %s", messagingServiceId)));
+        return messagingServiceEntityOpt.orElseThrow(() -> {
+            String message = String.format("Could not find messaging service with id [%s].", messagingServiceId);
+            log.error(message);
+            return new NoSuchElementException(message);
+        });
     }
 
     /**
@@ -85,44 +88,16 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
      * @param <T>                The Type of the Connection Client being created.
      * @return The created Connection Client.
      */
+    @Override
     @SuppressWarnings("unchecked")
     @Transactional
     public <T> T getMessagingServiceClient(String messagingServiceId) {
-        log.info("Retrieving connection details for messaging service {}.", messagingServiceId);
+        log.trace("Retrieving connection details for messaging service {}.", messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = getMessagingServiceById(messagingServiceId);
 
-        ConnectionDetailsEntity connectionDetailsEntity = messagingServiceEntity
-                .getManagementDetails()
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException(
-                        String.format("Could not find connection details for service with id %s", messagingServiceId)));
-
-        AuthenticationDetailsEntity authenticationDetailsEntity =
-                connectionDetailsEntity.getAuthenticationDetails()
-                        .stream()
-                        .findFirst().orElseThrow(() -> new NoSuchElementException(
-                                String.format("Could not find authentication details for service with id %s",
-                                        connectionDetailsEntity.getMessagingService().getId())));
-
-        AuthenticationDetailsEvent authenticationDetailsEvent = AuthenticationDetailsEvent.builder()
-                .id(authenticationDetailsEntity.getId())
-                .username(authenticationDetailsEntity.getUsername())
-                .password(authenticationDetailsEntity.getPassword() == null ? null :
-                        new String(ArrayUtils.toPrimitive(authenticationDetailsEntity.getPassword()), StandardCharsets.UTF_8))
-                .build();
-
-        ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
-                .messagingServiceId(messagingServiceId)
-                .name(connectionDetailsEntity.getName())
-                .connectionUrl(connectionDetailsEntity.getConnectionUrl())
-                .msgVpn(connectionDetailsEntity.getMsgVpn())
-                .authenticationDetails(List.of(authenticationDetailsEvent))
-                .build();
-
         // Get the Messaging Service type.
-        String type = messagingServiceEntity.getMessagingServiceType();
+        String type = messagingServiceEntity.getType();
 
         if (messagingServiceClients.containsKey(messagingServiceId)) {
             return (T) messagingServiceClients.get(messagingServiceId);
@@ -132,60 +107,26 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
             MessagingServiceClientManager<?> clientManager =
                     MessagingServiceTypeConfig.getMessagingServiceManagers().get(type);
 
+            MessagingServiceEvent messagingServiceEvent = entityToEventConverter.convert(messagingServiceEntity);
+            ConnectionDetailsEvent connectionDetailsEvent = messagingServiceEvent.getConnectionDetails().stream()
+                    .findFirst()
+                    .orElseThrow(() -> {
+                        String message = String.format("Could not find connection details for [%s] messaging service with name: [%s], id: [%s].",
+                                messagingServiceEntity.getType(),
+                                messagingServiceEntity.getName(),
+                                messagingServiceId);
+                        log.error(message);
+                        return new NoSuchElementException(message);
+                    });
+
             T messagingServiceClient = (T) clientManager.getClient(connectionDetailsEvent);
             messagingServiceClients.put(messagingServiceId, messagingServiceClient);
 
             return messagingServiceClient;
         } else {
-            throw new RuntimeException(String.format(
-                    "Could not retrieve or create the messaging service client for %s.", messagingServiceId));
+            String message = String.format("Could not retrieve or create the messaging service client for [%s].", messagingServiceId);
+            log.error(message);
+            throw new RuntimeException(message);
         }
-    }
-
-    private MessagingServiceEntity createMessagingServiceEntity(MessagingServiceEvent messagingServiceEvent) {
-        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
-                .id(messagingServiceEvent.getId())
-                .messagingServiceType(messagingServiceEvent.getMessagingServiceType())
-                .name(messagingServiceEvent.getName())
-                .build();
-
-        List<ConnectionDetailsEntity> connectionDetailsEntities = messagingServiceEvent.getConnectionDetails()
-                .stream()
-                .map(connectionDetailsEvent -> {
-                    ConnectionDetailsEntity connectionDetailsEntity = ConnectionDetailsEntity.builder()
-                            .name(connectionDetailsEvent.getName())
-                            .connectionUrl(connectionDetailsEvent.getConnectionUrl())
-                            .msgVpn(connectionDetailsEvent.getMsgVpn())
-                            .messagingService(messagingServiceEntity)
-                            .build();
-
-                    List<AuthenticationDetailsEntity> authenticationDetailsEntities =
-                            connectionDetailsEvent.getAuthenticationDetails()
-                                    .stream()
-                                    .map(authenticationDetailsEvent -> {
-                                        AuthenticationDetailsEntity authenticationDetailsEntity =
-                                                AuthenticationDetailsEntity.builder()
-                                                        .username(authenticationDetailsEvent.getUsername())
-                                                        .connectionDetails(connectionDetailsEntity)
-                                                        .build();
-
-                                        if (!StringUtils.isEmpty(authenticationDetailsEvent.getPassword())) {
-                                            authenticationDetailsEntity.setPassword((
-                                                    ArrayUtils.toObject(authenticationDetailsEvent.getPassword()
-                                                            .getBytes(StandardCharsets.UTF_8))));
-                                        }
-
-                                        return authenticationDetailsEntity;
-                                    })
-                                    .collect(Collectors.toUnmodifiableList());
-
-                    connectionDetailsEntity.setAuthenticationDetails(authenticationDetailsEntities);
-
-                    return connectionDetailsEntity;
-                }).collect(Collectors.toUnmodifiableList());
-
-        messagingServiceEntity.setManagementDetails(connectionDetailsEntities);
-
-        return messagingServiceEntity;
     }
 }

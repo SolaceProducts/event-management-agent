@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.A
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
+import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,25 +23,28 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
 
     @Override
     public SolaceHttpSemp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
-        log.info("Creating Solace SEMP client for messaging service {}.",
+        log.trace("Creating Solace SEMP client for messaging service [{}].",
                 connectionDetailsEvent.getMessagingServiceId());
 
         AuthenticationDetailsEvent authenticationDetailsEvent =
                 connectionDetailsEvent.getAuthenticationDetails()
                         .stream()
-                        .findFirst().orElseThrow(() -> new NoSuchElementException(
-                                String.format("Could not find authentication details for service with id %s",
-                                        connectionDetailsEvent.getMessagingServiceId())));
+                        .findFirst().orElseThrow(() -> {
+                            String message = String.format("Could not find authentication details for service with id [%s].",
+                                    connectionDetailsEvent.getMessagingServiceId());
+                            log.error(message);
+                            return new NoSuchElementException(message);
+                        });
 
         SempClient sempClient = SempClient.builder()
                 .webClient(WebClient.builder().build())
-                .username(authenticationDetailsEvent.getUsername())
-                .password(authenticationDetailsEvent.getPassword())
-                .msgVpn(connectionDetailsEvent.getMsgVpn())
-                .connectionUrl(connectionDetailsEvent.getConnectionUrl())
+                .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
+                .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
+                .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
+                .connectionUrl(connectionDetailsEvent.getUrl())
                 .build();
 
-        log.info("Solace SEMP client created for {}.", connectionDetailsEvent.getMessagingServiceId());
+        log.trace("Solace SEMP client created for {}.", connectionDetailsEvent.getMessagingServiceId());
         return new SolaceHttpSemp(sempClient);
     }
 }

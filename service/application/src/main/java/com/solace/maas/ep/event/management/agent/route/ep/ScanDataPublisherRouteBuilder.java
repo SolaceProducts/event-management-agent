@@ -1,14 +1,13 @@
 package com.solace.maas.ep.event.management.agent.route.ep;
 
 import com.solace.maas.ep.event.management.agent.processor.ScanDataProcessor;
-import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
-public class ScanDataPublisherRouteBuilder extends RouteBuilder {
+public class ScanDataPublisherRouteBuilder extends AbstractRouteBuilder {
     private final ScanDataProcessor processor;
 
     @Autowired
@@ -19,10 +18,17 @@ public class ScanDataPublisherRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("seda:eventPortal")
+        super.configure();
+
+        from("direct:eventPortal?block=false&failIfNoConsumers=false")
                 .routeId("scanDataPublisher")
                 .transform(body().append("\n"))
-                .process(processor)
-                .to("seda:eventPortalEndOfRoute");
+                .process(processor);
+
+        from("direct:importToEP?block=false&failIfNoConsumers=false")
+                .routeId("importDataPublisher")
+                .transform(body().append("\n"))
+                .process(processor);
+
     }
 }

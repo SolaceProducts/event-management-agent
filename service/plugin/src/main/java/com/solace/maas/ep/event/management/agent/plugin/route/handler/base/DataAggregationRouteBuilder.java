@@ -1,11 +1,14 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.model.dataformat.JsonLibrary;
 
@@ -31,8 +34,9 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
      * @param mdcProcessor        The Processor handling the MDC data for logging.
      */
     public DataAggregationRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager,
-                                       AggregationStrategy aggregationStrategy, Integer aggregationSize, MDCProcessor mdcProcessor) {
-        super(processor, routeId, routeType, routeManager, mdcProcessor);
+                                       AggregationStrategy aggregationStrategy, Integer aggregationSize,
+                                       MDCProcessor mdcProcessor, EmptyScanEntityProcessor emptyScanEntityProcessor) {
+        super(processor, routeId, routeType, routeManager, mdcProcessor, emptyScanEntityProcessor);
 
         this.aggregationStrategy = aggregationStrategy;
         this.aggregationSize = aggregationSize;
@@ -57,6 +61,13 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
+                .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
+                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
+                        + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
+
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
@@ -65,7 +76,7 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .setHeader("DATA_PROCESSING_COMPLETE", constant(true))
                 .endChoice()
                 .end()
-                .log("agg element ${body}")
+                .log(LoggingLevel.TRACE, "agg element ${body}")
                 .aggregate(header(RouteConstants.SCAN_ID))
                 .aggregationStrategy(aggregationStrategy)
                 .completionSize(aggregationSize)
@@ -73,14 +84,14 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .process(mdcProcessor)
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
-                .log("agg complete ${body}")
+                .log(LoggingLevel.TRACE, "agg complete ${body}")
                 .process(processor)
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
                 .split(body()).streaming()
                 .shareUnitOfWork()
-                .log("agg split ${body}")
+                .log(LoggingLevel.TRACE, "agg split ${body}")
                 // The last aggregation bundle will have "DATA_PROCESSING_COMPLETE" set true in the header for all
                 // messages in the aggregation bundle.
                 // We want to set the "DATA_PROCESSING_COMPLETE" to false, except for the last message in the
@@ -97,10 +108,16 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
                 .marshal().json(JsonLibrary.Jackson)
-                .log("destinations ${body}")
+                .log(LoggingLevel.TRACE, "destinations ${body}")
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
-                .shareUnitOfWork();
+                .shareUnitOfWork()
+                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .endChoice()
+                .end();
 
         if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
