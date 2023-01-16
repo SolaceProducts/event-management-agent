@@ -7,13 +7,16 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class SolaceTopicClassifierProcessor extends ResultProcessorImpl<Void, List<SolaceTopicEvent>> {
+public class SolaceTopicClassifierProcessor extends ResultProcessorImpl<List<String>, List<SolaceTopicEvent>> {
     @Override
-    public Void handleEvent(Map<String, Object> properties, List<SolaceTopicEvent> body) {
+    public List<String> handleEvent(Map<String, Object> properties, List<SolaceTopicEvent> body) {
         log.info("Classifying topic {}", body);
-        return null;
+        return body.stream()
+                .map(topicEvent -> topicEvent.getTopic())
+                .collect(Collectors.toList());
     }
 }

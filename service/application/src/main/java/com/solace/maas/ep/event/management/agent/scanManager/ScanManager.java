@@ -74,7 +74,15 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity);
+        try {
+            return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity);
+        } catch (RuntimeException e) {
+            log.error("Runtime exception", e);
+        } catch (Exception e) {
+            log.error("Typed exception", e);
+        }
+
+        return null;
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

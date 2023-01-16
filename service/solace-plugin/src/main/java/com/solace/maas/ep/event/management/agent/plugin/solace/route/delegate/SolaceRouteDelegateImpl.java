@@ -29,26 +29,27 @@ public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
         switch (solaceScanType) {
             case SOLACE_QUEUE_LISTING:
                 result.add(queueListingRouteBundle(destinations, recipients, messagingServiceId));
-
                 break;
+
             case SOLACE_QUEUE_CONFIG:
                 result.add(queueConfigRouteBundle(destinations, recipients, messagingServiceId));
-
                 break;
+
             case SOLACE_SUBSCRIPTION_CONFIG:
                 result.add(subscriptionConfigRouteBundle(destinations, recipients, messagingServiceId));
+                break;
 
             case SOLACE_TOPIC_COLLECTION:
                 result.add(topicCollectorRouteBundle(destinations, recipients, messagingServiceId));
+                break;
 
             case SOLACE_TOPIC_CLASSIFIER:
                 result.add(topicClassifierBundle(destinations, recipients, messagingServiceId));
-
                 break;
+
             case SOLACE_ALL:
                 result.add(subscriptionConfigRouteBundle(destinations, recipients, messagingServiceId));
                 result.add(queueConfigRouteBundle(destinations, recipients, messagingServiceId));
-
                 break;
         }
 
@@ -85,11 +86,11 @@ public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
 
     private RouteBundle topicClassifierBundle(List<RouteBundle> destinations, List<RouteBundle> recipients,
                                          String messagingServiceId) {
-        RouteBundle topicCollection = createRouteBundle(destinations, recipients,
+        RouteBundle topicClassifierRouteBundle = createRouteBundle(destinations, recipients,
                 SolaceRouteType.SOLACE_TOPIC_CLASSIFIER.label, messagingServiceId,
                 SolaceRouteType.SOLACE_TOPIC_CLASSIFIER.label,
                 false);
-        return topicCollectorRouteBundle(destinations, List.of(topicCollection), messagingServiceId);
+        return topicCollectorRouteBundle(destinations, List.of(topicClassifierRouteBundle), messagingServiceId);
     }
 
 }
