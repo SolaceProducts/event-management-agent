@@ -63,19 +63,29 @@ eventPortal:
 
 plugins:
   messagingServices:
+    # Solace example
     - id: solaceDefaultService
       type: SOLACE
-      name: Gregs ivmr
-      management:
-        connections:
-          - name: Gregs ivmr
-            url: ${SOLACE_MANAGEMENT_URL}
-            msgVpn: ${SOLACE_MANAGEMENT_MSGVPNNAME}
-            authenticationType: basicAuthentication
-            users:
-              - name: sempuser
-                username: ${SOLACE_MANAGEMENT_USERNAME}
-                password: ${SOLACE_MANAGEMENT_PASSWORD}
+      name: gregs ivmr service
+      connections:
+        - name: mySolaceServiceSemp
+          url: ${SOLACE_MANAGEMENT_URL}
+          authentication:
+            - protocol: SEMP
+              credentials:
+                - source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+                  properties:
+                    - name: username
+                      value: ${SOLACE_MANAGEMENT_USERNAME}
+                    - name: password
+                      value: ${SOLACE_MANAGEMENT_PASSWORD}
+          properties:
+            - name: msgVpn
+              value: ${SOLACE_MANAGEMENT_MSGVPNNAME}
+            - name: sempPageSize
+              value: 100
 
 solaceMessaging:
   url: ${SOLACE_MESSAGING_URL}
