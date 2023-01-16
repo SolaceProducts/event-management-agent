@@ -1,18 +1,15 @@
-package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler;
+package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler.topicSubscriber;
 
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AsyncWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import reactor.core.Disposable;
-
-import java.util.concurrent.Future;
 
 @AllArgsConstructor
 @Data
 @Builder
-public class TopicWrapperImpl implements AsyncWrapper {
-    private final SolaceSubscriberNoThread solaceSubscriber;
+public class SolaceTopicWrapperImpl implements AsyncWrapper {
+    private final SolaceTopicSubscriberNoThread solaceSubscriber;
 
     @Override
     public void terminate() {

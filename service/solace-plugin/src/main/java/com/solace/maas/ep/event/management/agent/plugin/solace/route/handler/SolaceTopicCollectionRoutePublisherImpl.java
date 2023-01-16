@@ -4,6 +4,8 @@ import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.Async
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AsyncWrapper;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.AsyncManager;
 import com.solace.maas.ep.event.management.agent.plugin.solace.properties.SolaceMessagingProperties;
+import com.solace.maas.ep.event.management.agent.plugin.solace.route.handler.topicSubscriber.SolaceTopicSubscriberNoThread;
+import com.solace.maas.ep.event.management.agent.plugin.solace.route.handler.topicSubscriber.SolaceTopicWrapperImpl;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.config.SolaceProperties;
 import com.solace.messaging.config.profile.ConfigurationProfile;
@@ -14,16 +16,15 @@ import org.springframework.stereotype.Component;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @Component
-public class TopicRoutePublisherImpl extends AsyncRoutePublisherImpl {
+public class SolaceTopicCollectionRoutePublisherImpl extends AsyncRoutePublisherImpl {
 
     private final static ExecutorService executor = Executors.newFixedThreadPool(10);
     private final SolaceMessagingProperties solaceMessagingProperties;
 
-    public TopicRoutePublisherImpl(CamelContext camelContext, AsyncManager asyncManager,
-                                   SolaceMessagingProperties solaceMessagingProperties) {
+    public SolaceTopicCollectionRoutePublisherImpl(CamelContext camelContext, AsyncManager asyncManager,
+                                                   SolaceMessagingProperties solaceMessagingProperties) {
         super(camelContext, asyncManager);
         this.solaceMessagingProperties = solaceMessagingProperties;
     }
@@ -45,7 +46,7 @@ public class TopicRoutePublisherImpl extends AsyncRoutePublisherImpl {
 
         String subscription = ">";
 
-        SolaceSubscriberNoThread subscriber = SolaceSubscriberNoThread.builder()
+        SolaceTopicSubscriberNoThread subscriber = SolaceTopicSubscriberNoThread.builder()
                 .service(messagingService)
                 .subscription(subscription)
                 .maxMessages(50000)
@@ -53,13 +54,13 @@ public class TopicRoutePublisherImpl extends AsyncRoutePublisherImpl {
                 .exchange(exchange)
                 .build();
         subscriber.consumerMessages();
-        //Future<Integer> future = executor.submit(subscriber);
-
+//        Future<Integer> future = executor.submit(subscriber);
+//
 //        Disposable subscription = Flux.interval(Duration.of(1, ChronoUnit.SECONDS))
 //                .map(i -> sendMesage(i, exchange))
 //                .subscribe();
 
-        return TopicWrapperImpl.builder()
+        return SolaceTopicWrapperImpl.builder()
                 .solaceSubscriber(subscriber)
                 .build();
     }

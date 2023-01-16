@@ -11,11 +11,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_QUEUE_CONFIG;
-import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_QUEUE_LISTING;
-import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_SUBSCRIPTION_CONFIG;
-import static com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType.SOLACE_TOPIC_COLLECTION;
-
 @ExcludeFromJacocoGeneratedReport
 @SuppressWarnings("CPD-START")
 @Component
@@ -44,7 +39,10 @@ public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
                 result.add(subscriptionConfigRouteBundle(destinations, recipients, messagingServiceId));
 
             case SOLACE_TOPIC_COLLECTION:
-                result.add(topicRouteBundle(destinations, recipients, messagingServiceId));
+                result.add(topicCollectorRouteBundle(destinations, recipients, messagingServiceId));
+
+            case SOLACE_TOPIC_CLASSIFIER:
+                result.add(topicClassifierBundle(destinations, recipients, messagingServiceId));
 
                 break;
             case SOLACE_ALL:
@@ -77,12 +75,21 @@ public class SolaceRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
                 SolaceRouteId.SOLACE_QUEUE_CONFIG.label, true);
     }
 
-    private RouteBundle topicRouteBundle(List<RouteBundle> destinations, List<RouteBundle> recipients,
-                                                      String messagingServiceId) {
+    private RouteBundle topicCollectorRouteBundle(List<RouteBundle> destinations, List<RouteBundle> recipients,
+                                                  String messagingServiceId) {
         return createRouteBundle(destinations, recipients,
-                SOLACE_TOPIC_COLLECTION.name(), messagingServiceId,
-                "topicSubscriber",
+                SolaceRouteType.SOLACE_TOPIC_COLLECTOR.label, messagingServiceId,
+                SolaceRouteType.SOLACE_TOPIC_COLLECTOR.label,
                 true);
+    }
+
+    private RouteBundle topicClassifierBundle(List<RouteBundle> destinations, List<RouteBundle> recipients,
+                                         String messagingServiceId) {
+        RouteBundle topicCollection = createRouteBundle(destinations, recipients,
+                SolaceRouteType.SOLACE_TOPIC_CLASSIFIER.label, messagingServiceId,
+                SolaceRouteType.SOLACE_TOPIC_CLASSIFIER.label,
+                false);
+        return topicCollectorRouteBundle(destinations, List.of(topicCollection), messagingServiceId);
     }
 
 }

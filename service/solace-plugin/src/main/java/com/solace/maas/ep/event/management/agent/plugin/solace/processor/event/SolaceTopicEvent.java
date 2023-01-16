@@ -11,7 +11,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 @Builder
-public class TopicEvent implements Serializable {
-    private String data;
-    private String subscription;
+public class SolaceTopicEvent implements Serializable {
+    private String topic;
 }

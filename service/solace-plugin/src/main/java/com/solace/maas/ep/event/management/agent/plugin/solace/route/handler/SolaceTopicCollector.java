@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Slf4j
-public class SolaceSubscriber implements Callable<Integer> {
+public class SolaceTopicCollector implements Callable<Integer> {
     private int count = 0;
     private boolean end = false;
     private final MessagingService service;
@@ -27,8 +27,8 @@ public class SolaceSubscriber implements Callable<Integer> {
     private final Exchange exchange;
 
     @Builder
-    public SolaceSubscriber(MessagingService service, String subscription, int maxMessages, AsyncRoutePublisherImpl publisher,
-                            Exchange exchange) {
+    public SolaceTopicCollector(MessagingService service, String subscription, int maxMessages, AsyncRoutePublisherImpl publisher,
+                                Exchange exchange) {
         this.service = service;
         this.subscription = subscription;
         this.maxMessages = maxMessages;

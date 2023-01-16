@@ -63,20 +63,19 @@ eventPortal:
 
 plugins:
   messagingServices:
-
     - id: solaceDefaultService
       type: SOLACE
       name: Gregs ivmr
       management:
         connections:
           - name: Gregs ivmr
-            url: https://mr-connection-ofdjrwxkphk.messaging.solace.cloud:943
-            msgVpn: gregs-ivmr
+            url: ${SOLACE_MANAGEMENT_URL}
+            msgVpn: ${SOLACE_MANAGEMENT_MSGVPNNAME}
             authenticationType: basicAuthentication
             users:
               - name: sempuser
-                username: gregs-ivmr-admin
-                password: maacmpghig094gn1ld3ukd026h
+                username: ${SOLACE_MANAGEMENT_USERNAME}
+                password: ${SOLACE_MANAGEMENT_PASSWORD}
 
 solaceMessaging:
   url: ${SOLACE_MESSAGING_URL}

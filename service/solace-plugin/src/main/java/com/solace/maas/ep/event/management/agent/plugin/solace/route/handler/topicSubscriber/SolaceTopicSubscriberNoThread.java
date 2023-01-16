@@ -1,22 +1,16 @@
-package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler;
+package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler.topicSubscriber;
 
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AsyncRoutePublisherImpl;
 import com.solace.messaging.MessagingService;
-import com.solace.messaging.PubSubPlusClientException;
 import com.solace.messaging.receiver.DirectMessageReceiver;
-import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.MessageReceiver;
 import com.solace.messaging.resources.TopicSubscription;
-import com.solace.messaging.util.CompletionListener;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 @Slf4j
-public class SolaceSubscriberNoThread {
+public class SolaceTopicSubscriberNoThread {
     private int count = 0;
     private final MessagingService service;
     private final String subscription;
@@ -29,8 +23,8 @@ public class SolaceSubscriberNoThread {
     private MessageReceiver.InboundMessageSupplier nullSupplier;
 
     @Builder
-    public SolaceSubscriberNoThread(MessagingService service, String subscription, int maxMessages, AsyncRoutePublisherImpl publisher,
-                                    Exchange exchange) {
+    public SolaceTopicSubscriberNoThread(MessagingService service, String subscription, int maxMessages, AsyncRoutePublisherImpl publisher,
+                                         Exchange exchange) {
         this.service = service;
         this.subscription = subscription;
         this.maxMessages = maxMessages;
