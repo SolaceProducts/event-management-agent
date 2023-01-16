@@ -1,0 +1,21 @@
+sfmta/bus/v2/alert
+sfmta/light-rail/v1/alert/route/(reasons:route-cancelled|additional-train-added)
+sfmta/light-rail/v1/alert/stop/(reasons:stop-maintenance|stop-closure)/(stopName:Grant|Front|Montgomery|Broadway|Lombard|Jackson|Washington|Union|Kearny|Filbert|Greenwich|Beach|Francisco|Leavenworth|Pacific|Chestnut|Battery|Powell|Bay|Vallejo)
+sfmta/light-rail/v2/alert
+sfmta/rapid-transit/v1/alert
+sfmta/bus/v2/notice
+sfmta/light-rail/v2/notice
+sfmta/rapid-transit/v2/notice
+sfmta/light-rail/v1/notice/stop/(stopName:Grant|Front|Montgomery|Broadway|Lombard|Jackson|Union|Washington|Kearny|Greenwich|Filbert|Francisco|Beach|Leavenworth|Pacific|Chestnut|Battery|Powell|Bay|Vallejo)/stop-maintenance
+
+// TODO: Add partials somehow....
+
+//acme/foodDelivery/customer
+//acme/foodDelivery/restaurant
+//nefarious/message
+//acme/rideshare/babyshark/(sharks:greatwhite|hammerhead|reef|sand|dogfish)/{var1:*}
+// acme/rideshare/admin
+
+SMES
+FDPS/position/{dk:K[A-Z]\d{8}}/(state:ACTIVE|DROPPED|PROPOSED)/{flightNum:.*}/{var1:[A-Z].{3}}/{posAero:[A-Z]{4}}/{lat:0\d{2}\.\d{4}}/{long:-\d{3}\.\d{4}}/{dk:\d+}/{alt:\d{5}}/{dk2:-?\d+}/{dk3:-?\d+}
+FDPS/FlightFIXM/(fixm:AH_FIXM|BATCH_TH_FIXM|BA_FIXM|CL_FIXM|DH_FIXM|FH_FIXM|HF_FIXM|HP_FIXM|HT_FIXM|HU_FIXM|HV_FIXM|HX_FIXM|HZ_FIXM|LH_FIXM|NL_FIXM|OH_FIXM|PT_FIXM|RH_FIXM)/(tf:false|true)/FDPS_Recon/(Zthingy:ZAB|ZAU|ZBW|ZDC|ZDV|ZFW|ZHU|ZID|ZJX|ZKC|ZLA|ZLC|ZMA|ZME|ZMP|ZNY|ZOA|ZOB|ZSE|ZTL)/(tf2:false|true)/(tf3:false)/{airport:[A-Z]{3}}/{var3:[A]{4}}/FDPS_FlightOperator

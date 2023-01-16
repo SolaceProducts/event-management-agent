@@ -61,8 +61,29 @@ eventPortal:
 
 # Below is an example of how to set up messaging service configuration in the application.yml file.
 
-#plugins:
-#  messagingServices:
+plugins:
+  messagingServices:
+
+    - id: solaceDefaultService
+      type: SOLACE
+      name: Gregs ivmr
+      management:
+        connections:
+          - name: Gregs ivmr
+            url: https://mr-connection-ofdjrwxkphk.messaging.solace.cloud:943
+            msgVpn: gregs-ivmr
+            authenticationType: basicAuthentication
+            users:
+              - name: sempuser
+                username: gregs-ivmr-admin
+                password: maacmpghig094gn1ld3ukd026h
+
+solaceMessaging:
+  url: ${SOLACE_MESSAGING_URL}
+  msgVpnName: ${SOLACE_MESSAGING_MSGVPNNAME}
+  username: ${SOLACE_MESSAGING_USERNAME}
+  password: ${SOLACE_MESSAGING_PASSWORD}
+
 #    # Solace example
 #    - id: solaceDefaultService
 #      type: SOLACE

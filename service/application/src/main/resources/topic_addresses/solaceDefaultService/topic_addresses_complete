@@ -1,0 +1,31 @@
+// SFMTA Transit Demo Rules
+
+sfmta/bus/v1/geo-update/{bus-num:.*}/{lat:.*}/{long:.*}
+sfmta/bus/v2/geo-update/{bus-num:.*}/{lat:.*}/{long:.*}
+sfmta/light-rail/v1/geo-update/{bus-num:.*}/{lat:.*}/{long:.*}
+sfmta/light-rail/v2/geo-update/{bus-num:.*}/{lat:.*}/{long:.*}
+sfmta/rapid-transit/v1/geo-update/{bus-num:.*}/{lat:.*}/{long:.*}
+sfmta/rapid-transit/v2/geo-update/{bus-num:.*}/{lat:.*}/{long:.*}
+
+sfmta/rapid-transit/v2/eta-update/(stops:forest-hill|castro|mission-rock|embarcadero|church|taraval|van-ness|glen-park|lake-merritt|marin|sf-zoo|evans|civic-center|west-oakland|montgomery|ocean-beach|mariposa|24th-mission|west-portal|powell)/{bus-num:.*}/{min-to-next-stop:.*}
+sfmta/bus/v1/eta-update/(busStops:14-Mission|52-Excelsior|67-Bernal Heights|E-Embarcadero|36-Teresita|8AX-Bayshore A Express|33-Ashbury-18th|45-Union-Stockton|25-Treasure Island|6-Haight-Parnassus|10-Townsend|California-Cable Car|31AX-Balboa A Express|78X-16th Street Arena Express|30X-Marina Express|43-Masonic|38AX-Geary A Express|23-Monterey)/{minToStop:.*}
+sfmta/bus/v1/notice/route/(reason:specialty-pickup|mechanical-failure|traffic-delay|re-route)/(busRoute:14-Mission|52-Excelsior|67-Bernal Heights|E-Embarcadero|36-Teresita|8AX-Bayshore A Express|33-Ashbury-18th|45-Union-Stockton|25-Treasure Island|6-Haight-Parnassus|78X-16th Street Arena Express|31AX-Balboa A Express|10-Townsend|California-Cable Car|30X-Marina Express|43-Masonic|38AX-Geary A Express|23-Monterey)
+sfmta/rapid-transit/v1/eta-update/(rtStops:castro|forest-hill|mission-rock|church|embarcadero|taraval|van-ness|glen-park|lake-merritt|marin|sf-zoo|evans|civic-center|west-oakland|montgomery|mariposa|ocean-beach|24th-mission|west-portal|powell)/{vehicleNum:.*}/{minToStop:.*}
+sfmta/light-rail/v1/notice/route/(reason:specialty-pickup|mechanical-failure|traffic-delay|re-route)/(stations:Embarcadera|Mason|California|Powell-Hyde)
+sfmta/rapid-transit/v1/notice/station/(reason:escalator-maintenance|track-maintenance|track-re-open|hvac-maintenance|elevator-maintenance|track-closure)/{rtNum:.*}/(station:forest-hill|castro|mission-rock|church|embarcadero|taraval|van-ness|glen-park|lake-merritt|marin|sf-zoo|civic-center|evans|west-oakland|montgomery|mariposa|ocean-beach|24th-mission|west-portal|powell)
+sfmta/light-rail/v1/eta-update/(lrStations:Stockton|Green|Grant|Front|Montgomery|Broadway|Lombard|Jackson|Kearny|Union|Washington|Filbert|Greenwich|Beach|Francisco|Leavenworth|Pacific|Chestnut|Battery|Powell|Bay|Vallejo)/(dny:Embarcadera|Mason|California|Powell-Hyde)/{minNextStop:.*}
+sfmta/bus/v1/alert/vehicle/(reason:additional-buses-added|route-cancelled)/(busRoute:14-Mission|52-Excelsior|67-Bernal Heights|E-Embarcadero|36-Teresita|33-Ashbury-18th|8AX-Bayshore A Express|45-Union-Stockton|25-Treasure Island|6-Haight-Parnassus|31AX-Balboa A Express|10-Townsend|California-Cable Car|78X-16th Street Arena Express|30X-Marina Express|43-Masonic|38AX-Geary A Express|23-Monterey)
+sfmta/rapid-transit/v2/alert/station/(reason:station-maintenance|entrance-closure|reduced-capacity)/(rtStation:castro|forest-hill|mission-rock|church|embarcadero|taraval|van-ness|glen-park|marin|lake-merritt|sf-zoo|civic-center|evans|west-oakland|montgomery|mariposa|ocean-beach|24th-mission|west-portal|powell)
+sfmta/rapid-transit/v1/notice/train/(reason:train-maintenance|track-delay|train-re-route)/{trainNum:.*}
+sfmta/bus/v1/alert/stop/(reason:stop-maintenance|stop-closure)/{stopNum:.*}
+sfmta/rapid-transit/v2/alert/train/route-cancelled/{rteNum:.*}
+sfmta/bus/v1/notice/stop/stop-maintenance/{stopNum:.*}
+
+// FAA Rules
+FDPS/position/{dk:K[A-Z]\d{8}}/(state:ACTIVE|DROPPED|PROPOSED)/{flightNum:.*}/{Aerodome:K[A-Z]{3}}/{Aerodome:K[A-Z]{3}}/{lat:0\d{2}\.\d{4}}/{long:-\d{3}\.\d{4}}/{dk:\d+}/{alt:\d{5}}/{dk2:-?\d+}/{dk3:-?\d+}
+FDPS/FlightFIXM/(fixm:AH_FIXM|BATCH_TH_FIXM|BA_FIXM|CL_FIXM|DH_FIXM|FH_FIXM|HF_FIXM|HP_FIXM|HT_FIXM|HU_FIXM|HV_FIXM|HX_FIXM|HZ_FIXM|LH_FIXM|NL_FIXM|OH_FIXM|PT_FIXM|RH_FIXM)/(tf:false|true)/FDPS_Recon/(Zthingy:ZAB|ZAU|ZBW|ZDC|ZDV|ZFW|ZHU|ZID|ZJX|ZKC|ZLA|ZLC|ZMA|ZME|ZMP|ZNY|ZOA|ZOB|ZSE|ZTL)/(tf2:false|true)/(tf3:false)/{airport:[A-Z]{3}}/{var5:[A-Z]{4}}/{var6:[A-Z]{4}}/(AorD:A|D)
+STDDS/position/{aerodome:K[A-Z]{3}}/{flight:.*}
+
+// Random Testing Rule
+a/b/c/d/e/f/g/h/i/j/k/l
+
