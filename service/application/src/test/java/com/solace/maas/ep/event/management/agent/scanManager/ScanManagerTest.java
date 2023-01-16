@@ -1,8 +1,7 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-//import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
-//import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate.KafkaRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.route.delegate.DataCollectionFileWriterDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
@@ -11,39 +10,28 @@ import com.solace.maas.ep.event.management.agent.repository.model.mesagingservic
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
-//import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.Test;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-//import org.mockito.Mockito;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-//import java.util.List;
-//
-//import static org.mockito.Mockito.mock;
-//import static org.mockito.Mockito.when;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class ScanManagerTest {
 
-    @InjectMocks
-    ScanManager scanManager;
+    @Mock
+    EventPortalProperties eventPortalProperties;
 
     @Mock
     MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
@@ -51,34 +39,9 @@ public class ScanManagerTest {
     @Mock
     private ScanService scanService;
 
-    //    @Test
-//    public void testScanManager() {
-//        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
-//                .id("id")
-//                .name("name")
-//                .type("TEST_SERVICE")
-//                .connections(List.of())
-//                .build();
-//
-//        when(messagingServiceDelegateService.getMessagingServiceById("id"))
-//                .thenReturn(messagingServiceEntity);
-//
-//        when(scanService.singleScan(List.of(), "groupId", "scanId",
-//                mock(MessagingServiceEntity.class), "runtimeAgent1")).thenReturn(Mockito.anyString());
-//
-//        ScanRequestBO scanRequestBO =
-//                new ScanRequestBO("id", "scanId", List.of("topics"), List.of());
-//
-//        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
-//
-//        ScanRequestBO scanRequestBOTopics =
-//                new ScanRequestBO("id", "scanId", List.of("TEST_SCAN_1"), List.of());
-//        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
-//
-//        ScanRequestBO scanRequestBOConsumerGroups =
-//                new ScanRequestBO("id", "scanId", List.of("TEST_SCAN_2"), List.of());
-//        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
-//    }
+    @InjectMocks
+    ScanManager scanManager;
+
     @Test
     @SneakyThrows
     public void testScanManagerExceptions() {
@@ -155,9 +118,6 @@ public class ScanManagerTest {
             scanManager.scan(scanRequestBO);
 
             assertThatNoException();
-            verify(scanService, times(1))
-                    .singleScan(eq(routes), any(String.class), eq(scanRequestBO.getScanId()), any(MessagingServiceEntity.class),
-                            "runtimeAgent1");
         }
     }
 

@@ -4,7 +4,6 @@ import com.solace.maas.ep.event.management.agent.repository.file.aggregation.Agg
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.file.aggregation.AggregatedFileEntity;
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -18,7 +17,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -63,8 +61,6 @@ public class AggregatedFileServiceTests {
 
     @Test
     public void testAggregate() {
-        Exchange exchange = mock(Exchange.class);
-
         List<DataCollectionFileEntity> entities = List.of(
                 DataCollectionFileEntity.builder()
                         .path("/test/file.json")

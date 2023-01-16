@@ -3,7 +3,7 @@ package com.solace.maas.ep.event.management.agent.processor;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
+import com.solace.maas.ep.event.management.agent.service.ScanStatusService;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -32,14 +32,14 @@ public class RouteCompleteProcessorTests {
     @Autowired
     CamelContext camelContext;
 
-    @InjectMocks
-    RouteCompleteProcessorImpl routeCompleteProcessor;
-
     @Mock
-    ScanStatusRepository scanStatusRepository;
+    ScanStatusService scanStatusService;
 
     @Mock
     ProducerTemplate producerTemplate;
+
+    @InjectMocks
+    RouteCompleteProcessorImpl routeCompleteProcessor;
 
     @SneakyThrows
     @Test
@@ -52,7 +52,7 @@ public class RouteCompleteProcessorTests {
 
         exchange.getIn().setBody("test exchange");
 
-        when(scanStatusRepository.save(any(ScanStatusEntity.class)))
+        when(scanStatusService.save(any(String.class), any(String.class)))
                 .thenReturn(ScanStatusEntity.builder().build());
 
         routeCompleteProcessor.process(exchange);

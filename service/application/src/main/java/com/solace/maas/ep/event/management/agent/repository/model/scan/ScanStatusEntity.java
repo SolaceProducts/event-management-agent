@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @ExcludeFromJacocoGeneratedReport
 @AllArgsConstructor
@@ -24,7 +25,7 @@ import javax.persistence.Table;
 @Builder
 @Table(name = "SCAN_STATUS")
 @Entity
-public class ScanStatusEntity {
+public class ScanStatusEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")

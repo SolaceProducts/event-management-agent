@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Validated
 @RestController
@@ -33,15 +30,6 @@ public class ScanControllerImpl implements ScanController {
         this.scanManager = scanManager;
         this.scanItemMapper = scanItemMapper;
     }
-
-//    @Override
-//    @GetMapping
-//    public ResponseEntity<List<ScanItemDTO>> list() {
-//
-//        return ResponseEntity.ok().body(scanManager.listScans().stream()
-//                .map(scanItemMapper::map)
-//                .collect(Collectors.toUnmodifiableList()));
-//    }
 
     @Override
     @GetMapping

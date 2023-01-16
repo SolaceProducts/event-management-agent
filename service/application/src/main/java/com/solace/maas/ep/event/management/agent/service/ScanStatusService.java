@@ -1,7 +1,6 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
@@ -22,7 +21,7 @@ public class ScanStatusService {
     }
 
     @Transactional
-    public void save(String name, String scanId) {
+    public ScanStatusEntity save(String name, String scanId) {
         ScanTypeEntity scanType = scanTypeService.findByNameAndScanId(name, scanId)
                 .orElseThrow(() -> new RuntimeException("Can't apply Scan Status to Scan that doesn't exist!"));
 
@@ -37,6 +36,6 @@ public class ScanStatusService {
                     .build();
         }
 
-        repository.save(scanStatusEntity);
+        return repository.save(scanStatusEntity);
     }
 }
