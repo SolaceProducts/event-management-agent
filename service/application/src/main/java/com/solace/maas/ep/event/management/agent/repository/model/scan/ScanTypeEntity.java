@@ -35,10 +35,10 @@ public class ScanTypeEntity implements Serializable {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, optional = false)
     @JoinColumn(name = "SCAN_ID", referencedColumnName = "ID", nullable = false)
     private ScanEntity scan;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "scanType")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "scanType")
     private ScanStatusEntity status;
 }

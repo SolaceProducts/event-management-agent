@@ -32,7 +32,7 @@ public class ScanStatusEntity implements Serializable {
     @Column(name = "ID")
     private String id;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, optional = false)
     @JoinColumn(name = "SCAN_TYPE_ID", referencedColumnName = "ID", nullable = false)
     private ScanTypeEntity scanType;
 

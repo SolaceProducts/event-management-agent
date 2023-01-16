@@ -35,6 +35,6 @@ public class MessagingServiceEntity implements Serializable {
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConnectionDetailsEntity> connections;
 
-    @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<ScanEntity> scanEntities;
 }
