@@ -38,12 +38,14 @@ public class SolacePublisher {
 
         try {
             String messageString = mapper.writeValueAsString(message);
-            Properties properties = getProperties(message);
-            OutboundMessage outboundMessage = outboundMessageBuilder
-                    .fromProperties(properties)
-                    .build(messageString);
-            log.trace("publishing to {}:\n{}", topicString, messageString);
-            directMessagePublisher.publish(outboundMessage, topic, properties);
+            synchronized (this) {
+                Properties properties = getProperties(message);
+                OutboundMessage outboundMessage = outboundMessageBuilder
+                        .fromProperties(properties)
+                        .build(messageString);
+                log.trace("publishing to {}:\n{}", topicString, messageString);
+                directMessagePublisher.publish(outboundMessage, topic, properties);
+            }
         } catch (PubSubPlusClientException e) {
             log.error("PubSubPlus Client Exception while attempting to publish message: {}", message.toString(), e);
         } catch (IllegalStateException e) {
@@ -52,12 +54,13 @@ public class SolacePublisher {
             log.error("Illegal Argument Exception while attempting to publish message: {}", message.toString(), e);
         } catch (JsonProcessingException e) {
             log.error("JsonProcessingException while attempting to publish message: {}", message.toString(), e);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 
     private Properties getProperties(MOPMessage message) {
         Properties properties = new Properties();
-        properties.put(MOPConstants.MOP_MSG_META_CONTENT_TYPE, "application/json");
         properties.put(MOPConstants.MOP_MSG_META_DECODER, message.getClass().getCanonicalName());
         properties.put(MOPConstants.MOP_VER, message.getMopVer());
         properties.put(MOPConstants.MOP_PROTOCOL, message.getMopProtocol().toString());
