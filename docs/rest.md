@@ -12,20 +12,21 @@ clients and subscriptions.
 
 ## Kafka
 
-The Kafka Confluent plugin uses the kafka broker admin APIs to learn about topics and consumer groups.
+The Kafka Confluent plugin uses the Kafka broker admin APIs to learn about topics and consumer groups.
 
 ## Initiating a scan request
 
-Update the `plugins` section of the `service/application/src/main/resources/application.yml` with the details of the
-messaging service to scan. Any value with `${SOME_VALUE}` are environment variables and should be exported in the shell
-before launching the EMA. An example of exporting these values will be in a `Environment Variables` section.
+Download the configuration file generated in the Event Portal or update the `plugins` section of the
+`service/application/src/main/resources/application.yml` file with the details of the messaging service to scan.
+Values that include `${SOME_VALUE}` are environment variables and should be exported in the shell before launching the EMA.
+An example of exporting these values appears in the `Environment Variables` section.
 
-The default application.yml has examples of the plugin configurations as well.
+The default application.yml file also includes examples of the plugin configurations.
 
 
-#### Semp Secured Connection
+#### SEMP Secured Connection
 
-The following need to be exported: 
+The following environment variables need to be exported: 
 ${SOLACE_SEMP_USERNAME}
 ${SOLACE_SEMP_PASSWORD}
 ${SOLACE_VPN_NAME}
@@ -72,7 +73,7 @@ plugins:
 
 #### Kafka Management Connection - MTLS
 
-The following need to be exported: 
+The following environment variables need to be exported: 
 ${TRUSTSTORE_LOCATION}
 ${TRUSTSTORE_PASSWORD}
 ${KEYSTORE_PASSWORD}
@@ -110,10 +111,9 @@ plugins:
 
 #### Kafka Management Connection - SASL SCRAM 256
 
-The following need to be exported (good idea to make the jaas config username and password end up as environment variables as well): 
+The following environment variables need to be exported (You can also use environment variables for the JAAS config username and password): 
 ${TRUSTSTORE_LOCATION}
 ${TRUSTSTORE_PASSWORD}
-
 
 ```
 plugins:
@@ -143,8 +143,7 @@ plugins:
 
 #### Kafka Management Connection - SASL Plain
 
-Probably a good idea to make the jaas config username and password end up as environment varialbes.
-
+You can also use environment variables for the JAAS config username and password.
 
 ```
 plugins:
@@ -170,9 +169,8 @@ plugins:
 
 #### Kafka Management Connection - SASL Plain over SSL
 
-The following need to be exported (good idea to make the jaas config username and password end up as environment variables as well): 
+The following environment variable needs to be exported (You can also use environment variables for the JAAS config username and password):
 ${TRUSTSTORE_LOCATION}
-
 
 ```
 plugins:
@@ -200,9 +198,8 @@ plugins:
 
 #### Kafka Management Connection - AWS IAM
 
-The following need to be exported: 
+The following environment variable needs to be exported:
 ${TRUSTSTORE_LOCATION}
-
 
 ```
 plugins:
@@ -234,9 +231,9 @@ plugins:
 
 #### Environment Variables
 
-When using environment variables, they will all need to be exported into the environment. 
-If these variables are not, then then value will be empty. These are highly recommended 
-for sensitive information, such as a usernames or password.
+When using environment variables, they must all be exported into the environment, otherwise 
+the value will be empty. Solace recommends storing usernames and passwords in environment variables
+to avoid storing them in the Event Portal.
 
 ```
 export SOLACE_SEMP_USERNAME=solace-username
@@ -288,11 +285,11 @@ Kafka:
 ## Destinations
 
 There are two destinations: EVENT_PORTAL and FILE_WRITER.
-FILE_WRITER writes it to a file and EVENT_PORTAL will send data to event portal
+FILE_WRITER writes the data to a file and EVENT_PORTAL sends data to Event Portal.
 
 ## Scanning
 
-To scan a PubSub+ Solace broker:
+To scan a Solace PubSub+ broker:
 
 ```
 curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/messagingServices/{messaging service id}/scan -d '{"scanTypes": ["SOLACE_ALL"], "destinations":["FILE_WRITER"]}'
@@ -300,7 +297,7 @@ curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/em
 
 * PubSub+ messaging service with id 'y80bvdnyokl'
 
-To scan a Apache Kafka broker:
+To scan an Apache Kafka broker:
 
 ```
 curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/messagingServices/{messaging service id}/scan -d '{"scanTypes": ["KAKFA_ALL"], "destinations":["FILE_WRITER"]}'
@@ -347,7 +344,7 @@ curl -H "Content-Type: application/json" -X GET http://localhost:8180/docs/event
 
 ## To list scans
 
-This will return a list of items that have been scanned. 
+This returns a list of items that have been scanned. 
 
 ```
 curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/scan
