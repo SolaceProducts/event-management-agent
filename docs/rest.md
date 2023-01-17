@@ -111,7 +111,7 @@ plugins:
 
 #### Kafka Management Connection - SASL SCRAM 256
 
-The following environment variables need to be exported (You can also used environment variables for the JAAS config username and password): 
+The following environment variables need to be exported (You can also use environment variables for the JAAS config username and password): 
 ${TRUSTSTORE_LOCATION}
 ${TRUSTSTORE_PASSWORD}
 
@@ -143,7 +143,7 @@ plugins:
 
 #### Kafka Management Connection - SASL Plain
 
-You can also used environment variables for the JAAS config username and password.
+You can also use environment variables for the JAAS config username and password.
 
 ```
 plugins:
@@ -169,7 +169,7 @@ plugins:
 
 #### Kafka Management Connection - SASL Plain over SSL
 
-The following environment variable needs to be exported (You can also used environment variables for the JAAS config username and password):
+The following environment variable needs to be exported (You can also use environment variables for the JAAS config username and password):
 ${TRUSTSTORE_LOCATION}
 
 ```
