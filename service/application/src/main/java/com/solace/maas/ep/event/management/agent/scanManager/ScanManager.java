@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
@@ -12,6 +13,8 @@ import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,12 +28,14 @@ public class ScanManager {
 
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
+    private final String runtimeAgentId;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                       ScanService scanService) {
+                       ScanService scanService, EventPortalProperties eventPortalProperties) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
+        this.runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -74,7 +79,7 @@ public class ScanManager {
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
 
-        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity);
+        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity, runtimeAgentId);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {
@@ -83,5 +88,13 @@ public class ScanManager {
 
     public List<ScanItemBO> listScans() {
         return scanService.listScans();
+    }
+
+    public Page<ScanItemBO> findAll(Pageable pageable) {
+        return scanService.findAll(pageable);
+    }
+
+    public Page<ScanItemBO> findByMessagingServiceId(String messagingServiceId, Pageable pageable) {
+        return scanService.findByMessagingServiceId(messagingServiceId, pageable);
     }
 }

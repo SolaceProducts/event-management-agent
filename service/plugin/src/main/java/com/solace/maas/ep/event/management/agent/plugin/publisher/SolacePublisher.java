@@ -38,12 +38,14 @@ public class SolacePublisher {
 
         try {
             String messageString = mapper.writeValueAsString(message);
-            Properties properties = getProperties(message);
-            OutboundMessage outboundMessage = outboundMessageBuilder
-                    .fromProperties(properties)
-                    .build(messageString);
-            log.trace("publishing to {}:\n{}", topicString, messageString);
-            directMessagePublisher.publish(outboundMessage, topic, properties);
+            synchronized (this) {
+                Properties properties = getProperties(message);
+                OutboundMessage outboundMessage = outboundMessageBuilder
+                        .fromProperties(properties)
+                        .build(messageString);
+                log.trace("publishing to {}:\n{}", topicString, messageString);
+                directMessagePublisher.publish(outboundMessage, topic, properties);
+            }
         } catch (PubSubPlusClientException e) {
             log.error("PubSubPlus Client Exception while attempting to publish message: {}", message.toString(), e);
         } catch (IllegalStateException e) {

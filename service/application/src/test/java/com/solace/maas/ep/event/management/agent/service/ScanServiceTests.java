@@ -9,21 +9,33 @@ import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcesso
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.SneakyThrows;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.ExchangeBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +63,9 @@ public class ScanServiceTests {
     private ScanRepository scanRepository;
 
     @Mock
+    private ScanTypeRepository scanTypeRepository;
+
+    @Mock
     private ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
 
     @Mock
@@ -64,6 +79,9 @@ public class ScanServiceTests {
 
     @Mock
     private RouteCompleteProcessorImpl routeCompleteProcessor;
+
+    @Mock
+    private IDGenerator idGenerator;
 
     @Produce
     private ProducerTemplate template;
@@ -155,9 +173,16 @@ public class ScanServiceTests {
         ScanEntity scanEntity = ScanEntity.builder()
                 .id(UUID.randomUUID().toString())
                 .route(List.of(returnedEntity))
-                .active(true)
                 .build();
 
+        ScanTypeEntity scanType = ScanTypeEntity.builder()
+                .id("scan1")
+                .name("scanType")
+                .scan(scanEntity)
+                .build();
+
+        when(idGenerator.generateRandomUniqueId())
+                .thenReturn("abc123");
         when(routeService.findById(any(String.class)))
                 .thenReturn(Optional.of(returnedEntity));
         when(scanRouteService.saveDestinations(any(List.class)))
@@ -170,11 +195,109 @@ public class ScanServiceTests {
                 .thenReturn(CompletableFuture.completedFuture(null));
         when(scanRepository.save(scanEntity))
                 .thenReturn(scanEntity);
+        when(scanTypeRepository.save(scanType))
+                .thenReturn(scanType);
         when(scanRecipientHierarchyRepository.save(any(ScanRecipientHierarchyEntity.class)))
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
 
         scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
-                "groupId", "scanId", mock(MessagingServiceEntity.class));
+                "groupId", "scanId", mock(MessagingServiceEntity.class), "runtimeAgent1");
+
+        assertThatNoException();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testScan() {
+        Exchange exchange = ExchangeBuilder.anExchange(mock(ExtendedCamelContext.class)).build();
+
+        when(producerTemplate.send(any(String.class), any(Processor.class)))
+                .thenReturn(exchange);
+
+        scanService.scan("group1", "scan1", RouteEntity.builder().build(), "service1");
+
+        assertThatNoException();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testListScans() {
+        ScanEntity result = ScanEntity.builder()
+                .id("id1")
+                .createdAt(Instant.now())
+                .messagingService(MessagingServiceEntity.builder()
+                        .id("service1")
+                        .name("service1")
+                        .type("SOLACE")
+                        .build())
+                .build();
+
+        when(scanRepository.findAll())
+                .thenReturn(List.of(result));
+
+        scanService.listScans();
+
+        assertThatNoException();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testFindAll() {
+        ScanEntity result = ScanEntity.builder()
+                .id("id1")
+                .createdAt(Instant.now())
+                .messagingService(MessagingServiceEntity.builder()
+                        .id("service1")
+                        .name("service1")
+                        .type("SOLACE")
+                        .build())
+                .scanTypes(List.of(
+                        ScanTypeEntity.builder()
+                                .name("SOLACE_ALL")
+                                .status(ScanStatusEntity.builder()
+                                        .id("status1")
+                                        .status("COMPLETE")
+                                        .build())
+                                .build())
+                ).build();
+
+        Pageable pageable = PageRequest.of(0, 1);
+
+        Page<ScanEntity> results = new PageImpl<>(List.of(result), pageable, 1);
+
+        when(scanRepository.findAll(pageable))
+                .thenReturn(results);
+
+        assertThatNoException();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testFindByMessagingServiceId() {
+        ScanEntity result = ScanEntity.builder()
+                .id("id1")
+                .createdAt(Instant.now())
+                .messagingService(MessagingServiceEntity.builder()
+                        .id("service1")
+                        .name("service1")
+                        .type("SOLACE")
+                        .build())
+                .scanTypes(List.of(
+                        ScanTypeEntity.builder()
+                                .name("SOLACE_ALL")
+                                .status(ScanStatusEntity.builder()
+                                        .id("status1")
+                                        .status("COMPLETE")
+                                        .build())
+                                .build())
+                ).build();
+
+        Pageable pageable = PageRequest.of(0, 1);
+
+        Page<ScanEntity> results = new PageImpl<>(List.of(result), pageable, 1);
+
+        when(scanRepository.findAllByMessagingServiceId("service1", pageable))
+                .thenReturn(results);
 
         assertThatNoException();
     }
@@ -255,7 +378,8 @@ public class ScanServiceTests {
     @SneakyThrows
     public void testSendScanStatus() {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
-                mock(ScanRouteService.class), mock(RouteService.class), template);
+                mock(ScanTypeRepository.class),
+                mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
         service.sendScanStatus("scanId", "groupId", "messagingServiceId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 

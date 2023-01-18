@@ -13,13 +13,19 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntit
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ScanTypeBO;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.MDC;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,21 +51,28 @@ public class ScanService {
 
     private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
 
+    private final ScanTypeRepository scanTypeRepository;
+
     private final ScanRouteService scanRouteService;
 
     private final RouteService routeService;
 
     private final ProducerTemplate producerTemplate;
 
+    private final IDGenerator idGenerator;
+
     public ScanService(ScanRepository repository,
                        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
-                       ScanRouteService scanRouteService,
-                       RouteService routeService, ProducerTemplate producerTemplate) {
+                       ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
+                       RouteService routeService, ProducerTemplate producerTemplate,
+                       IDGenerator idGenerator) {
         this.repository = repository;
         this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
+        this.scanTypeRepository = scanTypeRepository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
+        this.idGenerator = idGenerator;
     }
 
     /**
@@ -125,10 +138,8 @@ public class ScanService {
      * @return The id of the scan.
      */
     public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId,
-                             MessagingServiceEntity messagingServiceEntity) {
+                             MessagingServiceEntity messagingServiceEntity, String runtimeAgentId) {
         log.info("Scan request [{}]: Starting a single scan.", scanId);
-
-        ScanEntity savedScanEntity = null;
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
@@ -147,34 +158,32 @@ public class ScanService {
 
         String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
 
+        ScanEntity returnedScanEntity = setupScan(scanEntityId, messagingServiceEntity, runtimeAgentId);
+
         for (RouteBundle routeBundle : routeBundles) {
             log.trace("Processing RouteBundles: {}", routeBundle);
 
             RouteEntity route = routeService.findById(routeBundle.getRouteId())
                     .orElseThrow();
 
-            ScanEntity returnedScanEntity = setupScan(route, routeBundle, savedScanEntity, scanEntityId, messagingServiceEntity);
+            updateScan(route, routeBundle, returnedScanEntity);
 
             scanAsync(groupId, scanEntityId, route, routeBundle.getMessagingServiceId());
-            savedScanEntity = returnedScanEntity;
         }
 
-        if (savedScanEntity != null) {
-            return scanId;
-        }
-
-        log.error("Unable to process scan request");
-        return null;
+        return scanId;
     }
 
     @Transactional
-    protected ScanEntity setupScan(RouteEntity route, RouteBundle routeBundle,
-                                   ScanEntity scanEntity, String scanId, MessagingServiceEntity messagingServiceEntity) {
-        ScanEntity savedScanEntity = saveScanEntity(route, routeBundle, scanEntity, scanId, messagingServiceEntity);
+    protected ScanEntity setupScan(String scanId, MessagingServiceEntity messagingServiceEntity, String emaId) {
+        return saveScanEntity(scanId, messagingServiceEntity, emaId);
+    }
 
+    @Transactional
+    protected void updateScan(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity) {
         List<ScanDestinationEntity> destinationEntities = routeBundle.getDestinations().stream()
                 .map(destination -> ScanDestinationEntity.builder()
-                        .scan(savedScanEntity)
+                        .scan(scanEntity)
                         .route(route)
                         .destination(destination.getRouteId())
                         .build())
@@ -186,7 +195,7 @@ public class ScanService {
 
         List<ScanRecipientEntity> recipientEntities = routeBundle.getRecipients().stream()
                 .map(recipient -> ScanRecipientEntity.builder()
-                        .scan(savedScanEntity)
+                        .scan(scanEntity)
                         .route(route)
                         .recipient("seda:" + recipient.getRouteId())
                         .build())
@@ -196,40 +205,38 @@ public class ScanService {
             scanRouteService.saveRecipients(recipientEntities);
         }
 
-        setupRecipientsForScan(savedScanEntity, routeBundle, scanId, messagingServiceEntity);
+        setScanType(routeBundle, scanEntity);
 
-        return savedScanEntity;
+        setupRecipientsForScan(scanEntity, routeBundle);
     }
 
-    private ScanEntity saveScanEntity(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity,
-                                      String scanId, MessagingServiceEntity messagingServiceEntity) {
-        ScanEntity returnScanEntity = scanEntity;
-        if (returnScanEntity == null) {
-            returnScanEntity = save(ScanEntity.builder()
-                    .id(scanId)
-                    .route(List.of(route))
-                    .active(true)
-                    .scanType(routeBundle.getScanType())
-                    .messagingService(messagingServiceEntity)
-                    .build());
-        } else {
-            if (routeBundle.isFirstRouteInChain()) {
-                ArrayList<RouteEntity> routeEntities = new ArrayList<>(scanEntity.getRoute());
-                routeEntities.add(route);
-                scanEntity.setRoute(routeEntities);
-                save(scanEntity);
-            }
-        }
-        return returnScanEntity;
+    private ScanEntity saveScanEntity(String scanId, MessagingServiceEntity messagingServiceEntity,
+                                      String emaId) {
+        ScanEntity scan = ScanEntity.builder()
+                .id(scanId)
+                .messagingService(messagingServiceEntity)
+                .emaId(emaId)
+                .build();
+
+        return save(scan);
     }
 
-    protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle,
-                                          String scanId, MessagingServiceEntity messagingServiceEntity) {
+    private void setScanType(RouteBundle routeBundle, ScanEntity scanEntity) {
+        ScanTypeEntity scanType = ScanTypeEntity.builder()
+                .id(idGenerator.generateRandomUniqueId())
+                .name(routeBundle.getScanType())
+                .scan(scanEntity)
+                .build();
+
+        scanTypeRepository.save(scanType);
+    }
+
+    protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle) {
 
         for (RouteBundle recipient : routeBundle.getRecipients()) {
             RouteEntity route = routeService.findById(recipient.getRouteId())
                     .orElseThrow();
-            setupScan(route, recipient, scanEntity, scanId, messagingServiceEntity);
+            updateScan(route, recipient, scanEntity);
         }
     }
 
@@ -335,6 +342,52 @@ public class ScanService {
                         .messagingServiceType(se.getMessagingService().getType())
                         .build())
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    public Page<ScanItemBO> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(se -> {
+                    List<ScanTypeBO> scanTypes = se.getScanTypes()
+                            .stream()
+                            .map(scanTypeEntity -> ScanTypeBO.builder()
+                                    .name(scanTypeEntity.getName())
+                                    .status(scanTypeEntity.getStatus().getStatus())
+                                    .build())
+                            .collect(Collectors.toUnmodifiableList());
+
+                    return ScanItemBO.builder()
+                            .id(se.getId())
+                            .createdAt(se.getCreatedAt())
+                            .messagingServiceId(se.getMessagingService().getId())
+                            .messagingServiceName(se.getMessagingService().getName())
+                            .messagingServiceType(se.getMessagingService().getType())
+                            .emaId(se.getEmaId())
+                            .scanTypes(scanTypes)
+                            .build();
+                });
+    }
+
+    public Page<ScanItemBO> findByMessagingServiceId(String messagingServiceId, Pageable pageable) {
+        return repository.findAllByMessagingServiceId(messagingServiceId, pageable)
+                .map(se -> {
+                    List<ScanTypeBO> scanTypes = se.getScanTypes()
+                            .stream()
+                            .map(scanTypeEntity -> ScanTypeBO.builder()
+                                    .name(scanTypeEntity.getName())
+                                    .status(scanTypeEntity.getStatus().getStatus())
+                                    .build())
+                            .collect(Collectors.toUnmodifiableList());
+
+                    return ScanItemBO.builder()
+                            .id(se.getId())
+                            .createdAt(se.getCreatedAt())
+                            .messagingServiceId(se.getMessagingService().getId())
+                            .messagingServiceName(se.getMessagingService().getName())
+                            .messagingServiceType(se.getMessagingService().getType())
+                            .emaId(se.getEmaId())
+                            .scanTypes(scanTypes)
+                            .build();
+                });
     }
 
     protected RouteBundleHierarchyStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleHierarchyStore pathStore) {

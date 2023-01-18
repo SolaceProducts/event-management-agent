@@ -39,11 +39,11 @@ public class ScanEntity implements Serializable {
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "ACTIVE", nullable = false)
-    private boolean active;
+    @Column(name = "EVENTMANAGEMENT_AGENT_ID", nullable = false)
+    private String emaId;
 
-    @Column(name = "SCAN_TYPE", nullable = false)
-    private String scanType;
+    @OneToMany(mappedBy = "scan", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    private List<ScanTypeEntity> scanTypes;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "ROUTE_ID", referencedColumnName = "ROUTE_ID")
@@ -62,7 +62,8 @@ public class ScanEntity implements Serializable {
     @OneToMany(mappedBy = "scan", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private List<DataCollectionFileEntity> dataCollectionFiles;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, optional = false)
+    @JoinColumn(name = "MESSAGING_SERVICE_ID", referencedColumnName = "ID", nullable = false)
     private MessagingServiceEntity messagingService;
 
     public String toString() {
