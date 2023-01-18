@@ -26,7 +26,7 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
         interceptFrom()
                 .process(mdcProcessor);
 
-        from("seda:dataCollectionFileWrite?blockWhenFull=true&size=" + Integer.MAX_VALUE)
+        from("direct:dataCollectionFileWrite")
                 .transform(body().append("\n"))
                 .to("file://data_collection/?fileExist=append&charset=utf-8&fileName=" +
                         "${header." + RouteConstants.SCHEDULE_ID +

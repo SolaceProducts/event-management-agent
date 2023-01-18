@@ -86,7 +86,6 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // The Route Interceptors are injected here. They are called Asynchronously and don't return a response
                 // to this Route.
                 .recipientList().header("RECIPIENTS").delimiter(";")
-                .shareUnitOfWork()
                 .choice().when(simple("${body.size} == 0"))
                 .process(emptyScanEntityProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
@@ -106,7 +105,6 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .end()
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
-                .shareUnitOfWork()
                 .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
