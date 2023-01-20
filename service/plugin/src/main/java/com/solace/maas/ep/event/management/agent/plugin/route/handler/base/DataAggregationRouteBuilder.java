@@ -86,6 +86,15 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // connects to the Messaging Service.
                 .log(LoggingLevel.TRACE, "agg complete ${body}")
                 .process(processor)
+                .choice().when(simple("${body.size} == 0"))
+                .process(emptyScanEntityProcessor)
+                .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
+                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of the empty scan type [${header."
+                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .end()
+                .endChoice()
+                .otherwise()
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
@@ -116,6 +125,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
                         + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .endChoice()
+                .end()
                 .endChoice()
                 .end();
 

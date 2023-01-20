@@ -91,7 +91,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .process(emptyScanEntityProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of the empty scan type [${header."
                         + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
                 .end()
                 .endChoice()
