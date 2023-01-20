@@ -74,11 +74,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
-                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
-                        + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
+                .to("direct:markScanStatusInProgress?block=false&failIfNoConsumers=false")
 
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
@@ -89,9 +85,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .choice().when(simple("${body.size} == 0"))
                 .process(emptyScanEntityProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
-                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .to("direct:markScanComplete?block=false&failIfNoConsumers=false")
                 .end()
                 .endChoice()
                 .otherwise()
@@ -106,9 +100,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
-                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .to("direct:markScanComplete?block=false&failIfNoConsumers=false")
                 .endChoice()
                 .end()
                 .endChoice()
