@@ -74,27 +74,23 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
-                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
-                        + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
+                .to("direct:markRouteScanStatusInProgress?block=false&failIfNoConsumers=false")
 
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .process(processor)
-                // The Route Interceptors are injected here. They are called Asynchronously and don't return a response
-                // to this Route.
-                .recipientList().header("RECIPIENTS").delimiter(";")
+                // Checking for empty scan types. In case an empty scan type is encountered, the recipients are not injected. Rather,
+                // they are retrieved from the empty scan recipients store and a complete status message is sent to each recipient.
                 .choice().when(simple("${body.size} == 0"))
                 .process(emptyScanEntityProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
-                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of the empty scan type [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
                 .end()
                 .endChoice()
                 .otherwise()
+                // The Route Interceptors are injected here. They are called Asynchronously and don't return a response
+                // to this Route.
+                .recipientList().header("RECIPIENTS").delimiter(";")
                 .split(body()).streaming().shareUnitOfWork()
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
@@ -106,9 +102,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // The Destinations receiving the Data Collection events get called here.
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
-                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
                 .endChoice()
                 .end()
                 .endChoice()
