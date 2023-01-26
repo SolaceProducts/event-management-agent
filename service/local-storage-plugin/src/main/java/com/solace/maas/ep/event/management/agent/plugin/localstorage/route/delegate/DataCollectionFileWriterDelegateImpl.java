@@ -19,6 +19,6 @@ public class DataCollectionFileWriterDelegateImpl extends MessagingServiceRouteD
     public List<RouteBundle> generateRouteList(List<RouteBundle> destinations, List<RouteBundle> recipients,
                                                String scanType, String messagingServiceId) {
         return List.of(createRouteBundle(destinations, recipients, scanType, messagingServiceId,
-                "seda:dataCollectionFileWrite", false));
+                "direct:dataCollectionFileWrite", false));
     }
 }
