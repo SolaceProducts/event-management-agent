@@ -4,15 +4,15 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.logging.StreamingAppender;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
-import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
+import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleRecipientsStore;
 import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientsPathEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientStoreRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
@@ -66,7 +66,7 @@ public class ScanServiceTests {
     private ScanTypeRepository scanTypeRepository;
 
     @Mock
-    private ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
+    private ScanRecipientStoreRepository scanRecipientStoreRepository;
 
     @Mock
     private RouteService routeService;
@@ -197,8 +197,8 @@ public class ScanServiceTests {
                 .thenReturn(scanEntity);
         when(scanTypeRepository.save(scanType))
                 .thenReturn(scanType);
-        when(scanRecipientHierarchyRepository.save(any(ScanRecipientHierarchyEntity.class)))
-                .thenReturn(mock(ScanRecipientHierarchyEntity.class));
+        when(scanRecipientStoreRepository.saveAll(any(List.class)))
+                .thenReturn(List.of(ScanRecipientsPathEntity.class));
 
         scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
                 "groupId", "scanId", mock(MessagingServiceEntity.class), "runtimeAgent1");
@@ -361,11 +361,11 @@ public class ScanServiceTests {
                 .recipients(List.of(consumerGroupConfiguration))
                 .build();
 
-        RouteBundleHierarchyStore routeBundleHierarchyStore =
+        RouteBundleRecipientsStore routeBundleRecipientsStore =
                 scanService.parseRouteRecipients(List.of(clusterConfiguration, topicListing, consumerGroups),
-                        new RouteBundleHierarchyStore());
+                        new RouteBundleRecipientsStore());
 
-        List<String> routeBundlerHierarchySore = new ArrayList<>(routeBundleHierarchyStore.getStore().values());
+        List<String> routeBundlerHierarchySore = new ArrayList<>(routeBundleRecipientsStore.getStore().values());
 
         Assertions.assertEquals(4, routeBundlerHierarchySore.size());
         Assertions.assertTrue(routeBundlerHierarchySore.contains("clusterConfiguration,brokerConfiguration"));
@@ -377,8 +377,7 @@ public class ScanServiceTests {
     @Test
     @SneakyThrows
     public void testSendScanStatus() {
-        ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
-                mock(ScanTypeRepository.class),
+        ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanTypeRepository.class),
                 mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
         service.sendScanStatus("scanId", "groupId", "messagingServiceId",
                 "queueListing", ScanStatus.IN_PROGRESS);

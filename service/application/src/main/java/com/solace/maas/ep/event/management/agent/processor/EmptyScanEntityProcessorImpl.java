@@ -2,8 +2,8 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientsPathEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientStoreRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
@@ -13,15 +13,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
 
-    private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
+    private final ScanRecipientStoreRepository scanRecipientStoreRepository;
 
-    public EmptyScanEntityProcessorImpl(ScanRecipientHierarchyRepository scanRecipientHierarchyRepository) {
-        this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
+    public EmptyScanEntityProcessorImpl(ScanRecipientStoreRepository scanRecipientStoreRepository) {
+        this.scanRecipientStoreRepository = scanRecipientStoreRepository;
     }
 
     @Transactional
@@ -45,16 +46,14 @@ public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
 
     private List<String> checkScanTypeDescendents(String scanId, String scanType) {
         List<String> emptyDescendentsForScanType = new ArrayList<>();
-        List<ScanRecipientHierarchyEntity> scanRecipientHierarchyEntities =
-                scanRecipientHierarchyRepository.findScanRecipientHierarchyEntitiesByScanId(scanId);
+        List<ScanRecipientsPathEntity> scanRecipientPathEntities =
+                scanRecipientStoreRepository.findScanRecipientPathEntitiesByScanId(scanId);
 
-        Map<String, String> store = scanRecipientHierarchyEntities.stream()
-                .map(ScanRecipientHierarchyEntity::getStore)
-                .findFirst().orElseThrow();
+        List<String> emptyScanTypesPaths = scanRecipientPathEntities.stream()
+                .map(ScanRecipientsPathEntity::getPath)
+                .collect(Collectors.toUnmodifiableList());
 
-        List<String> emptyScanTypesHierarchyPaths = new ArrayList<>(store.values());
-
-        emptyScanTypesHierarchyPaths.forEach(emptyScanTypesPath -> {
+        emptyScanTypesPaths.forEach(emptyScanTypesPath -> {
             List<String> emptyScanTypes = Arrays.asList(emptyScanTypesPath.split(","));
 
             if (emptyScanTypes.contains(scanType)) {
