@@ -46,3 +46,5 @@ data_collection
 
 application-mysql-*.yml
 .env
+
+*dependency-reduced-pom.xml
