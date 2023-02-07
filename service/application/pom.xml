@@ -15,7 +15,6 @@
     <description>event-management-agent application</description>
 
     <properties>
-        <camel.version>3.19.0</camel.version>
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>1.31</snakeyaml.version>
     </properties>
