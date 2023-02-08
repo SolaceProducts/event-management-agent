@@ -23,11 +23,13 @@ public class ScanDataPublisherRouteBuilder extends AbstractRouteBuilder {
         from("direct:eventPortal?block=false&failIfNoConsumers=false")
                 .routeId("scanDataPublisher")
                 .transform(body().append("\n"))
+                .throttle(100)
                 .process(processor);
 
         from("direct:importToEP?block=false&failIfNoConsumers=false")
                 .routeId("importDataPublisher")
                 .transform(body().append("\n"))
+                .throttle(100)
                 .process(processor);
 
     }
