@@ -14,13 +14,14 @@ public class ScanLogsPublisherRouteBuilder extends RouteBuilder {
     @Autowired
     public ScanLogsPublisherRouteBuilder(ScanLogsProcessor processor) {
         super();
-        this.scanLogsProcessor = processor;
+        scanLogsProcessor = processor;
     }
 
     @Override
     public void configure() throws Exception {
         from("seda:scanLogsPublisher?blockWhenFull=true&size=1000000")
                 .routeId("scanLogsPublisher")
+                .throttle(100)
                 .process(scanLogsProcessor);
     }
 }
