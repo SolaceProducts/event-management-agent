@@ -7,11 +7,11 @@ import java.util.Map;
 
 
 @Data
-public class RouteBundleHierarchyStore {
+public class RouteBundleRecipientsStore {
     private static int storeKey = 0;
     private Map<String, String> store;
 
-    public RouteBundleHierarchyStore() {
+    public RouteBundleRecipientsStore() {
         store = new LinkedHashMap<>();
     }
 

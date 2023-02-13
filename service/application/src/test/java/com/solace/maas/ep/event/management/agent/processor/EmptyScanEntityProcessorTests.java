@@ -2,8 +2,9 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientsPathEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientStoreRepository;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -19,9 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.when;
@@ -40,7 +39,7 @@ public class EmptyScanEntityProcessorTests {
     EmptyScanEntityProcessorImpl emptyScanEntityProcessor;
 
     @Mock
-    private ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
+    private ScanRecipientStoreRepository scanRecipientStoreRepository;
 
     @SneakyThrows
     @Test
@@ -52,22 +51,14 @@ public class EmptyScanEntityProcessorTests {
 
         exchange.getIn().setBody(new ArrayList<>());
 
-        Map<String, String> store = new LinkedHashMap<>();
-        store.put("0", "clusterConfiguration,brokerConfiguration");
-        store.put("1", "topicListing,topicConfiguration");
-        store.put("2", "topicListing,overrideTopicConfiguration");
-        store.put("3", "consumerGroups,consumerGroupConfiguration");
-
-        ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
-                ScanRecipientHierarchyEntity.builder()
-                        .scanId("scanId")
-                        .store(store)
+        ScanRecipientsPathEntity scanRecipientsPathEntity =
+                ScanRecipientsPathEntity.builder()
+                        .scan(ScanEntity.builder().id("scanId").build())
+                        .path("consumerGroups,consumerGroupConfiguration")
                         .build();
 
-        List<ScanRecipientHierarchyEntity> result = List.of(scanRecipientHierarchyEntity);
-
-        when(scanRecipientHierarchyRepository.findScanRecipientHierarchyEntitiesByScanId("scanId"))
-                .thenReturn(result);
+        when(scanRecipientStoreRepository.findScanRecipientPathEntitiesByScanId("scanId"))
+                .thenReturn(List.of(scanRecipientsPathEntity));
 
         emptyScanEntityProcessor.process(exchange);
 
@@ -84,14 +75,14 @@ public class EmptyScanEntityProcessorTests {
 
         exchange.getIn().setBody(new ArrayList<>());
 
-        ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
-                ScanRecipientHierarchyEntity.builder()
-                        .scanId("scanId")
-                        .store(new LinkedHashMap<>())
+        ScanRecipientsPathEntity scanRecipientsPathEntity =
+                ScanRecipientsPathEntity.builder()
+                        .scan(ScanEntity.builder().id("scanId").build())
+                        .path("consumerGroups,consumerGroupConfiguration")
                         .build();
 
-        when(scanRecipientHierarchyRepository.findScanRecipientHierarchyEntitiesByScanId("scanId"))
-                .thenReturn(List.of(scanRecipientHierarchyEntity));
+        when(scanRecipientStoreRepository.findScanRecipientPathEntitiesByScanId("scanId"))
+                .thenReturn(List.of(scanRecipientsPathEntity));
 
         exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new Exception());
         emptyScanEntityProcessor.process(exchange);

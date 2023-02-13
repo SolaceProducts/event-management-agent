@@ -1,13 +1,15 @@
 package com.solace.maas.ep.event.management.agent.service;
 
+import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleRecipientsStore;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientsPathEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanDestinationRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientRepository;
-import com.solace.maas.ep.event.management.agent.TestConfig;
-
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientStoreRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,6 +31,9 @@ public class ScanRouteServiceTests {
 
     @Mock
     private ScanRecipientRepository scanRecipientRepository;
+
+    @Mock
+    private ScanRecipientStoreRepository scanRecipientStoreRepository;
 
     @Mock
     private RouteService routeService;
@@ -77,6 +82,21 @@ public class ScanRouteServiceTests {
     }
 
     @Test
+    public void testSaveRecipientsPaths() {
+        when(scanRecipientStoreRepository.saveAll(any(Iterable.class)))
+                .thenReturn(
+                        List.of(
+                                ScanRecipientsPathEntity.builder()
+                                        .build()
+                        )
+                );
+
+        scanRouteService.saveRecipientsPaths(new RouteBundleRecipientsStore(), ScanEntity.builder().id("scanId").build());
+
+        assertThatNoException();
+    }
+
+    @Test
     public void testGetRecipientList() {
         when(scanRecipientRepository.findAllByScanIdAndRouteId(any(String.class), any(String.class)))
                 .thenReturn(List.of(
@@ -95,7 +115,7 @@ public class ScanRouteServiceTests {
     }
 
     @Test
-    public void testGetDestionationList() {
+    public void testGetDestinationList() {
         when(scanDestinationRepository.findAllByScanIdAndRouteId(any(String.class), any(String.class)))
                 .thenReturn(List.of(
                                 ScanDestinationEntity

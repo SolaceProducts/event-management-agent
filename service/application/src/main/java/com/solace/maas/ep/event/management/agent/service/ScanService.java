@@ -5,14 +5,12 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
-import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
+import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleRecipientsStore;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
@@ -49,8 +47,6 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 public class ScanService {
     private final ScanRepository repository;
 
-    private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
-
     private final ScanTypeRepository scanTypeRepository;
 
     private final ScanRouteService scanRouteService;
@@ -62,12 +58,10 @@ public class ScanService {
     private final IDGenerator idGenerator;
 
     public ScanService(ScanRepository repository,
-                       ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
                        ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
                        IDGenerator idGenerator) {
         this.repository = repository;
-        this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
         this.scanTypeRepository = scanTypeRepository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
@@ -143,10 +137,8 @@ public class ScanService {
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
-        RouteBundleHierarchyStore routeBundleHierarchy =
-                parseRouteRecipients(routeBundles, new RouteBundleHierarchyStore());
-
-        save(routeBundleHierarchy, scanId);
+        RouteBundleRecipientsStore routeBundleRecipients =
+                parseRouteRecipients(routeBundles, new RouteBundleRecipientsStore());
 
         log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
                 scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
@@ -159,6 +151,8 @@ public class ScanService {
         String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
 
         ScanEntity returnedScanEntity = setupScan(scanEntityId, messagingServiceEntity, runtimeAgentId);
+
+        scanRouteService.saveRecipientsPaths(routeBundleRecipients, returnedScanEntity);
 
         for (RouteBundle routeBundle : routeBundles) {
             log.trace("Processing RouteBundles: {}", routeBundle);
@@ -312,16 +306,6 @@ public class ScanService {
         return repository.save(scanEntity);
     }
 
-    protected ScanRecipientHierarchyEntity save(RouteBundleHierarchyStore routeBundleHierarchy, String scanId) {
-        ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
-                ScanRecipientHierarchyEntity.builder()
-                        .store(routeBundleHierarchy.getStore())
-                        .scanId(scanId)
-                        .build();
-
-        return scanRecipientHierarchyRepository.save(scanRecipientHierarchyEntity);
-    }
-
     protected List<String> parseRouteBundle(List<RouteBundle> routeBundles, List<String> scanTypes) {
         for (RouteBundle routeBundle : routeBundles) {
             scanTypes.add(routeBundle.getScanType());
@@ -390,7 +374,7 @@ public class ScanService {
                 });
     }
 
-    protected RouteBundleHierarchyStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleHierarchyStore pathStore) {
+    protected RouteBundleRecipientsStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleRecipientsStore pathStore) {
         for (RouteBundle routeBundle : routeBundles) {
             if (routeBundle.getRecipients() != null && !routeBundle.getRecipients().isEmpty()) {
                 pathStore = registerRouteRecipients(routeBundle, pathStore);
@@ -400,7 +384,7 @@ public class ScanService {
         return pathStore;
     }
 
-    protected RouteBundleHierarchyStore registerRouteRecipients(RouteBundle routeBundle, RouteBundleHierarchyStore pathStore) {
+    protected RouteBundleRecipientsStore registerRouteRecipients(RouteBundle routeBundle, RouteBundleRecipientsStore pathStore) {
         boolean parentExistsInStore = false;
         List<String> keys = new ArrayList<>(pathStore.getStore().keySet());
         String parentScanType = routeBundle.getScanType();
@@ -421,7 +405,7 @@ public class ScanService {
                 String basePath = pathStore.getStore().get(key).split(parentScanType, 2)[0];
                 recipients.forEach(recipient -> {
                     String path = basePath + parentScanType + "," + recipient;
-                    pathStore.getStore().put(String.valueOf(RouteBundleHierarchyStore.getStoreKey()), path);
+                    pathStore.getStore().put(String.valueOf(RouteBundleRecipientsStore.getStoreKey()), path);
                 });
                 parentExistsInStore = true;
                 break;
@@ -429,7 +413,7 @@ public class ScanService {
         }
         if (!parentExistsInStore) {
             recipients.forEach(recipient ->
-                    pathStore.getStore().put(String.valueOf(RouteBundleHierarchyStore.getStoreKey()),
+                    pathStore.getStore().put(String.valueOf(RouteBundleRecipientsStore.getStoreKey()),
                             parentScanType + "," + recipient));
         }
         return pathStore;
