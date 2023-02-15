@@ -21,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,7 +70,7 @@ public class EMAControllerTest {
     }
 
     @Test
-    public void testEMAControllerInStandAlone() {
+    public void testEMAControllerInStandAloneModeWithEventPortalDestination() {
         ScanManager scanManager = mock(ScanManager.class);
         IDGenerator idGenerator = mock(IDGenerator.class);
         EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
@@ -82,6 +83,7 @@ public class EMAControllerTest {
                 .thenReturn(GatewayProperties.builder()
                         .messaging(GatewayMessagingProperties.builder().standalone(true).build())
                         .build());
+
         when(scanManager.scan(scanRequestBO))
                 .thenReturn("scanId");
 
@@ -94,5 +96,34 @@ public class EMAControllerTest {
         assertThat(reply.getBody()).contains("Scan data could not be streamed to EP in standalone mode.");
 
         exception.expect(Exception.class);
+    }
+
+    @Test
+    public void testEMAControllerInStandAloneMode() {
+        ScanManager scanManager = mock(ScanManager.class);
+        IDGenerator idGenerator = mock(IDGenerator.class);
+        EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
+
+        ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of());
+        ScanRequestBO scanRequestBO = new ScanRequestBO("id", "scanId",
+                List.of("TEST_SCAN"), List.of());
+
+        when(eventPortalProperties.getGateway())
+                .thenReturn(GatewayProperties.builder()
+                        .messaging(GatewayMessagingProperties.builder().standalone(true).build())
+                        .build());
+
+        when(scanManager.scan(scanRequestBO))
+                .thenReturn("scanId");
+
+        EMAController controller = new EMAControllerImpl(scanRequestMapper, scanManager, idGenerator, eventPortalProperties);
+
+        ResponseEntity<String> reply =
+                controller.scan("id", scanRequestDTO);
+
+        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(reply.getBody()).contains("Scan started.");
+
+        assertThatNoException();
     }
 }
