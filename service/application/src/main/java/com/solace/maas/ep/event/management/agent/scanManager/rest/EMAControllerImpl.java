@@ -53,7 +53,11 @@ public class EMAControllerImpl implements EMAController {
             boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
             List<String> destinations = scanRequestBO.getDestinations();
 
-            if (isEMAStandalone && destinations.contains("EVENT_PORTAL")) {
+            if (!isEMAStandalone) {
+                throw new RestErrorHandler.RestException("Scan requests via REST endpoint could not be initiated in connected mode.");
+            }
+
+            if (destinations.contains("EVENT_PORTAL")) {
                 throw new RestErrorHandler.RestException("Scan data could not be streamed to EP in standalone mode.");
             }
 

@@ -21,7 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,7 +39,7 @@ public class EMAControllerTest {
 
 
     @Test
-    public void testEMAController() {
+    public void testEMAControllerInConnectedMode() {
         ScanManager scanManager = mock(ScanManager.class);
         IDGenerator idGenerator = mock(IDGenerator.class);
         EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
@@ -53,18 +52,20 @@ public class EMAControllerTest {
                 .thenReturn(GatewayProperties.builder()
                         .messaging(GatewayMessagingProperties.builder().standalone(false).build())
                         .build());
+
         when(scanManager.scan(scanRequestBO))
                 .thenReturn("scanId");
 
-        EMAController controller = new EMAControllerImpl(scanRequestMapper, scanManager, idGenerator, eventPortalProperties);
+        EMAController controller =
+                new EMAControllerImpl(scanRequestMapper, scanManager, idGenerator, eventPortalProperties);
 
-        ResponseEntity<String> reply =
-                controller.scan("id", scanRequestDTO);
+        ResponseEntity<String> reply = controller.scan("id", scanRequestDTO);
 
-        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(reply.getBody()).contains("Scan started.");
+        // Scan requests via REST endpoints are prevented in connected mode, e.g., standalone=false
+        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(reply.getBody()).contains("Scan requests via REST endpoint could not be initiated in connected mode.");
 
-        assertThatNoException();
+        exception.expect(Exception.class);
     }
 
     @Test
