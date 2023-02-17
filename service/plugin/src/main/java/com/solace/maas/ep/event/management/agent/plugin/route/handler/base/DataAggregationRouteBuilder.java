@@ -62,11 +62,7 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
-                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
-                        + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].")
+                .to("direct:markRouteScanStatusInProgress?block=false&failIfNoConsumers=false")
 
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
@@ -86,6 +82,14 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // connects to the Messaging Service.
                 .log(LoggingLevel.TRACE, "agg complete ${body}")
                 .process(processor)
+                // Checking for empty scan types.
+                .choice().when(simple("${body.size} == 0"))
+                .process(emptyScanEntityProcessor)
+                .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
+                .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
+                .end()
+                .endChoice()
+                .otherwise()
                 // Data Collected by the Processor is expected to be an Array. We'll be splitting this Array
                 // and streaming it back to interested parties. Interceptors / Destination routes will need to
                 // aggregate this data together if they need it all at once.
@@ -113,9 +117,9 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .recipientList().header("DESTINATIONS").delimiter(";")
                 .shareUnitOfWork()
                 .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
-                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].")
+                .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
+                .endChoice()
+                .end()
                 .endChoice()
                 .end();
 
