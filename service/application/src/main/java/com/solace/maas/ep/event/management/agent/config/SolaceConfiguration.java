@@ -10,8 +10,8 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMess
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.config.SolaceProperties;
 import com.solace.messaging.config.profile.ConfigurationProfile;
-import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
+import com.solace.messaging.publisher.PersistentMessagePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -38,8 +38,8 @@ public class SolaceConfiguration {
     @Autowired
     public SolaceConfiguration(Properties vmrConfig, ArrayList<String> sessionConfig,
                                EventPortalProperties eventPortalProperties) {
-        this.vmrConfiguration = vmrConfig;
-        this.sessionConfiguration = sessionConfig;
+        vmrConfiguration = vmrConfig;
+        sessionConfiguration = sessionConfig;
         this.eventPortalProperties = eventPortalProperties;
     }
 
@@ -80,8 +80,8 @@ public class SolaceConfiguration {
     @Bean
     @ConditionalOnMissingBean(EnableRtoCondition.class)
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
-    public DirectMessagePublisher directMessagePublisher() {
-        return messagingService().createDirectMessagePublisherBuilder()
+    public PersistentMessagePublisher persistentMessagePublisher() {
+        return messagingService().createPersistentMessagePublisherBuilder()
                 .build()
                 .start();
     }
@@ -105,7 +105,7 @@ public class SolaceConfiguration {
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
     public SolacePublisher solacePublisher() {
         return new SolacePublisher(outboundMessageBuilder(),
-                directMessagePublisher());
+                persistentMessagePublisher());
     }
 
 }

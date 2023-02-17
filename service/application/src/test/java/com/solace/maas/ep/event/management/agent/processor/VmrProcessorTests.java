@@ -4,9 +4,9 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.common.messages.VmrProcessorMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
-import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessage;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
+import com.solace.messaging.publisher.PersistentMessagePublisher;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -46,7 +46,7 @@ public class VmrProcessorTests {
     @SneakyThrows
     @Test
     public void whenSolacePublisherCalledVerified() {
-        DirectMessagePublisher directMessagePublisher = mock(DirectMessagePublisher.class);
+        PersistentMessagePublisher directMessagePublisher = mock(PersistentMessagePublisher.class);
         OutboundMessageBuilder outboundMessageBuilder = mock(OutboundMessageBuilder.class);
         OutboundMessage outboundMessage = mock(OutboundMessage.class);
 
@@ -58,7 +58,7 @@ public class VmrProcessorTests {
 
         solacePublisher.publish(message, "test");
 
-        verify(directMessagePublisher, times(1)).publish(any(), any(), any());
+        verify(directMessagePublisher, times(1)).publish(anyString(), any(), any());
     }
 
     @SneakyThrows

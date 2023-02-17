@@ -6,9 +6,10 @@ import com.solace.maas.ep.event.management.agent.plugin.config.EnableRtoConditio
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.messaging.PubSubPlusClientException;
-import com.solace.messaging.publisher.DirectMessagePublisher;
+import com.solace.messaging.config.SolaceProperties;
 import com.solace.messaging.publisher.OutboundMessage;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
+import com.solace.messaging.publisher.PersistentMessagePublisher;
 import com.solace.messaging.resources.Topic;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,12 +26,12 @@ public class SolacePublisher {
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private final OutboundMessageBuilder outboundMessageBuilder;
-    private DirectMessagePublisher directMessagePublisher;
+    private PersistentMessagePublisher persistentMessagePublisher;
 
     public SolacePublisher(OutboundMessageBuilder outboundMessageBuilder,
-                           DirectMessagePublisher directMessagePublisher) {
+                           PersistentMessagePublisher persistentMessagePublisher) {
         this.outboundMessageBuilder = outboundMessageBuilder;
-        this.directMessagePublisher = directMessagePublisher;
+        this.persistentMessagePublisher = persistentMessagePublisher;
     }
 
     public void publish(MOPMessage message, String topicString) {
@@ -40,11 +41,13 @@ public class SolacePublisher {
             String messageString = mapper.writeValueAsString(message);
             synchronized (this) {
                 Properties properties = getProperties(message);
+                properties.put(SolaceProperties.MessageProperties.PERSISTENT_ACK_IMMEDIATELY, Boolean.TRUE);
                 OutboundMessage outboundMessage = outboundMessageBuilder
                         .fromProperties(properties)
                         .build(messageString);
                 log.trace("publishing to {}:\n{}", topicString, messageString);
-                directMessagePublisher.publish(outboundMessage, topic, properties);
+                //persistentMessagePublisher.publishAwaitAcknowledgement(outboundMessage, topic, 2000L);
+                persistentMessagePublisher.publish(outboundMessage, topic, 2000L);
             }
         } catch (PubSubPlusClientException e) {
             log.error("PubSubPlus Client Exception while attempting to publish message: {}", message.toString(), e);
