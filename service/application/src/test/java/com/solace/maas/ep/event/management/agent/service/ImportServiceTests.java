@@ -4,7 +4,9 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.GatewayMessagingProperties;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.GatewayProperties;
+import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
@@ -31,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -57,6 +60,9 @@ public class ImportServiceTests {
 
     @Mock
     private DataCollectionFileService dataCollectionFileService;
+
+    @Mock
+    private ScanService scanService;
 
     @InjectMocks
     private ImportService importService;
@@ -102,7 +108,6 @@ public class ImportServiceTests {
     @Test
     public void testZipData() {
         ZipRequestBO zipRequestBO = ZipRequestBO.builder()
-                .messagingServiceId("service1")
                 .scanId("scanId")
                 .build();
 
@@ -112,9 +117,19 @@ public class ImportServiceTests {
                         .path("data_collection/" + UUID.randomUUID() + "/" + UUID.randomUUID() + "/topicListing.json")
                         .scan(ScanEntity.builder()
                                 .id(UUID.randomUUID().toString())
-//                                .scanType("KAFKA_ALL")
                                 .build())
                         .purged(false)
+                        .build()));
+
+        when(scanService.findById("scanId"))
+                .thenReturn(Optional.ofNullable(ScanEntity.builder()
+                        .id(UUID.randomUUID().toString())
+                        .emaId("emdId")
+                        .messagingService(MessagingServiceEntity.builder()
+                                .id(UUID.randomUUID().toString())
+                                .name("staging service")
+                                .type(MessagingServiceType.SOLACE.name())
+                                .build())
                         .build()));
 
         Path file = tempDir.resolve("test.json");
