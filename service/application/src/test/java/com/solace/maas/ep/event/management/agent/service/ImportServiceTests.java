@@ -18,6 +18,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
@@ -29,10 +30,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -147,5 +150,84 @@ public class ImportServiceTests {
         importService.zip(zipRequestBO);
 
         assertThatNoException();
+    }
+
+    @SneakyThrows
+    @Test
+    public void testZipDataWithNoScanData() {
+        ZipRequestBO zipRequestBO = ZipRequestBO.builder()
+                .scanId("scanId")
+                .build();
+
+        when(dataCollectionFileService.findAllByScanId("scanId"))
+                .thenReturn(List.of(DataCollectionFileEntity.builder()
+                        .id(UUID.randomUUID().toString())
+                        .path("data_collection/" + UUID.randomUUID() + "/" + UUID.randomUUID() + "/topicListing.json")
+                        .scan(ScanEntity.builder()
+                                .id(UUID.randomUUID().toString())
+                                .build())
+                        .purged(false)
+                        .build()));
+
+        when(scanService.findById("scanId"))
+                .thenReturn(Optional.empty());
+
+        Path file = tempDir.resolve("test.json");
+        Files.write(file, Collections.singleton("test data"));
+
+        GenericFile<File> genericFile = new GenericFile<>(false);
+        genericFile.setFile(file.toFile());
+
+        Exchange exchange = new DefaultExchange(camelContext);
+        exchange.getIn().setBody(genericFile);
+
+        when(producerTemplate.send(any(String.class), any(Processor.class)))
+                .thenReturn(exchange);
+
+        NoSuchElementException thrown = Assertions.assertThrows(
+                NoSuchElementException.class,
+                () -> importService.zip(zipRequestBO));
+
+        assertTrue(thrown.getMessage().contentEquals("Could not find scan : [scanId]."));
+    }
+
+    @SneakyThrows
+    @Test
+    public void testZipDataWithNoFiles() {
+        ZipRequestBO zipRequestBO = ZipRequestBO.builder()
+                .scanId("scanId")
+                .build();
+
+        when(dataCollectionFileService.findAllByScanId("scanId"))
+                .thenReturn(List.of());
+
+        when(scanService.findById("scanId"))
+                .thenReturn(Optional.ofNullable(ScanEntity.builder()
+                        .id(UUID.randomUUID().toString())
+                        .emaId("emdId")
+                        .messagingService(MessagingServiceEntity.builder()
+                                .id(UUID.randomUUID().toString())
+                                .name("staging service")
+                                .type(MessagingServiceType.SOLACE.name())
+                                .build())
+                        .build()));
+
+        Path file = tempDir.resolve("test.json");
+        Files.write(file, Collections.singleton("test data"));
+
+        GenericFile<File> genericFile = new GenericFile<>(false);
+        genericFile.setFile(file.toFile());
+
+        Exchange exchange = new DefaultExchange(camelContext);
+        exchange.getIn().setBody(genericFile);
+
+        when(producerTemplate.send(any(String.class), any(Processor.class)))
+                .thenReturn(exchange);
+
+        FileNotFoundException thrown = Assertions.assertThrows(
+                FileNotFoundException.class,
+                () -> importService.zip(zipRequestBO));
+
+        assertTrue(thrown.getMessage().contentEquals("Could not find scan files."));
     }
 }

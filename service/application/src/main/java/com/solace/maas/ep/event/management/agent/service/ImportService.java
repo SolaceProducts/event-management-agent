@@ -88,7 +88,7 @@ public class ImportService {
 
         String scheduleId = StringUtils.substringBetween(files.stream().findFirst()
                 .orElseThrow(() -> {
-                    String message = "Scan files could not be found.";
+                    String message = "Could not find scan files.";
                     log.error(message);
                     return new FileNotFoundException(message);
                 }).getPath(), "/");
