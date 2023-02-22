@@ -62,7 +62,6 @@ public class DataImportControllerTests {
         DataImportController controller = new DataImportControllerImpl(importService);
 
         ZipRequestBO zipRequestBO = ZipRequestBO.builder()
-                .messagingServiceId("messagingServiceId")
                 .scanId("scanId")
                 .build();
 
@@ -70,7 +69,7 @@ public class DataImportControllerTests {
                 .thenReturn(mock(InputStream.class));
 
         ResponseEntity<InputStreamResource> reply =
-                controller.zip("messagingServiceId", "scanId");
+                controller.zip("scanId");
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -84,7 +83,7 @@ public class DataImportControllerTests {
         DataImportController controller = new DataImportControllerImpl(importService);
 
         ResponseEntity<InputStreamResource> reply =
-                controller.zip("messagingServiceId", "scanId");
+                controller.zip("scanId");
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 

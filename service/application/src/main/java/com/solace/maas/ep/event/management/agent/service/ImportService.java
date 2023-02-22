@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants
 import com.solace.maas.ep.event.management.agent.plugin.processor.output.file.event.DataCollectionFileEvent;
 import com.solace.maas.ep.event.management.agent.repository.model.file.DataCollectionFileEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDetailsBO;
@@ -26,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -35,12 +37,14 @@ public class ImportService {
 
     private final ProducerTemplate producerTemplate;
     private final DataCollectionFileService dataCollectionFileService;
+    private final ScanService scanService;
     private final EventPortalProperties eventPortalProperties;
 
-    public ImportService(ProducerTemplate producerTemplate,
-                         DataCollectionFileService dataCollectionFileService, EventPortalProperties eventPortalProperties) {
+    public ImportService(ProducerTemplate producerTemplate, DataCollectionFileService dataCollectionFileService,
+                         ScanService scanService, EventPortalProperties eventPortalProperties) {
         this.producerTemplate = producerTemplate;
         this.dataCollectionFileService = dataCollectionFileService;
+        this.scanService = scanService;
         this.eventPortalProperties = eventPortalProperties;
     }
 
@@ -69,14 +73,22 @@ public class ImportService {
     }
 
     public InputStream zip(ZipRequestBO zipRequestBO) throws FileNotFoundException {
-        String messagingServiceId = zipRequestBO.getMessagingServiceId();
         String scanId = zipRequestBO.getScanId();
 
         List<DataCollectionFileEntity> files = dataCollectionFileService.findAllByScanId(scanId);
 
+        ScanEntity scanEntity = scanService.findById(scanId)
+                .orElseThrow(() -> {
+                    String message = String.format("Could not find scan : [%s].", scanId);
+                    log.error(message);
+                    return new NoSuchElementException(message);
+                });
+
+        String messagingServiceId = scanEntity.getMessagingService().getId();
+
         String scheduleId = StringUtils.substringBetween(files.stream().findFirst()
                 .orElseThrow(() -> {
-                    String message = "Scan files could not be found.";
+                    String message = "Could not find scan files.";
                     log.error(message);
                     return new FileNotFoundException(message);
                 }).getPath(), "/");

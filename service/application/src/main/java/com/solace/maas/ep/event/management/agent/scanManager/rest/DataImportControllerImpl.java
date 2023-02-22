@@ -58,12 +58,10 @@ public class DataImportControllerImpl implements DataImportController {
     }
 
     @Override
-    @GetMapping(value = "/{messagingServiceId}/export/{scanId}/zip")
-    public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "messagingServiceId") String messagingServiceId,
-                                                   @PathVariable(value = "scanId") String scanId) {
+    @GetMapping(value = "/export/{scanId}/zip")
+    public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "scanId") String scanId) {
         try {
             ZipRequestBO zipRequestBO = ZipRequestBO.builder()
-                    .messagingServiceId(messagingServiceId)
                     .scanId(scanId)
                     .build();
 
@@ -71,6 +69,7 @@ public class DataImportControllerImpl implements DataImportController {
 
             InputStream zipInputStream = importService.zip(zipRequestBO);
             InputStreamResource inputStreamResource = new InputStreamResource(zipInputStream);
+
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
             httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + scanId + ".zip");

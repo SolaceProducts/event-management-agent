@@ -38,7 +38,6 @@ public interface DataImportController {
             summary = "Zips data collection files",
             description = "Use this API to zip the data collection files for the specified messaging service.",
             parameters = {
-                    @Parameter(name = "messagingServiceId", description = "The ID of the messaging service.", required = true),
                     @Parameter(name = "scanId", description = "The ID of the scan request.", required = true),
             },
             responses = {
@@ -53,5 +52,5 @@ public interface DataImportController {
                     )
             }
     )
-    ResponseEntity<InputStreamResource> zip(String messagingServiceId, String scanId);
+    ResponseEntity<InputStreamResource> zip(String scanId);
 }

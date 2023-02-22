@@ -16,15 +16,5 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class ZipRequestBO extends AbstractBaseBO<String> {
 
-    private String messagingServiceId;
-
     private String scanId;
-
-    @Override
-    public String toString() {
-        return "ZipRequestBO{" +
-                "messagingServiceId='" + messagingServiceId + '\'' +
-                ", scanId='" + scanId + '\'' +
-                '}';
-    }
 }
