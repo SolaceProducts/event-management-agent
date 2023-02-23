@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
+import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +16,12 @@ public class ScanStatusService {
 
     private final ScanTypeService scanTypeService;
 
-    public ScanStatusService(ScanStatusRepository repository, ScanTypeService scanTypeService) {
+    private final IDGenerator idGenerator;
+
+    public ScanStatusService(ScanStatusRepository repository, ScanTypeService scanTypeService, IDGenerator idGenerator) {
         this.repository = repository;
         this.scanTypeService = scanTypeService;
+        this.idGenerator = idGenerator;
     }
 
     @Transactional
@@ -27,10 +31,11 @@ public class ScanStatusService {
 
         ScanStatusEntity scanStatusEntity = scanType.getStatus();
 
-        if(Objects.nonNull(scanStatusEntity)) {
+        if (Objects.nonNull(scanStatusEntity)) {
             scanStatusEntity.setStatus(ScanStatus.COMPLETE.name());
         } else {
             scanStatusEntity = ScanStatusEntity.builder()
+                    .id(idGenerator.generateRandomUniqueId())
                     .scanType(scanType)
                     .status(ScanStatus.COMPLETE.name())
                     .build();
