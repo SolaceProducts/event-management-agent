@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.route.manualImport;
 
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportOverAllStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMetaInfFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishImportScanEventProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers.ScanDataImportExceptionHandler;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
@@ -18,13 +19,16 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
     private final ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor;
     private final ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor;
     private final ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor;
+    private final ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor;
 
     public ScanDataImportParseMetaInfFileRouteBuilder(ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor,
                                                       ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor,
-                                                      ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor) {
+                                                      ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor,
+                                                      ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor) {
         this.scanDataImportParseMetaInfFileProcessor = scanDataImportParseMetaInfFileProcessor;
         this.scanDataImportOverAllStatusProcessor = scanDataImportOverAllStatusProcessor;
         this.scanDataImportPublishImportScanEventProcessor = scanDataImportPublishImportScanEventProcessor;
+        this.scanDataImportPersistScanDataProcessor = scanDataImportPersistScanDataProcessor;
     }
 
     @Override
@@ -49,6 +53,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
         from("direct:sendOverAllInProgressImportStatus")
                 .routeId("sendOverAllInProgressImportStatus")
                 .process(scanDataImportOverAllStatusProcessor)
+                .process(scanDataImportPersistScanDataProcessor)
                 .to("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false");
     }
 }

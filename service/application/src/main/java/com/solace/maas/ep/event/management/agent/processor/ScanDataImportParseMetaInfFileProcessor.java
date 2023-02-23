@@ -22,6 +22,7 @@ public class ScanDataImportParseMetaInfFileProcessor implements Processor {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, metaInfFileBO.getScanId());
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, metaInfFileBO.getMessagingServiceId());
+        exchange.getIn().setHeader(RouteConstants.EVENT_MANAGEMENT_ID, metaInfFileBO.getEmaId());
         exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, metaInfFileBO.getScheduleId());
 
         List<MetaInfFileDetailsBO> filesDetails = metaInfFileBO.getFiles();

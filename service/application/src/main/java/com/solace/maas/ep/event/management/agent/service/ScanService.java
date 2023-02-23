@@ -12,8 +12,8 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDesti
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
-import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
@@ -308,7 +308,7 @@ public class ScanService {
      * @param scanEntity The information of the Messaging Service scan.
      * @return The saved Messaging Service scan details.
      */
-    protected ScanEntity save(ScanEntity scanEntity) {
+    public ScanEntity save(ScanEntity scanEntity) {
         return repository.save(scanEntity);
     }
 

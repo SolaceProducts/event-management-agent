@@ -86,6 +86,8 @@ public class ImportService {
 
         String messagingServiceId = scanEntity.getMessagingService().getId();
 
+        String emaId = scanEntity.getEmaId();
+
         String scheduleId = StringUtils.substringBetween(files.stream().findFirst()
                 .orElseThrow(() -> {
                     String message = "Could not find scan files.";
@@ -93,7 +95,7 @@ public class ImportService {
                     return new FileNotFoundException(message);
                 }).getPath(), "/");
 
-        MetaInfFileBO metaInfJson = prepareMetaInfJson(files, messagingServiceId, scheduleId, scanId);
+        MetaInfFileBO metaInfJson = prepareMetaInfJson(files, messagingServiceId, emaId, scheduleId, scanId);
 
         List<DataCollectionFileEvent> fileEvents = prepareFileEvents(files, scanId);
 
@@ -107,7 +109,7 @@ public class ImportService {
     }
 
     private MetaInfFileBO prepareMetaInfJson(List<DataCollectionFileEntity> files, String messagingServiceId,
-                                             String scheduleId, String scanId) {
+                                             String emaId, String scheduleId, String scanId) {
 
         List<MetaInfFileDetailsBO> metaInfFileDetailsBOFiles = new ArrayList<>();
         files.forEach(file -> {
@@ -128,6 +130,7 @@ public class ImportService {
                 .scheduleId(scheduleId)
                 .scanId(scanId)
                 .messagingServiceId(messagingServiceId)
+                .emaId(emaId)
                 .build();
     }
 
