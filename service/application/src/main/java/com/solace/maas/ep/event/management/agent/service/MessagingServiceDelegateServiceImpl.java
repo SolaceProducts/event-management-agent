@@ -70,6 +70,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
      * @return The retrieved Messaging Service.
      */
     @SuppressWarnings("unchecked")
+    @Override
     @Transactional
     public MessagingServiceEntity getMessagingServiceById(String messagingServiceId) {
         Optional<MessagingServiceEntity> messagingServiceEntityOpt = repository.findById(messagingServiceId);

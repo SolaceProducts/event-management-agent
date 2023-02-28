@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -32,9 +33,11 @@ public class MessagingServiceEntity implements Serializable {
     @Column(name = "MESSAGING_SERVICE_TYPE", nullable = false)
     private String type;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConnectionDetailsEntity> connections;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<ScanEntity> scanEntities;
 }

@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeE
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,5 +21,9 @@ public class ScanTypeService {
 
     public Optional<ScanTypeEntity> findByNameAndScanId(String name, String scanId) {
         return repository.findByNameAndScanId(name, scanId);
+    }
+
+    public Iterable<ScanTypeEntity> saveAll(List<ScanTypeEntity> scanTypeEntities) {
+        return repository.saveAll(scanTypeEntities);
     }
 }

@@ -12,6 +12,8 @@ public class FileParseAggregationStrategy implements AggregationStrategy {
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
         newExchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID,
                 oldExchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID));
+        newExchange.getIn().setHeader(RouteConstants.EVENT_MANAGEMENT_ID,
+                oldExchange.getIn().getHeader(RouteConstants.EVENT_MANAGEMENT_ID));
         newExchange.getIn().setHeader(RouteConstants.SCAN_ID,
                 oldExchange.getIn().getHeader(RouteConstants.SCAN_ID));
         newExchange.getIn().setHeader(RouteConstants.SCHEDULE_ID,

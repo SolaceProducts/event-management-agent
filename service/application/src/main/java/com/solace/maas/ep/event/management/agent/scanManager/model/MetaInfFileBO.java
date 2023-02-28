@@ -21,6 +21,8 @@ public class MetaInfFileBO implements Serializable {
 
     private String messagingServiceId;
 
+    private String emaId;
+
     private String scheduleId;
 
     private String scanId;
