@@ -26,7 +26,10 @@ The default application.yml file also includes examples of the plugin configurat
 #### SEMP Secured Connection
 
 The following environment variables need to be exported:
-${SOLACE_SEMP_USERNAME} ${SOLACE_SEMP_PASSWORD} ${SOLACE_VPN_NAME}
+
+- ${SOLACE_SEMP_USERNAME}
+- ${SOLACE_SEMP_PASSWORD}
+- ${SOLACE_VPN_NAME}
 
 ```
 plugins:
@@ -71,7 +74,12 @@ plugins:
 #### Kafka Management Connection - MTLS
 
 The following environment variables need to be exported:
-${TRUSTSTORE_LOCATION} ${TRUSTSTORE_PASSWORD} ${KEYSTORE_PASSWORD} ${KEYSTORE_LOCATION} ${KEY_PASSWORD}
+
+- ${TRUSTSTORE_LOCATION}
+- ${TRUSTSTORE_PASSWORD}
+- ${KEYSTORE_PASSWORD}
+- ${KEYSTORE_LOCATION}
+- ${KEY_PASSWORD}
 
 ```
 plugins:
@@ -105,7 +113,9 @@ plugins:
 
 The following environment variables need to be exported (You can also use environment variables for the JAAS config
 username and password):
-${TRUSTSTORE_LOCATION} ${TRUSTSTORE_PASSWORD}
+
+- ${TRUSTSTORE_LOCATION}
+- ${TRUSTSTORE_PASSWORD}
 
 ```
 plugins:
@@ -163,7 +173,8 @@ plugins:
 
 The following environment variable needs to be exported (You can also use environment variables for the JAAS config
 username and password):
-${TRUSTSTORE_LOCATION}
+
+- ${TRUSTSTORE_LOCATION}
 
 ```
 plugins:
@@ -192,7 +203,8 @@ plugins:
 #### Kafka Management Connection - AWS IAM
 
 The following environment variable needs to be exported:
-${TRUSTSTORE_LOCATION}
+
+- ${TRUSTSTORE_LOCATION}
 
 ```
 plugins:
@@ -254,12 +266,24 @@ java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
 ## Scan Types
 
 Solace:
-SOLACE_ALL SOLACE_QUEUE_CONFIG SOLACE_QUEUE_LISTING SOLACE_SUBSCRIPTION_CONFIG
+
+- SOLACE_ALL
+- SOLACE_QUEUE_CONFIG
+- SOLACE_QUEUE_LISTING
+- SOLACE_SUBSCRIPTION_CONFIG
 
 Kafka:
-KAFKA_ALL KAFKA_BROKER_CONFIGURATION KAFKA_CLUSTER_CONFIGURATION KAFKA_CONSUMER_GROUPS
-KAFKA_CONSUMER_GROUPS_CONFIGURATION KAFKA_FEATURES KAFKA_PRODUCERS KAFKA_TOPIC_CONFIGURATION
-KAFKA_TOPIC_CONFIGURATION_FULL KAFKA_TOPIC_LISTING KAFKA_TOPIC_OVERRIDE_CONFIGURATION
+
+- KAFKA_ALL
+- KAFKA_BROKER_CONFIGURATION
+- KAFKA_CLUSTER_CONFIGURATION
+- KAFKA_CONSUMER_GROUPS
+- KAFKA_CONSUMER_GROUPS_CONFIGURATION
+- KAFKA_FEATURES KAFKA_PRODUCERS
+- KAFKA_TOPIC_CONFIGURATION
+- KAFKA_TOPIC_CONFIGURATION_FULL
+- KAFKA_TOPIC_LISTING
+- KAFKA_TOPIC_OVERRIDE_CONFIGURATION
 
 ## Destinations
 
