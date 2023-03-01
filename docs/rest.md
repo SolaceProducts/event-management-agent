@@ -17,19 +17,16 @@ The Kafka Confluent plugin uses the Kafka broker admin APIs to learn about topic
 ## Initiating a scan request
 
 Download the configuration file generated in the Event Portal or update the `plugins` section of the
-`service/application/src/main/resources/application.yml` file with the details of the messaging service to scan.
-Values that include `${SOME_VALUE}` are environment variables and should be exported in the shell before launching the EMA.
-An example of exporting these values appears in the `Environment Variables` section.
+`service/application/src/main/resources/application.yml` file with the details of the messaging service to scan. Values
+that include `${SOME_VALUE}` are environment variables and should be exported in the shell before launching the EMA. An
+example of exporting these values appears in the `Environment Variables` section.
 
 The default application.yml file also includes examples of the plugin configurations.
 
-
 #### SEMP Secured Connection
 
-The following environment variables need to be exported: 
-${SOLACE_SEMP_USERNAME}
-${SOLACE_SEMP_PASSWORD}
-${SOLACE_VPN_NAME}
+The following environment variables need to be exported:
+${SOLACE_SEMP_USERNAME} ${SOLACE_SEMP_PASSWORD} ${SOLACE_VPN_NAME}
 
 ```
 plugins:
@@ -73,13 +70,8 @@ plugins:
 
 #### Kafka Management Connection - MTLS
 
-The following environment variables need to be exported: 
-${TRUSTSTORE_LOCATION}
-${TRUSTSTORE_PASSWORD}
-${KEYSTORE_PASSWORD}
-${KEYSTORE_LOCATION}
-${KEY_PASSWORD}
-
+The following environment variables need to be exported:
+${TRUSTSTORE_LOCATION} ${TRUSTSTORE_PASSWORD} ${KEYSTORE_PASSWORD} ${KEYSTORE_LOCATION} ${KEY_PASSWORD}
 
 ```
 plugins:
@@ -111,9 +103,9 @@ plugins:
 
 #### Kafka Management Connection - SASL SCRAM 256
 
-The following environment variables need to be exported (You can also use environment variables for the JAAS config username and password): 
-${TRUSTSTORE_LOCATION}
-${TRUSTSTORE_PASSWORD}
+The following environment variables need to be exported (You can also use environment variables for the JAAS config
+username and password):
+${TRUSTSTORE_LOCATION} ${TRUSTSTORE_PASSWORD}
 
 ```
 plugins:
@@ -169,7 +161,8 @@ plugins:
 
 #### Kafka Management Connection - SASL Plain over SSL
 
-The following environment variable needs to be exported (You can also use environment variables for the JAAS config username and password):
+The following environment variable needs to be exported (You can also use environment variables for the JAAS config
+username and password):
 ${TRUSTSTORE_LOCATION}
 
 ```
@@ -231,9 +224,8 @@ plugins:
 
 #### Environment Variables
 
-When using environment variables, they must all be exported into the environment, otherwise 
-the value will be empty. Solace recommends storing usernames and passwords in environment variables
-to avoid storing them in the Event Portal.
+When using environment variables, they must all be exported into the environment, otherwise the value will be empty.
+Solace recommends storing usernames and passwords in environment variables to avoid storing them in the Event Portal.
 
 ```
 export SOLACE_SEMP_USERNAME=solace-username
@@ -243,9 +235,7 @@ export SOLACE_SEMP_PASSWORD=solace-password
 
 KAFKA_BOOTSTRAP_SERVERS can optionally be overridden
 
-
 ### Building And Executing The EMA
-
 
 Rebuild the Event Management Agent:
 
@@ -264,28 +254,17 @@ java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
 ## Scan Types
 
 Solace:
-    SOLACE_ALL
-    SOLACE_QUEUE_CONFIG
-    SOLACE_QUEUE_LISTING
-    SOLACE_SUBSCRIPTION_CONFIG
+SOLACE_ALL SOLACE_QUEUE_CONFIG SOLACE_QUEUE_LISTING SOLACE_SUBSCRIPTION_CONFIG
 
 Kafka:
-    KAFKA_ALL
-    KAFKA_BROKER_CONFIGURATION
-    KAFKA_CLUSTER_CONFIGURATION
-    KAFKA_CONSUMER_GROUPS
-    KAFKA_CONSUMER_GROUPS_CONFIGURATION
-    KAFKA_FEATURES
-    KAFKA_PRODUCERS
-    KAFKA_TOPIC_CONFIGURATION
-    KAFKA_TOPIC_CONFIGURATION_FULL
-    KAFKA_TOPIC_LISTING
-    KAFKA_TOPIC_OVERRIDE_CONFIGURATION
+KAFKA_ALL KAFKA_BROKER_CONFIGURATION KAFKA_CLUSTER_CONFIGURATION KAFKA_CONSUMER_GROUPS
+KAFKA_CONSUMER_GROUPS_CONFIGURATION KAFKA_FEATURES KAFKA_PRODUCERS KAFKA_TOPIC_CONFIGURATION
+KAFKA_TOPIC_CONFIGURATION_FULL KAFKA_TOPIC_LISTING KAFKA_TOPIC_OVERRIDE_CONFIGURATION
 
 ## Destinations
 
-There are two destinations: EVENT_PORTAL and FILE_WRITER.
-FILE_WRITER writes the data to a file and EVENT_PORTAL sends data to Event Portal.
+There are two destinations: EVENT_PORTAL and FILE_WRITER. FILE_WRITER writes the data to a file and EVENT_PORTAL sends
+data to Event Portal.
 
 ## Scanning
 
@@ -304,8 +283,6 @@ curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/em
 ```
 
 * Kafka messaging service with id `bcvch3xfrq0`
-
-
 
 A scan's output files can be found under 'service/data_collection/[group id]/[scan id]/'
 
@@ -344,13 +321,14 @@ curl -H "Content-Type: application/json" -X GET http://localhost:8180/docs/event
 
 ## To list scans
 
-This returns a list of items that have been scanned. 
+This returns a list of items that have been scanned.
 
 ```
 curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/scan
 ```
 
 Output
+
 ```
 [
   {
@@ -361,4 +339,27 @@ Output
     "createdAt": "2023-01-10T16:40:10.972787Z"
   }
 ]
+```
+
+## Manual import
+
+1. Export endpoint:
+
+```
+curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/messagingServices/export/fi8q4sjotjf/zip --output {file_name.zip}
+```
+
+Output
+
+A new file with the following naming convention
+
+```
+{scanId}.zip
+```
+
+2. Import endpoint:
+
+```
+curl --location --request POST 'http://localhost:8180/api/v2/ema/messagingServices/import' \
+--form 'file=@"{full path to the .zip file}'
 ```
