@@ -186,13 +186,14 @@ The Event Management Agent comes with the following event or message broker plug
 * Confluent
 * MSK
 
-The default application.yml provides various plugin examples. For KAFKA, the properties section under credentials
-is passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
+The default application.yml provides various plugin examples. For KAFKA, the properties section under credentials is
+passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
 
-If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present.
-Two ways is either via environment or credentials file as shown below:
+If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. Two ways is either via environment
+or credentials file as shown below:
 
 Put a file with the following contents into a ~/.aws/credentials file
+
 ```
 [default]
 aws_access_key_id = <aws_access_key>
@@ -200,6 +201,7 @@ aws_secret_access_key = <aws_secret_key>
 ```
 
 Can alternatively make these environment variables (these will also override the credentials file if present)
+
 ```
 export AWS_ACCESS_KEY_ID=<aws_access_key>
 export AWS_SECRET_ACCESS_KEY=<aws_secret_key>
@@ -222,6 +224,23 @@ The Event Management Agent includes a REST API that allows the user to initiate 
 custom set of authentication and identification attributes that must be supplied by the user.
 
 See [REST Documentation](docs/rest.md) for additional information
+
+## Importing Scanned Data
+
+To import scanned data into Event Portal:
+
+* Set up a new standalone Event Management Agent.
+* Run a scan according to the instructions here: [Running Scans](docs/rest.md#running-scans)
+* After the scan is complete, create a .zip file containing the scan files by sending a GET request to the
+  endpoint `http://localhost:8180/api/v2/ema/messagingServices/export/{scanId}/zip`
+* Locate the .zip file in the directory `data_collection\zip`. The .zip file is named as `{scanId}.zip`
+* Set up a second Event Management Agent that is connected to Event Portal.
+* Use a method approved by your organization's security policies to copy the .zip file to the second Event Management
+  Agent.
+* Start the data import process by sending a POST request to the
+  endpoint `http://localhost:8180/api/v2/ema/messagingServices/import`. Add the .zip file to the body of the request
+  using `file` as the key.
+* After sending the POST request, the Event Management Agent will start the import process.
 
 ## Motivations
 
