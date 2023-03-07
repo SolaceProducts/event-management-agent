@@ -25,7 +25,15 @@ public class ImportRouteBuilder extends RouteBuilder {
                 .to("direct:checkZipSizeAndUnzipFiles");
 
         from("direct:continueParsingUnzippedFiles")
-                .to("direct:parseMetaInfoAndSendOverAllImportStatus")
+                .routeId("continueParsingUnzippedFiles")
+                .to("direct:parseMetaInfoAndSendOverAllImportStatus");
+
+
+        from("direct:continueImportFiles")
+                .routeId("continueImportFiles")
+                // todo: remove this log
+                .log("moodi YYY we are here yay!!!")
+                .to("direct:sendOverAllInProgressImportStatus")
                 .to("direct:parseAndStreamImportFiles");
     }
 }

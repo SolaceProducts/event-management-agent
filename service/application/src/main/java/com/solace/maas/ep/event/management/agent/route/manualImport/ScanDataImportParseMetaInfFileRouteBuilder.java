@@ -48,7 +48,8 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
                 .unmarshal().json(JsonLibrary.Jackson, MetaInfFileBO.class)
                 .process(scanDataImportParseMetaInfFileProcessor)
                 .process(scanDataImportPublishImportScanEventProcessor)
-                .to("direct:sendOverAllInProgressImportStatus");
+                // todo : remove this log before merging
+                .log("moodi XXX2 We should be here!");
 
         from("direct:sendOverAllInProgressImportStatus")
                 .routeId("sendOverAllInProgressImportStatus")

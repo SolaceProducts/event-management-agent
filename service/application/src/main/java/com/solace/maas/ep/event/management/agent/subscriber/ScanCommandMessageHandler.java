@@ -27,7 +27,7 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
     public ScanCommandMessageHandler(
             SolaceConfiguration solaceConfiguration,
             SolaceSubscriber solaceSubscriber, ScanManager scanManager, ScanRequestMapper scanRequestMapper) {
-        super(solaceConfiguration.getTopicPrefix() + "scan/command/>", solaceSubscriber);
+        super(solaceConfiguration.getTopicPrefix() + "scan/command/v1/startScan/>", solaceSubscriber);
         this.scanManager = scanManager;
         this.scanRequestMapper = scanRequestMapper;
     }
