@@ -20,16 +20,11 @@ public class ScanDataImportMessage extends MOPMessage {
 
     private List<String> scanTypes;
 
-    private String emaId;
-
-    private String scheduleId;
-
     public ScanDataImportMessage() {
         super();
     }
 
-    public ScanDataImportMessage(String orgId, String scanId, String messagingServiceId, List<String> scanTypes,
-                                 String emaId, String scheduleId) {
+    public ScanDataImportMessage(String orgId, String scanId, String messagingServiceId, List<String> scanTypes) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)
@@ -40,7 +35,5 @@ public class ScanDataImportMessage extends MOPMessage {
         this.scanId = scanId;
         this.messagingServiceId = messagingServiceId;
         this.scanTypes = scanTypes;
-        this.emaId = emaId;
-        this.scheduleId = scheduleId;
     }
 }

@@ -8,7 +8,6 @@ import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDe
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
@@ -26,9 +25,8 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
 
     private final ScanDataPublisher scanDataPublisher;
 
-    @Autowired
-    public ScanDataImportPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
-        super();
+    public ScanDataImportPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher,
+                                                         EventPortalProperties eventPortalProperties) {
 
         this.scanDataPublisher = scanDataPublisher;
 
@@ -51,11 +49,9 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
-        String emaId = (String) properties.get(RouteConstants.EVENT_MANAGEMENT_ID);
-        String scheduleId = (String) properties.get(RouteConstants.SCHEDULE_ID);
 
         ScanDataImportMessage importDataMessage =
-                new ScanDataImportMessage(orgId, scanId, messagingServiceId, scanTypes, emaId, scheduleId);
+                new ScanDataImportMessage(orgId, scanId, messagingServiceId, scanTypes);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);

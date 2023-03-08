@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.route.manualImport;
 
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportOverAllStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMetaInfFileProcessor;
+import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistFilePathsProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishImportScanEventProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers.ScanDataImportExceptionHandler;
@@ -22,15 +23,18 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
     private final ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor;
     private final ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor;
     private final ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor;
+    private final ScanDataImportPersistFilePathsProcessor scanDataImportPersistFilePathsProcessor;
 
     public ScanDataImportParseMetaInfFileRouteBuilder(ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor,
                                                       ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor,
                                                       ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor,
-                                                      ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor) {
+                                                      ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor,
+                                                      ScanDataImportPersistFilePathsProcessor scanDataImportPersistFilePathsProcessor) {
         this.scanDataImportParseMetaInfFileProcessor = scanDataImportParseMetaInfFileProcessor;
         this.scanDataImportOverAllStatusProcessor = scanDataImportOverAllStatusProcessor;
         this.scanDataImportPublishImportScanEventProcessor = scanDataImportPublishImportScanEventProcessor;
         this.scanDataImportPersistScanDataProcessor = scanDataImportPersistScanDataProcessor;
+        this.scanDataImportPersistFilePathsProcessor = scanDataImportPersistFilePathsProcessor;
     }
 
     @Override
@@ -49,6 +53,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
                 .convertBodyTo(String.class)
                 .unmarshal().json(JsonLibrary.Jackson, MetaInfFileBO.class)
                 .process(scanDataImportParseMetaInfFileProcessor)
+                .process(scanDataImportPersistFilePathsProcessor)
                 .process(scanDataImportPublishImportScanEventProcessor)
                 // todo : remove this log before merging
                 .log("moodi XXX2 We should be here!");
