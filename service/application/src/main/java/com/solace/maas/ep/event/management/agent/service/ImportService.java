@@ -31,6 +31,8 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
+
 @Slf4j
 @Service
 public class ImportService {
@@ -67,7 +69,7 @@ public class ImportService {
                 .build();
 
         producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
-            exchange.getIn().setHeader("IMPORT_ID", importId);
+            exchange.getIn().setHeader(IMPORT_ID, importId);
             exchange.getIn().setBody(files);
         });
     }

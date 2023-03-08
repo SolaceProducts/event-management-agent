@@ -12,6 +12,8 @@ import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
+
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
@@ -41,7 +43,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
                 .continued(true)
                 .end()
                 .pollEnrich()
-                .simple("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}" +
+                .simple("file://data_collection/import/unzipped_data_collection/${header." + IMPORT_ID + "}" +
                         "?fileName=META_INF.json&noop=true&idempotent=false")
                 .aggregationStrategy(new UseLatestAggregationStrategy())
                 .convertBodyTo(String.class)
