@@ -2,8 +2,10 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 
 import com.solace.maas.ep.common.messages.ScanDataImportMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
+import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportFilesEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDetailsBO;
+import com.solace.maas.ep.event.management.agent.service.ManualImportDetailsService;
 import com.solace.maas.ep.event.management.agent.service.ManualImportFilesService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
@@ -27,15 +29,18 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
 
     private final ProducerTemplate producerTemplate;
     private final ManualImportFilesService manualImportFilesService;
+    private final ManualImportDetailsService manualImportDetailsService;
 
     public StartImportScanCommandMessageHandler(
             SolaceConfiguration solaceConfiguration,
             SolaceSubscriber solaceSubscriber,
             ProducerTemplate producerTemplate,
-            ManualImportFilesService manualImportFilesService) {
+            ManualImportFilesService manualImportFilesService,
+            ManualImportDetailsService manualImportDetailsService) {
         super(solaceConfiguration.getTopicPrefix() + "scan/command/v1/startImportScan/>", solaceSubscriber);
         this.producerTemplate = producerTemplate;
         this.manualImportFilesService = manualImportFilesService;
+        this.manualImportDetailsService = manualImportDetailsService;
     }
 
     @Override
@@ -49,10 +54,11 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
         List<ManualImportFilesEntity> manualImportFilesEntityList = manualImportFilesService.getAllByScanId(scanId);
 
         if (manualImportFilesEntityList.isEmpty()) {
-            throw new RuntimeException(String.format("can't retrieve any manualImportFiles for scanId: {}", scanId));
+            throw new RuntimeException(String.format("can't retrieve any manualImportFiles for scanId: %s", scanId));
         }
 
-        ManualImportFilesEntity firstManualImportFilesEntity = manualImportFilesEntityList.get(0);
+        ManualImportDetailsEntity manualImportDetailsEntity = manualImportDetailsService.getByScanId(scanId)
+                .orElseThrow(() -> new RuntimeException(String.format("Can't retrieve manualImportDetails by scanId: %s", scanId)));
 
         List<MetaInfFileDetailsBO> metaInfFileDetailsBOList = manualImportFilesEntityList.stream()
                 .map(manualImportFilesEntity -> MetaInfFileDetailsBO.builder()
@@ -63,9 +69,9 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
 
         producerTemplate.send("direct:continueImportFiles", exchange -> {
             exchange.getIn().setHeader(SCAN_ID, scanId);
-            exchange.getIn().setHeader(SCHEDULE_ID, firstManualImportFilesEntity.getScheduleId());
-            exchange.getIn().setHeader(EVENT_MANAGEMENT_ID, firstManualImportFilesEntity.getEmaId());
-            exchange.getIn().setHeader(IMPORT_ID, firstManualImportFilesEntity.getImportId());
+            exchange.getIn().setHeader(SCHEDULE_ID, manualImportDetailsEntity.getScheduleId());
+            exchange.getIn().setHeader(EVENT_MANAGEMENT_ID, manualImportDetailsEntity.getEmaId());
+            exchange.getIn().setHeader(IMPORT_ID, manualImportDetailsEntity.getImportId());
             exchange.getIn().setHeader(MESSAGING_SERVICE_ID, message.getMessagingServiceId());
             exchange.getIn().setHeader(SCAN_TYPE, scanTypes);
             exchange.getIn().setBody(metaInfFileDetailsBOList);

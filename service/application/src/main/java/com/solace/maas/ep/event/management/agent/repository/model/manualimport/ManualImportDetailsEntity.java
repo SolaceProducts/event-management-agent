@@ -17,18 +17,21 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 @Builder
-@Table(name = "MANUAL_IMPORT_FILES")
+@Table(name = "MANUAL_IMPORT_DETAILS")
 @Entity
-public class ManualImportFilesEntity implements Serializable {
+public class ManualImportDetailsEntity implements Serializable {
     @Id
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "FILE_NAME")
-    private String fileName;
+    @Column(name = "SCHEDULE_ID")
+    private String scheduleId;
 
-    @Column(name = "DATA_ENTITY_TYPE")
-    private String dataEntityType;
+    @Column(name = "EMA_ID")
+    private String emaId;
+
+    @Column(name = "IMPORT_ID")
+    private String importId;
 
     @Column(name = "SCAN_ID")
     private String scanId;
