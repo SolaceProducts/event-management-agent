@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
+import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDetailsBO;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -17,6 +18,8 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
@@ -51,6 +54,10 @@ public class ScanDataPublishImportScanEventProcessorTests {
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
         exchange.getIn().setHeader(RouteConstants.IS_DATA_IMPORT, true);
+        exchange.getIn().setBody(List.of(MetaInfFileDetailsBO.builder()
+                .fileName("foo.json")
+                .dataEntityType("bar")
+                .build()));
 
         scanDataPublishImportScanEventProcessor.process(exchange);
 

@@ -33,8 +33,6 @@ public class ImportRouteBuilder extends RouteBuilder {
 
         from("direct:continueImportFiles")
                 .routeId("continueImportFiles")
-                // todo: remove this log
-                .log("moodi YYY we are here yay!!!")
                 .to("direct:sendOverAllInProgressImportStatus")
                 .to("direct:parseAndStreamImportFiles");
     }

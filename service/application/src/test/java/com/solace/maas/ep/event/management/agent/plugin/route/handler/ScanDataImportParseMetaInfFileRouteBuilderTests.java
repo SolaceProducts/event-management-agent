@@ -66,8 +66,6 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
                         exchange1.getIn().setHeader("CamelFileName", "META_INF.json");
                         exchange1.getIn().setBody(getMetaInfJson());
                     });
-                    route.weaveByToUri("direct:sendOverAllInProgressImportStatus")
-                            .replace().to("mock:sendOverAllInProgressImportStatus");
                     route.weaveAddLast().to("mock:direct:mockParseMetaInfoResult");
                 });
 
