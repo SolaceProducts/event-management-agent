@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.publisher;
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
+@ExcludeFromJacocoGeneratedReport
 public class ScanDataCollectionTypesPublisher {
 
     private final SolacePublisher solacePublisher;

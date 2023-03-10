@@ -1,6 +1,7 @@
 package com.solace.maas.ep.common.messages;
 
 import com.solace.maas.ep.common.model.ScanType;
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@ExcludeFromJacocoGeneratedReport
 public class ScanDataCollectionTypesMessage extends MOPMessage {
     String orgId;
     String emaId;

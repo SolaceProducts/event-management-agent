@@ -210,10 +210,11 @@ public class MessageReceiverTests {
                 "  \"isReplyMessage\" : false,\n" +
                 "  \"msgPriority\" : 4,\n" +
                 "  \"traceId\" : \"80817f0d335b6221\",\n" +
-                "  \"emaId\" : \"someId\",\n" +
+                "  \"emaId\" : \"testEmaId\",\n" +
+                "  \"orgId\" : \"testOrgId\",\n" +
                 "  \"scanTypes\" : [\"KAFKA_ALL\"],\n" +
-                "  \"scanId\" : \"fooBar\",\n" +
-                "  \"messagingServiceId\" : \"someId\"\n" +
+                "  \"scanId\" : \"testScanId\",\n" +
+                "  \"messagingServiceId\" : \"testMessagingServiceId\"\n" +
                 "}";
 
         when(inboundMessage.getPayloadAsString()).thenReturn(payload);
