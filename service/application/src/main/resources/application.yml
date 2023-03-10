@@ -28,6 +28,10 @@ spring:
       enabled: true
       settings:
         web-allow-others: true
+  servlet:
+    multipart:
+      max-request-size: ${MAX_REQUEST_SIZE:5MB}
+      max-file-size: ${MAX_FILE_SIZE:5MB}
   main:
     allow-bean-definition-overriding: true
 
