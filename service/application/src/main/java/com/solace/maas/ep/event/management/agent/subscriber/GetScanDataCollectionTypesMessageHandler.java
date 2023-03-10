@@ -43,6 +43,7 @@ public class GetScanDataCollectionTypesMessageHandler extends SolaceMessageHandl
         Map<String, String> topicDetails = new HashMap<>();
         String orgId = message.getOrgId();
         String messagingServiceId = message.getMessagingServiceId();
+        String scanId = message.getScanId();
 
         log.debug("Received getScanDataCollectionTypes command message: {} for messaging service: {}",
                 message, messagingServiceId);
@@ -57,8 +58,9 @@ public class GetScanDataCollectionTypesMessageHandler extends SolaceMessageHandl
         topicDetails.put("orgId", orgId);
         topicDetails.put("emaId", message.getEmaId());
         topicDetails.put("messagingServiceId", messagingServiceId);
+        topicDetails.put("scanId", scanId);
 
-        ScanTypesMessage scanTypesMessage = new ScanTypesMessage(orgId, message.getScanId(), messagingServiceId, extractedScanTypes);
+        ScanTypesMessage scanTypesMessage = new ScanTypesMessage(orgId, scanId, messagingServiceId, extractedScanTypes);
 
         log.debug("Will publish scanTypesMessage: {}", scanTypesMessage);
 

@@ -21,14 +21,15 @@ public class ScanDataCollectionTypesPublisher {
      * Sends the scan related dataCollectionTypes to EP.
      * <p>
      * The topic:
-     * sc/ep/runtime/{orgId}/{emaId}/scan/information/v1/dataCollectionTypes/{messagingServiceId}
+     * sc/ep/runtime/{orgId}/{emaId}/scan/information/v1/dataCollectionTypes/{messagingServiceId}/{scanId}
      */
 
     public void sendScanDataCollectionTypes(MOPMessage message, Map<String, String> topicDetails) {
-        String topicString = String.format("sc/ep/runtime/%s/%s/scan/information/v1/dataCollectionTypes/%s",
+        String topicString = String.format("sc/ep/runtime/%s/%s/scan/information/v1/dataCollectionTypes/%s/%s",
                 topicDetails.get("orgId"),
                 topicDetails.get("emaId"),
-                topicDetails.get("messagingServiceId"));
+                topicDetails.get("messagingServiceId"),
+                topicDetails.get("scanId"));
 
         solacePublisher.publish(message, topicString);
     }
