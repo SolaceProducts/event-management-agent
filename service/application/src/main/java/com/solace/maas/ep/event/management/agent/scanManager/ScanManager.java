@@ -35,7 +35,7 @@ public class ScanManager {
                        ScanService scanService, EventPortalProperties eventPortalProperties) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
-        this.runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -72,14 +72,26 @@ public class ScanManager {
                 .collect(Collectors.toUnmodifiableList());
 
         List<String> brokerScanTypes = scanRequestBO.getScanTypes();
-        List<RouteBundle> routes = brokerScanTypes.stream()
+        List<RouteBundle> routes = getRouteBundles(brokerScanTypes, destinations, messagingServiceId, scanDelegate);
+
+        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity, runtimeAgentId);
+    }
+
+    public List<RouteBundle> getRouteBundles(List<String> brokerScanTypes, List<RouteBundle> destinations,
+                                             String messagingServiceId, MessagingServiceRouteDelegate scanDelegate) {
+
+        return brokerScanTypes.stream()
                 .distinct()
                 .flatMap(brokerScanType -> scanDelegate.generateRouteList(destinations, List.of(),
                                 brokerScanType, messagingServiceId)
                         .stream())
                 .collect(Collectors.toUnmodifiableList());
+    }
 
-        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity, runtimeAgentId);
+    public MessagingServiceRouteDelegate getScanDelegate(String messagingServiceId) {
+
+        MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
+        return PluginLoader.findPlugin(messagingServiceEntity.getType());
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

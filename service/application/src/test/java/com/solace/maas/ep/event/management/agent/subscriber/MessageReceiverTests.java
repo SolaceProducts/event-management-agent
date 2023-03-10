@@ -3,9 +3,10 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
+import com.solace.maas.ep.event.management.agent.publisher.ScanDataCollectionTypesPublisher;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
-import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.messaging.receiver.InboundMessage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,9 @@ public class MessageReceiverTests {
 
     @Autowired
     ScanRequestMapper scanRequestMapper;
+
+    @Mock
+    ScanDataCollectionTypesPublisher scanDataCollectionTypesPublisher;
 
     @Test
     @SneakyThrows
@@ -100,7 +104,7 @@ public class MessageReceiverTests {
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(KAFKA_ALL), List.of(EVENT_PORTAL));
 
-        scanCommandMessageHandler.receiveMessage("test",scanCommandMessage);
+        scanCommandMessageHandler.receiveMessage("test", scanCommandMessage);
         assertThatNoException();
     }
 
@@ -128,6 +132,35 @@ public class MessageReceiverTests {
         HeartbeatMessageHandler heartbeatMessageHandler = new HeartbeatMessageHandler(solaceConfiguration,
                 solaceSubscriber);
         heartbeatMessageHandler.onMessage(inboundMessage);
+        assertThatNoException();
+    }
 
+    @Test
+    @SneakyThrows
+    public void getScanDataCollectionTypesReceiverTest() {
+        String payload = "{\n" +
+                "  \"mopVer\" : \"1\",\n" +
+                "  \"mopProtocol\" : \"event\",\n" +
+                "  \"mopMsgType\" : \"generic\",\n" +
+                "  \"msgUh\" : \"ignore\",\n" +
+                "  \"repeat\" : false,\n" +
+                "  \"isReplyMessage\" : false,\n" +
+                "  \"msgPriority\" : 4,\n" +
+                "  \"traceId\" : \"80817f0d335b6221\",\n" +
+                "  \"emaId\" : \"someId\",\n" +
+                "  \"scanTypes\" : [\"KAFKA_ALL\"],\n" +
+                "  \"scanId\" : \"fooBar\",\n" +
+                "  \"messagingServiceId\" : \"someId\"\n" +
+                "}";
+
+        when(inboundMessage.getPayloadAsString()).thenReturn(payload);
+        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
+                "com.solace.maas.ep.common.messages.ScanDataCollectionTypesMessage");
+        when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
+
+        GetScanDataCollectionTypesMessageHandler getScanDataCollectionTypesMessageHandler =
+                new GetScanDataCollectionTypesMessageHandler(solaceConfiguration, solaceSubscriber, scanManager, scanDataCollectionTypesPublisher);
+        getScanDataCollectionTypesMessageHandler.onMessage(inboundMessage);
+        assertThatNoException();
     }
 }
