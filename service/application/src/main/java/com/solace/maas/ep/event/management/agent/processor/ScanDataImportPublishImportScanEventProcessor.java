@@ -51,7 +51,7 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataImportMessage importDataMessage =
-                new ScanDataImportMessage(orgId, scanId, messagingServiceId, scanTypes);
+                new ScanDataImportMessage(orgId, scanId, messagingServiceId, scanTypes, runtimeAgentId);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);

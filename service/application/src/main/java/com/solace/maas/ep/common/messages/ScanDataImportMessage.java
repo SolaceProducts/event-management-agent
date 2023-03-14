@@ -18,13 +18,15 @@ public class ScanDataImportMessage extends MOPMessage {
 
     String messagingServiceId;
 
+    String runtimeAgentId;
+
     private List<String> scanTypes;
 
     public ScanDataImportMessage() {
         super();
     }
 
-    public ScanDataImportMessage(String orgId, String scanId, String messagingServiceId, List<String> scanTypes) {
+    public ScanDataImportMessage(String orgId, String scanId, String messagingServiceId, List<String> scanTypes, String runtimeAgentId) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.event)
@@ -35,5 +37,6 @@ public class ScanDataImportMessage extends MOPMessage {
         this.scanId = scanId;
         this.messagingServiceId = messagingServiceId;
         this.scanTypes = scanTypes;
+        this.runtimeAgentId = runtimeAgentId;
     }
 }
