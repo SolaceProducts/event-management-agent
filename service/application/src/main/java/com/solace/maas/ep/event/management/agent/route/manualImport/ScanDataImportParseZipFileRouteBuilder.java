@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
+
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanDataImportParseZipFileRouteBuilder extends RouteBuilder {
@@ -25,7 +27,7 @@ public class ScanDataImportParseZipFileRouteBuilder extends RouteBuilder {
                 .simple("file://data_collection/import/compressed_data_collection?fileName=${header." + Exchange.FILE_NAME + "}&noop=true&idempotent=false")
                 .unmarshal(zipFileDataFormat)
                 .split(bodyAs(Iterator.class))
-                .aggregate(exchangeProperty("IMPORT_ID"), new UseLatestAggregationStrategy())
+                .aggregate(exchangeProperty(IMPORT_ID), new UseLatestAggregationStrategy())
                 .completionPredicate(header(Exchange.SPLIT_COMPLETE).isEqualTo(true))
                 .setProperty("FILE_LIST_SIZE", header(Exchange.SPLIT_SIZE))
                 .to("direct:unzipImportFiles");
@@ -35,8 +37,8 @@ public class ScanDataImportParseZipFileRouteBuilder extends RouteBuilder {
                 .simple("file://${header." + Exchange.FILE_PARENT + "}?fileName=${header." + Exchange.FILE_NAME_ONLY + "}&noop=true&idempotent=false")
                 .split(new ZipSplitter())
                 .streaming()
-                .toD("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}")
-                .aggregate(exchangeProperty("IMPORT_ID"), new UseLatestAggregationStrategy())
+                .toD("file://data_collection/import/unzipped_data_collection/${header." + IMPORT_ID + "}")
+                .aggregate(exchangeProperty(IMPORT_ID), new UseLatestAggregationStrategy())
                 .completionSize(exchangeProperty("FILE_LIST_SIZE"))
                 .to("direct:continueParsingUnzippedFiles");
     }

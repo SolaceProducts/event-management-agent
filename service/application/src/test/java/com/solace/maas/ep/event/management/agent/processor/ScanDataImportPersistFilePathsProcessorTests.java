@@ -1,10 +1,9 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDetailsBO;
+import com.solace.maas.ep.event.management.agent.service.ManualImportDetailsService;
+import com.solace.maas.ep.event.management.agent.service.ManualImportFilesService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
@@ -22,49 +21,52 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class ScanDataPublishImportScanEventProcessorTests {
+public class ScanDataImportPersistFilePathsProcessorTests {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Autowired
     CamelContext camelContext;
 
-    @Autowired
+    @InjectMocks
+    ScanDataImportPersistFilePathsProcessor scanDataImportPersistFilePathsProcessor;
+
+    @Mock
     IDGenerator idGenerator;
 
     @Mock
-    ScanDataPublisher scanDataPublisher;
+    ManualImportDetailsService manualImportDetailsService;
 
     @Mock
-    EventPortalProperties eventPortalProperties;
-
-    @InjectMocks
-    ScanDataImportPublishImportScanEventProcessor scanDataPublishImportScanEventProcessor;
-
+    ManualImportFilesService manualImportFilesService;
 
     @SneakyThrows
     @Test
-    public void testScanDataPublishImportScanEventProcessor() {
-        String scanId = idGenerator.generateRandomUniqueId();
+    public void testScanDataImportPersistFilePathsProcessor() {
+        List<MetaInfFileDetailsBO> metaInfFileBO = List.of(MetaInfFileDetailsBO.builder()
+                .fileName("topicListing.json")
+                .dataEntityType("topicListing")
+                .build());
 
         Exchange exchange = new DefaultExchange(camelContext);
-        exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
-        exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-        exchange.getIn().setHeader(RouteConstants.IS_DATA_IMPORT, true);
-        exchange.getIn().setBody(List.of(MetaInfFileDetailsBO.builder()
-                .fileName("foo.json")
-                .dataEntityType("bar")
-                .build()));
+        exchange.getIn().setBody(metaInfFileBO);
 
-        scanDataPublishImportScanEventProcessor.process(exchange);
+        when(idGenerator.generateRandomUniqueId())
+                .thenReturn("abc123");
+        when(manualImportDetailsService.save(any())).thenReturn(null);
+        when(manualImportFilesService.saveAll(any())).thenReturn(null);
+
+        scanDataImportPersistFilePathsProcessor.process(exchange);
 
         assertThatNoException();
 
         exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new Exception());
-        scanDataPublishImportScanEventProcessor.process(exchange);
+        scanDataImportPersistFilePathsProcessor.process(exchange);
 
         exception.expect(Exception.class);
     }
