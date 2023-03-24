@@ -11,6 +11,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
+import com.solace.maas.ep.event.management.agent.repository.messagingservice.ServiceAssociationsRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.AuthenticationDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ConnectionDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialDetailsEntity;
@@ -47,13 +48,16 @@ public class MessagingServiceDelegateServiceTests {
     private MessagingServiceEntityToEventConverter entityToEventConverter;
     @Mock
     private MessagingServiceRepository repository;
+    @Mock
+    private ServiceAssociationsRepository serviceAssociationsRepository;
 
     private MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
 
     @BeforeEach
     public void setUp() {
         messagingServiceDelegateService =
-                new MessagingServiceDelegateServiceImpl(repository, entityToEventConverter, eventToEntityConverter);
+                new MessagingServiceDelegateServiceImpl(repository, entityToEventConverter, eventToEntityConverter,
+                        serviceAssociationsRepository);
     }
 
     @Test

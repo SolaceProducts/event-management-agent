@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class ScanManager {
                        ScanService scanService, EventPortalProperties eventPortalProperties) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
-        this.runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -51,6 +52,13 @@ public class ScanManager {
 
         MessagingServiceRouteDelegate scanDelegate =
                 PluginLoader.findPlugin(messagingServiceEntity.getType());
+
+        Set<MessagingServiceEntity> messagingServiceEntitySet = messagingServiceDelegateService.getMessagingServicesRelations(messagingServiceId);
+        messagingServiceEntitySet.add(messagingServiceEntity);
+        List<MessagingServiceRouteDelegate> delegates =
+                messagingServiceEntitySet.stream()
+                        .map(messagingServiceEntity1 -> PluginLoader.findPlugin(messagingServiceEntity1.getType()))
+                        .collect(Collectors.toList());
 
         Objects.requireNonNull(scanDelegate,
                 String.format("Unable to find messaging service plugin for plugin type %s. Valid types are %s.",
@@ -74,10 +82,12 @@ public class ScanManager {
         List<String> brokerScanTypes = scanRequestBO.getScanTypes();
         List<RouteBundle> routes = brokerScanTypes.stream()
                 .distinct()
-                .flatMap(brokerScanType -> scanDelegate.generateRouteList(destinations, List.of(),
-                                brokerScanType, messagingServiceId)
-                        .stream())
-                .collect(Collectors.toUnmodifiableList());
+                .flatMap(brokerScanType -> delegates.stream()
+                        .map(delegate -> delegate.generateRouteList(destinations, List.of(),
+                                brokerScanType, messagingServiceId))
+                        .collect(Collectors.toList()).stream()
+                )
+                .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
 
         return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity, runtimeAgentId);
     }

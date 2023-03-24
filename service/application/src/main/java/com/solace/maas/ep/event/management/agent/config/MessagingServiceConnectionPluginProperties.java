@@ -5,21 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessagingServicePluginProperties implements Serializable {
-    private String id;
-
+public class MessagingServiceConnectionPluginProperties {
     private String name;
 
-    private String type;
+    private String url;
 
-    private List<String> relatedServices;
+    private String messagingServiceId;
 
-    private List<MessagingServiceConnectionPluginProperties> connections;
+    private List<AuthenticationDetailsPluginProperties> authentication;
+
+    private List<PluginProperties> properties;
 }

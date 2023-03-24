@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaScanType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.delegate.base.MessagingServiceRouteDelegateImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -14,16 +15,25 @@ import java.util.List;
 @ExcludeFromJacocoGeneratedReport
 @SuppressWarnings("CPD-START")
 @Component("kafkaRouteDelegateImpl")
+@Slf4j // todo remove this @Slf4j
 public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
     public KafkaRouteDelegateImpl() {
         super("KAFKA");
     }
 
+    @Override
     public List<RouteBundle> generateRouteList(List<RouteBundle> destinations, List<RouteBundle> recipients,
                                                String scanType, String messagingServiceId) {
         List<RouteBundle> result = new ArrayList<>();
 
-        final KafkaScanType kafkaScanType = KafkaScanType.valueOf(scanType);
+        KafkaScanType kafkaScanType = null;
+        try {
+            kafkaScanType = KafkaScanType.valueOf(scanType);
+        } catch (Exception e) {
+            log.info("moodi xxx2 : e {}", e);
+            return List.of();
+        }
+
 
         switch (kafkaScanType) {
             case KAFKA_TOPIC_LISTING:

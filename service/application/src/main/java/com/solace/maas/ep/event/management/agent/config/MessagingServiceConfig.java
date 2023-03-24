@@ -2,9 +2,8 @@ package com.solace.maas.ep.event.management.agent.config;
 
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
-import com.solace.maas.ep.event.management.agent.service.MessagingServiceEntityToEventConverter;
+import com.solace.maas.ep.event.management.agent.service.MessagingServicePluginPropertyToEventConverter;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -27,8 +26,8 @@ import java.util.stream.Collectors;
 @Profile("!TEST")
 public class MessagingServiceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
-    private List<MessagingServiceEntity> messagingServices;
-    private final MessagingServiceEntityToEventConverter entityToEventConverter;
+    private List<MessagingServicePluginProperties> messagingServices;
+    private final MessagingServicePluginPropertyToEventConverter configToEventConverter;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -36,12 +35,12 @@ public class MessagingServiceConfig implements ApplicationRunner {
             log.info(
                     String.format("Creating messaging service(s): [%s].",
                             messagingServices.stream()
-                                    .map(MessagingServiceEntity::getName)
+                                    .map(MessagingServicePluginProperties::getName)
                                     .collect(Collectors.joining("],[")))
             );
 
             List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
-                    .map(entityToEventConverter::convert)
+                    .map(configToEventConverter::convert)
                     .collect(Collectors.toUnmodifiableList());
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
@@ -49,6 +48,9 @@ public class MessagingServiceConfig implements ApplicationRunner {
                             log.info("Created [{}] Messaging Service with id: [{}] and name: [{}].",
                                     messagingServiceEntity.getType(),
                                     messagingServiceEntity.getId(), messagingServiceEntity.getName()));
+
+            messagingServiceDelegateService.addMessagingServicesRelations(messagingServices);
+
         } else {
             log.info("No Messaging Service(s) created.");
         }
