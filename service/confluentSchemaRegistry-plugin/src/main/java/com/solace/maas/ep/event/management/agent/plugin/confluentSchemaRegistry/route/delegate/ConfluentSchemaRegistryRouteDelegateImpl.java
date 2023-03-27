@@ -30,7 +30,6 @@ public class ConfluentSchemaRegistryRouteDelegateImpl extends MessagingServiceRo
         try {
             confluentSchemaRegistryScanType = ConfluentSchemaRegistryScanType.valueOf(scanType);
         } catch (Exception e) {
-            log.info("moodi xxx1 : e {}", e);
             return List.of();
         }
 

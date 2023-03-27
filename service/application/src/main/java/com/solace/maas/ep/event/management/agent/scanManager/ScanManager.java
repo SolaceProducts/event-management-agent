@@ -58,6 +58,7 @@ public class ScanManager {
         List<MessagingServiceRouteDelegate> delegates =
                 messagingServiceEntitySet.stream()
                         .map(messagingServiceEntity1 -> PluginLoader.findPlugin(messagingServiceEntity1.getType()))
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 
         Objects.requireNonNull(scanDelegate,
@@ -85,6 +86,8 @@ public class ScanManager {
                 .flatMap(brokerScanType -> delegates.stream()
                         .map(delegate -> delegate.generateRouteList(destinations, List.of(),
                                 brokerScanType, messagingServiceId))
+                        .filter(Objects::nonNull)
+                        .filter(list -> !list.isEmpty())
                         .collect(Collectors.toList()).stream()
                 )
                 .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());

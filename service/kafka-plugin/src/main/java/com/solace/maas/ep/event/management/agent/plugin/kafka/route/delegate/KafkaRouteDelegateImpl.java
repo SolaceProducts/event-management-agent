@@ -30,7 +30,6 @@ public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
         try {
             kafkaScanType = KafkaScanType.valueOf(scanType);
         } catch (Exception e) {
-            log.info("moodi xxx2 : e {}", e);
             return List.of();
         }
 
