@@ -17,7 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -55,12 +57,13 @@ public class ScanManager {
 
         Set<MessagingServiceEntity> messagingServiceEntitySet = messagingServiceDelegateService.getMessagingServicesRelations(messagingServiceId);
         messagingServiceEntitySet.add(messagingServiceEntity);
-        List<MessagingServiceRouteDelegate> delegates =
+        Map<String, MessagingServiceRouteDelegate> delegates =
                 messagingServiceEntitySet.stream()
-                        .map(messagingServiceEntity1 -> PluginLoader.findPlugin(messagingServiceEntity1.getType()))
+                        .map(messagingServiceEntity1 ->
+                                new AbstractMap.SimpleEntry<>(messagingServiceEntity1.getId(), PluginLoader.findPlugin(messagingServiceEntity1.getType())))
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-
+                        .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+        
         Objects.requireNonNull(scanDelegate,
                 String.format("Unable to find messaging service plugin for plugin type %s. Valid types are %s.",
                         messagingServiceEntity.getType(),
@@ -83,9 +86,9 @@ public class ScanManager {
         List<String> brokerScanTypes = scanRequestBO.getScanTypes();
         List<RouteBundle> routes = brokerScanTypes.stream()
                 .distinct()
-                .flatMap(brokerScanType -> delegates.stream()
-                        .map(delegate -> delegate.generateRouteList(destinations, List.of(),
-                                brokerScanType, messagingServiceId))
+                .flatMap(brokerScanType -> delegates.entrySet().stream()
+                        .map(e -> e.getValue().generateRouteList(destinations, List.of(),
+                                brokerScanType, e.getKey()))
                         .filter(Objects::nonNull)
                         .filter(list -> !list.isEmpty())
                         .collect(Collectors.toList()).stream()
