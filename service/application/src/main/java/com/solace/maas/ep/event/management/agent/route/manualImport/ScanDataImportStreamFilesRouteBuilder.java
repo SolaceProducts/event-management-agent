@@ -11,6 +11,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
+
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
 public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
@@ -36,7 +38,7 @@ public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
                 .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
 
                 .pollEnrich()
-                .simple("file://data_collection/import/unzipped_data_collection/${header.IMPORT_ID}?" +
+                .simple("file://data_collection/import/unzipped_data_collection/${header." + IMPORT_ID + "}?" +
                         "fileName=${body.fileName}&noop=true&idempotent=false")
                 .aggregationStrategy(new FileParseAggregationStrategy())
                 .process(scanDataImportPersistScanFilesProcessor)

@@ -28,4 +28,5 @@ public class RouteConstants {
     public static final String SCAN_DATA_STATUS_MESSAGE = "SCAN_DATA_STATUS_MESSAGE";
 
     public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
+    public static final String IMPORT_ID = "IMPORT_ID";
 }
