@@ -24,22 +24,22 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "plugins")
 @Slf4j
 @Profile("!TEST")
-public class MessagingServiceConfig implements ApplicationRunner {
+public class ResourceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
-    private List<MessagingServicePluginProperties> messagingServices;
+    private List<MessagingServicePluginProperties> resources;
     private final MessagingServicePluginPropertyToEventConverter configToEventConverter;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (Objects.nonNull(messagingServices)) {
+        if (Objects.nonNull(resources)) {
             log.info(
                     String.format("Creating messaging service(s): [%s].",
-                            messagingServices.stream()
+                            resources.stream()
                                     .map(MessagingServicePluginProperties::getName)
                                     .collect(Collectors.joining("],[")))
             );
 
-            List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
+            List<MessagingServiceEvent> messagingServiceEvents = resources.stream()
                     .map(configToEventConverter::convert)
                     .collect(Collectors.toUnmodifiableList());
 
@@ -49,7 +49,7 @@ public class MessagingServiceConfig implements ApplicationRunner {
                                     messagingServiceEntity.getType(),
                                     messagingServiceEntity.getId(), messagingServiceEntity.getName()));
 
-            messagingServiceDelegateService.addMessagingServicesRelations(messagingServices);
+            messagingServiceDelegateService.addMessagingServicesRelations(resources);
 
         } else {
             log.info("No Messaging Service(s) created.");
