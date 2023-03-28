@@ -28,6 +28,7 @@ At this stage (September 2022), the Event Management Agent is still in an active
 * Users can discover Solace PubSub+ and Apache Kafka brokers event flow data
     - Users can discover Solace PubSub+ queues and subscriptions
     - Users can discover Apache Kafka topics and consumer groups
+    - Users can discover Confluent Schema Registry schemas
 * Users get discovered data in the form of JSON files separated by entity types
 * The Event Management Agent architecture is currently in the form of Java packages
 
@@ -183,10 +184,10 @@ The Event Management Agent comes with the following event or message broker plug
 
 * Apache Kafka
 * Solace PubSub+
-* Confluent
+* Confluent Schema Registry
 * MSK
 
-The default application.yml provides various plugin examples. For KAFKA, the properties section under credentials is
+The default application.yml provides various plugin examples. For Kafka, the properties section under credentials is
 passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
 
 If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. Two ways is either via environment
@@ -299,4 +300,4 @@ the agent framework then please contribute!
 
 ## Contributors
 
-@gregmeldrum @slunelsolace @AHabes @MichaelDavisSolace @helrac
+@gregmeldrum @slunelsolace @AHabes @MichaelDavisSolace @helrac @moodiRealist
