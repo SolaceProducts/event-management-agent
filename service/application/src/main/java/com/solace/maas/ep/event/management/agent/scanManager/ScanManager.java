@@ -63,7 +63,7 @@ public class ScanManager {
                                 new AbstractMap.SimpleEntry<>(messagingServiceEntity1.getId(), PluginLoader.findPlugin(messagingServiceEntity1.getType())))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
-        
+
         Objects.requireNonNull(scanDelegate,
                 String.format("Unable to find messaging service plugin for plugin type %s. Valid types are %s.",
                         messagingServiceEntity.getType(),
