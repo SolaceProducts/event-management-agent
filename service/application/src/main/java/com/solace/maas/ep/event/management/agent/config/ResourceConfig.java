@@ -30,7 +30,7 @@ public class ResourceConfig implements ApplicationRunner {
     private final MessagingServicePluginPropertyToEventConverter configToEventConverter;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         if (Objects.nonNull(resources)) {
             log.info(
                     String.format("Creating messaging service(s): [%s].",
