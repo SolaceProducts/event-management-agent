@@ -24,7 +24,7 @@ import java.util.function.Function;
 @Slf4j
 @Getter
 public class ConfluentSchemaRegistryHttp {
-    private final static String GET_ALL_SCHEMAS = "/schemas";
+    private static final String GET_ALL_SCHEMAS = "/schemas";
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
@@ -37,16 +37,14 @@ public class ConfluentSchemaRegistryHttp {
     public List<ConfluentSchemaRegistrySchemaEvent> getSchemas() throws JsonProcessingException {
         Map<String, String> substitutionMap = new HashMap<>();
         String response = getResponse(createUriBuilderFunction(GET_ALL_SCHEMAS, substitutionMap));
-        List<ConfluentSchemaRegistrySchemaEvent> confluentSchemaRegistrySchemaEventList =
-                objectMapper.readValue(response, new TypeReference<>() {
-                });
-        return confluentSchemaRegistrySchemaEventList;
+        return objectMapper.readValue(response, new TypeReference<>() {
+        });
     }
 
     private Function<UriBuilder, URI> createUriBuilderFunction(String uriPath,
                                                                Map<String, String> substitutionMap) {
         URI uri = getUri();
-        return (uriBuilder) -> uriBuilder
+        return uriBuilder -> uriBuilder
                 .path(uriPath)
                 .host(uri.getHost())
                 .port(uri.getPort())
@@ -55,7 +53,7 @@ public class ConfluentSchemaRegistryHttp {
     }
 
     private URI getUri() {
-        URI uri = null;
+        URI uri;
         try {
             uri = new URI(httpClient.getConnectionUrl());
         } catch (URISyntaxException e) {
@@ -66,7 +64,7 @@ public class ConfluentSchemaRegistryHttp {
     }
 
     private String getResponse(Function<UriBuilder, URI> uriMethod) {
-        String response = httpClient.getWebClient()
+        return httpClient.getWebClient()
                 .get()
                 .uri(uriMethod)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -74,7 +72,5 @@ public class ConfluentSchemaRegistryHttp {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-
-        return response;
     }
 }
