@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class ConfluentSchemaRegistrySchemaProcessor extends ResultProcessorImpl<List<ConfluentSchemaRegistrySchemaEvent>, Void> {
+public class ConfluentSchemaRegistrySchemaProcessor extends ResultProcessorImpl<List<ConfluentSchemaRegistrySchemaEvent>, Object> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
 
     @Autowired
@@ -24,7 +24,7 @@ public class ConfluentSchemaRegistrySchemaProcessor extends ResultProcessorImpl<
 
     @Override
     @SuppressWarnings("PMD")
-    public List<ConfluentSchemaRegistrySchemaEvent> handleEvent(Map<String, Object> properties, Void body) throws Exception {
+    public List<ConfluentSchemaRegistrySchemaEvent> handleEvent(Map<String, Object> properties, Object obj) throws Exception {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
         ConfluentSchemaRegistryHttp confluentSchemaRegistryHttp =
