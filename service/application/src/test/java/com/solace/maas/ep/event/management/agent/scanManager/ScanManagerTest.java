@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.scanManager;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.route.delegate.ConfluentSchemaRegistryRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate.KafkaRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.route.delegate.DataCollectionFileWriterDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
@@ -17,9 +18,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -28,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class ScanManagerTest {
+class ScanManagerTest {
 
     @Mock
     EventPortalProperties eventPortalProperties;
@@ -42,9 +46,12 @@ public class ScanManagerTest {
     @InjectMocks
     ScanManager scanManager;
 
+    @Autowired
+    ConfluentSchemaRegistryRouteDelegateImpl confluentSchemaRegistryRouteDelegate;
+
     @Test
     @SneakyThrows
-    public void testScanManagerExceptions() {
+    void testScanManagerExceptions() {
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id("id")
                 .name("name")
@@ -74,33 +81,46 @@ public class ScanManagerTest {
 
     @Test
     @SneakyThrows
-    public void testScanManager() {
+    void testScanManager() {
         String messagingServiceId = "messagingServiceId";
+        String confluentSchemaRegistryId = "confluentId";
         ScanRequestBO scanRequestBO =
-                new ScanRequestBO(messagingServiceId, "scanId", List.of("KAFKA_ALL"), List.of("FILE_WRITER"));
+                new ScanRequestBO(messagingServiceId, "scanId", List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
+                        List.of("FILE_WRITER"));
 
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id(messagingServiceId)
-                .name("name")
+                .name("kafka-name")
                 .type("kafka")
                 .connections(List.of())
                 .build();
 
-        KafkaRouteDelegateImpl scanDelegate =
-                mock(KafkaRouteDelegateImpl.class);
+        MessagingServiceEntity confluentSchemaRegistryEntity = MessagingServiceEntity.builder()
+                .id(confluentSchemaRegistryId)
+                .name("confluent-name")
+                .type("confluent_schema_registry")
+                .connections(List.of())
+                .build();
 
+        KafkaRouteDelegateImpl kafkaRouteDelegate =
+                mock(KafkaRouteDelegateImpl.class);
         DataCollectionFileWriterDelegateImpl dataCollectionFileWriterDelegate =
                 mock(DataCollectionFileWriterDelegateImpl.class);
 
         when(messagingServiceDelegateService.getMessagingServiceById(messagingServiceId))
                 .thenReturn(messagingServiceEntity);
+        when(messagingServiceDelegateService.getMessagingServicesRelations(messagingServiceId))
+                .thenReturn(new HashSet<>(Arrays.asList(confluentSchemaRegistryEntity)));
 
         List<RouteBundle> destinations = getFileWriterDestination(messagingServiceId);
         List<RouteBundle> routes = getKafkaRoutes(destinations, messagingServiceId);
 
         try (MockedStatic<PluginLoader> pluginLoaderMockedStatic = Mockito.mockStatic(PluginLoader.class)) {
             pluginLoaderMockedStatic.when(() -> PluginLoader.findPlugin("kafka"))
-                    .thenReturn(scanDelegate);
+                    .thenReturn(kafkaRouteDelegate);
+            pluginLoaderMockedStatic.when(() -> PluginLoader.findPlugin("confluent_schema_registry"))
+                    .thenReturn(confluentSchemaRegistryRouteDelegate);
+
             pluginLoaderMockedStatic.when(() -> PluginLoader.findPlugin("FILE_WRITER"))
                     .thenReturn(dataCollectionFileWriterDelegate);
             when(dataCollectionFileWriterDelegate.generateRouteList(
@@ -109,7 +129,7 @@ public class ScanManagerTest {
                     scanRequestBO.getScanTypes().stream().findFirst().orElseThrow(),
                     messagingServiceId))
                     .thenReturn(destinations);
-            when(scanDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
+            when(kafkaRouteDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
             when(scanService.singleScan(List.of(), "groupId", "scanId", mock(MessagingServiceEntity.class),
                     "runtimeAgent1"))
