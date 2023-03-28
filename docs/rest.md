@@ -14,6 +14,10 @@ clients and subscriptions.
 
 The Kafka Confluent plugin uses the Kafka broker admin APIs to learn about topics and consumer groups.
 
+## Confluent Schema Registry
+
+The Confluent Schema Registry plugin uses the ConfluentSchemaRegistry API to learn about schemas.
+
 ## Initiating a scan request
 
 Download the configuration file generated in the Event Portal or update the `plugins` section of the
@@ -23,7 +27,7 @@ example of exporting these values appears in the `Environment Variables` section
 
 The default application.yml file also includes examples of the plugin configurations.
 
-#### SEMP Secured Connection
+### SEMP Secured Connection
 
 The following environment variables need to be exported:
 
@@ -33,9 +37,9 @@ The following environment variables need to be exported:
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id: <Solace messaging service id>
-      type: SOLACE
+      type: solace
       name: <Solace messaging service name>
       connections:
         - name: <Connection name>
@@ -58,20 +62,20 @@ plugins:
               value: 100
 ```
 
-#### Kafka Management Connection - No Authentication
+### Kafka Management Connection - No Authentication
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id: <Kafka messaging service id>
       name: <Kafka messaging service name>
-      type: KAFKA
+      type: kafka
       connections:
         - name: <Kafka connection name>
           url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:12091,kafka2:12092}
 ```
 
-#### Kafka Management Connection - MTLS
+### Kafka Management Connection - MTLS
 
 The following environment variables need to be exported:
 
@@ -83,10 +87,10 @@ The following environment variables need to be exported:
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id: <Kafka messaging service id>
       name: <Kafka messaging service name>
-      type: KAFKA
+      type: kafka
       connections:
         - name: <Kafka connection name>
           url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:11091,kafka2:11092}
@@ -109,7 +113,7 @@ plugins:
                       value: ${KEY_PASSWORD}
 ```
 
-#### Kafka Management Connection - SASL SCRAM 256
+### Kafka Management Connection - SASL SCRAM 256
 
 The following environment variables need to be exported (You can also use environment variables for the JAAS config
 username and password):
@@ -119,10 +123,10 @@ username and password):
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id: <Kafka messaging service id>
       name: <Kafka messaging service name>
-      type: KAFKA
+      type: kafka
       connections:
         - name: <Kafka connection name>
           url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:14091,kafka2:14092}
@@ -143,16 +147,16 @@ plugins:
                       value: SCRAM-SHA-256
 ```
 
-#### Kafka Management Connection - SASL Plain
+### Kafka Management Connection - SASL Plain
 
 You can also use environment variables for the JAAS config username and password.
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id: <Kafka messaging service id>
       name: <Kafka messaging service name>
-      type: KAFKA
+      type: kafka
       connections:
         - name: <Kafka connection name>
           url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9092}
@@ -169,7 +173,7 @@ plugins:
                       value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
 ```
 
-#### Kafka Management Connection - SASL Plain over SSL
+### Kafka Management Connection - SASL Plain over SSL
 
 The following environment variable needs to be exported (You can also use environment variables for the JAAS config
 username and password):
@@ -178,10 +182,10 @@ username and password):
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id:  <Kafka messaging service id>
       name: <Kafka messaging service name>
-      type: KAFKA
+      type: kafka
       connections:
         - name: <Kafka connection name>
           url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:13091,kafka2:13092}
@@ -200,7 +204,7 @@ plugins:
                       value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
 ```
 
-#### Kafka Management Connection - AWS IAM
+### Kafka Management Connection - AWS IAM
 
 The following environment variable needs to be exported:
 
@@ -208,10 +212,10 @@ The following environment variable needs to be exported:
 
 ```
 plugins:
-  messagingServices:
+  resources:
     - id: <Kafka messaging service id>
       name: <Kafka messaging service name>
-      type: KAFKA
+      type: kafka
       connections:
         - name: <Kafka connection name>
           url: ${KAFKA_BOOTSTRAP_SERVERS:awsservers:9098}
@@ -234,7 +238,21 @@ plugins:
                       value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
 ```
 
-#### Environment Variables
+### Confluent Schema Registry Connection - No Authentication
+
+```
+plugins:
+  resources:
+    - id: <Confluent Schema Registry resource id>
+      name: <Confluent Schema Registry name>
+      type: confluent_schema_registry
+      relatedServices: list of kafka services linked to this schema registry, example: [ id1,id2,id3 ]
+      connections:
+        - name: <Confluent Schema Registry connection name>
+          url: <host and port> example:  http://<host>:<port>
+```
+
+### Environment Variables
 
 When using environment variables, they must all be exported into the environment, otherwise the value will be empty.
 Solace recommends storing usernames and passwords in environment variables to avoid storing them in the Event Portal.
@@ -247,7 +265,7 @@ export SOLACE_SEMP_PASSWORD=solace-password
 
 KAFKA_BOOTSTRAP_SERVERS can optionally be overridden
 
-### Building And Executing The EMA
+## Building And Executing The EMA
 
 Rebuild the Event Management Agent:
 
@@ -261,7 +279,7 @@ Re-run the agent:
 java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
 ```
 
-#### Running Scans
+# Running Scans
 
 ## Scan Types
 
@@ -284,6 +302,9 @@ Kafka:
 - KAFKA_TOPIC_CONFIGURATION_FULL
 - KAFKA_TOPIC_LISTING
 - KAFKA_TOPIC_OVERRIDE_CONFIGURATION
+
+Confuelt Schema Registry:
+- CONFLUENT_SCHEMA_REGISTRY_SCHEMA
 
 ## Destinations
 
