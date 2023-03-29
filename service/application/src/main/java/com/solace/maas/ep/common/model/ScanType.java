@@ -1,6 +1,7 @@
 package com.solace.maas.ep.common.model;
 
 public enum ScanType {
+    CONFLUENT_SCHEMA_REGISTRY_SCHEMA,
     KAFKA_ALL,
     KAFKA_BROKER_CONFIGURATION,
     KAFKA_CLUSTER_CONFIGURATION,
@@ -15,5 +16,5 @@ public enum ScanType {
     SOLACE_ALL,
     SOLACE_QUEUE_CONFIG,
     SOLACE_QUEUE_LISTING,
-    SOLACE_SUBSCRIPTION_CONFIG;
+    SOLACE_SUBSCRIPTION_CONFIG
 }
