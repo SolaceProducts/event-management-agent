@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.config.MessagingServicePluginProperties;
 import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
@@ -18,6 +19,8 @@ import com.solace.maas.ep.event.management.agent.repository.model.mesagingservic
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialOperationsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.CredentialPropertiesEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsCompositeKey;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsEntity;
 import net.logstash.logback.encoder.org.apache.commons.lang3.ArrayUtils;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -191,6 +195,72 @@ public class MessagingServiceDelegateServiceTests {
 
         assertThat(errorMessage)
                 .isEqualTo("Could not find connection details for [KAFKA] messaging service with name: [service1], id: [testService].");
+    }
+
+    @Test
+    void testAddMessagingServicesRelations() {
+        MessagingServicePluginProperties messagingServicePluginProperties = MessagingServicePluginProperties.builder()
+                .id("testService")
+                .name("service1")
+                .relatedServices(List.of("a", "b"))
+                .type(MessagingServiceType.KAFKA.name())
+                .build();
+
+        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
+                .name("service1")
+                .id("testService")
+                .type(MessagingServiceType.KAFKA.name())
+                .build();
+
+        when(repository.findById(any(String.class)))
+                .thenReturn(Optional.of(messagingServiceEntity));
+
+        messagingServiceDelegateService.addMessagingServicesRelations(List.of(messagingServicePluginProperties));
+
+        assertThatNoException();
+    }
+
+    @Test
+    void testGetMessagingServicesRelations() {
+
+        String serviceId = "serviceId";
+
+        MessagingServiceEntity serviceEntity = MessagingServiceEntity.builder()
+                .name("service1")
+                .id(serviceId)
+                .type(MessagingServiceType.KAFKA.name())
+                .build();
+
+        MessagingServiceEntity relatedEntity = MessagingServiceEntity.builder()
+                .name("service1" + "related")
+                .id(serviceId + "related")
+                .type(MessagingServiceType.CONFLUENT_SCHEMA_REGISTRY.name())
+                .build();
+
+        ServiceAssociationsEntity parentServiceAssociationsEntity = ServiceAssociationsEntity.builder()
+                .serviceAssociationsId(ServiceAssociationsCompositeKey.builder()
+                        .parent(serviceEntity)
+                        .child(relatedEntity)
+                        .build())
+                .build();
+
+        ServiceAssociationsEntity childServiceAssociationsEntity = ServiceAssociationsEntity.builder()
+                .serviceAssociationsId(ServiceAssociationsCompositeKey.builder()
+                        .parent(relatedEntity)
+                        .child(serviceEntity)
+                        .build())
+                .build();
+
+        when(serviceAssociationsRepository.findByServiceAssociationsId_Parent_Id(serviceId))
+                .thenReturn(List.of(parentServiceAssociationsEntity));
+        when(serviceAssociationsRepository.findByServiceAssociationsId_Child_Id(serviceId))
+                .thenReturn(List.of(childServiceAssociationsEntity));
+
+        Set<MessagingServiceEntity> messagingServiceEntitySet = messagingServiceDelegateService.getMessagingServicesRelations(serviceId);
+
+        assertThat(messagingServiceEntitySet).hasSize(1);
+        assertThat(messagingServiceEntitySet).contains(relatedEntity);
+        assertThatNoException();
     }
 
 }
