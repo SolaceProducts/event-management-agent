@@ -21,7 +21,7 @@ The Confluent Schema Registry plugin uses the ConfluentSchemaRegistry API to lea
 ## Initiating a scan request
 
 Download the configuration file generated in the Event Portal or update the `plugins` section of the
-`service/application/src/main/resources/application.yml` file with the details of the messaging service to scan. Values
+`service/application/src/main/resources/application.yml` file with the details of the resource to scan. Values
 that include `${SOME_VALUE}` are environment variables and should be exported in the shell before launching the EMA. An
 example of exporting these values appears in the `Environment Variables` section.
 
@@ -38,9 +38,9 @@ The following environment variables need to be exported:
 ```
 plugins:
   resources:
-    - id: <Solace messaging service id>
+    - id: <Solace event broker id>
       type: solace
-      name: <Solace messaging service name>
+      name: <Solace event broker name>
       connections:
         - name: <Connection name>
           url: <secure host and port> example:  https://<host>:<port>, https://xyz.messaging.solace.cloud:1943 
@@ -67,8 +67,8 @@ plugins:
 ```
 plugins:
   resources:
-    - id: <Kafka messaging service id>
-      name: <Kafka messaging service name>
+    - id: <Kafka event broker id>
+      name: <Kafka event broker name>
       type: kafka
       connections:
         - name: <Kafka connection name>
@@ -88,8 +88,8 @@ The following environment variables need to be exported:
 ```
 plugins:
   resources:
-    - id: <Kafka messaging service id>
-      name: <Kafka messaging service name>
+    - id: <Kafka event broker id>
+      name: <Kafka event broker name>
       type: kafka
       connections:
         - name: <Kafka connection name>
@@ -124,8 +124,8 @@ username and password):
 ```
 plugins:
   resources:
-    - id: <Kafka messaging service id>
-      name: <Kafka messaging service name>
+    - id: <Kafka event broker id>
+      name: <Kafka event broker name>
       type: kafka
       connections:
         - name: <Kafka connection name>
@@ -154,8 +154,8 @@ You can also use environment variables for the JAAS config username and password
 ```
 plugins:
   resources:
-    - id: <Kafka messaging service id>
-      name: <Kafka messaging service name>
+    - id: <Kafka event broker id>
+      name: <Kafka event broker name>
       type: kafka
       connections:
         - name: <Kafka connection name>
@@ -183,8 +183,8 @@ username and password):
 ```
 plugins:
   resources:
-    - id:  <Kafka messaging service id>
-      name: <Kafka messaging service name>
+    - id:  <Kafka event broker id>
+      name: <Kafka event broker name>
       type: kafka
       connections:
         - name: <Kafka connection name>
@@ -213,8 +213,8 @@ The following environment variable needs to be exported:
 ```
 plugins:
   resources:
-    - id: <Kafka messaging service id>
-      name: <Kafka messaging service name>
+    - id: <Kafka event broker id>
+      name: <Kafka event broker name>
       type: kafka
       connections:
         - name: <Kafka connection name>
@@ -316,18 +316,18 @@ data to Event Portal.
 To scan a Solace PubSub+ broker:
 
 ```
-curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/messagingServices/{messaging service id}/scan -d '{"scanTypes": ["SOLACE_ALL"], "destinations":["FILE_WRITER"]}'
+curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/{resource id}/scan -d '{"scanTypes": ["SOLACE_ALL"], "destinations":["FILE_WRITER"]}'
 ```
 
-* PubSub+ messaging service with id 'y80bvdnyokl'
+* PubSub+ event broker with id 'y80bvdnyokl'
 
 To scan an Apache Kafka broker:
 
 ```
-curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/messagingServices/{messaging service id}/scan -d '{"scanTypes": ["KAKFA_ALL"], "destinations":["FILE_WRITER"]}'
+curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/{resource id}/scan -d '{"scanTypes": ["KAKFA_ALL"], "destinations":["FILE_WRITER"]}'
 ```
 
-* Kafka messaging service with id `bcvch3xfrq0`
+* Kafka event broker with id `bcvch3xfrq0`
 
 A scan's output files can be found under 'service/data_collection/[group id]/[scan id]/'
 
@@ -391,7 +391,7 @@ Output
 1. Export endpoint:
 
 ```
-curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/messagingServices/export/fi8q4sjotjf/zip --output {file_name.zip}
+curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/resources/export/fi8q4sjotjf/zip --output {file_name.zip}
 ```
 
 Output
@@ -405,6 +405,6 @@ A new file with the following naming convention
 2. Import endpoint:
 
 ```
-curl --location --request POST 'http://localhost:8180/api/v2/ema/messagingServices/import' \
+curl --location --request POST 'http://localhost:8180/api/v2/ema/resources/import' \
 --form 'file=@"{full path to the .zip file}'
 ```

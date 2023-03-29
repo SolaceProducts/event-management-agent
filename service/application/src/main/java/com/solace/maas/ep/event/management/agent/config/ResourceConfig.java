@@ -33,7 +33,7 @@ public class ResourceConfig implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         if (Objects.nonNull(resources)) {
             log.info(
-                    String.format("Creating messaging service(s): [%s].",
+                    String.format("Creating resource(s): [%s].",
                             resources.stream()
                                     .map(MessagingServicePluginProperties::getName)
                                     .collect(Collectors.joining("],[")))
@@ -45,14 +45,14 @@ public class ResourceConfig implements ApplicationRunner {
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
                     .forEach(messagingServiceEntity ->
-                            log.info("Created [{}] Messaging Service with id: [{}] and name: [{}].",
+                            log.info("Created [{}] resource with id: [{}] and name: [{}].",
                                     messagingServiceEntity.getType(),
                                     messagingServiceEntity.getId(), messagingServiceEntity.getName()));
 
             messagingServiceDelegateService.addMessagingServicesRelations(resources);
 
         } else {
-            log.info("No Messaging Service(s) created.");
+            log.info("No resource(s) created.");
         }
     }
 }

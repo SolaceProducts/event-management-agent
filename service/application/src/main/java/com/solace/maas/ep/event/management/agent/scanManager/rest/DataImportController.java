@@ -16,7 +16,7 @@ public interface DataImportController {
 
     @Operation(
             summary = "Imports data collection files",
-            description = "Use this API to trigger manual import of data collection for the specified messaging service.",
+            description = "Use this API to trigger manual import of data collection for the specified resource.",
             parameters = {
                     @Parameter(name = "file", description = "The scan data zip file to be imported.", in = ParameterIn.QUERY)
             },
@@ -36,7 +36,7 @@ public interface DataImportController {
 
     @Operation(
             summary = "Zips data collection files",
-            description = "Use this API to zip the data collection files for the specified messaging service.",
+            description = "Use this API to zip the data collection files for the specified resource.",
             parameters = {
                     @Parameter(name = "scanId", description = "The ID of the scan request.", required = true),
             },
