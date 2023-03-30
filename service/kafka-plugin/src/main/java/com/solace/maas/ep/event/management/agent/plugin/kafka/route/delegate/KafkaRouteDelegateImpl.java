@@ -19,11 +19,18 @@ public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
         super("KAFKA");
     }
 
+    @Override
     public List<RouteBundle> generateRouteList(List<RouteBundle> destinations, List<RouteBundle> recipients,
                                                String scanType, String messagingServiceId) {
         List<RouteBundle> result = new ArrayList<>();
 
-        final KafkaScanType kafkaScanType = KafkaScanType.valueOf(scanType);
+        KafkaScanType kafkaScanType = null;
+        try {
+            kafkaScanType = KafkaScanType.valueOf(scanType);
+        } catch (Exception e) {
+            return List.of();
+        }
+
 
         switch (kafkaScanType) {
             case KAFKA_TOPIC_LISTING:

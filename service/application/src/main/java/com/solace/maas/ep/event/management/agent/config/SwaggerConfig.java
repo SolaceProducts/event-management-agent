@@ -40,7 +40,7 @@ public class SwaggerConfig {
 
     private List<Tag> getAllTags() {
         return List.of(
-                createTagFromName(SwaggerControllerTags.MESSAGING_SERVICES_TAG)
+                createTagFromName(SwaggerControllerTags.RESOURCES_TAG)
         );
     }
 

@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.config;
 
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessagingServicePluginProperties implements Serializable {
-    List<MessagingServiceEntity> messagingServices;
+    private String id;
+
+    private String name;
+
+    private String type;
+
+    private List<String> relatedServices;
+
+    private List<MessagingServiceConnectionPluginProperties> connections;
 }

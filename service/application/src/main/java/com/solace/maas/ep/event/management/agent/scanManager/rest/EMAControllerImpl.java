@@ -42,8 +42,8 @@ public class EMAControllerImpl implements EMAController {
     }
 
     @Override
-    @PostMapping(value = "/{messagingServiceId}/scan")
-    public ResponseEntity<String> scan(@PathVariable(value = "messagingServiceId") String messagingServiceId,
+    @PostMapping(value = "/{resourceId}/scan")
+    public ResponseEntity<String> scan(@PathVariable(value = "resourceId") String messagingServiceId,
                                        @RequestBody @Valid ScanRequestDTO body) {
         try {
             ScanRequestBO scanRequestBO = scanRequestMapper.map(body);

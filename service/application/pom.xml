@@ -158,6 +158,11 @@
             <artifactId>local-storage-plugin</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.solace.maas.plugin.confluentSchemaRegistry</groupId>
+            <artifactId>confluentSchemaRegistry-plugin</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
         <!-- for testing -->
         <dependency>
@@ -222,7 +227,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
             <!-- Installer Package -->
-             <plugin>
+            <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
                 <executions>

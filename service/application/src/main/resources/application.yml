@@ -66,7 +66,15 @@ eventPortal:
 # Below is an example of how to set up messaging service configuration in the application.yml file.
 
 #plugins:
-#  messagingServices:
+#  resources:
+#    # Confluent Schema Registry example
+#    - id: someConfluentId
+#      name: no auth confluent example
+#      type: confluent_schema_registry
+#      relatedServices: [ id1,id2,id3 ]
+#      connections:
+#        - name: myConfluentNoAuth
+#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
 #    # Solace example
 #    - id: solaceDefaultService
 #      type: SOLACE

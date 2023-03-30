@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,4 +41,21 @@ public class MessagingServiceEntity implements Serializable {
     @ToString.Exclude
     @OneToMany(mappedBy = "messagingService", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<ScanEntity> scanEntities;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MessagingServiceEntity that = (MessagingServiceEntity) o;
+        return getId().equals(that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

@@ -2,9 +2,8 @@ package com.solace.maas.ep.event.management.agent.config;
 
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
-import com.solace.maas.ep.event.management.agent.service.MessagingServiceEntityToEventConverter;
+import com.solace.maas.ep.event.management.agent.service.MessagingServicePluginPropertyToEventConverter;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -25,32 +24,35 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "plugins")
 @Slf4j
 @Profile("!TEST")
-public class MessagingServiceConfig implements ApplicationRunner {
+public class ResourceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
-    private List<MessagingServiceEntity> messagingServices;
-    private final MessagingServiceEntityToEventConverter entityToEventConverter;
+    private List<MessagingServicePluginProperties> resources;
+    private final MessagingServicePluginPropertyToEventConverter configToEventConverter;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-        if (Objects.nonNull(messagingServices)) {
+    public void run(ApplicationArguments args) {
+        if (Objects.nonNull(resources)) {
             log.info(
-                    String.format("Creating messaging service(s): [%s].",
-                            messagingServices.stream()
-                                    .map(MessagingServiceEntity::getName)
+                    String.format("Creating resource(s): [%s].",
+                            resources.stream()
+                                    .map(MessagingServicePluginProperties::getName)
                                     .collect(Collectors.joining("],[")))
             );
 
-            List<MessagingServiceEvent> messagingServiceEvents = messagingServices.stream()
-                    .map(entityToEventConverter::convert)
+            List<MessagingServiceEvent> messagingServiceEvents = resources.stream()
+                    .map(configToEventConverter::convert)
                     .collect(Collectors.toUnmodifiableList());
 
             messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
                     .forEach(messagingServiceEntity ->
-                            log.info("Created [{}] Messaging Service with id: [{}] and name: [{}].",
+                            log.info("Created [{}] resource with id: [{}] and name: [{}].",
                                     messagingServiceEntity.getType(),
                                     messagingServiceEntity.getId(), messagingServiceEntity.getName()));
+
+            messagingServiceDelegateService.addMessagingServicesRelations(resources);
+
         } else {
-            log.info("No Messaging Service(s) created.");
+            log.info("No resource(s) created.");
         }
     }
 }

@@ -32,10 +32,14 @@ public class ClientConnectionDetailsImpl implements ClientConnectionDetails {
                         .authenticationDetails(authenticationDetailsEvents)
                         .build();
 
-        if (messagingServiceType == MessagingServiceType.SOLACE) {
-            connectionDetailsEvent.setUrl(messagingServiceConnection.getUrl());
-        } else if (messagingServiceType == MessagingServiceType.KAFKA) {
-            connectionDetailsEvent.setUrl(messagingServiceConnection.getBootstrapServer());
+        switch (messagingServiceType) {
+            case SOLACE:
+            case CONFLUENT_SCHEMA_REGISTRY:
+                connectionDetailsEvent.setUrl(messagingServiceConnection.getUrl());
+                break;
+            case KAFKA:
+                connectionDetailsEvent.setUrl(messagingServiceConnection.getBootstrapServer());
+                break;
         }
 
         return connectionDetailsEvent;

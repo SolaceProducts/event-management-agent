@@ -28,6 +28,7 @@ At this stage (September 2022), the Event Management Agent is still in an active
 * Users can discover Solace PubSub+ and Apache Kafka brokers event flow data
     - Users can discover Solace PubSub+ queues and subscriptions
     - Users can discover Apache Kafka topics and consumer groups
+    - Users can discover Confluent Schema Registry schemas
 * Users get discovered data in the form of JSON files separated by entity types
 * The Event Management Agent architecture is currently in the form of Java packages
 
@@ -183,10 +184,10 @@ The Event Management Agent comes with the following event or message broker plug
 
 * Apache Kafka
 * Solace PubSub+
-* Confluent
+* Confluent Schema Registry
 * MSK
 
-The default application.yml provides various plugin examples. For KAFKA, the properties section under credentials is
+The default application.yml provides various plugin examples. For Kafka, the properties section under credentials is
 passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
 
 If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. Two ways is either via environment
@@ -232,13 +233,13 @@ To import scanned data into Event Portal:
 * Set up a new standalone Event Management Agent.
 * Run a scan according to the instructions here: [Running Scans](docs/rest.md#running-scans)
 * After the scan is complete, create a .zip file containing the scan files by sending a GET request to the
-  endpoint `http://localhost:8180/api/v2/ema/messagingServices/export/{scanId}/zip`
+  endpoint `http://localhost:8180/api/v2/ema/resources/export/{scanId}/zip`
 * Locate the .zip file in the directory `data_collection\zip`. The .zip file is named as `{scanId}.zip`
 * Set up a second Event Management Agent that is connected to Event Portal.
 * Use a method approved by your organization's security policies to copy the .zip file to the second Event Management
   Agent.
 * Start the data import process by sending a POST request to the
-  endpoint `http://localhost:8180/api/v2/ema/messagingServices/import`. Add the .zip file to the body of the request
+  endpoint `http://localhost:8180/api/v2/ema/resources/import`. Add the .zip file to the body of the request
   using `file` as the key.
 * After sending the POST request, the Event Management Agent will start the import process.
 
@@ -260,23 +261,23 @@ categories according to the deployment mode.
 The most important test in standalone mode is to ensure that the Event Management Agent runs and collects data properly.
 To that end, the test includes the steps below:
 
-1. Update the `plugins` section of the `application.yml` with the details of the messaging service you want to scan.
+1. Update the `plugins` section of the `application.yml` with the details of the resource you want to scan.
 2. Start the Event Management Agent either from the IDE or by running the JAR file.
-3. Examine the on-console logs for a log from `MessagingServiceConfig` class indicating that the messaging service(s)
-   has been created. **Note**: The logs may differ according to the messaging service(s) specified in the
+3. Examine the on-console logs for a log from `ResourceConfig` class indicating that the resource(s)
+   has been created. **Note**: The logs may differ according to the resource(s) specified in the
    `application.yml` file.
 
 ```
-c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: kafkaDefaultService confluent kafka cluster KAFKA
-c.s.m.e.r.a.c.MessagingServiceConfig : Created Messaging Service: solaceDefaultService staging service SOLACE
+c.s.m.e.r.a.c.ResourceConfig : Created [kafka] resource with id:[sakdjf] and name: [some-name1]
+c.s.m.e.r.a.c.ResourceConfig : Created [solace] resource with id:[hdfgkdjf] and name: [some-name2]
 ```
 
 4. View the Swagger documentation to learn about the available REST endpoints for the Event Management Agent. To access
    the Swagger documentation, use the link `http://localhost:8180/event-management-agent/swagger-ui/index.html` (Note:
    The Event Management Agent is under continuous development. Therefore, please check the Swagger documentation to make
    sure that you are using the recent endpoint schema).
-5. Initiate a scan against a messaging service by sending a POST request to the endpoint that triggers the data
-   collection `/api/v2/ema/messagingServices/{messagingServiceId}/scan`. The request can be sent using either Postman or
+5. Initiate a scan against a resource by sending a POST request to the endpoint that triggers the data
+   collection `/api/v2/ema/resources/{resourceId}/scan`. The request can be sent using either Postman or
    a curl command.
 6. Ensure that the `destinations` in the request body contains `FILE_WRITER`, i.e., `"destinations":["FILE_WRITER"]`,
    then send the request.
@@ -299,4 +300,4 @@ the agent framework then please contribute!
 
 ## Contributors
 
-@gregmeldrum @slunelsolace @AHabes @MichaelDavisSolace @helrac
+@gregmeldrum @slunelsolace @AHabes @MichaelDavisSolace @helrac @moodiRealist

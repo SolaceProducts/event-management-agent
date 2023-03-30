@@ -5,7 +5,7 @@ import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacoco
 @ExcludeFromJacocoGeneratedReport
 public class RestEndpoint {
     public static final String BASE_URL = "/api/v2/ema";
-    public static final String MESSAGING_SERVICE_URL = BASE_URL + "/messagingServices";
+    public static final String MESSAGING_SERVICE_URL = BASE_URL + "/resources";
     public static final String SCAN_URL = BASE_URL + "/scan";
     public static final String DATA_COLLECTION_FILE_URL = BASE_URL + "/file";
 }

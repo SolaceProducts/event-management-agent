@@ -12,5 +12,8 @@ public enum MessagingServiceType {
     KAFKA,
 
     @JsonProperty("RabbitMq")
-    RABBITMQ
+    RABBITMQ,
+
+    @JsonProperty("ConfluentSchemaRegistry")
+    CONFLUENT_SCHEMA_REGISTRY
 }

@@ -1,0 +1,20 @@
+[
+  {
+    "subject": "test-avro",
+    "version": 1,
+    "id": 1,
+    "schema": "{\"type\":\"record\",\"name\":\"myrecord\",\"fields\":[{\"name\":\"tags\",\"type\":{\"type\":\"map\",\"values\":\"string\"}},{\"name\":\"AVG_NOISE_FLOOR_DBM\",\"type\":[\"null\",\"double\"],\"default\":null},{\"name\":\"OFDM_ANI_LEVEL_ADJUSTED\",\"type\":[\"null\",\"int\"],\"default\":null}]}"
+  },
+  {
+    "subject": "test-avro",
+    "version": 2,
+    "id": 2,
+    "schema": "{\"type\":\"record\",\"name\":\"myrecord\",\"fields\":[{\"name\":\"tags\",\"type\":{\"type\":\"map\",\"values\":\"string\"}},{\"name\":\"AVG_NOISE_FLOOR_DBM\",\"type\":[\"null\",\"double\"],\"default\":null},{\"name\":\"OFDM_ANI_LEVEL_ADJUSTED\",\"type\":[\"null\",\"int\"],\"default\":1}]}"
+  },
+  {
+    "subject": "test-avro",
+    "version": 3,
+    "id": 3,
+    "schema": "{\"type\":\"record\",\"name\":\"myrecord\",\"fields\":[{\"name\":\"tags\",\"type\":{\"type\":\"map\",\"values\":\"string\"}},{\"name\":\"AVG_NOISE_FLOOR_DBM\",\"type\":[\"null\",\"double\"],\"default\":2.6123},{\"name\":\"OFDM_ANI_LEVEL_ADJUSTED\",\"type\":[\"null\",\"int\"],\"default\":1}]}"
+  }
+]

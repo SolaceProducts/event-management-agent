@@ -16,8 +16,8 @@ public interface EMAController {
 
     @Operation(
             summary = "Triggers data collections",
-            description = "Use this API to trigger a data collection for the specified messaging service.",
-            parameters = {@Parameter(description = "The ID of the messaging service.", name = "messagingServiceId", required = true)},
+            description = "Use this API to trigger a data collection for the specified resource.",
+            parameters = {@Parameter(description = "The ID of the resource.", name = "resourceId", required = true)},
             requestBody = @RequestBody(description = "The scan request object.\n\n" +
                     "<b>List of scan types:</b>\n" +
                     "```\n" +
@@ -36,6 +36,7 @@ public interface EMAController {
                     "KAFKA_TOPIC_CONFIGURATION_FULL\n" +
                     "KAFKA_TOPIC_LISTING\n" +
                     "KAFKA_TOPIC_OVERRIDE_CONFIGURATION\n" +
+                    "CONFLUENT_SCHEMA_REGISTRY_SCHEMA\n" +
                     "```\n" +
                     "<b>List of destinations:</b>\n" +
                     "```\n" +

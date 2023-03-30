@@ -1,22 +1,30 @@
 package com.solace.maas.ep.event.management.agent.service;
 
+import com.solace.maas.ep.event.management.agent.config.MessagingServicePluginProperties;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.repository.messagingservice.MessagingServiceRepository;
+import com.solace.maas.ep.event.management.agent.repository.messagingservice.ServiceAssociationsRepository;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsCompositeKey;
+import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +34,7 @@ import java.util.stream.Collectors;
 @Service
 public class MessagingServiceDelegateServiceImpl implements MessagingServiceDelegateService {
     private final MessagingServiceRepository repository;
+    private final ServiceAssociationsRepository serviceAssociationsRepository;
     private final MessagingServiceEntityToEventConverter entityToEventConverter;
     private final MessagingServiceEventToEntityConverter eventToEntityConverter;
     private final Map<String, Object> messagingServiceClients;
@@ -34,10 +43,12 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     @Autowired
     public MessagingServiceDelegateServiceImpl(MessagingServiceRepository repository,
                                                MessagingServiceEntityToEventConverter entityToEventConverter,
-                                               MessagingServiceEventToEntityConverter eventToEntityConverter) {
+                                               MessagingServiceEventToEntityConverter eventToEntityConverter,
+                                               ServiceAssociationsRepository serviceAssociationsRepository) {
         this.repository = repository;
         this.entityToEventConverter = entityToEventConverter;
         this.eventToEntityConverter = eventToEntityConverter;
+        this.serviceAssociationsRepository = serviceAssociationsRepository;
         messagingServiceClients = new HashMap<>();
     }
 
@@ -129,5 +140,39 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
             log.error(message);
             throw new RuntimeException(message);
         }
+    }
+
+    @Transactional
+    public void addMessagingServicesRelations(List<MessagingServicePluginProperties> messagingServices) {
+        List<ServiceAssociationsEntity> serviceAssociationsEntityList = new ArrayList<>();
+        for (MessagingServicePluginProperties messagingService : messagingServices) {
+            if (!ObjectUtils.isEmpty(messagingService.getRelatedServices())) {
+                messagingService.getRelatedServices().forEach(relatedService ->
+                        serviceAssociationsEntityList.add(
+                                ServiceAssociationsEntity.builder()
+                                        .serviceAssociationsId(ServiceAssociationsCompositeKey.builder()
+                                                .parent(getMessagingServiceById(messagingService.getId()))
+                                                .child(getMessagingServiceById(relatedService))
+                                                .build())
+                                        .build()));
+            }
+        }
+        serviceAssociationsRepository.saveAll(serviceAssociationsEntityList);
+    }
+
+    public Set<MessagingServiceEntity> getMessagingServicesRelations(String messagingServiceId) {
+        Set<MessagingServiceEntity> messagingServiceEntitySet = new HashSet<>();
+
+        List<ServiceAssociationsEntity> serviceAssociationsEntityListParent =
+                serviceAssociationsRepository.findByServiceAssociationsId_Parent_Id(messagingServiceId);
+        serviceAssociationsEntityListParent.forEach(serviceAssociationsEntity ->
+                messagingServiceEntitySet.add(serviceAssociationsEntity.getServiceAssociationsId().getChild()));
+
+        List<ServiceAssociationsEntity> serviceAssociationsEntityListChild =
+                serviceAssociationsRepository.findByServiceAssociationsId_Child_Id(messagingServiceId);
+        serviceAssociationsEntityListChild.forEach(serviceAssociationsEntity ->
+                messagingServiceEntitySet.add(serviceAssociationsEntity.getServiceAssociationsId().getParent()));
+
+        return messagingServiceEntitySet;
     }
 }
