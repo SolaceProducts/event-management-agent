@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestM
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,8 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
 
     @Override
     public void receiveMessage(String destinationName, ScanCommandMessage message) {
+        MDC.clear();
+
         List<String> destinations = new ArrayList<>();
         List<String> entityTypes = new ArrayList<>();
 
