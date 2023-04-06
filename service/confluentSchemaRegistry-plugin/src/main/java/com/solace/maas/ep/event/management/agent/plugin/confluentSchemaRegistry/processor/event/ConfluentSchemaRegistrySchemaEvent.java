@@ -16,6 +16,7 @@ public class ConfluentSchemaRegistrySchemaEvent implements Serializable {
     private String version;
     private String id;
     private String references;
+    private String schemaType;
     private String schema;
     private Boolean internal;
 }

@@ -2,11 +2,11 @@ package com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry
 
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 @Data
 @Builder
 public class HttpClient {
-    private WebClient webClient;
+    private CloseableHttpClient webClient;
     private String connectionUrl;
 }
