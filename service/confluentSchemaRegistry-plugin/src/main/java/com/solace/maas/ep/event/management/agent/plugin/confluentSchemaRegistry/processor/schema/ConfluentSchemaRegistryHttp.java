@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.exception.ClientException;
+import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.exception.URIException;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.processor.event.ConfluentSchemaRegistrySchemaEvent;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import lombok.Getter;
@@ -12,13 +14,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @ExcludeFromJacocoGeneratedReport
 @SuppressWarnings("CPD-START")
@@ -36,10 +37,14 @@ public class ConfluentSchemaRegistryHttp {
     }
 
     public List<ConfluentSchemaRegistrySchemaEvent> getSchemas() throws JsonProcessingException {
-        Map<String, String> substitutionMap = new HashMap<>();
-        String response = getResponse(getUri(GET_ALL_SCHEMAS));
-        return objectMapper.readValue(response, new TypeReference<>() {
-        });
+        String response;
+        try {
+            response = getResponse(getUri(GET_ALL_SCHEMAS));
+            return objectMapper.readValue(response, new TypeReference<>() {
+            });
+        } catch (ClientException e) {
+            throw (e);
+        }
     }
 
     private URI getUri(String path) {
@@ -48,7 +53,7 @@ public class ConfluentSchemaRegistryHttp {
             uri = new URI(httpClient.getConnectionUrl() + path);
         } catch (URISyntaxException e) {
             log.error("URI error for {}", httpClient.getConnectionUrl(), e);
-            throw new RuntimeException(String.format("Could not construct URL from %s", httpClient.getConnectionUrl()), e);
+            throw new URIException(String.format("Could not construct URL from %s", httpClient.getConnectionUrl()), e);
         }
         return uri;
     }
@@ -57,12 +62,16 @@ public class ConfluentSchemaRegistryHttp {
         HttpGet getData = new HttpGet();
         getData.setURI(uri);
         try (CloseableHttpResponse response = httpClient.getWebClient().execute(getData)) {
-            if (response.getStatusLine().getStatusCode() != 200) {
-
+            if (response.getStatusLine().getStatusCode() != HttpStatus.OK.value()) {
+                log.error("Error response from the Confluent Schema registry {} returned with code {} and message '{}'",
+                        httpClient.getConnectionUrl() + uri.getPath(),
+                        response.getStatusLine().getStatusCode(),
+                        response.getStatusLine().getReasonPhrase());
+                throw new ClientException(String.format("Could not fulfill API call for path %s",
+                        httpClient.getConnectionUrl() + uri.getPath()));
             }
             HttpEntity entity = response.getEntity();
-            String res = EntityUtils.toString(entity);
-            return res;
+            return EntityUtils.toString(entity);
         } catch (IOException e) {
             e.printStackTrace();
         }
