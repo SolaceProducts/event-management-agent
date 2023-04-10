@@ -7,7 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.manager.client.Messaging
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 @Slf4j
 @ExcludeFromJacocoGeneratedReport
@@ -17,7 +17,7 @@ public class ConfluentSchemaRegistryClientManagerImpl implements MessagingServic
     public ConfluentSchemaRegistryHttp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
         log.debug("creating Confluent Schema Registry client for: {}", connectionDetailsEvent.getMessagingServiceId());
         HttpClient httpClient = HttpClient.builder()
-                .webClient(WebClient.builder().build())
+                .webClient(HttpClientBuilder.create().build())
                 .connectionUrl(connectionDetailsEvent.getUrl())
                 .build();
         log.debug("Confluent Schema Registry client created for {}.", connectionDetailsEvent.getMessagingServiceId());
