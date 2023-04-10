@@ -77,12 +77,13 @@ class ConfluentSchemaRegistryClientTests {
                 .setResponseCode(200));
 
         List<ConfluentSchemaRegistrySchemaEvent> confluentSchemaRegistrySchemaEventList = confluentSchemaRegistryHttp.getSchemas();
-        assertThat(confluentSchemaRegistrySchemaEventList).hasSize(3);
+        assertThat(confluentSchemaRegistrySchemaEventList).hasSize(4);
         // schemaType for avro is null
         assertNull(confluentSchemaRegistrySchemaEventList.get(0).getSchemaType());
+        assertNull(confluentSchemaRegistrySchemaEventList.get(1).getSchemaType());
         // schemaType for non-avro is not null
-        assertNotNull(confluentSchemaRegistrySchemaEventList.get(1).getSchemaType());
         assertNotNull(confluentSchemaRegistrySchemaEventList.get(2).getSchemaType());
+        assertNotNull(confluentSchemaRegistrySchemaEventList.get(3).getSchemaType());
     }
 
     @SneakyThrows

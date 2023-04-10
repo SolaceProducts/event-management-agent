@@ -6,18 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class ConfluentSchemaRegistrySchemaEvent implements Serializable {
+public class ConfluentSchemaRegistrySchemaReference implements Serializable {
+    private String name;
     private String subject;
     private String version;
-    private String id;
-    private List<ConfluentSchemaRegistrySchemaReference> references;
-    private String schemaType;
-    private String schema;
-    private Boolean internal;
 }

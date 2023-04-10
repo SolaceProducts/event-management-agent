@@ -6,16 +6,29 @@
     "schema": "{\"type\":\"record\",\"name\":\"myrecord\",\"fields\":[{\"name\":\"tags\",\"type\":{\"type\":\"map\",\"values\":\"string\"}},{\"name\":\"AVG_NOISE_FLOOR_DBM\",\"type\":[\"null\",\"double\"],\"default\":null},{\"name\":\"OFDM_ANI_LEVEL_ADJUSTED\",\"type\":[\"null\",\"int\"],\"default\":null}]}"
   },
   {
-    "subject": "test-protobuf",
+    "subject": "test-avro-with-refs",
     "version": 2,
     "id": 2,
+    "references": [
+      {
+        "name": "customer",
+        "subject": "some-subject",
+        "version": 2
+      }
+    ],
+    "schema": "{\"type\":\"record\",\"name\":\"address\",\"fields\":[{\"name\":\"field1\",\"type\":\"string\"},{\"name\":\"field2\",\"type\":\"customer\"}]}"
+  },
+  {
+    "subject": "test-protobuf",
+    "version": 1,
+    "id": 3,
     "schema": "syntax = \"proto3\";\npackage com.mycorp.mynamespace;\n",
     "schemaType": "PROTOBUF"
   },
   {
     "subject": "test-json",
     "version": 3,
-    "id": 3,
+    "id": 4,
     "schema": "{\"name\":\"my-foo\",\"realName\":\"my-foobar\"}",
     "schemaType": "JSON"
   }
