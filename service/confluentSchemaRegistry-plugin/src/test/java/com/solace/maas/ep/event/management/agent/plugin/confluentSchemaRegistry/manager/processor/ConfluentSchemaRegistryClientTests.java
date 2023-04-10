@@ -21,7 +21,8 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ActiveProfiles("TEST")
@@ -77,7 +78,11 @@ class ConfluentSchemaRegistryClientTests {
 
         List<ConfluentSchemaRegistrySchemaEvent> confluentSchemaRegistrySchemaEventList = confluentSchemaRegistryHttp.getSchemas();
         assertThat(confluentSchemaRegistrySchemaEventList).hasSize(3);
-        assertThatNoException();
+        // schemaType for avro is null
+        assertNull(confluentSchemaRegistrySchemaEventList.get(0).getSchemaType());
+        // schemaType for non-avro is not null
+        assertNotNull(confluentSchemaRegistrySchemaEventList.get(1).getSchemaType());
+        assertNotNull(confluentSchemaRegistrySchemaEventList.get(2).getSchemaType());
     }
 
     @SneakyThrows
