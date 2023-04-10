@@ -84,6 +84,8 @@ class ConfluentSchemaRegistryClientTests {
         // schemaType for non-avro is not null
         assertNotNull(confluentSchemaRegistrySchemaEventList.get(2).getSchemaType());
         assertNotNull(confluentSchemaRegistrySchemaEventList.get(3).getSchemaType());
+
+        assertThat(confluentSchemaRegistrySchemaEventList.get(1).getReferences()).hasSize(1);
     }
 
     @SneakyThrows
