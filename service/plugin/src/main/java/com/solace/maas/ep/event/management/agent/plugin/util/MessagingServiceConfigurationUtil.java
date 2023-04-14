@@ -5,7 +5,10 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MessagingServiceConfigurationUtil {
     public static <T extends EventProperty> String getProperty(List<T> properties, String name) {
@@ -34,6 +37,16 @@ public class MessagingServiceConfigurationUtil {
         return authenticationDetailsEvent.getCredentials().stream()
                 .findFirst().
                 map(credential -> getProperty(credential.getProperties(), "password"))
+                .orElse(null);
+    }
+
+    public static Map<String, String> getCredentialsProperties(AuthenticationDetailsEvent authenticationDetailsEvent) {
+        return authenticationDetailsEvent.getCredentials().stream()
+                .findFirst().
+                map(credential -> credential.getProperties()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toMap(EventProperty::getName, EventProperty::getValue)))
                 .orElse(null);
     }
 }

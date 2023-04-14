@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.exception;
+package com.solace.maas.ep.event.management.agent.plugin.exception;
 
 public class URIException extends RuntimeException {
     public URIException() {
