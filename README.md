@@ -67,17 +67,12 @@ The Event Management Agent was tested to run with
 
 ### Spring-boot properties
 
-These properties are required to run this spring boot application in cloud mode. Update the following properties in the
-application.yml file
+Specific properties are required to run this spring boot application in cloud mode. </br>
+These properties are defined in the connection file that can be downloaded from the Event Portal's Event Management Agent definition. </br>
+The steps for generating the connection file are listed over here : https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file </br>
+Replace the application.yml present in the location : event-management-agent/service/application/src/main/resources with the EMA connection file. </br>
+For security considerations, passwords should be configured through environment variables or in other secure manner.
 
-```
-eventPortal.gateway.messaging.connections.url = <secure smf host and port> example  tcps://<host>:<port>
-eventPortal.gateway.messaging.connections.msgVpn = <your vpn>
-eventPortal.gateway.messaging.connections.users.name= <your name>
-eventPortal.gateway.messaging.connections.users.username = <your username>
-eventPortal.gateway.messaging.connections.users.password = <your password>
-eventPortal.gateway.messaging.connections.users.clientName= <your client name>
-```
 
 ### Cloning and Building
 
