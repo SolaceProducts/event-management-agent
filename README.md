@@ -73,7 +73,6 @@ The steps for generating the connection file are listed over here : https://docs
 Replace the application.yml present in the location : event-management-agent/service/application/src/main/resources with the EMA connection file. </br>
 For security considerations, passwords should be configured through environment variables or in other secure manner.
 
-```
 
 ### Cloning and Building
 
