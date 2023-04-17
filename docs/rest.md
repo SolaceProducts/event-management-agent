@@ -252,6 +252,146 @@ plugins:
           url: <host and port> example:  http://<host>:<port>
 ```
 
+### Confluent Schema Registry Connection - Basic Authentication
+
+The following environment variable needs to be exported:
+
+- ${CONFLUENT_USERNAME}
+- ${CONFLUENT_PASSWORD}
+
+
+```
+plugins:
+  resources:
+    - id: <Confluent Schema Registry resource id>
+      name: <Confluent Schema Registry name>
+      type: confluent_schema_registry
+      relatedServices: list of kafka services linked to this schema registry, example: [ id1,id2,id3 ]
+      connections:
+        - name: <Confluent Schema Registry connection name>
+          url: <host and port> example:  http://<host>:<port>
+          authentication:
+            - protocol: BASIC
+              credentials:
+                - properties:
+                    - name: username
+                      value: ${CONFLUENT_USERNAME}
+                    - name: password
+                      value: ${CONFLUENT_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+```
+
+### Confluent Schema Registry Connection - Basic Authentication With SSL
+
+The following environment variable needs to be exported:
+
+- ${CONFLUENT_USERNAME}
+- ${CONFLUENT_PASSWORD}
+- ${TRUSTSTORE_LOCATION}
+- ${TRUSTSTORE_PASSWORD}
+
+
+```
+plugins:
+  resources:
+    - id: <Confluent Schema Registry resource id>
+      name: <Confluent Schema Registry name>
+      type: confluent_schema_registry
+      relatedServices: list of kafka services linked to this schema registry, example: [ id1,id2,id3 ]
+      connections:
+        - name: <Confluent Schema Registry connection name>
+          url: <host and port> example:  https://<host>:<port>
+          authentication:
+            - protocol: BASIC_SSL
+              credentials:
+                - properties:
+                    - name: username
+                      value: ${CONFLUENT_USERNAME}
+                    - name: password
+                      value: ${CONFLUENT_PASSWORD}
+                    - ssl.truststore.location
+                      value: ${TRUSTSTORE_LOCATION}
+                    - name: ssl.truststore.password
+                      value: ${TRUSTSTORE_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+```
+
+### Confluent Schema Registry Connection - SSL with TrustStore
+
+The following environment variable needs to be exported:
+
+- ${TRUSTSTORE_LOCATION}
+- ${TRUSTSTORE_PASSWORD}
+
+
+```
+plugins:
+  resources:
+    - id: <Confluent Schema Registry resource id>
+      name: <Confluent Schema Registry name>
+      type: confluent_schema_registry
+      relatedServices: list of kafka services linked to this schema registry, example: [ id1,id2,id3 ]
+      connections:
+        - name: <Confluent Schema Registry connection name>
+          url: <host and port> example:  https://<host>:<port>
+          authentication:
+            - protocol: TLS
+              credentials:
+                - properties:
+                    - ssl.truststore.location
+                      value: ${TRUSTSTORE_LOCATION}
+                    - name: ssl.truststore.password
+                      value: ${TRUSTSTORE_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+```
+
+### Confluent Schema Registry Connection - SSL with TrustStore and KeyStore
+
+The following environment variable needs to be exported:
+
+- ${TRUSTSTORE_LOCATION}
+- ${TRUSTSTORE_PASSWORD}
+- ${KEYSTORE_LOCATION}
+- ${KEYSTORE_PASSWORD}
+- ${KEY_PASSWORD}
+
+
+```
+plugins:
+  resources:
+    - id: <Confluent Schema Registry resource id>
+      name: <Confluent Schema Registry name>
+      type: confluent_schema_registry
+      relatedServices: list of kafka services linked to this schema registry, example: [ id1,id2,id3 ]
+      connections:
+        - name: <Confluent Schema Registry connection name>
+          url: <host and port> example:  https://<host>:<port>
+          authentication:
+            - protocol: TLS
+              credentials:
+                - properties:
+                    - ssl.truststore.location
+                      value: ${TRUSTSTORE_LOCATION}
+                    - name: ssl.truststore.password
+                      value: ${TRUSTSTORE_PASSWORD}
+                    - name: ssl.keystore.password
+                      value: ${KEYSTORE_PASSWORD}
+                    - name: ssl.keystore.location
+                      value: ${KEYSTORE_LOCATION}
+                    - name: ssl.key.password
+                      value: ${KEY_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+```
+
+
 ### Environment Variables
 
 When using environment variables, they must all be exported into the environment, otherwise the value will be empty.
