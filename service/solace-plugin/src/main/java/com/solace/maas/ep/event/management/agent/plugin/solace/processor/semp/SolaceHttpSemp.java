@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.util.UriUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,7 +18,6 @@ import org.springframework.web.util.UriBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -159,14 +159,7 @@ public class SolaceHttpSemp {
     }
 
     private URI getSempUri() {
-        URI sempUri = null;
-        try {
-            sempUri = new URI(sempClient.getConnectionUrl());
-        } catch (URISyntaxException e) {
-            log.error("URI error for {}", sempClient.getConnectionUrl(), e);
-            throw new RuntimeException(String.format("Could not construct URL from %s", sempClient.getConnectionUrl()), e);
-        }
-        return sempUri;
+        return UriUtil.getURI(sempClient.getConnectionUrl());
     }
 
     private void getSempListRequest(List<Map<String, Object>> list, Function<UriBuilder, URI> uriMethod) throws

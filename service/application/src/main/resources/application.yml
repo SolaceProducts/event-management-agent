@@ -67,14 +67,107 @@ eventPortal:
 
 #plugins:
 #  resources:
-#    # Confluent Schema Registry example
+#    # Confluent Schema Registry No Auth example
 #    - id: someConfluentId
 #      name: no auth confluent example
 #      type: confluent_schema_registry
-#      relatedServices: [ id1,id2,id3 ]
+#      relatedServices:
+#        - id1
+#        - id2
+#        - id3
 #      connections:
 #        - name: myConfluentNoAuth
 #          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
+#    # Confluent Schema Registry Basic Auth example
+#    - id: someConfluentId
+#      name: no auth confluent example
+#      type: confluent_schema_registry
+#      relatedServices:
+#        - id1
+#      connections:
+#        - name: myConfluentBasicAuth
+#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
+#          authentication:
+#            - protocol: BASIC
+#              credentials:
+#                - properties:
+#                    - name: username
+#                      value: ${CONFLUENT_USERNAME}
+#                    - name: password
+#                      value: ${CONFLUENT_PASSWORD}
+#                  source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#    # Confluent Schema Registry Basic Auth With SSL example
+#    - id: someConfluentId
+#      name: no auth confluent example
+#      type: confluent_schema_registry
+#      relatedServices:
+#        - id1
+#      connections:
+#        - name: myConfluentBasicAuthWithSSL
+#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
+#          authentication:
+#            - protocol: BASIC_SSL
+#              credentials:
+#                - properties:
+#                    - name: username
+#                      value: ${CONFLUENT_USERNAME}
+#                    - name: password
+#                      value: ${CONFLUENT_PASSWORD}
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                  source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#    # Confluent Schema Registry TLS example
+#    - id: someConfluentId
+#      name: no auth confluent example
+#      type: confluent_schema_registry
+#      relatedServices:
+#        - id1
+#      connections:
+#        - name: myConfluentTLS
+#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
+#          authentication:
+#            - protocol: TLS
+#              credentials:
+#                - properties:
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                  source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
+#    # Confluent Schema Registry MTLS example
+#    - id: someConfluentId
+#      name: no auth confluent example
+#      type: confluent_schema_registry
+#      relatedServices:
+#        - id1
+#      connections:
+#        - name: myConfluentMTLS
+#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
+#          authentication:
+#            - protocol: MTLS
+#              credentials:
+#                - properties:
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                    - name: ssl.keystore.password
+#                      value: ${KEYSTORE_PASSWORD}
+#                    - name: ssl.keystore.location
+#                      value: ${KEYSTORE_LOCATION}
+#                    - name: ssl.key.password
+#                      value: ${KEY_PASSWORD}
+#                  source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
 #    # Solace example
 #    - id: solaceDefaultService
 #      type: SOLACE
