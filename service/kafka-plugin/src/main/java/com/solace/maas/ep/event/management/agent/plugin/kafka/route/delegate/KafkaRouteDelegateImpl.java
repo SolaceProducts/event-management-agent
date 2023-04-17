@@ -75,6 +75,10 @@ public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
                 result.add(featuresRouteBundle(destinations, recipients, messagingServiceId));
 
                 break;
+            case KAFKA_ACL:
+                result.add(aclListingRouteBundle(destinations, recipients, messagingServiceId));
+
+                break;
             case KAFKA_ALL:
                 result.add(brokerConfigRouteBundle(destinations, recipients, messagingServiceId));
                 result.add(completeTopicConfigurationRouteBundle(destinations, recipients, messagingServiceId));
@@ -179,5 +183,11 @@ public class KafkaRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
                 KafkaRouteId.KAFKA_CONSUMER_GROUP_CONFIGURATION.label, false);
 
         return consumerGroupsRouteBundle(destinations, List.of(kafkaConsumerGroupsConfig), messagingServiceId, scanType);
+    }
+
+    private RouteBundle aclListingRouteBundle(List<RouteBundle> destinations, List<RouteBundle> recipients,
+                                                String messagingServiceId) {
+        return createRouteBundle(destinations, recipients, "aclListing", messagingServiceId,
+                "kafkaAclListing", true);
     }
 }
