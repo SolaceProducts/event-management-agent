@@ -24,7 +24,7 @@
     <description>maas-event-management-agent-parent</description>
     <packaging>pom</packaging>
     <properties>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
         <project.git.directory>${project.basedir}/../.git</project.git.directory>
         <awsDockerRepo>868978040651.dkr.ecr.us-east-1.amazonaws.com</awsDockerRepo>
         <gcpDockerRepo>gcr.io/stellar-arcadia-205014</gcpDockerRepo>
@@ -33,11 +33,11 @@
         <docker.parent.version>1.2.1</docker.parent.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.phase>validate</checkstyle.phase>
-        <pmd.plugin.version>3.20.0</pmd.plugin.version>
+        <pmd.plugin.version>3.13.0</pmd.plugin.version>
         <pmd.phase>validate</pmd.phase>
-        <spotbugs.plugin.version>4.7.3.4</spotbugs.plugin.version>
+        <spotbugs.plugin.version>3.1.12.1</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
-        <spotbugs.version>4.7.3</spotbugs.version>
+        <spotbugs.version>4.0.0-beta4</spotbugs.version>
         <findsecbugs.version>1.10.1</findsecbugs.version>
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
