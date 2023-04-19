@@ -122,6 +122,36 @@ eventPortal:
 #                  source: ENVIRONMENT_VARIABLE
 #                  operations:
 #                    - name: ALL
+#    # Confluent Schema Registry Basic Auth With mTLS example
+#    - id: someConfluentId
+#      name: Basic Auth With mTLS example
+#      type: confluent_schema_registry
+#      relatedServices:
+#        - id1
+#      connections:
+#        - name: myConfluentBasicAuthWithMTLS
+#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
+#          authentication:
+#            - protocol: BASIC_MTLS
+#              credentials:
+#                - properties:
+#                    - name: username
+#                      value: ${CONFLUENT_USERNAME}
+#                    - name: password
+#                      value: ${CONFLUENT_PASSWORD}
+#                    - name: ssl.truststore.location
+#                      value: ${TRUSTSTORE_LOCATION}
+#                    - name: ssl.truststore.password
+#                      value: ${TRUSTSTORE_PASSWORD}
+#                    - name: ssl.keystore.location
+#                      value: ${KEYSTORE_LOCATION}
+#                    - name: ssl.keystore.password
+#                      value: ${KEYSTORE_PASSWORD}
+#                    - name: ssl.key.password
+#                      value: ${KEY_PASSWORD}
+#                  source: ENVIRONMENT_VARIABLE
+#                  operations:
+#                    - name: ALL
 #    # Confluent Schema Registry TLS example
 #    - id: someConfluentId
 #      name: no auth confluent example
