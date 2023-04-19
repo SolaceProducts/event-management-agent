@@ -320,6 +320,52 @@ plugins:
                     - name: ALL
 ```
 
+### Confluent Schema Registry Connection - Basic Authentication With MTLS
+
+The following environment variable needs to be exported:
+
+- ${CONFLUENT_USERNAME}
+- ${CONFLUENT_PASSWORD}
+- ${TRUSTSTORE_LOCATION}
+- ${TRUSTSTORE_PASSWORD}
+- ${KEYSTORE_LOCATION}
+- ${KEYSTORE_PASSWORD}
+- ${KEY_PASSWORD}
+
+
+```
+plugins:
+  resources:
+    - id: <Confluent Schema Registry resource id>
+      name: <Confluent Schema Registry name>
+      type: confluent_schema_registry
+      relatedServices: list of kafka services linked to this schema registry, example: [ id1,id2,id3 ]
+      connections:
+        - name: <Confluent Schema Registry connection name>
+          url: <host and port> example:  https://<host>:<port>
+          authentication:
+            - protocol: BASIC_MTLS
+              credentials:
+                - properties:
+                    - name: username
+                      value: ${CONFLUENT_USERNAME}
+                    - name: password
+                      value: ${CONFLUENT_PASSWORD}
+                    - ssl.truststore.location
+                      value: ${TRUSTSTORE_LOCATION}
+                    - name: ssl.truststore.password
+                      value: ${TRUSTSTORE_PASSWORD}
+                    - name: ssl.keystore.password
+                      value: ${KEYSTORE_PASSWORD}
+                    - name: ssl.keystore.location
+                      value: ${KEYSTORE_LOCATION}
+                    - name: ssl.key.password
+                      value: ${KEY_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+```
+
 ### Confluent Schema Registry Connection - SSL with TrustStore
 
 The following environment variable needs to be exported:
