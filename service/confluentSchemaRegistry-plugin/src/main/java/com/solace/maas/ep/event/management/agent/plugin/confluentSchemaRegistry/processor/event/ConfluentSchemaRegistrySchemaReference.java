@@ -14,5 +14,5 @@ import java.io.Serializable;
 public class ConfluentSchemaRegistrySchemaReference implements Serializable {
     private String name;
     private String subject;
-    private String version;
+    private Integer version;
 }

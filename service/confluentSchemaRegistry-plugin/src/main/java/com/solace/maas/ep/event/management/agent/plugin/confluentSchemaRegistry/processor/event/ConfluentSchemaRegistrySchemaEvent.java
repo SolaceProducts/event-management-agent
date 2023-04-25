@@ -14,8 +14,8 @@ import java.util.List;
 @Builder
 public class ConfluentSchemaRegistrySchemaEvent implements Serializable {
     private String subject;
-    private String version;
-    private String id;
+    private Integer version;
+    private Integer id;
     private List<ConfluentSchemaRegistrySchemaReference> references;
     private String schemaType;
     private String schema;
