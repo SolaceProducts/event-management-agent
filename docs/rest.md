@@ -604,7 +604,7 @@ In essence, you will perform a scan from one agent, export it, and upload it to 
 ### Requirements
 - Source Configuration (off-line):
     - EMA configuration (e.g. `your-source-config.yml`)
-    - Stand-alone setting path: `eventPortal.gateway.messaging.standAlone: true`
+    - Stand-alone setting path: `eventPortal.gateway.messaging.standalone: true`
 - Target Configuration (on-line):
     - EMA configuration (e.g. `your-target-config.yml`)
 - Retain the following settings from the EMA for **target** configuration:
@@ -615,14 +615,14 @@ In essence, you will perform a scan from one agent, export it, and upload it to 
 1. Execute source message service scan
     1. Initiate the source scan from EMA REST API; e.g.:<br>
         ```bash
-        curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/messagingServices/{msgServiceId}/scan -d '{"scanTypes": ["KAKFA_ALL"], "destinations":["FILE_WRITER"]}'
+        curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/${msgServiceId}/scan -d '{"scanTypes": ["KAKFA_ALL"], "destinations":["FILE_WRITER"]}'
         ```
     2. Collect the scan ID from the REST return body or the EMA logs. You will need this value for the next step.
         1. The return body (if successful): `Scan request [abc5i21b5g4]: Scan started`
 2. Export the source scan bundle from the Event Management Agent using the EMA REST API
-        ```bash
-        curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/resources/export/${YOUR_SCAN_ID}/zip --output {file_name.zip}
-        ```
+    ```bash
+    curl -H "Content-Type: application/json" -X GET http://localhost:8180/api/v2/ema/resources/export/${YOUR_SCAN_ID}/zip --output {file_name.zip}
+    ```
 3. Modify the source scan bundle to suit the target messaging service
     1. You need to modify the META_INF.json file in the exported bundle. make a working directory and extract:
         ```bash
