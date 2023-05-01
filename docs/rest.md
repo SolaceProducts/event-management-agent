@@ -647,5 +647,6 @@ In essence, you will perform a scan from one agent, export it, and upload it to 
     2. Execute the upload<br>
         ```bash
         curl --location --request POST 'http://localhost:8180/api/v2/ema/resources/import' \
-            --form 'file=@file_name.zip'```
+            --form 'file=@file_name.zip'
+        ```
 5. Finally, check Event Portal and your Modeled Event Mesh to view the Audit Results
