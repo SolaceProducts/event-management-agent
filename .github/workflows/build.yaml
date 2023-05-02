@@ -2,7 +2,10 @@ name: Build
 on:
   push:
     branches:
-      build_workflow
+      main
+  pull_request:
+    types: [opened, synchronize, reopened]
+    
 jobs:
   Run_Tests_Build_Artifact:
     runs-on: ubuntu-latest
