@@ -4,7 +4,7 @@ on:
     branches:
       build_workflow
 jobs:
-  Test_Build:
+  Run Tests and Build Artifact:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+          cache: 'maven'
       - name: Static Code Analysis
         run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
       - name: Unit Tests
