@@ -4,7 +4,7 @@ on:
     branches:
       build_workflow
 jobs:
-  Run Tests and Build Artifact:
+  Run_Tests_Build_Artifact:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
