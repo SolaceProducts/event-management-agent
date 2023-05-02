@@ -1,10 +1,10 @@
-name: Test & Build
+name: Build
 on:
   push:
     branches:
       build_workflow
 jobs:
-  Test-Build:
+  Test_Build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,4 +15,6 @@ jobs:
         with:
           java-version: 11
       - name: Static Code Analysis
-        run: mvn --batch-mode compile -Pmaas-static-code-analysis --file service/pom.xml
+        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+      - name: Unit Tests
+        run: mvn -B test -Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip --file service/pom.xml
