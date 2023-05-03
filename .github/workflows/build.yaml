@@ -13,21 +13,19 @@ jobs:
       SKIP_FLAGS_NON_UNIT_TESTS: "-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
       SKIP_FLAGS_UNIT_TESTS: "-Dmaven.test.skip=true"    
     steps:
-      - run: |
-          echo "${{env.SKIP_FLAGS_NON_UNIT_TESTS}}"
-      # - uses: actions/checkout@v2
-      #   with:
-      #     fetch-depth: 0
-      # - name: Set up JDK 11
-      #   uses: actions/setup-java@v3
-      #   with:
-      #     java-version: 11
-      #     distribution: 'temurin'
-      #     cache: 'maven'
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'temurin'
+          cache: 'maven'
       # - name: Static Code Analysis
       #   run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-      # - name: Unit Tests
-      #   run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
+      - name: Unit Tests
+        run: mvn -B test ${{env.SKIP_FLAGS_NON_UNIT_TESTS}} --file service/pom.xml
       # - name: Sonar Scan
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
