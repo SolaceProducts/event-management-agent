@@ -24,8 +24,8 @@ jobs:
           cache: 'maven'
       # - name: Static Code Analysis
       #   run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-      # - name: Unit Tests
-      #   run: mvn -B test ${{env.SKIP_FLAGS_NON_UNIT_TESTS}} --file service/pom.xml
+      - name: Unit Tests
+        run: mvn -B test ${{env.SKIP_FLAGS_NON_UNIT_TESTS}} --file service/pom.xml
       - name: Sonar Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
