@@ -5,4 +5,5 @@
 
 <suppressions>
     <suppress files="\*\.jceks" checks="[a-zA-Z0-9]*"/>
+    <suppress files="\*\.solaceconfig\*\." checks=".*" />
 </suppressions>
