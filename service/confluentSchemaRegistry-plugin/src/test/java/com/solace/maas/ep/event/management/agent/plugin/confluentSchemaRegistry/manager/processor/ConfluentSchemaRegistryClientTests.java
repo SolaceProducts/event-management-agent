@@ -86,6 +86,11 @@ class ConfluentSchemaRegistryClientTests {
         assertNotNull(confluentSchemaRegistrySchemaEventList.get(3).getSchemaType());
 
         assertThat(confluentSchemaRegistrySchemaEventList.get(1).getReferences()).hasSize(1);
+
+        //Data type for id and version and reference-version is Integer
+        assertThat(confluentSchemaRegistrySchemaEventList.get(1).getId()).isInstanceOf(Integer.class);
+        assertThat(confluentSchemaRegistrySchemaEventList.get(1).getVersion()).isInstanceOf(Integer.class);
+        assertThat(confluentSchemaRegistrySchemaEventList.get(1).getReferences().get(0).getVersion()).isInstanceOf(Integer.class);
     }
 
     @SneakyThrows
