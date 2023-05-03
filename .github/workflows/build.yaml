@@ -31,6 +31,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          SKIP_TEST_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS"}}
+          SKIP_TEST_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
           echo "$SKIP_TEST_FLAGS"
         # mvn -B verify $SKIP_TEST_FLAGS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent --file service/pom.xml
