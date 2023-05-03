@@ -10,6 +10,8 @@
         <module>solace-plugin</module>
         <module>local-storage-plugin</module>
         <module>confluentSchemaRegistry-plugin</module>
+        <module>solace-config-plugin</module>
+        <module>solace-config-client</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
