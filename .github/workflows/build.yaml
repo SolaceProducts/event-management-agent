@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      add_sonarqube_to_build
+      main
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -33,4 +33,3 @@ jobs:
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
           mvn -B verify $SKIP_TESTS_FLAGS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent --file service/pom.xml
-          ls service/target/
