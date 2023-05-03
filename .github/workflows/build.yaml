@@ -13,8 +13,8 @@ jobs:
       SKIP_FLAGS_NON_UNIT_TESTS: "-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
       SKIP_FLAGS_UNIT_TESTS: "-Dmaven.test.skip=true"    
     steps:
-      run: |
-        echo "{{env.SKIP_FLAGS_NON_UNIT_TESTS}}"
+      - run: |
+          echo "{{env.SKIP_FLAGS_NON_UNIT_TESTS}}"
       # - uses: actions/checkout@v2
       #   with:
       #     fetch-depth: 0
