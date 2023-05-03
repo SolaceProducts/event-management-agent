@@ -1,18 +1,17 @@
-package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor;
+package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.sempv2task;
 
+import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.client.SolaceSempApiClient;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileClientConnectException;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileClientConnectExceptionResponse;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.SempMetaOnlyResponse;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.sempv2task.SEMPv2MsgVpnBaseTask;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.sempv2task.SEMPv2MsgVpnTaskConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestClientException;
 
 @Slf4j
 public class AclProfileClientConnectExceptionTask extends SEMPv2MsgVpnBaseTask<MsgVpnAclProfileClientConnectException> {
-    public AclProfileClientConnectExceptionTask(SEMPv2MsgVpnTaskConfig taskConfig) {
-        super(taskConfig);
+    public AclProfileClientConnectExceptionTask(SEMPv2MsgVpnTaskConfig taskConfig, SolaceSempApiClient client) {
+        super(taskConfig, client);
     }
 
     @Override
@@ -21,7 +20,7 @@ public class AclProfileClientConnectExceptionTask extends SEMPv2MsgVpnBaseTask<M
                 (SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException>) this.getConfig();
         try {
             MsgVpnAclProfileClientConnectExceptionResponse result =
-                    config.getClient().getMsgVpnApi().getMsgVpnAclProfileClientConnectException(
+                    super.client.getMsgVpnApi().getMsgVpnAclProfileClientConnectException(
                             config.getConfigObject().getMsgVpnName(), config.getConfigObject().getAclProfileName(),
                             config.getConfigObject().getClientConnectExceptionAddress(), null, null);
             return (result != null && result.getData() != null);
@@ -37,7 +36,7 @@ public class AclProfileClientConnectExceptionTask extends SEMPv2MsgVpnBaseTask<M
                 (SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException>) this.getConfig();
         try {
             MsgVpnAclProfileClientConnectExceptionResponse response =
-                    config.getClient().getMsgVpnApi().createMsgVpnAclProfileClientConnectException(
+                    super.client.getMsgVpnApi().createMsgVpnAclProfileClientConnectException(
                     config.getConfigObject().getMsgVpnName(),
                             config.getConfigObject().getAclProfileName(),
                             config.getConfigObject(),
@@ -61,7 +60,7 @@ public class AclProfileClientConnectExceptionTask extends SEMPv2MsgVpnBaseTask<M
         SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException> config =
                 (SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException>) this.getConfig();
         try {
-            SempMetaOnlyResponse response = config.getClient().getMsgVpnApi().deleteMsgVpnAclProfileClientConnectException(
+            SempMetaOnlyResponse response = super.client.getMsgVpnApi().deleteMsgVpnAclProfileClientConnectException(
                     config.getConfigObject().getMsgVpnName(), config.getConfigObject().getAclProfileName(), config.getConfigObject().getClientConnectExceptionAddress());
             return super.createSuccessfulTaskResult(super.getDeleteOperationName(), config.getConfigObject().getAclProfileName(), config.getTaskState(), response.getMeta());
         } catch (Exception e) {

@@ -12,7 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 @Builder
-public class SolaceSEMPv2TaskEvent implements Serializable  {
+public class SolaceSEMPv2MsgVpnTaskEvent implements Serializable  {
     private String objectName;
     private SEMPv2MsgVpnTaskConfig data;
 }

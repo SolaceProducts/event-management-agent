@@ -2,29 +2,35 @@ package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.
 
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.invoker.ApiClient;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.invoker.auth.HttpBasicAuth;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.AboutApi;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.AllApi;
+import lombok.Builder;
+import lombok.Data;
 
-@Configuration
-public class SolaceSempRestClient {
-    @Bean
-    public AboutApi getAboutApi(){
-        return new AboutApi();
-    }
-    @Bean
-    public AllApi getAllApi(){
-        return new AllApi();
+
+@Data
+@Builder
+public class SempApiClient {
+    private ApiClient apiClient;
+    private String baseurl;
+    private String username;
+    private String password;
+    private String msgVpn;
+
+    public static SempApiClientBuilder builder() {
+        return new CustomSempApiClientBuilder();
     }
 
-    @Bean
-    public ApiClient getApiClient(){
-        ApiClient client = new ApiClient();
-        client.setBasePath("http://www.solace.com/SEMP/v2/config");
-        HttpBasicAuth basicAuth = (HttpBasicAuth)client.getAuthentication("basicAuth");
-        basicAuth.setUsername("admin");
-        basicAuth.setPassword("default");
-        return client;
+    private static class CustomSempApiClientBuilder extends SempApiClientBuilder {
+
+        @Override
+        public SempApiClient build() {
+            super.apiClient.setBasePath(super.baseurl);
+            super.apiClient.setPassword(super.password);
+            super.apiClient.setUsername(super.username);
+            HttpBasicAuth basicAuth = (HttpBasicAuth) super.apiClient.getAuthentication("basicAuth");
+            basicAuth.setUsername(super.username);
+            basicAuth.setPassword(super.password);
+            return super.build();
+        }
+
     }
 }

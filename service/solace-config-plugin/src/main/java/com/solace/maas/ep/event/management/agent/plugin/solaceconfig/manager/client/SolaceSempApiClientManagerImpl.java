@@ -1,29 +1,29 @@
-package com.solace.maas.ep.event.management.agent.plugin.solace.manager.client;
+package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.manager.client;
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
-import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
-import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
+import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.client.SempApiClient;
+import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.client.SolaceSempApiClient;
+import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.invoker.ApiClient;
 import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.NoSuchElementException;
 
 @Slf4j
 @ExcludeFromJacocoGeneratedReport
 @Data
-public class SolaceSempClientManagerImpl implements MessagingServiceClientManager<SolaceHttpSemp> {
+public class SolaceSempApiClientManagerImpl implements MessagingServiceClientManager<SolaceSempApiClient> {
 
-    public SolaceSempClientManagerImpl() {
+    public SolaceSempApiClientManagerImpl() {
     }
 
     @Override
-    public SolaceHttpSemp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
-        log.trace("Creating Solace SEMP client for messaging service [{}].",
+    public SolaceSempApiClient getClient(ConnectionDetailsEvent connectionDetailsEvent) {
+        log.trace("Creating Solace SEMP API client for messaging service [{}].",
                 connectionDetailsEvent.getMessagingServiceId());
 
         AuthenticationDetailsEvent authenticationDetailsEvent =
@@ -36,15 +36,15 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                             return new NoSuchElementException(message);
                         });
 
-        SempClient sempClient = SempClient.builder()
-                .webClient(WebClient.builder().build())
+        SempApiClient sempClient = SempApiClient.builder()
+                .apiClient(new ApiClient())
                 .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
                 .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
                 .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
-                .connectionUrl(connectionDetailsEvent.getUrl())
+                .baseurl(connectionDetailsEvent.getUrl())
                 .build();
 
-        log.trace("Solace SEMP client created for {}.", connectionDetailsEvent.getMessagingServiceId());
-        return new SolaceHttpSemp(sempClient);
+        log.trace("Solace SEMP API client created for {}.", connectionDetailsEvent.getMessagingServiceId());
+        return new SolaceSempApiClient(sempClient);
     }
 }
