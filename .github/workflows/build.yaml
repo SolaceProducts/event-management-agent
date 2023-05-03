@@ -5,7 +5,7 @@ on:
       add_sonarqube_to_build
   pull_request:
     types: [opened, synchronize, reopened]
-  
+
 jobs:
   Run_Tests_Build_Artifact:
     runs-on: ubuntu-latest
@@ -14,7 +14,7 @@ jobs:
       SKIP_FLAGS_UNIT_TESTS: "-Dmaven.test.skip=true"    
     steps:
       - run: |
-          echo "{{env.SKIP_FLAGS_NON_UNIT_TESTS}}"
+          echo "${{env.SKIP_FLAGS_NON_UNIT_TESTS}}"
       # - uses: actions/checkout@v2
       #   with:
       #     fetch-depth: 0
