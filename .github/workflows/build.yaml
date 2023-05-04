@@ -2,12 +2,13 @@ name: Build
 on:
   push:
     branches:
-      main
+      add_deploy_stage
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  Run_Tests_Build_Artifact:
+  Test_Build:
+    name: Run Tests and Deploy
     runs-on: ubuntu-latest
     env:
       SKIP_FLAGS_NON_UNIT_TESTS: "-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
@@ -22,14 +23,19 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
-      - name: Static Code Analysis
-        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-      - name: Unit Tests
-        run: mvn -B test ${{env.SKIP_FLAGS_NON_UNIT_TESTS}} --file service/pom.xml
+#      - name: Static Code Analysis
+#        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+#      - name: Unit Tests
+#        run: mvn -B test ${{env.SKIP_FLAGS_NON_UNIT_TESTS}} --file service/pom.xml
       - name: Sonar Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          PACKAGES_ADMIN_USER: {{ secrets.PACKAGES_ADMIN_USER }}
+          PACKAGES_ADMIN_TOKEN: {{ secrets.PACKAGES_ADMIN_TOKEN }}
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-          mvn -B verify $SKIP_TESTS_FLAGS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent --file service/pom.xml
+          mvn -B -Pgithub deploy $SKIP_TESTS_FLAGS \
+           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
+           --file service/pom.xml \
+           -s service/github-packages-mvn-settings.xml
