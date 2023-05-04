@@ -31,8 +31,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          PACKAGES_ADMIN_USER: {{ secrets.PACKAGES_ADMIN_USER }}
-          PACKAGES_ADMIN_TOKEN: {{ secrets.PACKAGES_ADMIN_TOKEN }}
+          PACKAGES_ADMIN_USER: ${{ secrets.PACKAGES_ADMIN_USER }}
+          PACKAGES_ADMIN_TOKEN: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
           mvn -B -Pgithub deploy $SKIP_TESTS_FLAGS \
