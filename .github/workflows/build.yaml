@@ -10,6 +10,9 @@ jobs:
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     env:
       SKIP_FLAGS_NON_UNIT_TESTS: "-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
       SKIP_FLAGS_UNIT_TESTS: "-Dmaven.test.skip=true"    
@@ -31,10 +34,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          PACKAGES_ADMIN_USER: ${{ secrets.PACKAGES_ADMIN_USER }}
-          PACKAGES_ADMIN_TOKEN: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-          mvn -B verify $SKIP_TESTS_FLAGS \
+          mvn -B deploy $SKIP_TESTS_FLAGS \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
             --file service/pom.xml
