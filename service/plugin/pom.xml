@@ -2,20 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>maas-event-management-agent-parent</artifactId>
         <groupId>com.solace.maas</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <artifactId>maas-event-management-agent-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
+    <groupId>com.solace.maas</groupId>
     <artifactId>plugin</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>plugin</name>
     <packaging>jar</packaging>
-    <description>plugin</description>
-
+    <name>Solace Event Management Agent - Plugin</name>
+    <description>Solace Event Management Agent - Plugin</description>
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -115,6 +114,81 @@
                     <url>${maas.nexus.snapshot}</url>
                 </snapshotRepository>
             </distributionManagement>
+        </profile>
+        <profile>
+            <id>maas-static-code-analysis</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>${checkstyle.plugin.version}</version>
+                        <configuration>
+                            <failOnViolation>true</failOnViolation>
+                            <failsOnError>true</failsOnError>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>${pmd.plugin.version}</version>
+                        <configuration>
+                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+                            <minimumTokens>100</minimumTokens>
+                            <targetJdk>${java.version}</targetJdk>
+                            <rulesets>
+                                <ruleset>../resources/pmd/pmd-rules.xml</ruleset>
+                            </rulesets>
+                            <failOnViolation>false</failOnViolation>
+                            <includeTests>true</includeTests>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>${pmd.phase}</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                    <goal>cpd-check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                        <version>${spotbugs.plugin.version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.github.spotbugs</groupId>
+                                <artifactId>spotbugs</artifactId>
+                                <version>${spotbugs.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <effort>Max</effort>
+                            <threshold>High</threshold>
+                            <failOnError>true</failOnError>
+                            <plugins>
+                                <plugin>
+                                    <groupId>com.h3xstream.findsecbugs</groupId>
+                                    <artifactId>findsecbugs-plugin</artifactId>
+                                    <version>${findsecbugs.version}</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
