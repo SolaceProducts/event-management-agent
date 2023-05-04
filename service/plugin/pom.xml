@@ -97,25 +97,12 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <distributionManagement>
-                <repository>
-                    <id>releases</id>
-                    <name>Releases Repository</name>
-                    <url>${maas.nexus.release}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>snapshots</id>
-                    <name>Snapshots Repository</name>
-                    <url>${maas.nexus.snapshot}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-    </profiles>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/SolaceLabs/event-management-agent</url>
+        </repository>
+    </distributionManagement>
 
 </project>
