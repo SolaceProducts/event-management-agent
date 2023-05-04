@@ -426,6 +426,21 @@
             </distributionManagement>
         </profile>
         <profile>
+            <id>github</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>github</name>
+                    <url>https://maven.pkg.github.com/SolaceLabs/event-management-agent</url>
+                </repository>
+                <snapshotRepository>
+                    <id>github</id>
+                    <name>github</name>
+                    <url>https://maven.pkg.github.com/SolaceLabs/event-management-agent</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+        <profile>
             <id>maas-static-code-analysis</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
