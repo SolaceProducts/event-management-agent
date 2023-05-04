@@ -35,7 +35,6 @@ jobs:
           PACKAGES_ADMIN_TOKEN: ${{ secrets.PACKAGES_ADMIN_TOKEN }}
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-          mvn -B -Pgithub deploy $SKIP_TESTS_FLAGS \
+          mvn -B verify $SKIP_TESTS_FLAGS \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
-            --file service/pom.xml \
-            -s service/github-packages-mvn-settings.xml
+            --file service/pom.xml
