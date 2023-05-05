@@ -8,26 +8,22 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-
     <groupId>com.solace.maas</groupId>
     <artifactId>event-management-agent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
-
     <properties>
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>1.31</snakeyaml.version>
     </properties>
-
     <repositories>
         <repository>
             <id>localrepository</id>
             <url>file:///solclientj/lib/</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -266,7 +262,6 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>default</id>

@@ -3,19 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.solace.maas</groupId>
-        <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>..</relativePath>
-    </parent>
     <groupId>com.solace.maas.plugin.localstorage</groupId>
     <artifactId>local-storage-plugin</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Local Storage Plugin</name>
     <description>Solace Event Management Agent - Local Storage Plugin</description>
-
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -24,7 +17,6 @@
         <snakeyaml.version>1.31</snakeyaml.version>
         <jacksondatabind.version>2.13.4.2</jacksondatabind.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
@@ -64,32 +56,27 @@
             <version>${camel.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>2.7.6</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
         </dependency>
-
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -112,7 +99,6 @@
             <version>${jacksondatabind.version}</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -124,81 +110,4 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>maas-static-code-analysis</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>${checkstyle.plugin.version}</version>
-                        <configuration>
-                            <failOnViolation>true</failOnViolation>
-                            <failsOnError>true</failsOnError>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-pmd-plugin</artifactId>
-                        <version>${pmd.plugin.version}</version>
-                        <configuration>
-                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
-                            <minimumTokens>100</minimumTokens>
-                            <targetJdk>${java.version}</targetJdk>
-                            <rulesets>
-                                <ruleset>../resources/pmd/pmd-rules.xml</ruleset>
-                            </rulesets>
-                            <failOnViolation>false</failOnViolation>
-                            <includeTests>true</includeTests>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>${pmd.phase}</phase>
-                                <goals>
-                                    <goal>check</goal>
-                                    <goal>cpd-check</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>${spotbugs.plugin.version}</version>
-                        <dependencies>
-                            <dependency>
-                                <groupId>com.github.spotbugs</groupId>
-                                <artifactId>spotbugs</artifactId>
-                                <version>${spotbugs.version}</version>
-                            </dependency>
-                        </dependencies>
-                        <configuration>
-                            <effort>Max</effort>
-                            <threshold>High</threshold>
-                            <failOnError>true</failOnError>
-                            <plugins>
-                                <plugin>
-                                    <groupId>com.h3xstream.findsecbugs</groupId>
-                                    <artifactId>findsecbugs-plugin</artifactId>
-                                    <version>${findsecbugs.version}</version>
-                                </plugin>
-                            </plugins>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
