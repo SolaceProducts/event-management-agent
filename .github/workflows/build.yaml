@@ -28,8 +28,8 @@ jobs:
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           export SKIP_FLAGS_UNIT_TESTS="-Dmaven.test.skip=true"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
-          echo "SKIP_FLAGS_UNIT_TESTS=SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
-          echo "SKIP_FLAGS_ALL_TESTS='$SKIP_FLAGS_NON_UNIT_TESTS SKIP_FLAGS_UNIT_TESTS'" >> $GITHUB_ENV
+          echo "SKIP_FLAGS_UNIT_TESTS=$SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
+          echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
       - run: |
           echo "$SKIP_FLAGS_UNIT_TESTS"
           echo "$SKIP_FLAGS_ALL_TESTS"
