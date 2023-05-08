@@ -15,7 +15,8 @@ jobs:
       packages: write
     env:
       SKIP_FLAGS_NON_UNIT_TESTS: "-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
-      SKIP_FLAGS_UNIT_TESTS: "-Dmaven.test.skip=true"    
+      SKIP_FLAGS_UNIT_TESTS: "-Dmaven.test.skip=true"
+      SKIP_ALL_TESTS_FLAGS: "${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -26,14 +27,15 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
+       - run: echo "${{env.SKIP_ALL_TESTS_FLAGS}}"
 #      - name: Static Code Analysis
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
 #      - name: Unit Tests
 #        run: mvn -B test ${{env.SKIP_FLAGS_NON_UNIT_TESTS}} --file service/pom.xml
-      - name: Generate Artifacts
-        run: |
-          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-          mvn install $SKIP_TESTS_FLAGS --file service/pom.xml
+#      - name: Generate Artifacts
+#        run: |
+#          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
+#          mvn install $SKIP_TESTS_FLAGS --file service/pom.xml
 #      - name: Sonar Scan
 #        env:
 #          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -43,9 +45,9 @@ jobs:
 #          mvn -B $SKIP_TESTS_FLAGS \
 #            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
 #            --file service/pom.xml
-      - name: Deploy Artifacts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-          mvn deploy $SKIP_TESTS_FLAGS -Dmaven.install.skip=true --file service/pom.xml
+#      - name: Deploy Artifacts
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
+#          mvn deploy $SKIP_TESTS_FLAGS -Dmaven.install.skip=true --file service/pom.xml
