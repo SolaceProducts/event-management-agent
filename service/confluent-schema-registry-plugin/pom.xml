@@ -2,21 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<<<<<<< HEAD:service/confluent-schema-registry-plugin/pom.xml
-
+    <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
-    <version>0.0.1-SNAPSHOT</version>
-
-    <modelVersion>4.0.0</modelVersion>
-
     <artifactId>confluent-schema-registry-plugin</artifactId>
-
-=======
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.solace.maas.plugin.confluentSchemaRegistry</groupId>
-    <artifactId>confluentSchemaRegistry-plugin</artifactId>
     <version>1.0.0-SNAPSHOT</version>
->>>>>>> 9c3afee298e803e4197a4a9649205ee3445f1530:service/confluentSchemaRegistry-plugin/pom.xml
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Confluent Schema Registry Plugin</name>
     <description>Solace Event Management Agent - Confluent Schema Registry Plugin</description>
@@ -84,7 +73,6 @@
             </plugin>
         </plugins>
     </build>
-<<<<<<< HEAD:service/confluent-schema-registry-plugin/pom.xml
     <distributionManagement>
         <repository>
             <id>github</id>
@@ -94,6 +82,3 @@
     </distributionManagement>
 
 </project>
-=======
-</project>
->>>>>>> 9c3afee298e803e4197a4a9649205ee3445f1530:service/confluentSchemaRegistry-plugin/pom.xml
