@@ -26,8 +26,10 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
-       - run: echo 'SKIP_ALL_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"' >> $GITHUB_ENV
-       - run: echo "$SKIP_ALL_TESTS_FLAGS"
+      - run: |
+          echo 'SKIP_ALL_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"' >> $GITHUB_ENV
+      - run: |
+          echo "$SKIP_ALL_TESTS_FLAGS"
 #      - name: Static Code Analysis
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
 #      - name: Unit Tests
