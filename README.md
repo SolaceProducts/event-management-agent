@@ -94,7 +94,7 @@ mvn clean install
 3. Start the Event Management Agent
 
 ```
-java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
+java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar
 ```
 
 Alternatively, to build and run the service in IDE
@@ -292,6 +292,11 @@ c.s.m.e.r.a.c.ResourceConfig : Created [solace] resource with id:[hdfgkdjf] and 
 
 Contributions are encouraged! If you have ideas to improve an existing plugin, create a new plugin, or improve/extend
 the agent framework then please contribute!
+
+## License 
+
+Event Management Agent is available under the Apache License V2.
+
 
 ## Contributors
 
