@@ -9,7 +9,7 @@
         <module>kafka-plugin</module>
         <module>solace-plugin</module>
         <module>local-storage-plugin</module>
-        <module>confluentSchemaRegistry-plugin</module>
+        <module>confluent-schema-registry-plugin</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
