@@ -23,11 +23,11 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
-      - name: Setup Build Params
+      - name: Set Build Params
         run: |
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           export SKIP_FLAGS_UNIT_TESTS="-Dmaven.test.skip=true"
-          #echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
+          echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_UNIT_TESTS=$SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS $SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
       - run: |
