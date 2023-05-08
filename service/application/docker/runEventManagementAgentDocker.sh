@@ -6,4 +6,4 @@ if [ -z "$1" ]
     exit 1
 fi
 
-docker run -d -p 8180:8180 --name event-management-agent event-management-agent:$1
+docker run -d -p 8180:8180 -v /tmp/configFiles/perf1-ema.yml:/config/ema.yml --name event-management-agent event-management-agent:$1
