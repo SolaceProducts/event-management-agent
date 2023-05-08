@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      add_deploy_stage
+      develop
   pull_request:
     types: [opened, synchronize, reopened]
 
