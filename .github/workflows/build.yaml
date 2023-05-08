@@ -34,12 +34,18 @@ jobs:
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
           mvn install $SKIP_TESTS_FLAGS --file service/pom.xml
-      - name: Sonar Scan
+#      - name: Sonar Scan
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#        run: |
+#          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
+#          mvn -B $SKIP_TESTS_FLAGS \
+#            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
+#            --file service/pom.xml
+      - name: Deploy Artifacts
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-          mvn -B $SKIP_TESTS_FLAGS \
-            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
-            --file service/pom.xml
+          mvn deploy $SKIP_TESTS_FLAGS -Dmaven.install.skip=true --file service/pom.xml
