@@ -23,14 +23,16 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
-      - name: Setup Env
+      - name: Setup Build Params
         run: |
-          echo 'SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"' >> $GITHUB_ENV
-          echo 'SKIP_FLAGS_UNIT_TESTS="-Dmaven.test.skip=true' >> $GITHUB_ENV
-          echo 'SKIP_ALL_TESTS_FLAGS="$SKIP_FLAGS_NON_UNIT_TESTS $SKIP_FLAGS_UNIT_TESTS"' >> $GITHUB_ENV
+          export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
+          export SKIP_FLAGS_UNIT_TESTS="-Dmaven.test.skip=true"
+          echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
+          echo "SKIP_FLAGS_UNIT_TESTS=SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
+          echo "SKIP_FLAGS_ALL_TESTS='$SKIP_FLAGS_NON_UNIT_TESTS SKIP_FLAGS_UNIT_TESTS'" >> $GITHUB_ENV
       - run: |
           echo "$SKIP_FLAGS_UNIT_TESTS"
-          echo "$SKIP_ALL_TESTS_FLAGS"
+          echo "$SKIP_FLAGS_ALL_TESTS"
 #      - name: Static Code Analysis
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
 #      - name: Unit Tests
