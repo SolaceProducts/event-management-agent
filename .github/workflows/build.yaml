@@ -26,30 +26,25 @@ jobs:
       - name: Set Build Params
         run: |
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
-          export SKIP_FLAGS_UNIT_TESTS="-Dmaven.test.skip=true"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
-          echo "SKIP_FLAGS_UNIT_TESTS=$SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
-          echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS $SKIP_FLAGS_UNIT_TESTS" >> $GITHUB_ENV
-#      - name: Static Code Analysis
-#        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+          echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
+      - name: Static Code Analysis
+        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
       - name: Unit Tests
         run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
-#      - name: Generate Artifacts
-#        run: |
-#          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-#          mvn install $SKIP_TESTS_FLAGS --file service/pom.xml
-#      - name: Sonar Scan
-#        env:
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#        run: |
-#          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-#          mvn -B $SKIP_TESTS_FLAGS \
-#            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
-#            --file service/pom.xml
-#      - name: Deploy Artifacts
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          SKIP_TESTS_FLAGS="${{env.SKIP_FLAGS_NON_UNIT_TESTS}} ${{env.SKIP_FLAGS_UNIT_TESTS}}"
-#          mvn deploy $SKIP_TESTS_FLAGS -Dmaven.install.skip=true --file service/pom.xml
+      - name: Generate Artifacts
+        run: |
+          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
+      - name: Sonar Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn -B $SKIP_FLAGS_ALL_TESTS \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
+            --file service/pom.xml
+      - name: Deploy Artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
