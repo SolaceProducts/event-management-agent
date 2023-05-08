@@ -159,7 +159,7 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.solace.maas.plugin.confluent_schema_registry</groupId>
+            <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
