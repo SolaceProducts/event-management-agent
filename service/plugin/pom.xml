@@ -93,28 +93,4 @@
             <version>${snakeyaml.version}</version>
         </dependency>
     </dependencies>
-<<<<<<< HEAD
-
-=======
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <distributionManagement>
-                <repository>
-                    <id>releases</id>
-                    <name>Releases Repository</name>
-                    <url>${maas.nexus.release}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>snapshots</id>
-                    <name>Snapshots Repository</name>
-                    <url>${maas.nexus.snapshot}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-    </profiles>
->>>>>>> 9c3afee298e803e4197a4a9649205ee3445f1530
 </project>
