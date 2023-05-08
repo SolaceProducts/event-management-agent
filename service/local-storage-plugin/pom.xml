@@ -110,7 +110,6 @@
             </plugin>
         </plugins>
     </build>
-<<<<<<< HEAD
     <distributionManagement>
         <repository>
             <id>github</id>
@@ -119,6 +118,3 @@
         </repository>
     </distributionManagement>
 </project>
-=======
-</project>
->>>>>>> 9c3afee298e803e4197a4a9649205ee3445f1530
