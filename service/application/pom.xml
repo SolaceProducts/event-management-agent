@@ -157,15 +157,9 @@
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-<<<<<<< HEAD
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-=======
-            <groupId>com.solace.maas.plugin.confluentSchemaRegistry</groupId>
-            <artifactId>confluentSchemaRegistry-plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
->>>>>>> 9c3afee298e803e4197a4a9649205ee3445f1530
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
 
         <!-- for testing -->
