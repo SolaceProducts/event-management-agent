@@ -44,6 +44,7 @@ jobs:
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
             --file service/pom.xml
       - name: Deploy Artifacts
+        if: ${{ github.ref == 'refs/heads/main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
