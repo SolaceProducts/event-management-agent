@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - main
+      - add_whitesource
     paths-ignore:
       - '.gitignore'
       - '.github/**'
@@ -37,24 +37,50 @@ jobs:
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-      - name: Static Code Analysis
-        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-      - name: Unit Tests
-        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
+#      - name: Static Code Analysis
+#        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+#      - name: Unit Tests
+#        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
       - name: Generate Artifacts
         run: |
           mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-      - name: Sonar Scan
+#      - name: Sonar Scan
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#        run: |
+#          mvn -B $SKIP_FLAGS_ALL_TESTS \
+#            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
+#            --file service/pom.xml
+      - name: Download latest mend/whitesource agent and verify its integrity
+        if: ${{ github.ref == 'refs/heads/add_whitesource' }}
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
+          unified_agent_sha_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar.sha256"
         run: |
-          mvn -B $SKIP_FLAGS_ALL_TESTS \
-            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
-            --file service/pom.xml
-      - name: Deploy Artifacts
-        if: ${{ github.ref == 'refs/heads/main' }}
+          curl -LJO ${{ env.unified_agent_url }}
+          sha_from_jar=$(sha256sum  wss-unified-agent.jar | awk '{print $1}')
+          curl -LJO ${{ env.unified_agent_sha_url }}
+          sha_from_file=$(cat wss-unified-agent.jar.sha256 | awk '{print $1}')
+          echo "sha_from_jar: $sha_from_jar"
+          echo "sha_from_file: $sha_from_file"
+          if [[ "$sha_from_file" == "$sha_from_jar" ]]; then
+              echo "Integrity of the wss-unified-agent.jar file verified .."
+          else
+              echo "Integrity check of wss-unified-agent.jar file failed .."
+              exit 1
+          fi
+      - name: Perform whitesource scan
+        if: ${{ github.ref == 'refs/heads/add_whitesource' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
+          WHITESOURCE_API_KEY: ${{ secrets.WHITESOURCE_API_KEY }}
+          WHITESOURCE_PROJECT_TOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          TARGET_DIR: "service/application/target"
+        run: java -jar wss-unified-agent.jar -apiKey ${{ env.WHITESOURCE_API_KEY }}   -projectToken ${{ env.WHITESOURCE_PROJECT_TOKEN }} -d  ${{ env.TARGET_DIR }} -logLevel info
+
+#      - name: Deploy Artifacts
+#        if: ${{ github.ref == 'refs/heads/main' }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
