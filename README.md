@@ -111,13 +111,6 @@ NB: Specify the Docker OS base image to use if required by editing the event-man
 ./runEventManagementAgentDocker.sh v1 /tmp/configFiles/perf1-ema.yml
 ```
 
-5. Start the Event Management Agent
-
-```
-./runEventManagementAgentDocker.sh v1
-```
-
-
 ## Broker Plugins
 
 The Event Management Agent comes with the following event or message broker plugins included:
