@@ -110,8 +110,7 @@ cp ../target/event-management-agent-1.0.0-SNAPSHOT.jar .
 cd ..
 docker build docker --no-cache -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
        --build-arg JAR_FILE=event-management-agent-1.0.0-SNAPSHOT.jar --build-arg GITHASH=${GITHASH}\
-       --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}\
-       --platform linux/amd64
+       --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}
 cd ${script_dir}
 
 # cleanup
