@@ -2,14 +2,22 @@ name: Build
 on:
   push:
     branches:
-      main
+      - main
+      paths-ignore:
+        - '.gitignore'
+        - '.github/**'
   pull_request:
     types: [opened, synchronize, reopened]
+
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write
