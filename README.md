@@ -60,7 +60,7 @@ The Event Management Agent was tested to run with
 
 ### Prerequisites:
 
-* Java 11 (AdoptOpenJDK 11.0.14+ https://adoptium.net/temurin/releases)
+* Java 11 (JDK 11.0.14+)
 * Maven
 * Docker (recommended)
 
@@ -90,10 +90,10 @@ cd event-management-agent/service
 mvn clean install
 ```
 
-3. Run the Event Management Agent as a process (recommended for testing and proof of concept purposes only)
+3. Run the Event Management Agent as a process (recommended for testing and proof of concept purposes only) and specify the location of the configuration file (e.g. configs/AcmeRetail.yml)
 
 ```
-java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar
+java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=configs/AcmeRetail.yml
 ```
 
 3. Build a Docker container (recommended)
@@ -103,10 +103,12 @@ cd event-management-agent/service/application/docker
 ./buildEventManagementAgentDocker.sh -t v1
 ```
 
-4. Edit the runEventManagementAgentDocker.sh file to pass your connection file to the container and the environment variables containing your broker credentials
+NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Docker file
+
+4. Start the Event Management Agent by passing a tag (e.g. v1) and the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml)
 
 ```
--v /tmp/configFiles/perf1-ema.yml:/config/ema.yml
+./runEventManagementAgentDocker.sh v1 /tmp/configFiles/perf1-ema.yml
 ```
 
 5. Start the Event Management Agent
