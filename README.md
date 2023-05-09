@@ -92,7 +92,7 @@ mvn clean install
 
 3. Run the Event Management Agent as a process (recommended for testing and proof of concept purposes only)
 
-``` 
+```
 java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar
 ```
 
