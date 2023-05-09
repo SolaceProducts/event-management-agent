@@ -3,9 +3,9 @@ on:
   push:
     branches:
       - main
-      paths-ignore:
-        - '.gitignore'
-        - '.github/**'
+    paths-ignore:
+      - '.gitignore'
+      - '.github/**'
   pull_request:
     types: [opened, synchronize, reopened]
 
