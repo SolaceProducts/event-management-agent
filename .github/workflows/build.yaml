@@ -73,7 +73,7 @@ jobs:
       - name: Copy Maven Dependencies
         run: mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
       - name: Whitesource Scan
-        if: ${{ github.ref == 'refs/heads/add_whitesource' }}
+#        if: ${{ github.ref == 'refs/heads/add_whitesource' }}
         env:
           WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
