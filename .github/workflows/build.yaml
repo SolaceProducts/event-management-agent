@@ -45,7 +45,10 @@ jobs:
           fi
           echo "$MAN_BRANCH_BUILD"
           echo "MAN_BRANCH_BUILD=$MAN_BRANCH_BUILD" >> $GITHUB_ENV
-       - run: echo "$MAN_BRANCH_BUILD"
+      - run: echo "$MAN_BRANCH_BUILD"
+      - name: test
+        if: env.MAN_BRANCH_BUILD=='true'
+        run: "echo yes I am main branch"
 #      - name: Static Code Analysis
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
 #      - name: Unit Tests
