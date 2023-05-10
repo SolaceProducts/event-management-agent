@@ -62,7 +62,7 @@ jobs:
           mvn -B $SKIP_FLAGS_ALL_TESTS \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
             --file service/pom.xml
-      - name: Whitesource Scan
+      - name: WhiteSource Scan
         if: env.WHITESOURCE_SCAN=='true'
         env:
           unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
