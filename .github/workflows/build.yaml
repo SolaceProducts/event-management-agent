@@ -5,7 +5,7 @@ on:
       - add_whitesource
     paths-ignore:
       - '.gitignore'
-      - '.github/**'
+#      - '.github/**'
       - '**/*.md'
   pull_request:
     types: [opened, synchronize, reopened]
