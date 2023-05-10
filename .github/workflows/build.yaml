@@ -39,30 +39,29 @@ jobs:
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
           if [[ $GITHUB_EVENT_NAME != "pull_request" && $GITHUB_REF_NAME="add_whitesource" ]]; then
             export WHITESOURCE_SCAN=true
+            export GITHUB_PACKAGES_DEPLOY=true
           else
             export WHITESOURCE_SCAN=false
+            export GITHUB_PACKAGES_DEPLOY=false
           fi
           echo "$WHITESOURCE_SCAN"
           echo "WHITESOURCE_SCAN=$WHITESOURCE_SCAN" >> $GITHUB_ENV
-      - run: echo "$MAIN_BRANCH_BUILD"
-      - name: test
-        if: env.MAIN_BRANCH_BUILD=='true'
-        run: "echo yes I am main branch"
-#      - name: Static Code Analysis
-#        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-#      - name: Unit Tests
-#        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
-#      - name: Generate Artifacts
-#        run: |
-#          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-#      - name: Sonar Scan
-#        env:
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#        run: |
-#          mvn -B $SKIP_FLAGS_ALL_TESTS \
-#            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
-#            --file service/pom.xml
+          echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
+      - name: Static Code Analysis
+        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+      - name: Unit Tests
+        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
+      - name: Generate Artifacts
+        run: |
+          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
+      - name: Sonar Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn -B $SKIP_FLAGS_ALL_TESTS \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
+            --file service/pom.xml
       - name: Download latest Mend/Whitesource Agent
         if: env.WHITESOURCE_SCAN=='true'
         env:
@@ -94,7 +93,7 @@ jobs:
         run: java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
 
 #      - name: Deploy Artifacts
-#        if: ${{ github.ref == 'refs/heads/main' }}
+#        if: env.GITHUB_PACKAGES_DEPLOY=='true'
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        run: |
