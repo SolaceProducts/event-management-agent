@@ -78,7 +78,11 @@ jobs:
           WHITESOURCE_API_KEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WHITESOURCE_PROJECT_TOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
           TARGET_DIR: "service/application/target/lib"
-        run: java -jar wss-unified-agent.jar -apiKey ${{ env.WHITESOURCE_API_KEY }}   -projectToken ${{ env.WHITESOURCE_PROJECT_TOKEN }} -d  ${{ env.TARGET_DIR }} -logLevel Trace
+          WHITESOURCE_EXCLUDES="local-storage-plugin*.jar,plugin*.jar,kafka-plugin*.jar,confluent-schema-registry-plugin*.jar"
+        run: java -jar wss-unified-agent.jar \
+              -apiKey ${{ env.WHITESOURCE_API_KEY }}   -projectToken ${{ env.WHITESOURCE_PROJECT_TOKEN }} \
+              -d  ${{ env.TARGET_DIR }} \
+              -excludes $${{ env.WHITESOURCE_EXCLUDES }} -logLevel info
 
 #      - name: Deploy Artifacts
 #        if: ${{ github.ref == 'refs/heads/main' }}
