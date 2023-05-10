@@ -82,7 +82,7 @@ jobs:
         run: java -jar wss-unified-agent.jar \
               -apiKey ${{ env.WHITESOURCE_API_KEY }}   -projectToken ${{ env.WHITESOURCE_PROJECT_TOKEN }} \
               -d  ${{ env.TARGET_DIR }} \
-              -excludes $${{ env.WHITESOURCE_EXCLUDES }} -logLevel info
+              -excludes ${{ env.WHITESOURCE_EXCLUDES }} -logLevel info
 
 #      - name: Deploy Artifacts
 #        if: ${{ github.ref == 'refs/heads/main' }}
