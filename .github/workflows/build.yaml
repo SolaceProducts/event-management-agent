@@ -37,8 +37,9 @@ jobs:
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-          if [ $GITHUB_EVENT_NAME != "pull_request" && $GITHUB_REF_NAME="add_whitesource" ]
-          then
+          echo "$GITHUB_EVENT_NAME"
+          echo "$GITHUB_REF_NAME"
+          if [[ $GITHUB_EVENT_NAME != "pull_request" && $GITHUB_REF_NAME="add_whitesource" ]]; then
             export MAN_BRANCH_BUILD=true
           else
             export MAN_BRANCH_BUILD=false
