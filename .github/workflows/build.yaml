@@ -52,7 +52,7 @@ jobs:
 #          mvn -B $SKIP_FLAGS_ALL_TESTS \
 #            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
 #            --file service/pom.xml
-      - name: Download latest mend/whitesource agent and verify its integrity
+      - name: Download latest Mend/Whitesource Agent
         if: ${{ github.ref == 'refs/heads/add_whitesource' }}
         env:
           unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
@@ -70,12 +70,14 @@ jobs:
               echo "Integrity check of wss-unified-agent.jar file failed .."
               exit 1
           fi
-      - name: Perform whitesource scan
+      - name: Copy Maven Dependencies
+        run: mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
+      - name: Perform Whitesource Scan
         if: ${{ github.ref == 'refs/heads/add_whitesource' }}
         env:
           WHITESOURCE_API_KEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WHITESOURCE_PROJECT_TOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
-          TARGET_DIR: "service/application/target"
+          TARGET_DIR: "service/application/target/lib"
         run: java -jar wss-unified-agent.jar -apiKey ${{ env.WHITESOURCE_API_KEY }}   -projectToken ${{ env.WHITESOURCE_PROJECT_TOKEN }} -d  ${{ env.TARGET_DIR }} -logLevel Trace
 
 #      - name: Deploy Artifacts
