@@ -58,9 +58,9 @@ jobs:
           unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
           unified_agent_sha_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar.sha256"
         run: |
-          curl -LJO ${{ env.unified_agent_url }}
+          curl -LJOs ${{ env.unified_agent_url }}
           sha_from_jar=$(sha256sum  wss-unified-agent.jar | awk '{print $1}')
-          curl -LJO ${{ env.unified_agent_sha_url }}
+          curl -LJOs ${{ env.unified_agent_sha_url }}
           sha_from_file=$(cat wss-unified-agent.jar.sha256 | awk '{print $1}')
           echo "sha_from_jar: $sha_from_jar"
           echo "sha_from_file: $sha_from_file"
@@ -72,14 +72,14 @@ jobs:
           fi
       - name: Copy Maven Dependencies
         run: mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
-      - name: Perform Whitesource Scan
+      - name: Whitesource Scan
         if: ${{ github.ref == 'refs/heads/add_whitesource' }}
         env:
           WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
           TARGET_DIR: "service/application/target/lib"
           WS_EXCLUDES: "local-storage-plugin*.jar,plugin*.jar,kafka-plugin*.jar,confluent-schema-registry-plugin*.jar"
-        run: java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel info
+        run: java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
 
 #      - name: Deploy Artifacts
 #        if: ${{ github.ref == 'refs/heads/main' }}
