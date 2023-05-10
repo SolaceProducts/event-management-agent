@@ -103,7 +103,7 @@ cd event-management-agent/service/application/docker
 ./buildEventManagementAgentDocker.sh -t v1
 ```
 
-NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Docker file
+NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Dockerfile file
 
 4. Start the Event Management Agent by passing a tag (e.g. v1) and the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml)
 
