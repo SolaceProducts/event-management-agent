@@ -40,15 +40,15 @@ jobs:
           echo "$GITHUB_EVENT_NAME"
           echo "$GITHUB_REF_NAME"
           if [[ $GITHUB_EVENT_NAME != "pull_request" && $GITHUB_REF_NAME="add_whitesource" ]]; then
-            export MAN_BRANCH_BUILD=true
+            export MAIN_BRANCH_BUILD=true
           else
-            export MAN_BRANCH_BUILD=false
+            export MAIN_BRANCH_BUILD=false
           fi
-          echo "$MAN_BRANCH_BUILD"
-          echo "MAN_BRANCH_BUILD=$MAN_BRANCH_BUILD" >> $GITHUB_ENV
-      - run: echo "$MAN_BRANCH_BUILD"
+          echo "$MAIN_BRANCH_BUILD"
+          echo "MAIN_BRANCH_BUILD=$MAIN_BRANCH_BUILD" >> $GITHUB_ENV
+      - run: echo "$MAIN_BRANCH_BUILD"
       - name: test
-        if: env.MAN_BRANCH_BUILD
+        if: env.MAIN_BRANCH_BUILD
         run: "echo yes I am main branch"
 #      - name: Static Code Analysis
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
