@@ -75,7 +75,7 @@ jobs:
         env:
           WHITESOURCE_API_KEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WHITESOURCE_PROJECT_TOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
-          TARGET_DIR: "service/application/target"
+          TARGET_DIR: "service/kafka-plugin/target"
         run: java -jar wss-unified-agent.jar -apiKey ${{ env.WHITESOURCE_API_KEY }}   -projectToken ${{ env.WHITESOURCE_PROJECT_TOKEN }} -d  ${{ env.TARGET_DIR }} -logLevel info
 
 #      - name: Deploy Artifacts
