@@ -2,10 +2,10 @@ name: Build
 on:
   push:
     branches:
-      - add_whitesource
+      - main
     paths-ignore:
       - '.gitignore'
-#      - '.github/**'
+      - '.github/**'
       - '**/*.md'
   pull_request:
     types: [opened, synchronize, reopened]
@@ -88,14 +88,14 @@ jobs:
           fi
 
           echo "Whitesource- Copying Maven Dependencies"
-          mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib -Dsilent=true --file service/pom.xml
+          mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
 
           echo "Whitesource- Running scan"
           java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
 
-#      - name: Deploy Artifacts
-#        if: env.GITHUB_PACKAGES_DEPLOY=='true'
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
+      - name: Deploy Artifacts
+        if: env.GITHUB_PACKAGES_DEPLOY=='true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
