@@ -37,7 +37,7 @@ jobs:
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-          if [[ $GITHUB_EVENT_NAME != "pull_request" && $GITHUB_REF_NAME=="main" ]]; then
+          if [[ $GITHUB_REF_NAME=="main" ]]; then
             export WHITESOURCE_SCAN=true
             export GITHUB_PACKAGES_DEPLOY=true
           else
