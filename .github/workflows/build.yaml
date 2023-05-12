@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - add_test_reporters
+      - main
     paths-ignore:
       - '.gitignore'
 #      - '.github/**'
