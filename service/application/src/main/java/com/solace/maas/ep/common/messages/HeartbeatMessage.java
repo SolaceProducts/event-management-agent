@@ -7,7 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import lombok.Data;
 
 @Data
-public class HeartbeatMessage extends MOPMessage {
+public class HeartbeatMessage extends MOPMessage {                                                                                                                                                                                                
 
     private String orgId;
     private String runtimeAgentId;
