@@ -50,6 +50,7 @@ jobs:
       - name: Static Code Analysis
         run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
       - name: Static Code Analysis - Publishing Results
+        if: always()
         uses: jwgmeligmeyling/checkstyle-github-action@master
         with:
           path: '**/checkstyle-result.xml'
