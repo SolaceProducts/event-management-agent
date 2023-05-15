@@ -129,7 +129,7 @@ jobs:
           files: "**/surefire-reports/**/*.xml"
       - name: Publishing Test Results - Unit Tests
         uses: dorny/test-reporter@v1
-        if: steps.unit_test_report_exists.outputs.files_exists == 'true'
+        if: always() && steps.unit_test_report_exists.outputs.files_exists == 'true'
         with:
           name: Unit Tests
           path: "**/surefire-reports/**/*.xml"
