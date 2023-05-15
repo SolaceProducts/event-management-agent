@@ -32,7 +32,7 @@ public class IDGeneratorTests {
 
         String id = idGenerator.generateRandomUniqueId();
 
-        assertThat(id).hasSize(11);
+        assertThat(id).hasSize(12);
     }
 
     @SneakyThrows
