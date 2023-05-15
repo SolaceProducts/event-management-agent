@@ -121,12 +121,12 @@ jobs:
 #        uses: jwgmeligmeyling/spotbugs-github-action@master
 #        with:
 #          path: '**/spotbugsXml.xml'
-#      - name: Publishing Test Results - Unit Tests
-#        uses: dorny/test-reporter@v1
-#        if: always()
-#        with:
-#          name: Unit Tests
-#          path: "**/surefire-reports/**/*.xml"
-#          reporter: java-junit
-#          fail-on-error: true
-#          only-summary: 'true'
+      - name: Publishing Test Results - Unit Tests
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests
+          path: "**/surefire-reports/**/*.xml"
+          reporter: java-junit
+          fail-on-error: true
+          only-summary: 'true'
