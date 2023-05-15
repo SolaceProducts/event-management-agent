@@ -50,27 +50,27 @@ jobs:
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
 #      - name: Static Code Analysis
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-#      - name: Publishing Results - Checkstyle
+#      - name: Publishing Test Results - Checkstyle
 #        if: always()
 #        uses: jwgmeligmeyling/checkstyle-github-action@master
 #        with:
 #          path: '**/checkstyle-result.xml'
-#      - name: Publishing Results - PMD
+#      - name: Publishing Test Results - PMD
 #        if: always()
 #        uses: jwgmeligmeyling/pmd-github-action@master
 #        with:
 #          path: '**/pmd.xml'
-#      - name: Publishing Results - SpotBugs
-#        if: always()
-#        uses: jwgmeligmeyling/spotbugs-github-action@master
-#        with:
-#          path: '**/spotbugsXml.xml'
+      - name: Publishing Test Results - SpotBugs
+        if: always()
+        uses: jwgmeligmeyling/spotbugs-github-action@master
+        with:
+          path: '**/spotbugsXml.xml'
       - name: Unit Tests
         run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
 #      - name: Generate Artifacts
 #        run: |
 #          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-      - name: Publishing Results - Unit Tests
+      - name: Publishing Test Results - Unit Tests
         uses: dorny/test-reporter@v1
         if: always()
         with:
