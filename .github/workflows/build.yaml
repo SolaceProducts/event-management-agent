@@ -121,9 +121,14 @@ jobs:
 #        uses: jwgmeligmeyling/spotbugs-github-action@master
 #        with:
 #          path: '**/spotbugsXml.xml'
+      - name: Check file existence
+        id: check_files
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "**/surefire-reports/**/*.xml"
       - name: Publishing Test Results - Unit Tests
         uses: dorny/test-reporter@v1
-        if: always()
+        if: steps.check_files.outputs.files_exists == 'true'
         with:
           name: Unit Tests
           path: "**/surefire-reports/**/*.xml"
