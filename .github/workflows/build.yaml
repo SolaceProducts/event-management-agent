@@ -122,6 +122,7 @@ jobs:
 #        with:
 #          path: '**/spotbugsXml.xml'
       - name: Publishing Test Results - Unit Tests Precondition Check
+        if: always()
         id: unit_test_report_exists
         uses: andstor/file-existence-action@v2
         with:
