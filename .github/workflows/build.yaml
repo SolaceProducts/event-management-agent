@@ -19,7 +19,12 @@ jobs:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions: write-all
+    permissions:
+       contents: read
+       packages: write
+#       pull-requests: write
+#       actions: write
+#       statuses: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -48,36 +53,13 @@ jobs:
           echo "$WHITESOURCE_SCAN"
           echo "WHITESOURCE_SCAN=$WHITESOURCE_SCAN" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
-#      - name: Static Code Analysis
-#        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-#      - name: Publishing Test Results - Checkstyle
-#        if: always()
-#        uses: jwgmeligmeyling/checkstyle-github-action@master
-#        with:
-#          path: '**/checkstyle-result.xml'
-#      - name: Publishing Test Results - PMD
-#        if: always()
-#        uses: jwgmeligmeyling/pmd-github-action@master
-#        with:
-#          path: '**/pmd.xml'
-      - name: Publishing Test Results - SpotBugs
-        if: always()
-        uses: jwgmeligmeyling/spotbugs-github-action@master
-        with:
-          path: '**/spotbugsXml.xml'
-      - name: Unit Tests
-        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
+      - name: Static Code Analysis
+        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+#      - name: Unit Tests
+#        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
 #      - name: Generate Artifacts
 #        run: |
 #          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-      - name: Publishing Test Results - Unit Tests
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Unit Tests
-          path: "**/surefire-reports/**/*.xml"
-          reporter: java-junit
-          fail-on-error: true
 #      - name: Sonar Scan
 #        env:
 #          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -123,3 +105,27 @@ jobs:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        run: |
 #          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
+      - name: Publishing Test Results - Checkstyle
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@master
+        with:
+          path: '**/checkstyle-result.xml'
+#      - name: Publishing Test Results - PMD
+#        if: always()
+#        uses: jwgmeligmeyling/pmd-github-action@master
+#        with:
+#          path: '**/pmd.xml'
+#      - name: Publishing Test Results - SpotBugs
+#        if: always()
+#        uses: jwgmeligmeyling/spotbugs-github-action@master
+#        with:
+#          path: '**/spotbugsXml.xml'
+#      - name: Publishing Test Results - Unit Tests
+#        uses: dorny/test-reporter@v1
+#        if: always()
+#        with:
+#          name: Unit Tests
+#          path: "**/surefire-reports/**/*.xml"
+#          reporter: java-junit
+#          fail-on-error: true
+#          only-summary: 'true'
