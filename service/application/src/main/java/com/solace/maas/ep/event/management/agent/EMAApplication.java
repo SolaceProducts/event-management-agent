@@ -21,7 +21,7 @@ import java.util.Properties;
 @ComponentScan({"com.solace.maas"})
 @EnableScheduling
 @EnableJpaAuditing
-public class EMAApplication {
+public class EMAApplication {               
 
     protected static final Map<String, Object> startupStartedMarker = new HashMap<>();
     protected static final Map<String, Object> startupCompletedMarker = new HashMap<>();
