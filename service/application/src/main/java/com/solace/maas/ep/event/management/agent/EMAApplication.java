@@ -22,7 +22,7 @@ import java.util.Properties;
 @EnableScheduling
 @EnableJpaAuditing
 public class EMAApplication {
-  
+
     protected static final Map<String, Object> startupStartedMarker = new HashMap<>();
     protected static final Map<String, Object> startupCompletedMarker = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(EMAApplication.class);
