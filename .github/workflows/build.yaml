@@ -20,12 +20,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: read
-      packages: write
+       contents: read
+       packages: write
+       pull-requests: write
+       actions: write
+       statuses: write
+       checks: write
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
@@ -101,3 +106,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
+      - name: Publishing Test Results - Checkstyle
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@master
+        with:
+          path: '**/checkstyle-result.xml'
+      - name: Publishing Test Results - PMD
+        if: always()
+        uses: jwgmeligmeyling/pmd-github-action@master
+        with:
+          path: '**/pmd.xml'
+      - name: Publishing Test Results - SpotBugs
+        if: always()
+        uses: jwgmeligmeyling/spotbugs-github-action@master
+        with:
+          path: '**/spotbugsXml.xml'
+      - name: Publishing Test Results - Unit Tests Pre-Condition
+        if: always()
+        id: unit_test_report_exists
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "**/surefire-reports/**/*.xml"
+      - name: Publishing Test Results - Unit Tests
+        uses: dorny/test-reporter@v1
+        if: always() && steps.unit_test_report_exists.outputs.files_exists == 'true'
+        with:
+          name: Unit Tests
+          path: "**/surefire-reports/**/*.xml"
+          reporter: java-junit
+          fail-on-error: true
+          only-summary: 'true'
