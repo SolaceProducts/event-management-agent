@@ -28,7 +28,7 @@ At this stage (September 2022), the Event Management Agent is still in an active
 * Users can discover Solace PubSub+ and Apache Kafka brokers event flow data
     - Users can discover Solace PubSub+ queues and subscriptions
     - Users can discover Apache Kafka topics and consumer groups
-    - Users can discover Confluent Schema Registry schemas
+* Users can discover Confluent Schema Registry schemas
 * Users get discovered data in the form of JSON files separated by entity types
 * The Event Management Agent architecture is currently in the form of Java packages
 
@@ -49,7 +49,7 @@ On the roadmap:
 * Event Management Agent Docker images
 * Event Management Agent executables
 
-## Running the Event Management Agent
+## Running the Event Management Agent in the connected mode
 
 ### Minimum hardware requirements
 
@@ -64,39 +64,43 @@ The Event Management Agent was tested to run with
 * Maven
 * Docker (recommended)
 
-### Event Management Agent connection file
+### Cloning the Event Management Agent repository
 
-Specific properties are required to run the Event Management Agent in the connected to Event Portal mode. </br>
-These properties are defined in the connection file that can be downloaded from the Event Portal's Event Management Agent definition. </br>
-The steps for generating the connection file are listed over here : https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file </br>
-Replace the application.yml present in the location : event-management-agent/service/application/src/main/resources with the EMA connection file. </br>
-For security considerations, passwords should be configured through environment variables or in other secure manner.
-
-
-### Cloning and Building
-
-#### Steps to build and run the service
-
-1. Clone the event-management-agent repository
+The Event Management Agent must have access to the event broker(s).
 
 ```
 git clone https://github.com/SolaceLabs/event-management-agent.git
 ```
 
-2. Install maven dependencies
+### Generating the Event Management Agent connection file
+
+* Log in (or sign up to) the Solace Cloud Console: https://console.solace.cloud/login/
+* Follow the steps for generating the connection file described in the Solace Cloud documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
+* Download the connection file and upload it in the Event Management Agent directory
+    - Replace the application.yml present in the location: event-management-agent/service/application/src/main/resources with the connection file
+    - Or place the connection file anywhere and pass its path to the agent when starting it
+* For security considerations, passwords should be configured as environment variables. Therefore, create the environment variable(s) containing the password(s).
+
+### Installing maven dependencies
 
 ```
 cd event-management-agent/service
 mvn clean install
 ```
 
-3. Run the Event Management Agent as a process (recommended for testing and proof of concept purposes only) and specify the location of the configuration file (e.g. configs/AcmeRetail.yml)
+### Running the Event Management Agent as a process (recommended for testing and proof of concept purposes only)
+
+Specify the location of the configuration file if not using the default location (e.g. configs/AcmeRetail.yml)
 
 ```
 java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=configs/AcmeRetail.yml
 ```
 
-3. Build a Docker container (recommended)
+### Running the Event Management Agent as a Docker container (recommended)
+
+#### Building the Event Management Agent
+
+Provide a tag for the Docker image (e.g. v1)
 
 ```
 cd event-management-agent/service/application/docker
@@ -105,11 +109,19 @@ cd event-management-agent/service/application/docker
 
 NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Dockerfile file
 
-4. Start the Event Management Agent by passing a tag (e.g. v1) and the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml)
+#### Starting the Event Management Agent
+
+Provide the Docker image tag (e.g. v1), the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml) and the environment variables containing the password(s)
 
 ```
 ./runEventManagementAgentDocker.sh v1 /tmp/configFiles/perf1-ema.yml
 ```
+
+### Running a Discovery scan
+
+The Event Management Agent is now connected to the Solace Cloud Console.
+Follow the steps in the documentation to run a Discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
+
 
 ## Broker Plugins
 
