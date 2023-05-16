@@ -5,27 +5,25 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
+    <groupId>com.solace.maas</groupId>
     <artifactId>event-management-agent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>event-management-agent</name>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <description>event-management-agent application</description>
-
+    <name>Solace Event Management Agent - Application</name>
+    <description>Solace Event Management Agent - Application</description>
     <properties>
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>1.31</snakeyaml.version>
     </properties>
-
     <repositories>
         <repository>
             <id>localrepository</id>
             <url>file:///solclientj/lib/</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -141,27 +139,27 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.solace.maas.plugin.confluentSchemaRegistry</groupId>
-            <artifactId>confluentSchemaRegistry-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
+            <artifactId>confluent-schema-registry-plugin</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <!-- for testing -->
@@ -264,25 +262,81 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
-            <id>default</id>
+            <id>maas-static-code-analysis</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-            <distributionManagement>
-                <repository>
-                    <id>releases</id>
-                    <name>Releases Repository</name>
-                    <url>${maas.nexus.release}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>snapshots</id>
-                    <name>Snapshots Repository</name>
-                    <url>${maas.nexus.snapshot}</url>
-                </snapshotRepository>
-            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>${checkstyle.plugin.version}</version>
+                        <configuration>
+                            <failOnViolation>true</failOnViolation>
+                            <failsOnError>true</failsOnError>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>${pmd.plugin.version}</version>
+                        <configuration>
+                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+                            <minimumTokens>100</minimumTokens>
+                            <targetJdk>${java.version}</targetJdk>
+                            <rulesets>
+                                <ruleset>../resources/pmd/pmd-rules.xml</ruleset>
+                            </rulesets>
+                            <failOnViolation>false</failOnViolation>
+                            <includeTests>true</includeTests>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>${pmd.phase}</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                    <goal>cpd-check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                        <version>${spotbugs.plugin.version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.github.spotbugs</groupId>
+                                <artifactId>spotbugs</artifactId>
+                                <version>${spotbugs.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <effort>Max</effort>
+                            <threshold>High</threshold>
+                            <failOnError>true</failOnError>
+                            <plugins>
+                                <plugin>
+                                    <groupId>com.h3xstream.findsecbugs</groupId>
+                                    <artifactId>findsecbugs-plugin</artifactId>
+                                    <version>${findsecbugs.version}</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

@@ -2,26 +2,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>maas-event-management-agent-parent</artifactId>
         <groupId>com.solace.maas</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <artifactId>maas-event-management-agent-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-
+    <groupId>com.solace.maas</groupId>
     <artifactId>plugin</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>plugin</name>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <description>plugin</description>
-
+    <name>Solace Event Management Agent - Plugin</name>
+    <description>Solace Event Management Agent - Plugin</description>
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <snakeyaml.version>1.31</snakeyaml.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -78,7 +76,6 @@
             <version>10.0.0</version>
             <type>pom</type>
         </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -96,26 +93,4 @@
             <version>${snakeyaml.version}</version>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <distributionManagement>
-                <repository>
-                    <id>releases</id>
-                    <name>Releases Repository</name>
-                    <url>${maas.nexus.release}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>snapshots</id>
-                    <name>Snapshots Repository</name>
-                    <url>${maas.nexus.snapshot}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-    </profiles>
-
 </project>
