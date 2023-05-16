@@ -14,26 +14,36 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <solace-messaging-client.version>1.0.0</solace-messaging-client.version>
+        <solclientj.version>10.0.0</solclientj.version>
+        <spring-boot-starter-webflux.version>2.7.6</spring-boot-starter-webflux.version>
+        <spring-boot-starter-test.version>2.7.6</spring-boot-starter-test.version>
+        <jupiter.version>5.3.1</jupiter.version>
+        <camel.version>3.16.0</camel.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>1.31</snakeyaml.version>
+        <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
+        <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.solace</groupId>
             <artifactId>solace-messaging-client</artifactId>
-            <version>1.0.0</version>
+            <version>${solace-messaging-client.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.solacesystems</groupId>
             <artifactId>solclientj</artifactId>
-            <version>10.0.0</version>
+            <version>${solclientj.version}</version>
             <type>pom</type>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
-            <version>2.7.6</version>
+            <version>${spring-boot-starter-webflux.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.yaml</groupId>
@@ -45,14 +55,27 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>2.7.6</version>
+            <version>${spring-boot-starter-test.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jackson</artifactId>
+            <version>${camel.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>${commons-collections4.version}</version>
         </dependency>
 
         <dependency>
@@ -81,7 +104,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>${maven-shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -90,13 +113,24 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.solace.maas.ep.event.management.agent.plugin.solace.SolaceApplication</mainClass>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>
+                                        com.solace.maas.ep.event.management.agent.plugin.solace.SolaceApplication
+                                    </mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <argLine>${jacocoSurefire}</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>

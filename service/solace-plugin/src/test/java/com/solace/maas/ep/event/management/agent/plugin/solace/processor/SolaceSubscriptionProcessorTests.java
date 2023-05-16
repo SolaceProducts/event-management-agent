@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.solace.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.event.SolaceQueueNameEvent;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import lombok.SneakyThrows;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
 @SuppressWarnings("PMD")
 public class SolaceSubscriptionProcessorTests {
     @Mock
@@ -41,11 +42,11 @@ public class SolaceSubscriptionProcessorTests {
         when(messagingServiceDelegateService.getMessagingServiceClient("testService"))
                 .thenReturn(sempClient);
         when(sempClient.getSubscriptionForQueue("abc")).thenReturn(List.of(
-                    sub1, sub2
-                ));
+                sub1, sub2
+        ));
         List<Map<String, Object>> subscriptionEvents =
                 solaceSubscriptionProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"),
-                List.of(SolaceQueueNameEvent.builder().name("abc").build()));
+                        List.of(SolaceQueueNameEvent.builder().name("abc").build()));
 
         assertThat(subscriptionEvents, hasSize(2));
         assertThat(subscriptionEvents, containsInAnyOrder(sub1, sub2));

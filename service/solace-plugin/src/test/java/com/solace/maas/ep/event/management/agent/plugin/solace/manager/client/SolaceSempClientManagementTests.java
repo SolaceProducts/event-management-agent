@@ -4,13 +4,18 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.A
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
+import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ActiveProfiles("TEST")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
 public class SolaceSempClientManagementTests {
 
     private final SolaceSempClientManagerImpl sempClientManager = new SolaceSempClientManagerImpl();
