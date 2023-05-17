@@ -76,10 +76,11 @@ git clone https://github.com/SolaceLabs/event-management-agent.git
 
 * Log in (or sign up to) the Solace Cloud Console: https://console.solace.cloud/login/
 * Follow the steps for generating the connection file described in the Solace Cloud documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
+    - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variable(s) that will contain the password(s) when generating the connection file.
 * Download the connection file and upload it in the Event Management Agent directory
     - Replace the application.yml present in the location: event-management-agent/service/application/src/main/resources with the connection file
     - Or place the connection file anywhere and pass its path to the agent when starting it
-* For security considerations, passwords should be configured as environment variables. Therefore, create the environment variable(s) containing the password(s).
+* Create the environment variable(s) containing the password(s) you provided when generating the connection file.
 
 ### Installing maven dependencies
 
@@ -109,9 +110,17 @@ cd event-management-agent/service/application/docker
 
 NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Dockerfile file
 
+#### Passing the environment variable(s) containing the password(s)
+
+Edit the following script to add the environment variable(s) containing the password(s) to the Docker container
+
+```
+service/application/docker/runEventManagementAgentDocker.sh
+```
+
 #### Starting the Event Management Agent
 
-Provide the Docker image tag (e.g. v1), the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml) and the environment variables containing the password(s)
+Provide the Docker image tag (e.g. v1), the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml)
 
 ```
 ./runEventManagementAgentDocker.sh v1 /tmp/configFiles/perf1-ema.yml
