@@ -47,7 +47,7 @@ On the roadmap:
 * Event Management Agent Docker images
 * Event Management Agent executables
 
-## Running the Event Management Agent in the connected mode
+## Running the Event Management Agent in connected mode
 
 ### Minimum hardware requirements
 
@@ -72,13 +72,13 @@ git clone https://github.com/SolaceLabs/event-management-agent.git
 
 ### Generating the Event Management Agent connection file
 
-* Log in (or sign up to) the Solace Cloud Console: https://console.solace.cloud/login/
+* Log in the Solace Cloud Console: https://console.solace.cloud/login/
 * Follow the steps for generating the connection file described in the Solace Cloud documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
-    - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variable(s) that will contain the password(s) when generating the connection file.
-* Download the connection file and upload it in the Event Management Agent directory
+    - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variables that will contain the passwords when generating the connection file.
+* Download the connection file and add it to the Event Management Agent directory
     - Replace the application.yml present in the location: event-management-agent/service/application/src/main/resources with the connection file
     - Or place the connection file anywhere and pass its path to the agent when starting it
-* Create the environment variable(s) containing the password(s) you provided when generating the connection file.
+* Create the environment variables containing the passwords you provided when generating the connection file.
 
 ### Installing Maven dependencies
 
@@ -108,9 +108,9 @@ cd event-management-agent/service/application/docker
 
 NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Dockerfile file
 
-#### Passing the environment variable(s) containing the password(s)
+#### Passing the environment variables containing the passwords
 
-Edit the following script to add the environment variable(s) containing the password(s) to the Docker container
+Edit the following script to add the environment variables containing the passwords to the Docker container
 
 ```
 service/application/docker/runEventManagementAgentDocker.sh
