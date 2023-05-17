@@ -21,7 +21,7 @@ to build new plugins so that:
 * existing plugins can be extended to discover additional data
 * EDA data can be discovered from other systems, e.g. schemas from schema registries
 
-At this stage (September 2022), the Event Management Agent is still in an active development phase.
+At this stage (May 2023), the Event Management Agent is still in an active development phase.
 
 ### Available today:
 
@@ -34,16 +34,14 @@ At this stage (September 2022), the Event Management Agent is still in an active
 
 On the roadmap:
 
-* Support for Confluent and MSK flavours of Apache Kafka
+* Support for the Confluent flavour of Apache Kafka
 * The Event Management Agent has an open source plugin framework
 * Support additional Solace PubSub+ and Apache Kafka event broker authentication types in the form of plugins such as
-  basic authentication, certificates, Kerberos, etc.
+  Kerberos, etc.
 * Collection of topics from events flowing though Solace PubSub+ brokers
-* Import discovered data into the Solace PubSub+ Event Portal
 * Export discovered data as AsyncAPI specifications
 * Addition of the infrastructure needed for the Event Management Agent to be a true open source project
 * Discovery of Apache Kafka connectors
-* Discovery of schemas from schema registries
 * Introduction of a UI for the Event Management Agent
 * Additional support to more broker types
 * Event Management Agent Docker images
@@ -82,7 +80,7 @@ git clone https://github.com/SolaceLabs/event-management-agent.git
     - Or place the connection file anywhere and pass its path to the agent when starting it
 * Create the environment variable(s) containing the password(s) you provided when generating the connection file.
 
-### Installing maven dependencies
+### Installing Maven dependencies
 
 ```
 cd event-management-agent/service
@@ -144,7 +142,7 @@ The Event Management Agent comes with the following event or message broker plug
 The default application.yml provides various plugin examples. For Kafka, the properties section under credentials is
 passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
 
-If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. Two ways is either via environment
+If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. This can be done via environment
 or credentials file as shown below:
 
 Put a file with the following contents into a ~/.aws/credentials file
@@ -164,12 +162,11 @@ export AWS_SECRET_ACCESS_KEY=<aws_secret_key>
 
 ## Deployment
 
-There are essentially 2 main modes of deployment:
+There are two main modes of deployment:
 
-* Solace PubSub+ Console Connected: The Event Management Agent connects to the event management region and can be
-  controlled remotely via Event Portal
+* Connected: The Event Management Agent connects to the Solace PubSub+ Event Portal.
 
-* Stand-alone: The Event Management Agent is controlled via the REST API and results must be uploaded manually.
+* Standalone: The Event Management Agent is controlled via the REST API and results must be uploaded manually.
 
 ## Running a scan
 
@@ -184,18 +181,18 @@ See [REST Documentation](docs/rest.md) for additional information
 
 To import scanned data into Event Portal:
 
-* Set up a new standalone Event Management Agent.
-* Run a scan according to the instructions here: [Running Scans](docs/rest.md#running-scans)
-* After the scan is complete, create a .zip file containing the scan files by sending a GET request to the
+1. Set up a new standalone Event Management Agent.
+2. Run a scan according to the instructions here: [Running Scans](docs/rest.md#running-scans)
+3. After the scan is complete, create a .zip file containing the scan files by sending a GET request to the
   endpoint `http://localhost:8180/api/v2/ema/resources/export/{scanId}/zip`
-* Locate the .zip file in the directory `data_collection\zip`. The .zip file is named as `{scanId}.zip`
-* Set up a second Event Management Agent that is connected to Event Portal.
-* Use a method approved by your organization's security policies to copy the .zip file to the second Event Management
+4. Locate the .zip file in the directory `data_collection\zip`. The .zip file is named as `{scanId}.zip`
+5. Set up a second Event Management Agent that is connected to Event Portal.
+6. Use a method approved by your organization's security policies to copy the .zip file to the second Event Management
   Agent.
-* Start the data import process by sending a POST request to the
+7. Start the data import process by sending a POST request to the
   endpoint `http://localhost:8180/api/v2/ema/resources/import`. Add the .zip file to the body of the request
   using `file` as the key.
-* After sending the POST request, the Event Management Agent will start the import process.
+8. After sending the POST request, the Event Management Agent will start the import process.
 
 ## Motivations
 
@@ -226,7 +223,7 @@ c.s.m.e.r.a.c.ResourceConfig : Created [kafka] resource with id:[sakdjf] and nam
 c.s.m.e.r.a.c.ResourceConfig : Created [solace] resource with id:[hdfgkdjf] and name: [some-name2]
 ```
 
-4. View the Swagger documentation to learn about the available REST endpoints for the Event Management Agent. To access
+4. View the local Swagger documentation to learn about the available REST endpoints for the Event Management Agent. To access
    the Swagger documentation, use the link `http://localhost:8180/event-management-agent/swagger-ui/index.html` (Note:
    The Event Management Agent is under continuous development. Therefore, please check the Swagger documentation to make
    sure that you are using the recent endpoint schema).
