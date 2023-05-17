@@ -64,7 +64,7 @@ The Event Management Agent was tested to run with
 
 ### Cloning the Event Management Agent repository
 
-The Event Management Agent must have access to the event broker(s).
+The Event Management Agent must have access to the event brokers.
 
 ```
 git clone https://github.com/SolaceLabs/event-management-agent.git
