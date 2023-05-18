@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.route.delegate;
 
+import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.route.enumeration.SolaceScanType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 @ActiveProfiles("TEST")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
 public class SolaceRouteDelegateImplTests {
     @InjectMocks
     private SolaceRouteDelegateImpl solaceRouteDelegate;

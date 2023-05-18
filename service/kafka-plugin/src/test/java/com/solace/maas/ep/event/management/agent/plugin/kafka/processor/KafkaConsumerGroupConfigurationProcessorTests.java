@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.KafkaTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.consumer.KafkaConsumerGroupConfigurationProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.consumer.KafkaConsumerGroupEvent;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -34,7 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = KafkaTestConfig.class)
 public class KafkaConsumerGroupConfigurationProcessorTests {
 
     @Mock
