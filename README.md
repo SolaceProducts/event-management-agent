@@ -142,8 +142,7 @@ The Event Management Agent comes with the following event or message broker plug
 The default application.yml provides various plugin examples. For Kafka, the properties section under credentials is
 passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
 
-If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. This can be done via environment
-or credentials file as shown below:
+If using AWS IAM, the AWS Access Key Id and AWS Secret Access Key need to be present. This can be done via a credentials file or environment variables as shown below:
 
 Put a file with the following contents into a ~/.aws/credentials file
 
@@ -164,7 +163,7 @@ export AWS_SECRET_ACCESS_KEY=<aws_secret_key>
 
 There are two main modes of deployment:
 
-* Connected: The Event Management Agent connects to the Solace PubSub+ Event Portal.
+* Connected: The Event Management Agent connects to the Solace PubSub+ Event Portal. Scans are initiated from Event Portal. Completed scan results are uploaded to Event Portal automatically.
 
 * Standalone: The Event Management Agent is controlled via the REST API and results must be uploaded manually.
 
@@ -179,7 +178,7 @@ See [REST Documentation](docs/rest.md) for additional information
 
 ## Importing Scanned Data
 
-To import scanned data into Event Portal:
+In you want to import your scanned data into the Event Portal in the standalone mode, you will need to do so manually with the following steps:
 
 1. Set up a new standalone Event Management Agent.
 2. Run a scan according to the instructions here: [Running Scans](docs/rest.md#running-scans)
