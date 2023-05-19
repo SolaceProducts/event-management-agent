@@ -34,9 +34,9 @@
         <checkstyle.phase>validate</checkstyle.phase>
         <pmd.plugin.version>3.13.0</pmd.plugin.version>
         <pmd.phase>validate</pmd.phase>
-        <spotbugs.plugin.version>3.1.12.1</spotbugs.plugin.version>
+        <spotbugs.plugin.version>4.7.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
-        <spotbugs.version>4.0.0-beta4</spotbugs.version>
+        <spotbugs.version>4.7.3</spotbugs.version>
         <findsecbugs.version>1.10.1</findsecbugs.version>
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
@@ -109,7 +109,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.5</version>
+                    <version>0.8.10</version>
                     <configuration>
                         <excludes>
                             <exclude>**/config/*</exclude>
