@@ -40,12 +40,12 @@ public class ScanLogsProcessor implements Processor {
 
         Map<String, Object> properties = exchange.getIn().getHeaders();
         ILoggingEvent event = (ILoggingEvent) exchange.getIn().getBody();
-        String scanId = (String) exchange.getIn().getHeader(RouteConstants.SCAN_ID);
+        String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        ScanLogMessage logDataMessage =
-                new ScanLogMessage(orgId, scanId, event.getLevel().toString(),
-                        String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
+        ScanLogMessage logDataMessage = new ScanLogMessage(orgId, scanId, traceId, event.getLevel().toString(),
+                String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);

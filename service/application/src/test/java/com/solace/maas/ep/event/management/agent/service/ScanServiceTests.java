@@ -9,21 +9,18 @@ import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcesso
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.SneakyThrows;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.ExchangeBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -201,20 +198,11 @@ public class ScanServiceTests {
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
 
         scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
-                "groupId", "scanId", mock(MessagingServiceEntity.class), "runtimeAgent1");
-
-        assertThatNoException();
-    }
-
-    @Test
-    @SneakyThrows
-    public void testScan() {
-        Exchange exchange = ExchangeBuilder.anExchange(mock(ExtendedCamelContext.class)).build();
-
-        when(producerTemplate.send(any(String.class), any(Processor.class)))
-                .thenReturn(exchange);
-
-        scanService.scan("group1", "scan1", RouteEntity.builder().build(), "service1");
+                "groupId",
+                "scanId",
+                "traceId",
+                mock(MessagingServiceEntity.class),
+                "runtimeAgent1");
 
         assertThatNoException();
     }
@@ -380,7 +368,7 @@ public class ScanServiceTests {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanTypeRepository.class),
                 mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
-        service.sendScanStatus("scanId", "groupId", "messagingServiceId",
+        service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
         assertThatNoException();

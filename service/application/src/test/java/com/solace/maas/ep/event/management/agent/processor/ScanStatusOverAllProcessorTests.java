@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
-import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
@@ -44,13 +43,11 @@ public class ScanStatusOverAllProcessorTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, StringUtils.join(scanTypes, ","));
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "description");
-
-        ScanStatusMessage scanStatusMessage = new
-                ScanStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", scanTypes);
 
         HashMap<String, String> topicDetails = new HashMap<>();
         topicDetails.put("orgId", null);
