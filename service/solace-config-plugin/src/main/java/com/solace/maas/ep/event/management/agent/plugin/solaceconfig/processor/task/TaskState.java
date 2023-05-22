@@ -2,7 +2,8 @@ package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.
 
 public enum TaskState {
     ABSENT("ABSENT"),
-    PRESENT("PRESENT");
+    PRESENT("PRESENT"),
+    READ("READ");
 
     public final String label;
 

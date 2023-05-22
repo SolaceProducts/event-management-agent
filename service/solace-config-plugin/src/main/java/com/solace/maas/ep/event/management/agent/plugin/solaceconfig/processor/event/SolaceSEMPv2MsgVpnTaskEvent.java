@@ -1,6 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.event;
 
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.sempv2task.SEMPv2MsgVpnTaskConfig;
+import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semptask.SEMPv2MsgVpnTaskConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
