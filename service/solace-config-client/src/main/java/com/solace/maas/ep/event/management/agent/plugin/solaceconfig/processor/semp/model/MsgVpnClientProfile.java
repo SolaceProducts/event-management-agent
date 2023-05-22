@@ -91,7 +91,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   MsgVpnClientProfile.JSON_PROPERTY_TCP_MAX_WINDOW_SIZE,
   MsgVpnClientProfile.JSON_PROPERTY_TLS_ALLOW_DOWNGRADE_TO_PLAIN_TEXT_ENABLED
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class MsgVpnClientProfile {
   public static final String JSON_PROPERTY_ALLOW_BRIDGE_CONNECTIONS_ENABLED = "allowBridgeConnectionsEnabled";
   private Boolean allowBridgeConnectionsEnabled;

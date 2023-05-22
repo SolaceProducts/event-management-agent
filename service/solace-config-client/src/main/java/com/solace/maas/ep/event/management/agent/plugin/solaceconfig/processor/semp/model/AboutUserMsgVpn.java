@@ -30,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   AboutUserMsgVpn.JSON_PROPERTY_ACCESS_LEVEL,
   AboutUserMsgVpn.JSON_PROPERTY_MSG_VPN_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class AboutUserMsgVpn {
   /**
    * The Message VPN access level of the User. The allowed values and their meaning are:  &lt;pre&gt; \&quot;none\&quot; - No access. \&quot;read-only\&quot; - Read only access. \&quot;read-write\&quot; - Read and write access. &lt;/pre&gt; 

@@ -31,7 +31,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   OauthProfileDefaultMsgVpnAccessLevelException.JSON_PROPERTY_MSG_VPN_NAME,
   OauthProfileDefaultMsgVpnAccessLevelException.JSON_PROPERTY_OAUTH_PROFILE_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class OauthProfileDefaultMsgVpnAccessLevelException {
   /**
    * The message VPN access level. Changes to this attribute are synchronized to HA mates via config-sync. The default value is &#x60;\&quot;none\&quot;&#x60;. The allowed values and their meaning are:  &lt;pre&gt; \&quot;none\&quot; - User has no access to a Message VPN. \&quot;read-only\&quot; - User has read-only access to a Message VPN. \&quot;read-write\&quot; - User has read-write access to most Message VPN settings. &lt;/pre&gt; 

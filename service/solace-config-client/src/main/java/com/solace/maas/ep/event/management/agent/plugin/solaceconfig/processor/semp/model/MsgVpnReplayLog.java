@@ -34,7 +34,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   MsgVpnReplayLog.JSON_PROPERTY_REPLAY_LOG_NAME,
   MsgVpnReplayLog.JSON_PROPERTY_TOPIC_FILTER_ENABLED
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class MsgVpnReplayLog {
   public static final String JSON_PROPERTY_EGRESS_ENABLED = "egressEnabled";
   private Boolean egressEnabled;

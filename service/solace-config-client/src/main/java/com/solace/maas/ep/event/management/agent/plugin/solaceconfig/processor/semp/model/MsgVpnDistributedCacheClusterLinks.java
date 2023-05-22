@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   MsgVpnDistributedCacheClusterLinks.JSON_PROPERTY_TOPICS_URI,
   MsgVpnDistributedCacheClusterLinks.JSON_PROPERTY_URI
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class MsgVpnDistributedCacheClusterLinks {
   public static final String JSON_PROPERTY_GLOBAL_CACHING_HOME_CLUSTERS_URI = "globalCachingHomeClustersUri";
   private String globalCachingHomeClustersUri;

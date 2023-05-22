@@ -31,7 +31,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   MsgVpnReplicatedTopic.JSON_PROPERTY_REPLICATED_TOPIC,
   MsgVpnReplicatedTopic.JSON_PROPERTY_REPLICATION_MODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class MsgVpnReplicatedTopic {
   public static final String JSON_PROPERTY_MSG_VPN_NAME = "msgVpnName";
   private String msgVpnName;

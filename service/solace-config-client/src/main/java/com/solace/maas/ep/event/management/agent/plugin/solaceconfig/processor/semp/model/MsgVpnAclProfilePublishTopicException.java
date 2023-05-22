@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   MsgVpnAclProfilePublishTopicException.JSON_PROPERTY_PUBLISH_TOPIC_EXCEPTION,
   MsgVpnAclProfilePublishTopicException.JSON_PROPERTY_PUBLISH_TOPIC_EXCEPTION_SYNTAX
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class MsgVpnAclProfilePublishTopicException {
   public static final String JSON_PROPERTY_ACL_PROFILE_NAME = "aclProfileName";
   private String aclProfileName;
