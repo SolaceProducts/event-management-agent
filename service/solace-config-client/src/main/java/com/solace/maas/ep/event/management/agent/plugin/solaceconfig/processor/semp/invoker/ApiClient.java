@@ -17,6 +17,7 @@ import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -56,7 +57,7 @@ import java.time.OffsetDateTime;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.invoker.auth.Authentication;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.invoker.auth.HttpBasicAuth;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-04-25T11:27:30.946889+01:00[Europe/London]")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-05-17T23:49:01.929728+01:00[Europe/London]")
 public class ApiClient extends JavaTimeFormatter {
     public enum CollectionFormat {
         CSV(","), TSV("\t"), SSV(" "), PIPES("|"), MULTI(null);
@@ -673,7 +674,7 @@ public class ApiClient extends JavaTimeFormatter {
     protected RestTemplate buildRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         // This allows us to read the response more than once - Necessary for debugging.
-        restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(restTemplate.getRequestFactory()));
+        restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new HttpComponentsClientHttpRequestFactory()));
 
         // disable default URL encoding
         DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory();
