@@ -92,7 +92,7 @@ mvn clean install
 Specify the location of the configuration file if not using the default location (e.g. configs/AcmeRetail.yml)
 
 ```
-java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=configs/AcmeRetail.yml
+java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=/path/to/file/AcmeRetail.yml
 ```
 
 ### Running the Event Management Agent as a Docker container (recommended)
