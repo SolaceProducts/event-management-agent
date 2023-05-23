@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.processor;
 
+import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import lombok.SneakyThrows;
@@ -37,18 +38,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
-@SpringBootTest()
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
 @SuppressWarnings("PMD")
 public class SolaceSempClientTests {
+    private final DefaultUriBuilderFactory defaultUriBuilderFactory = new DefaultUriBuilderFactory();
+
+    private final Map<String, String> requestResponseMap = buildRequestResponseMap();
+
     @Captor
     private ArgumentCaptor<Function<UriBuilder, URI>> uriFunctionCaptor;
 
-    private final DefaultUriBuilderFactory defaultUriBuilderFactory = new DefaultUriBuilderFactory();
-
     @Mock
     private WebClient mockClient;
-
-    private final Map<String, String> requestResponseMap = buildRequestResponseMap();
 
     private SolaceHttpSemp sempClient;
 
@@ -108,7 +109,7 @@ public class SolaceSempClientTests {
         assertThat(subscriptionList, hasSize(2));
 
         List<String> subscriptions = subscriptionList.stream()
-                        .map(subMap -> subMap.get("subscriptionTopic").toString()).collect(Collectors.toUnmodifiableList());
+                .map(subMap -> subMap.get("subscriptionTopic").toString()).collect(Collectors.toUnmodifiableList());
         assertThat(subscriptions, containsInAnyOrder("my/fancy/topic/subscription", "my/fancy/topic/subscription2"));
         assertThatNoException();
     }
@@ -131,7 +132,7 @@ public class SolaceSempClientTests {
                 () -> sempClient.getSubscriptionForQueue("myQueue1")
         );
 
-        assertEquals("Could not construct URL from worst url ever", exception.getMessage());
+        assertEquals("Could not construct URI from worst url ever", exception.getMessage());
     }
 
     private void mockHttp(WebClient webClient) {
@@ -179,7 +180,7 @@ public class SolaceSempClientTests {
                         "        },\n" +
                         "        \"responseCode\": 200\n" +
                         "    } }"
-                );
+        );
 
         // Add response for get queue names page 2
         requestResponseResult.put("http://myHost:12345/secondPage",
@@ -292,7 +293,7 @@ public class SolaceSempClientTests {
                         "         \"subscriptionTopic\": \"my/fancy/topic/subscription\" }," +
                         "        {\"queueName\": \"testQueue1\"," +
                         "         \"msgVpnName\": \"xyz\"," +
-                        "         \"subscriptionTopic\": \"my/fancy/topic/subscription2\" }" +                        "        ]," +
+                        "         \"subscriptionTopic\": \"my/fancy/topic/subscription2\" }" + "        ]," +
                         "    \"meta\": {\n" +
                         "        \"request\": {\n" +
                         "            \"method\": \"GET\",\n" +

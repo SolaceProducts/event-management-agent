@@ -51,13 +51,6 @@ On the roadmap:
 
 ## Running the Event Management Agent
 
-### Prerequisites:
-
-* Java 11 (AdoptOpenJDK 11.0.14+ https://adoptium.net/temurin/releases)
-* Maven
-* Docker (for running the Event Management Agent with MySQL database)
-* Event Management Agent Region (for cloud mode)
-
 ### Minimum hardware requirements
 
 The Event Management Agent was tested to run with
@@ -65,9 +58,15 @@ The Event Management Agent was tested to run with
 * 1 CPU
 * 1 GB RAM
 
-### Spring-boot properties
+### Prerequisites:
 
-Specific properties are required to run this spring boot application in cloud mode. </br>
+* Java 11 (JDK 11.0.14+)
+* Maven
+* Docker (recommended)
+
+### Event Management Agent connection file
+
+Specific properties are required to run the Event Management Agent in the connected to Event Portal mode. </br>
 These properties are defined in the connection file that can be downloaded from the Event Portal's Event Management Agent definition. </br>
 The steps for generating the connection file are listed over here : https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file </br>
 Replace the application.yml present in the location : event-management-agent/service/application/src/main/resources with the EMA connection file. </br>
@@ -91,86 +90,25 @@ cd event-management-agent/service
 mvn clean install
 ```
 
-3. Start the Event Management Agent
+3. Run the Event Management Agent as a process (recommended for testing and proof of concept purposes only) and specify the location of the configuration file (e.g. configs/AcmeRetail.yml)
 
 ```
-java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
+java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=configs/AcmeRetail.yml
 ```
 
-Alternatively, to build and run the service in IDE
-
-1. Clone the event-management-agent repository
+3. Build a Docker container (recommended)
 
 ```
-git clone https://github.com/SolaceLabs/event-management-agent.git
+cd event-management-agent/service/application/docker
+./buildEventManagementAgentDocker.sh -t v1
 ```
 
-2. The Event Management Agent uses H2 database by default. The H2 console is available at `http://localhost:8180/h2`.
-   The database is available at `jdbc:h2:file:./data/cache`.
+NB: Specify the Docker OS base image to use if required by editing the event-management-agent/service/application/docker/base-image/Dockerfile file
 
-3. The connection details for the H2 database are specified using the following properties in the application.yml file
-
-```
-spring.datasource.url
-spring.datasource.username
-spring.datasource.password
-spring.datasource.driver-class-name
-spring.h2.console.path
-```
-
-4. Alternatively, to use MySql database
-
-    1. save the code below to a yml file, then run `docker-compose up` against the file. **
-       Note**: For Macbook users with M1 chip, add the property `platform: linux/x86_64` to the file
-
-   ```
-   version: '3.1'
-
-   services:
-    db:
-      image: mysql
-      container_name: mysql8
-      command: --default-authentication-plugin=mysql_native_password
-      restart: always
-      ports:
-        - "3308:3306"
-      environment:
-        MYSQL_ROOT_PASSWORD: secret
-      volumes:
-        - ./my-datavolume:/var/lib/mysql 
-     ```
-
-    2. Create the `event-management-agent` database
-
-    ```
-    create database if not exists event-management-agent;
-    ```
-
-    3. Create an active profile named `mysql-dev` in Spring Boot Run Configurations
-
-   ![Alt text](docs/images/run-configuration.png "run configuration")
-
-    4. Create new yml file in resources with the name `application-mysql-dev.yml`&nbsp;
-
-    5. Add the code below to the file
-
-    ```
-    spring:
-      datasource:
-        url: jdbc:mysql://localhost:3308/event-management-agent
-        username: root
-        password: secret
-        driver-class-name: com.mysql.jdbc.Driver
-      jpa:
-        database-platform: org.hibernate.dialect.MySQL8Dialect
-        hibernate:
-          ddl-auto: create
-    ```
-
-5. Start the application by running this class in Intellij
+4. Start the Event Management Agent by passing a tag (e.g. v1) and the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml)
 
 ```
-service/application/src/main/java/com/solace/maas/ep/event/management/agent/EMAApplication.java
+./runEventManagementAgentDocker.sh v1 /tmp/configFiles/perf1-ema.yml
 ```
 
 ## Broker Plugins
@@ -292,6 +230,11 @@ c.s.m.e.r.a.c.ResourceConfig : Created [solace] resource with id:[hdfgkdjf] and 
 
 Contributions are encouraged! If you have ideas to improve an existing plugin, create a new plugin, or improve/extend
 the agent framework then please contribute!
+
+## License 
+
+Event Management Agent is available under the Apache License V2.
+
 
 ## Contributors
 

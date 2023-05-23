@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate;
 
+import com.solace.maas.ep.event.management.agent.plugin.KafkaTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.enumeration.KafkaScanType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 
 @ActiveProfiles("TEST")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = KafkaTestConfig.class)
 public class KafkaRouteDelegateImplTests {
     @InjectMocks
     private KafkaRouteDelegateImpl kafkaRouteDelegate;

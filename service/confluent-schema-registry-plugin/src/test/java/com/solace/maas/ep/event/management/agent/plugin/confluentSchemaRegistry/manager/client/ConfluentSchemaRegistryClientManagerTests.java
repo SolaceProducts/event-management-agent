@@ -5,6 +5,8 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("TEST")
@@ -18,6 +20,7 @@ class ConfluentSchemaRegistryClientManagerTests {
                 .url("localhost:1000")
                 .messagingServiceId("messaging_service_id")
                 .name("conn_name")
+                .authenticationDetails(List.of())
                 .build();
 
         ConfluentSchemaRegistryHttp confluentSchemaRegistryHttp = confluentSchemaRegistryClientManager.getClient(connectionDetailsEvent);
