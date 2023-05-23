@@ -20,6 +20,8 @@
         <module>rabbitmq-plugin</module>
         <module>kafka-plugin</module>
         <module>solace-plugin</module>
+        <module>solace-config-plugin</module>
+        <module>solace-config-client</module>
         <module>local-storage-plugin</module>
         <module>confluent-schema-registry-plugin</module>
         <module>application</module>
