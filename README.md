@@ -89,13 +89,13 @@ mvn clean install
 
 ### Running the Event Management Agent as a process (recommended for testing and proof of concept purposes only)
 
-Specify the location of the configuration file if not using the default location (e.g. configs/AcmeRetail.yml)
+Specify the location of the connection file if not using the default location (e.g. /path/to/file/AcmeRetail.yml)
 
 ```
 java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=/path/to/file/AcmeRetail.yml
 ```
 
-### Running the Event Management Agent as a Docker container (recommended)
+### Running the Event Management Agent as a Docker container (recommended for production puroposes)
 
 #### Building the Event Management Agent
 
@@ -118,7 +118,7 @@ service/application/docker/runEventManagementAgentDocker.sh
 
 #### Starting the Event Management Agent
 
-Provide the Docker image tag (e.g. v1), the location of the configuration file (e.g. /tmp/configFiles/perf1-ema.yml)
+Provide the Docker image tag (e.g. v1), the location of the connection file (e.g. /tmp/configFiles/perf1-ema.yml)
 
 ```
 ./runEventManagementAgentDocker.sh v1 /tmp/configFiles/perf1-ema.yml
