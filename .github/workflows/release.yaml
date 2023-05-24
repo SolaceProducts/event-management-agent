@@ -33,7 +33,7 @@ jobs:
           WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
         run: |
-          pip install --upgrade pip
+          pip install --quiet --upgrade pip
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
