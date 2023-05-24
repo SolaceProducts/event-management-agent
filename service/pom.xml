@@ -341,7 +341,7 @@
                             <rulesets>
                                 <ruleset>resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>
                         <executions>
