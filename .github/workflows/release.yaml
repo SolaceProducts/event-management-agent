@@ -40,12 +40,12 @@ jobs:
 #          else
 #                echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
 #          fi
-#        - name: Pre-Release Check - Whitesource vulnurabilities
-#          env:
-#            WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
-#            WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
-#          run: |
-#            pip install --upgrade pip
-#            export VIRTUAL_ENV=./venv
-#            python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate && pip install -r requirements.txt
-#            cd ./.github/workflows/release_scripts/ && python3.8 whitesource_vulnurability_checker.py
+        - name: Pre-Release Check - Whitesource vulnurabilities
+          env:
+            WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
+            WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          run: |
+            pip install --upgrade pip
+            export VIRTUAL_ENV=./venv
+            python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate && pip install -r requirements.txt
+            cd ./.github/workflows/release_scripts/ && python3.8 whitesource_vulnurability_checker.py
