@@ -16,7 +16,7 @@
     <description>Solace Event Management Agent - Application</description>
     <properties>
         <springdoc.version>1.6.11</springdoc.version>
-        <snakeyaml.version>1.31</snakeyaml.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
     </properties>
     <repositories>
         <repository>
