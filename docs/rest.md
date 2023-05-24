@@ -469,28 +469,34 @@ java -jar application/target/event-management-agent-0.0.1-SNAPSHOT.jar
 
 ## Scan Types
 
+Different scan types are available. Each will collect specific items. Scan types are passed on in the body of API calls, e.g.:
+```
+"scanTypes": ["SOLACE_ALL"]
+```
+
 Solace:
 
-- SOLACE_ALL
-- SOLACE_QUEUE_CONFIG
-- SOLACE_QUEUE_LISTING
-- SOLACE_SUBSCRIPTION_CONFIG
+- SOLACE_QUEUE_CONFIG: Solace queue configurations
+- SOLACE_QUEUE_LISTING: Solace queue listing
+- SOLACE_SUBSCRIPTION_CONFIG: Solace subscription configurations
+- SOLACE_ALL: All of the above
 
 Kafka:
 
-- KAFKA_ALL
-- KAFKA_BROKER_CONFIGURATION
-- KAFKA_CLUSTER_CONFIGURATION
-- KAFKA_CONSUMER_GROUPS
-- KAFKA_CONSUMER_GROUPS_CONFIGURATION
-- KAFKA_FEATURES KAFKA_PRODUCERS
-- KAFKA_TOPIC_CONFIGURATION
-- KAFKA_TOPIC_CONFIGURATION_FULL
-- KAFKA_TOPIC_LISTING
-- KAFKA_TOPIC_OVERRIDE_CONFIGURATION
+- KAFKA_BROKER_CONFIGURATION: Kafka broker configurations
+- KAFKA_CLUSTER_CONFIGURATION: Kafka cluster configurations
+- KAFKA_CONSUMER_GROUPS: Kafka consumer groups
+- KAFKA_CONSUMER_GROUPS_CONFIGURATION: Kafka consumer group configurations
+- KAFKA_FEATURES: Kafka feature
+- KAFKA_PRODUCERS: Kafka producers
+- KAFKA_TOPIC_CONFIGURATION: Kafka topic configurations
+- KAFKA_TOPIC_CONFIGURATION_FULL: Kafka topic configurations full
+- KAFKA_TOPIC_LISTING: Kakfa topic listing
+- KAFKA_TOPIC_OVERRIDE_CONFIGURATION: Kafka topic override configurations
+- KAFKA_ALL: All of the above
 
 Confuelt Schema Registry:
-- CONFLUENT_SCHEMA_REGISTRY_SCHEMA
+- CONFLUENT_SCHEMA_REGISTRY_SCHEMA: Confluent Registry schemas
 
 ## Destinations
 
