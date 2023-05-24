@@ -17,7 +17,6 @@
         <mockwebserver.version>4.9.0</mockwebserver.version>
         <jupiter.version>5.3.1</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
-        <snakeyaml.version>1.31</snakeyaml.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
     </properties>
