@@ -3,15 +3,15 @@ import json
 import os
 
 WS_REST_API_URL = 'https://saas.whitesourcesoftware.com/api'
-WS_USER_KEY = os.getenv('WHITESOURCE_API_KEY')
-WS_PROJECT_TOKEN = os.getenv('WHITESOURCE_PROJECT_TOKEN')
+WS_API_KEY = os.getenv('WS_APIKEY')
+WS_PROJECT_TOKEN = os.getenv('WS_PROJECTTOKEN')
 
 
 def find_all_high_critical_vulnerabilities():
     ws_payload = {
         'requestType': 'getProjectVulnerabilityReport',
         'format': 'json',
-        'userKey': WS_USER_KEY,
+        'userKey': WS_API_KEY,
         'projectToken': WS_PROJECT_TOKEN
     }
     headers = {'content-type': 'application/json'}
@@ -26,7 +26,8 @@ def find_all_high_critical_vulnerabilities():
     for vulnerability in project_ws_vulnerabilities['vulnerabilities']:
         if ('high' or 'critical') in vulnerability['severity']:
             high_vulnerabilities[vulnerability['name']] = vulnerability['library']['artifactId'] + '-' + \
-                                                          vulnerability['library']['version'] + '.jar'
+                                                          vulnerability['library']['version'] + '.jar' + \
+                                                          f" (Suggested fix: {vulnerability['topFix']['fixResolution']})"
     return high_vulnerabilities
 
 
