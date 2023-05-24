@@ -30,4 +30,5 @@ def find_all_high_critical_vulnerabilities():
     return high_vulnerabilities
 
 
-print("Hi")
+a = find_all_high_critical_vulnerabilities()
+print(a)
