@@ -491,7 +491,7 @@ Kafka:
 - KAFKA_PRODUCERS: Kafka producers
 - KAFKA_TOPIC_CONFIGURATION: Kafka topic configurations
 - KAFKA_TOPIC_CONFIGURATION_FULL: Kafka topic configurations full
-- KAFKA_TOPIC_LISTING: Kakfa topic listing
+- KAFKA_TOPIC_LISTING: Kafka topic listing
 - KAFKA_TOPIC_OVERRIDE_CONFIGURATION: Kafka topic override configurations
 - KAFKA_ALL: All of the above
 
@@ -516,7 +516,7 @@ curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/em
 To scan an Apache Kafka broker:
 
 ```
-curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/{resource id}/scan -d '{"scanTypes": ["KAKFA_ALL"], "destinations":["FILE_WRITER"]}'
+curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/{resource id}/scan -d '{"scanTypes": ["KAFKA_ALL"], "destinations":["FILE_WRITER"]}'
 ```
 
 * Kafka event broker with id `bcvch3xfrq0`
