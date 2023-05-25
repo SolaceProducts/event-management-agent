@@ -18,7 +18,7 @@ import java.util.List;
 public class SolaceConfigRouteDelegateImpl extends MessagingServiceRouteDelegateImpl {
 
     public SolaceConfigRouteDelegateImpl() {
-        super("SOLACE-CONFIG");
+        super("SOLACE_CONFIG");
    }
 
     @Override

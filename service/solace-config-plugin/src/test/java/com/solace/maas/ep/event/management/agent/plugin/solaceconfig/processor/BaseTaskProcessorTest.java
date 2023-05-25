@@ -4,7 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.service.MessagingService
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.client.SempApiClient;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.client.SolaceSempApiClient;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.invoker.ApiClient;
-import org.junit.jupiter.api.BeforeAll;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.testcontainers.containers.GenericContainer;
@@ -20,6 +20,7 @@ public abstract class BaseTaskProcessorTest {
     public static final String SEMP_PASSWORD = "admin";
 
     public static final String MSG_SVC_ID = "testService";
+
     @Container
     public static final GenericContainer solace= new GenericContainer("solace/solace-pubsub-standard")
             .withEnv("username_admin_globalaccesslevel", SEMP_USER)

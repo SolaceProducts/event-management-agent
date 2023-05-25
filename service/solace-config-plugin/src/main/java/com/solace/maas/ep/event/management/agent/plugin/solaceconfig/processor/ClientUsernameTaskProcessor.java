@@ -5,8 +5,8 @@ import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.s
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnClientUsernameResponse;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.SempMetaOnlyResponse;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semptask.SEMPv2MsgVpnBaseTaskProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskConfig;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskResult;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -24,11 +24,11 @@ public class ClientUsernameTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<M
                     config.getConfigObject().getMsgVpnName(), config.getConfigObject().getClientUsername(),
                     null, null);
             return super.createSuccessfulTaskResult(super.getReadOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), response.getData());
+                    config.getConfigObject().getClientUsername(), config.getState(), response.getData());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return super.createFailureTaskResult(super.getReadOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), e);
+                    config.getConfigObject().getClientUsername(), config.getState(), e);
         }
     }
 
@@ -41,11 +41,11 @@ public class ClientUsernameTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<M
                     config.getConfigObject(),
                     null, null);
             return super.createSuccessfulTaskResult(super.getCreateOperationName(config),
-            config.getConfigObject().getClientUsername(), config.getTaskState(), response.getData());
+            config.getConfigObject().getClientUsername(), config.getState(), response.getData());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return super.createFailureTaskResult(super.getCreateOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), e);
+                    config.getConfigObject().getClientUsername(), config.getState(), e);
         }
     }
 
@@ -68,11 +68,11 @@ public class ClientUsernameTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<M
                     requestObject,
                     null, null);
             return super.createSuccessfulTaskResult(super.getUpdateOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), response.getData());
+                    config.getConfigObject().getClientUsername(), config.getState(), response.getData());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return super.createFailureTaskResult(getUpdateOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), e);
+                    config.getConfigObject().getClientUsername(), config.getState(), e);
         }
     }
 
@@ -82,11 +82,11 @@ public class ClientUsernameTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<M
             SempMetaOnlyResponse response = this.client.getMsgVpnApi().deleteMsgVpnClientUsername(
                     config.getConfigObject().getMsgVpnName(), config.getConfigObject().getClientUsername());
             return super.createSuccessfulTaskResult(super.getDeleteOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), response.getMeta());
+                    config.getConfigObject().getClientUsername(), config.getState(), response.getMeta());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return super.createFailureTaskResult(super.getDeleteOperationName(config),
-                    config.getConfigObject().getClientUsername(), config.getTaskState(), e);
+                    config.getConfigObject().getClientUsername(), config.getState(), e);
         }
     }
 }

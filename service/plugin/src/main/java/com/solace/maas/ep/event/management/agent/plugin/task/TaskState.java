@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task;
+package com.solace.maas.ep.event.management.agent.plugin.task;
 
 public enum TaskState {
     ABSENT("ABSENT"),
@@ -7,7 +7,7 @@ public enum TaskState {
 
     public final String label;
 
-    private TaskState(String label) {
+    TaskState(String label) {
         this.label = label;
     }
 }

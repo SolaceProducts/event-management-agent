@@ -6,6 +6,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SolaceApiClientConfigImpl extends MessagingServiceClientConfig {
     protected SolaceApiClientConfigImpl() {
-        super("SOLACE-CONFIG", new SolaceSempApiClientManagerImpl());
+        super("SOLACE_CONFIG", new SolaceSempApiClientManagerImpl());
     }
 }

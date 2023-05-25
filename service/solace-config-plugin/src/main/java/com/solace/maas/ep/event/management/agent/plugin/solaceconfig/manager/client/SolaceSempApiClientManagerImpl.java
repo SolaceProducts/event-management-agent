@@ -18,6 +18,8 @@ import java.util.NoSuchElementException;
 @Data
 public class SolaceSempApiClientManagerImpl implements MessagingServiceClientManager<SolaceSempApiClient> {
 
+    public static final String SEMP_V2_BASE_PATH = "/SEMP/v2/config";
+
     public SolaceSempApiClientManagerImpl() {
     }
 
@@ -35,13 +37,15 @@ public class SolaceSempApiClientManagerImpl implements MessagingServiceClientMan
                             log.error(message);
                             return new NoSuchElementException(message);
                         });
-
+        String baseUrl = connectionDetailsEvent.getUrl().contains(SEMP_V2_BASE_PATH)
+                ?connectionDetailsEvent.getUrl()
+                :(connectionDetailsEvent.getUrl() + SEMP_V2_BASE_PATH);
         SempApiClient sempClient = SempApiClient.builder()
                 .apiClient(new ApiClient())
                 .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
                 .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
                 .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
-                .baseurl(connectionDetailsEvent.getUrl())
+                .baseurl(baseUrl)
                 .build();
 
         log.trace("Solace SEMP API client created for {}.", connectionDetailsEvent.getMessagingServiceId());

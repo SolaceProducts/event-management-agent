@@ -47,21 +47,48 @@ eventPortal:
     id: gateway
     name: evmr1
     messaging:
-      standalone: true
+      standalone: false
       rtoSession: false
       enableHeartbeats: false
       testHeartbeats: false
       connections:
         - name: eventPortalGateway
-          authenticationType: ${EP_GATEWAY_AUTH}
-          url: ${EP_GATEWAY_URL}
-          msgVpn: ${EP_GATEWAY_MSGVPN}
+          authenticationType: ${EP_GATEWAY_AUTH:basicAuthentication}
+          url: ${EP_GATEWAY_URL:tcps://mr-connection-2k7snpfe1pt.messaging.solace.cloud:55443}
+          msgVpn: ${EP_GATEWAY_MSGVPN:swentest}
           trustStoreDir: ${SSL_STORE_DIR}
           users:
             - name: messaging1
-              username: ${EP_GATEWAY_USERNAME}
-              password: ${EP_GATEWAY_PASSWORD}
+              username: ${EP_GATEWAY_USERNAME:solace-cloud-client}
+              password: ${EP_GATEWAY_PASSWORD:sorveorbeg8vpqeg0r237p2vg6}
               clientName: runtime_agent_${EP_RUNTIME_AGENT_ID}  # 'client_' + runtimeAgentId
+plugins:
+  resources:
+    - id: wgex5k3ov3h
+      type: solace_config
+      name: APIM-GW-DEV
+      connections:
+        - name: APIM-GW-DEV
+          url: https://mr1i5g7tif6z9h.messaging.solace.cloud:943
+          properties:
+            - name: msgVpn
+              value: apim-test
+            - name: sempPageSize
+              value: 100
+          authentication:
+            - properties:
+                - name: type
+                  value: basicAuthentication
+              protocol: ''
+              credentials:
+                - properties:
+                    - name: username
+                      value: apim-test-admin
+                    - name: password
+                      value: 794rrhqcama87nbbhpaaecn0me
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
 
 # Below is an example of how to set up messaging service configuration in the application.yml file.
 
