@@ -32,6 +32,8 @@ jobs:
         env:
           WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
           WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           pip install --quiet --upgrade pip
           export VIRTUAL_ENV=./venv
