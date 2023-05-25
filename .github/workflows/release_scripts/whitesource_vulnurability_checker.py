@@ -32,5 +32,21 @@ def find_all_high_critical_vulnerabilities():
     return high_vulnerabilities
 
 
-a = find_all_high_critical_vulnerabilities()
+def determine_any_exclusions():
+    dynamodb_client = boto3.resource('dynamodb')
+
+    table = dynamodb_client.Table('whitesource-excluded-libraries')
+    response = table.scan()
+    print('response {}'.format(response))
+
+    data = response['Items']
+    print('data {}'.format(data))
+    exclusions = set()
+    for exclusion in data:
+        exclusions.add(exclusion['library'])
+
+    return exclusions
+
+
+a = determine_any_exclusions()
 print(a)
