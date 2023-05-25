@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import boto3
 
 WS_REST_API_URL = 'https://saas.whitesourcesoftware.com/api'
 WS_API_KEY = os.getenv('WS_APIKEY')
