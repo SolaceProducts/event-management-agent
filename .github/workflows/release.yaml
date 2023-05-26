@@ -18,12 +18,24 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: 11
-#          distribution: 'temurin'
-#          cache: 'maven'
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Pre-Release Check - Version
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method GET /repos/${{github.repository}}/releases -f sort=updated -f direction=asc > releases.json
+          release_version_exists=$(jq -r --arg RELEASE_VERSION v${{ github.event.inputs.releaseVersion }} '.[].name|select(.|test($RELEASE_VERSION))'  releases.json)
+          if [[ ! -z "$release_version_exists" ]]; then
+                echo "Version ${{ github.event.inputs.releaseVersion }} has been previously released. Please change release version."
+                exit 1
+          else
+                echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
+          fi
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
@@ -40,15 +52,3 @@ jobs:
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
-#      - name: Pre-Release Check - Version
-#        env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          gh api --method GET /repos/${{github.repository}}/releases -f sort=updated -f direction=asc > releases.json
-#          release_version_exists=$(jq -r --arg RELEASE_VERSION v${{ github.event.inputs.releaseVersion }} '.[].name|select(.|test($RELEASE_VERSION))'  releases.json)
-#          if [[ ! -z "$release_version_exists" ]]; then
-#                echo "Version ${{ github.event.inputs.releaseVersion }} has been previously released. Please change release version."
-#                exit 1
-#          else
-#                echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
-#          fi
