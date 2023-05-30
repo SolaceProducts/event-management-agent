@@ -23,6 +23,7 @@ public class ScanDataImportStreamFilesRouteBuilder extends RouteBuilder {
 
     public ScanDataImportStreamFilesRouteBuilder(ScanDataImportStatusProcessor scanDataImportStatusProcessor,
                                                  ScanDataImportPersistScanFilesProcessor scanDataImportPersistScanFilesProcessor) {
+        super();
         this.scanDataImportStatusProcessor = scanDataImportStatusProcessor;
         this.scanDataImportPersistScanFilesProcessor = scanDataImportPersistScanFilesProcessor;
     }

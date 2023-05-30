@@ -35,9 +35,6 @@ public class EMAControllerTest {
     @Autowired
     private ScanRequestMapper scanRequestMapper;
 
-    @Autowired
-    private ScanItemMapper scanItemMapper;
-
 
     @Test
     public void testEMAControllerInConnectedMode() {

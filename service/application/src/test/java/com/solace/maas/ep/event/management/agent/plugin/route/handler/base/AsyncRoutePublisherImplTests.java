@@ -49,7 +49,7 @@ public class AsyncRoutePublisherImplTests {
                 .withHeader(RouteConstants.SCAN_TYPE, "testScan")
                 .build();
 
-        try(MockedStatic<CamelReactiveStreams> reactiveStreams = mockStatic(CamelReactiveStreams.class)) {
+        try (MockedStatic<CamelReactiveStreams> reactiveStreams = mockStatic(CamelReactiveStreams.class)) {
             reactiveStreams.when(() -> CamelReactiveStreams.get(camelContext))
                     .thenReturn(camelReactiveStreamsService);
 
@@ -75,34 +75,34 @@ public class AsyncRoutePublisherImplTests {
                 .withHeader(RouteConstants.SCAN_TYPE, "testScan")
                 .build();
 
-        CamelContext extendedCamelContext = mock(ExtendedCamelContext.class);
+        try (CamelContext extendedCamelContext = mock(ExtendedCamelContext.class)) {
+            Exchange newExchange = mock(Exchange.class);
+            Message message = mock(Message.class);
 
-        Exchange newExchange = mock(Exchange.class);
-        Message message = mock(Message.class);
+            when(camelReactiveStreamsService.getCamelContext())
+                    .thenReturn(extendedCamelContext);
 
-        when(camelReactiveStreamsService.getCamelContext())
-                .thenReturn(extendedCamelContext);
+            try (MockedStatic<CamelReactiveStreams> reactiveStreams = mockStatic(CamelReactiveStreams.class)) {
+                reactiveStreams.when(() -> CamelReactiveStreams.get(camelContext))
+                        .thenReturn(camelReactiveStreamsService);
 
-        try(MockedStatic<CamelReactiveStreams> reactiveStreams = mockStatic(CamelReactiveStreams.class)) {
-            reactiveStreams.when(() -> CamelReactiveStreams.get(camelContext))
-                    .thenReturn(camelReactiveStreamsService);
+                ExchangeBuilder exchangeBuilder = mock(ExchangeBuilder.class, Mockito.RETURNS_SELF);
+                when(exchangeBuilder.build())
+                        .thenReturn(newExchange);
 
-            ExchangeBuilder exchangeBuilder = mock(ExchangeBuilder.class, Mockito.RETURNS_SELF);
-            when(exchangeBuilder.build())
-                    .thenReturn(newExchange);
+                when(newExchange.getIn()).thenReturn(message);
+                when(message.getHeaders())
+                        .thenReturn(Map.of());
+                doNothing().when(message).setHeaders(anyMap());
 
-            when(newExchange.getIn()).thenReturn(message);
-            when(message.getHeaders())
-                    .thenReturn(Map.of());
-            doNothing().when(message).setHeaders(anyMap());
+                AsyncRoutePublisherImpl asyncRoutePublisher = mock(AsyncRoutePublisherImpl.class, Mockito.withSettings()
+                        .useConstructor(camelContext, asyncManager)
+                        .defaultAnswer(Mockito.CALLS_REAL_METHODS));
 
-            AsyncRoutePublisherImpl asyncRoutePublisher = mock(AsyncRoutePublisherImpl.class, Mockito.withSettings()
-                    .useConstructor(camelContext, asyncManager)
-                    .defaultAnswer(Mockito.CALLS_REAL_METHODS));
-
-            asyncRoutePublisher.sendMesage("test", exchange);
+                asyncRoutePublisher.sendMesage("test", exchange);
+            }
         }
-
+        
         assertThatNoException();
     }
 }

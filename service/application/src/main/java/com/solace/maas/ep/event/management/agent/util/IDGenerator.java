@@ -63,7 +63,7 @@ public class IDGenerator {
     public void init() {
         byte[] instanceSeed = "1".getBytes(StandardCharsets.UTF_8);
         if (idGeneratorProperties.getOriginId() != null) {
-            String instanceSeedString = idGeneratorProperties.getOriginId() + (System.nanoTime() & 655_35);
+            String instanceSeedString = idGeneratorProperties.getOriginId() + (System.nanoTime() & 65_535);
             instanceSeed = instanceSeedString.getBytes(StandardCharsets.UTF_8);
         }
 

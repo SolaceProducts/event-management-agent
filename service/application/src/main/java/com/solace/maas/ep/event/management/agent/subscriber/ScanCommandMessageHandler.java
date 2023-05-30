@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
-import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;

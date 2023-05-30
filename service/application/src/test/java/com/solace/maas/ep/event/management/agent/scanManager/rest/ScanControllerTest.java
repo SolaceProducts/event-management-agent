@@ -35,9 +35,6 @@ public class ScanControllerTest {
     private ScanItemMapper scanItemMapper;
 
     @Mock
-    private EventPortalProperties eventPortalProperties;
-
-    @Mock
     private ScanManager scanManager;
 
     @InjectMocks

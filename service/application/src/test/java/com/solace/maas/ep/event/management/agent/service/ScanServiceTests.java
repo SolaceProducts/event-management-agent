@@ -78,9 +78,6 @@ public class ScanServiceTests {
     private ScanRouteService scanRouteService;
 
     @Mock
-    private RouteCompleteProcessorImpl routeCompleteProcessor;
-
-    @Mock
     private IDGenerator idGenerator;
 
     @Produce

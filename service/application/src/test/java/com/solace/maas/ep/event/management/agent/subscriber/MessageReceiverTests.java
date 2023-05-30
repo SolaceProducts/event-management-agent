@@ -99,7 +99,7 @@ public class MessageReceiverTests {
     @Test
     @SneakyThrows
     public void testBadClass() {
-        Exception e = assertThrows(RuntimeException.class, () -> {
+        assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
             ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
                     solaceSubscriber, scanManager);
