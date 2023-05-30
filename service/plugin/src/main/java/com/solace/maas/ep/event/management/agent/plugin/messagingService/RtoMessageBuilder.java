@@ -18,13 +18,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.util.List;
 
 @ProviderType
 @ConditionalOnBean(VMRProperties.class)
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.rto-session", havingValue = "true")
 public interface RtoMessageBuilder {
-    RtoMessageBuilder fromProperties(ArrayList<String> sessionConfiguration);
+    RtoMessageBuilder fromProperties(List<String> sessionConfiguration);
 
     RtoMessageBuilder createContext();
 
@@ -43,7 +43,7 @@ public interface RtoMessageBuilder {
     class RtoMessageBuilderImpl implements RtoMessageBuilder {
         private final MessageCallback messageCallback;
         private final SessionEventCallback sessionEventCallback;
-        private ArrayList<String> sessionConfig;
+        private List<String> sessionConfig;
         private ContextHandle contextHandle;
         private SessionHandle sessionHandle;
         private MessageHandle messageHandle;
@@ -53,7 +53,7 @@ public interface RtoMessageBuilder {
             this.sessionEventCallback = sessionEventCallback;
         }
 
-        public RtoMessageBuilder fromProperties(ArrayList<String> sessionConfiguration) {
+        public RtoMessageBuilder fromProperties(List<String> sessionConfiguration) {
             this.sessionConfig = sessionConfiguration;
             return this;
         }
@@ -129,7 +129,7 @@ public interface RtoMessageBuilder {
                 // destroy the context
                 destroyHandle(contextHandle, "contextHandle");
             } catch (Throwable t) {
-                System.err.println("Unable to call destroy on messageCallback " + t.getCause());
+                log.error("Unable to call destroy on messageCallback " + t.getCause());
             }
             return this;
         }

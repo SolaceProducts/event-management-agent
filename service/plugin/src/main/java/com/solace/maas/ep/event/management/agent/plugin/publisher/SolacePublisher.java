@@ -25,7 +25,7 @@ public class SolacePublisher {
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private final OutboundMessageBuilder outboundMessageBuilder;
-    private DirectMessagePublisher directMessagePublisher;
+    private final DirectMessagePublisher directMessagePublisher;
 
     public SolacePublisher(OutboundMessageBuilder outboundMessageBuilder,
                            DirectMessagePublisher directMessagePublisher) {

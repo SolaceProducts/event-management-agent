@@ -15,6 +15,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -88,6 +89,11 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
         if(Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
+        }
+        try {
+            camel.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

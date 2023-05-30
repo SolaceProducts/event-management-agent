@@ -17,6 +17,7 @@ public final class EnumDeserializer<T extends Enum> extends JsonDeserializer<T> 
     Class<T> clazz;
 
     public EnumDeserializer(Class<T> clazz) {
+        super();
         this.clazz = clazz;
     }
 

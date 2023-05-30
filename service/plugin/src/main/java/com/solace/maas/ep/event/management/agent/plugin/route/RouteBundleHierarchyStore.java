@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 public class RouteBundleHierarchyStore {
-    private static int storeKey = 0;
+    private static int storeKey;
     private Map<String, String> store;
 
     public RouteBundleHierarchyStore() {

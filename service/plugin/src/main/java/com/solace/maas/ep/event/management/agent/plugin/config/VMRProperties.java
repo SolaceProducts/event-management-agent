@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
@@ -86,7 +87,7 @@ public class VMRProperties {
             username = messagingServiceUsersProperties.getUsername();
             password = messagingServiceUsersProperties.getPassword();
             clientName = messagingServiceUsersProperties.getClientName();
-        } catch (NullPointerException | NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             log.error("An error occurred while connecting to EP gateway: {}", e.getMessage());
         }
     }
@@ -109,10 +110,10 @@ public class VMRProperties {
         return properties;
     }
 
-    public ArrayList<String> getRTOSessionProperties() {
+    public List<String> getRTOSessionProperties() {
         parseVmrProperties();
 
-        ArrayList<String> sessionProperties = new ArrayList<>();
+        List<String> sessionProperties = new ArrayList<>();
 
         sessionProperties.add(SessionHandle.PROPERTIES.HOST);
         sessionProperties.add(url);
