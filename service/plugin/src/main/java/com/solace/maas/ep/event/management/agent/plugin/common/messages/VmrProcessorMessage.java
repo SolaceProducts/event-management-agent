@@ -19,4 +19,9 @@ public class VmrProcessorMessage extends MOPMessage {
                 .withUhFlag(MOPUHFlag.ignore);
         this.payload = payload;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

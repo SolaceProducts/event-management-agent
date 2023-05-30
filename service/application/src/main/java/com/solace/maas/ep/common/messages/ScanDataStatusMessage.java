@@ -35,4 +35,9 @@ public class ScanDataStatusMessage extends MOPMessage {
         this.description = description;
         this.scanType = scanType;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

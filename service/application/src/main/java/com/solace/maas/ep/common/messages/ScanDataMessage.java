@@ -31,4 +31,9 @@ public class ScanDataMessage extends MOPMessage {
         this.data = data;
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

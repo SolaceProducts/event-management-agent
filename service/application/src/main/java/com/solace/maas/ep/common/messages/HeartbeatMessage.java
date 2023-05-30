@@ -26,4 +26,9 @@ public class HeartbeatMessage extends MOPMessage {
         this.runtimeAgentId = runtimeAgentId;
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

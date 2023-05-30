@@ -36,4 +36,9 @@ public class ScanCommandMessage extends MOPMessage {
         this.scanTypes = scanTypes;
         this.destinations = destinations;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }
