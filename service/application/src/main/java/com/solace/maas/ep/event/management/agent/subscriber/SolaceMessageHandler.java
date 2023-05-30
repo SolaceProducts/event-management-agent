@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public abstract class SolaceMessageHandler<T extends MOPMessage> implements MessageReceiver.MessageHandler {
 
-    private String topicString;
+    private final String topicString;
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static final SimpleModule module = new SimpleModule();
     private final Map<String, Class> cachedJSONDecoders = new HashMap();

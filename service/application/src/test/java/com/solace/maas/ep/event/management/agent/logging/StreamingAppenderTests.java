@@ -42,7 +42,7 @@ public class StreamingAppenderTests {
         ILoggingEvent event = new LoggingEvent(null, logger, Level.DEBUG,
                 "test message", new Throwable("throwable message"), null);
 
-        RouteEntity route = RouteEntity.builder()
+        RouteEntity.builder()
                 .id("seda:scanLogsPublisher")
                 .active(true)
                 .build();

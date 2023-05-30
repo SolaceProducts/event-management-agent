@@ -23,14 +23,12 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
 
     private static final String DEFAULT_DESTINATION = "FILE_WRITER";
     private final ScanManager scanManager;
-    private final ScanRequestMapper scanRequestMapper;
 
     public ScanCommandMessageHandler(
             SolaceConfiguration solaceConfiguration,
-            SolaceSubscriber solaceSubscriber, ScanManager scanManager, ScanRequestMapper scanRequestMapper) {
+            SolaceSubscriber solaceSubscriber, ScanManager scanManager) {
         super(solaceConfiguration.getTopicPrefix() + "scan/command/v1/scanStart/>", solaceSubscriber);
         this.scanManager = scanManager;
-        this.scanRequestMapper = scanRequestMapper;
     }
 
     @Override

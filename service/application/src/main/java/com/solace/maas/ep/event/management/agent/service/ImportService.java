@@ -50,15 +50,19 @@ public class ImportService {
         this.eventPortalProperties = eventPortalProperties;
     }
 
-    public void importData(ImportRequestBO importRequestBO) throws IOException {
+    public void importData(ImportRequestBO importRequestBO) {
         boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
-        InputStream importStream = importRequestBO.getDataFile().getInputStream();
-        String importId = UUID.randomUUID().toString();
+        try (InputStream importStream = importRequestBO.getDataFile().getInputStream()) {
 
-        if (isEMAStandalone) {
-            throw new FileUploadException("Scan data could not be imported in standalone mode.");
-        } else {
-            initiateImport(importStream, importId);
+            String importId = UUID.randomUUID().toString();
+
+            if (isEMAStandalone) {
+                throw new FileUploadException("Scan data could not be imported in standalone mode.");
+            } else {
+                initiateImport(importStream, importId);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

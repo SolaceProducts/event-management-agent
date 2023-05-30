@@ -60,14 +60,13 @@ public class DataImportControllerImpl implements DataImportController {
     @Override
     @GetMapping(value = "/export/{scanId}/zip")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "scanId") String scanId) {
-        try {
-            ZipRequestBO zipRequestBO = ZipRequestBO.builder()
-                    .scanId(scanId)
-                    .build();
+        ZipRequestBO zipRequestBO = ZipRequestBO.builder()
+                .scanId(scanId)
+                .build();
 
-            log.info("Received zip request for scan: {}", scanId);
+        log.info("Received zip request for scan: {}", scanId);
 
-            InputStream zipInputStream = importService.zip(zipRequestBO);
+        try (InputStream zipInputStream = importService.zip(zipRequestBO)) {
             InputStreamResource inputStreamResource = new InputStreamResource(zipInputStream);
 
             HttpHeaders httpHeaders = new HttpHeaders();

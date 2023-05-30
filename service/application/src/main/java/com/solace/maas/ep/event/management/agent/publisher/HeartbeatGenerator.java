@@ -17,8 +17,8 @@ import java.time.Instant;
 public class HeartbeatGenerator {
 
     private final SolacePublisher solacePublisher;
-    private String runtimeAgentId;
-    private String topic;
+    private final String runtimeAgentId;
+    private final String topic;
 
     public HeartbeatGenerator(SolaceConfiguration solaceConfiguration,
                               EventPortalProperties eventPortalProperties,

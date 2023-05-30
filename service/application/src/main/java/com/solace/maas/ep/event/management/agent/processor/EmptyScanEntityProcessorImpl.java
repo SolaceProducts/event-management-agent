@@ -21,6 +21,7 @@ public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
     private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
 
     public EmptyScanEntityProcessorImpl(ScanRecipientHierarchyRepository scanRecipientHierarchyRepository) {
+        super();
         this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
     }
 

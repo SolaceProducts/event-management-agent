@@ -13,7 +13,7 @@ public class SessionCallbackImpl implements SessionEventCallback {
 
     private final boolean logCallbacks;
     String callBackId;
-    private int eventCount = 0;
+    private int eventCount;
 
     public SessionCallbackImpl(String id, boolean logCalls) {
         callBackId = id;

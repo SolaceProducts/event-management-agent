@@ -85,7 +85,7 @@ public class MessageReceiverTests {
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                solaceSubscriber, scanManager, scanRequestMapper);
+                solaceSubscriber, scanManager);
 
         String topic = scanCommandMessageHandler.getTopicString();
         log.info("topic: {}", topic);
@@ -102,7 +102,7 @@ public class MessageReceiverTests {
         Exception e = assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
             ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                    solaceSubscriber, scanManager, scanRequestMapper);
+                    solaceSubscriber, scanManager);
             scanCommandMessageHandler.onMessage(inboundMessage);
         });
     }
@@ -111,7 +111,7 @@ public class MessageReceiverTests {
     @SneakyThrows
     public void testScanCommandMessage() {
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                solaceSubscriber, scanManager, scanRequestMapper);
+                solaceSubscriber, scanManager);
 
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",
