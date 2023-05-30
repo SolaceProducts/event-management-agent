@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacoco
 import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
+import lombok.SneakyThrows;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
@@ -40,6 +41,7 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
         this.asyncRoutePublisher = asyncRoutePublisher;
     }
 
+    @SneakyThrows
     @Override
     public void configure() {
         interceptFrom()
@@ -90,10 +92,7 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
         if(Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
         }
-        try {
-            camel.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+        camel.close();
     }
 }
