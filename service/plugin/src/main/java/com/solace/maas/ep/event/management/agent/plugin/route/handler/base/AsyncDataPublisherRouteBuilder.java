@@ -89,7 +89,7 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
                 .publishOn(Schedulers.boundedElastic())
                 .subscribe(asyncRoutePublisher::start);
 
-        if(Objects.nonNull(routeManager)) {
+        if (Objects.nonNull(routeManager)) {
             routeManager.setupRoute(routeId);
         }
 
