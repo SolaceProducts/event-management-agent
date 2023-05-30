@@ -1,7 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;

@@ -48,14 +48,13 @@ public class ScanDataImportRouteBuilderTests {
     private MockEndpoint mockResult;
 
     private static byte[] getZippedText(String entryName) throws IOException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream("TEXT" .getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
-        try {
+        try(
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream("TEXT" .getBytes(StandardCharsets.UTF_8));
+            ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
+        ) {
             zipOutputStream.putNextEntry(new ZipEntry(entryName));
             IOHelper.copy(byteArrayInputStream, zipOutputStream);
-        } finally {
-            IOHelper.close(byteArrayInputStream, zipOutputStream);
         }
         return byteArrayOutputStream.toByteArray();
     }

@@ -102,7 +102,6 @@ public class AsyncRoutePublisherImplTests {
                 asyncRoutePublisher.sendMesage("test", exchange);
             }
         }
-        
         assertThatNoException();
     }
 }

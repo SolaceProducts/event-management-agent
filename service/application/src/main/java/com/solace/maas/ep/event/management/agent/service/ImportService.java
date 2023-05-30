@@ -19,10 +19,10 @@ import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -78,7 +78,7 @@ public class ImportService {
         });
     }
 
-    public InputStream zip(ZipRequestBO zipRequestBO) throws FileNotFoundException {
+    public InputStream zip(ZipRequestBO zipRequestBO) throws IOException {
         String scanId = zipRequestBO.getScanId();
 
         List<DataCollectionFileEntity> files = dataCollectionFileService.findAllByScanId(scanId);
@@ -111,7 +111,7 @@ public class ImportService {
         GenericFile<?> downloadedGenericFile = exchange.getIn().getBody(GenericFile.class);
         File downloadedFile = (File) downloadedGenericFile.getFile();
 
-        return new FileInputStream(downloadedFile);
+        return Files.newInputStream(Paths.get(downloadedFile.toURI()));
     }
 
     private MetaInfFileBO prepareMetaInfJson(List<DataCollectionFileEntity> files, String messagingServiceId,
