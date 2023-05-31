@@ -318,6 +318,7 @@
                     <configuration>
                         <tagNameFormat>v@{project.version}</tagNameFormat>
                         <arguments>-Dmaven.test.skip=true -Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip</arguments>
+                        <scmCommentPrefix>[ci skip]</scmCommentPrefix>
                     </configuration>
                 </plugin>
             </plugins>
