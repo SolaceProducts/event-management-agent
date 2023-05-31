@@ -50,7 +50,7 @@ public class ImportService {
         this.eventPortalProperties = eventPortalProperties;
     }
 
-    public void importData(ImportRequestBO importRequestBO) {
+    public void importData(ImportRequestBO importRequestBO) throws IOException {
         boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
         try (InputStream importStream = importRequestBO.getDataFile().getInputStream()) {
 
@@ -61,8 +61,6 @@ public class ImportService {
             } else {
                 initiateImport(importStream, importId);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

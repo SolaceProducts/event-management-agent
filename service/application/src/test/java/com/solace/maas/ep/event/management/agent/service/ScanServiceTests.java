@@ -89,80 +89,63 @@ public class ScanServiceTests {
     @SneakyThrows
     public void testSingleScanWithRouteBundle() {
         RouteBundle consumerGroupsConfiguration = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
-                .scanType("consumerGroupsConfiguration")
-                .destinations(List.of())
+                .messagingServiceId("service1").routeId("route1")
+                .scanType("consumerGroupsConfiguration").destinations(List.of())
                 .recipients(List.of())
                 .build();
 
         RouteBundle consumerGroups = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
-                .scanType("consumerGroups")
-                .destinations(List.of())
+                .messagingServiceId("service1").routeId("route1")
+                .scanType("consumerGroups").destinations(List.of())
                 .recipients(List.of(consumerGroupsConfiguration))
                 .build();
 
         RouteBundle routeBundleDestination = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("log:deadend")
-                .scanType("none")
-                .destinations(List.of())
+                .messagingServiceId("service1").routeId("log:deadend")
+                .scanType("none").destinations(List.of())
                 .recipients(List.of())
                 .build();
 
         RouteBundle topicConfiguration = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
-                .scanType("topicConfiguration")
-                .destinations(List.of())
+                .messagingServiceId("service1").routeId("route1")
+                .scanType("topicConfiguration").destinations(List.of())
                 .recipients(List.of())
                 .build();
 
         RouteBundle overrideTopicConfiguration = RouteBundle.builder()
                 .messagingServiceId("service1")
-                .routeId("route1")
-                .scanType("overrideTopicConfiguration")
-                .destinations(List.of())
-                .recipients(List.of())
+                .routeId("route1").scanType("overrideTopicConfiguration")
+                .destinations(List.of()).recipients(List.of())
                 .build();
 
         RouteBundle topicListing = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
-                .scanType("topicListing")
-                .destinations(List.of(routeBundleDestination))
+                .messagingServiceId("service1").routeId("route1")
+                .scanType("topicListing").destinations(List.of(routeBundleDestination))
                 .recipients(List.of(topicConfiguration, overrideTopicConfiguration))
                 .build();
 
         RouteBundle additionalConsumerGroupConfigPart1 = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
+                .messagingServiceId("service1").routeId("route1")
                 .scanType("additionalConsumerGroupConfigPart1")
                 .destinations(List.of(routeBundleDestination))
                 .recipients(List.of())
                 .build();
 
         RouteBundle additionalConsumerGroupConfigPart2 = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
+                .messagingServiceId("service1").routeId("route1")
                 .scanType("additionalConsumerGroupConfigPart2")
                 .destinations(List.of(routeBundleDestination))
                 .recipients(List.of())
                 .build();
 
         RouteBundle additionalConsumerGroupConfigBundle = RouteBundle.builder()
-                .messagingServiceId("service1")
-                .routeId("route1")
-                .scanType("consumerGroupsConfiguration")
-                .destinations(List.of(routeBundleDestination))
+                .messagingServiceId("service1").routeId("route1")
+                .scanType("consumerGroupsConfiguration").destinations(List.of(routeBundleDestination))
                 .recipients(List.of(additionalConsumerGroupConfigPart1, additionalConsumerGroupConfigPart2))
                 .build();
 
         RouteEntity returnedEntity = RouteEntity.builder()
-                .id(routeId)
-                .childRouteIds("")
+                .id(routeId).childRouteIds("")
                 .active(true)
                 .build();
 
@@ -172,8 +155,7 @@ public class ScanServiceTests {
                 .build();
 
         ScanTypeEntity scanType = ScanTypeEntity.builder()
-                .id("scan1")
-                .name("scanType")
+                .id("scan1").name("scanType")
                 .scan(scanEntity)
                 .build();
 

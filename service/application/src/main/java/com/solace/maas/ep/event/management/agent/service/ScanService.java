@@ -343,48 +343,32 @@ public class ScanService {
 
     public Page<ScanItemBO> findAll(Pageable pageable) {
         return repository.findAll(pageable)
-                .map(se -> {
-                    List<ScanTypeBO> scanTypes = se.getScanTypes()
-                            .stream()
-                            .map(scanTypeEntity -> ScanTypeBO.builder()
-                                    .name(scanTypeEntity.getName())
-                                    .status(scanTypeEntity.getStatus().getStatus())
-                                    .build())
-                            .collect(Collectors.toUnmodifiableList());
-
-                    return ScanItemBO.builder()
-                            .id(se.getId())
-                            .createdAt(se.getCreatedAt())
-                            .messagingServiceId(se.getMessagingService().getId())
-                            .messagingServiceName(se.getMessagingService().getName())
-                            .messagingServiceType(se.getMessagingService().getType())
-                            .emaId(se.getEmaId())
-                            .scanTypes(scanTypes)
-                            .build();
-                });
+                .map(this::mapToScanItemBO);
     }
 
     public Page<ScanItemBO> findByMessagingServiceId(String messagingServiceId, Pageable pageable) {
         return repository.findAllByMessagingServiceId(messagingServiceId, pageable)
-                .map(se -> {
-                    List<ScanTypeBO> scanTypes = se.getScanTypes()
-                            .stream()
-                            .map(scanTypeEntity -> ScanTypeBO.builder()
-                                    .name(scanTypeEntity.getName())
-                                    .status(scanTypeEntity.getStatus().getStatus())
-                                    .build())
-                            .collect(Collectors.toUnmodifiableList());
+                .map(this::mapToScanItemBO);
+    }
 
-                    return ScanItemBO.builder()
-                            .id(se.getId())
-                            .createdAt(se.getCreatedAt())
-                            .messagingServiceId(se.getMessagingService().getId())
-                            .messagingServiceName(se.getMessagingService().getName())
-                            .messagingServiceType(se.getMessagingService().getType())
-                            .emaId(se.getEmaId())
-                            .scanTypes(scanTypes)
-                            .build();
-                });
+    private ScanItemBO mapToScanItemBO(ScanEntity scanEntity) {
+        List<ScanTypeBO> scanTypes = scanEntity.getScanTypes()
+                .stream()
+                .map(scanTypeEntity -> ScanTypeBO.builder()
+                        .name(scanTypeEntity.getName())
+                        .status(scanTypeEntity.getStatus().getStatus())
+                        .build())
+                .collect(Collectors.toUnmodifiableList());
+
+        return ScanItemBO.builder()
+                .id(scanEntity.getId())
+                .createdAt(scanEntity.getCreatedAt())
+                .messagingServiceId(scanEntity.getMessagingService().getId())
+                .messagingServiceName(scanEntity.getMessagingService().getName())
+                .messagingServiceType(scanEntity.getMessagingService().getType())
+                .emaId(scanEntity.getEmaId())
+                .scanTypes(scanTypes)
+                .build();
     }
 
     protected RouteBundleHierarchyStore parseRouteRecipients(List<RouteBundle> routeBundles, RouteBundleHierarchyStore pathStore) {
