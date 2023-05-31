@@ -28,7 +28,7 @@ public class ScanCommandMessage extends MOPMessage {
                               List<ScanDestination> destinations) {
         super();
         withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.event)
+                .withProtocol(MOPProtocol.scanDataControl)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
         this.messagingServiceId = messagingServiceId;

@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.common.messages.VmrProcessorMessage;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.messaging.publisher.DirectMessagePublisher;
@@ -20,6 +21,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -70,5 +72,11 @@ public class VmrProcessorTests {
         vmrProcessor.process(exchange);
 
         verify(solacePublisher, times(1)).publish(any(), anyString());
+    }
+
+    @Test
+    public void testVmrProcessorMessageMOPProtocol() {
+        VmrProcessorMessage message = new VmrProcessorMessage("body");
+        assertThat(message.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 }
