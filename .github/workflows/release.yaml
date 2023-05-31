@@ -36,3 +36,20 @@ jobs:
           else
                 echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
           fi
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
+      - name: Pre-Release Check - Whitesource vulnurabilities
+        env:
+          WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
+          WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: |
+          pip install --quiet --upgrade pip
+          export VIRTUAL_ENV=./venv
+          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+          cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
