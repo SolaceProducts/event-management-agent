@@ -30,7 +30,7 @@ jobs:
            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           gh api --method GET /orgs/SolaceLabs/teams/ema-release-team/members > release_team.json
-          user_is_in_release_team = $(jq -r --arg RELEASE_ACTOR ${{ github.actor }} '.[].login|select(.==$RELEASE_ACTOR)' release_team.json)
+          user_is_in_release_team=$(jq -r --arg RELEASE_ACTOR ${{ github.actor }} '.[].login|select(.==$RELEASE_ACTOR)' release_team.json)
           if [[ -z "$user_is_in_release_team" ]]; then
                 echo "Current user (${{ github.actor }}) is in ema-release-team ✅."
           else
