@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.route.manualImport;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportOverAllStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMetaInfFileProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistFilePathsProcessor;
@@ -20,28 +21,29 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
 
     private final ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor;
-    private final ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor;
-    private final ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor;
-    private final ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor;
     private final ScanDataImportPersistFilePathsProcessor scanDataImportPersistFilePathsProcessor;
+    private final ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor;
+    private final ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor;
+    private final ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor;
 
     public ScanDataImportParseMetaInfFileRouteBuilder(ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor,
-                                                      ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor,
+                                                      ScanDataImportPersistFilePathsProcessor scanDataImportPersistFilePathsProcessor,
                                                       ScanDataImportPublishImportScanEventProcessor scanDataImportPublishImportScanEventProcessor,
-                                                      ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor,
-                                                      ScanDataImportPersistFilePathsProcessor scanDataImportPersistFilePathsProcessor) {
+                                                      ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor,
+                                                      ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor
+    ) {
         this.scanDataImportParseMetaInfFileProcessor = scanDataImportParseMetaInfFileProcessor;
-        this.scanDataImportOverAllStatusProcessor = scanDataImportOverAllStatusProcessor;
-        this.scanDataImportPublishImportScanEventProcessor = scanDataImportPublishImportScanEventProcessor;
-        this.scanDataImportPersistScanDataProcessor = scanDataImportPersistScanDataProcessor;
         this.scanDataImportPersistFilePathsProcessor = scanDataImportPersistFilePathsProcessor;
+        this.scanDataImportPublishImportScanEventProcessor = scanDataImportPublishImportScanEventProcessor;
+        this.scanDataImportOverAllStatusProcessor = scanDataImportOverAllStatusProcessor;
+        this.scanDataImportPersistScanDataProcessor = scanDataImportPersistScanDataProcessor;
     }
 
     @Override
     public void configure() {
 
-        from("direct:parseMetaInfoAndSendOverAllImportStatus")
-                .routeId("parseMetaInfoAndSendOverAllImportStatus")
+        from("direct:parseMetaInfoAndPerformHandShakeWithEP")
+                .routeId("parseMetaInfoAndPerformHandShakeWithEP")
                 .onException(Exception.class)
                 .process(new ScanDataImportExceptionHandler())
                 .continued(true)
@@ -59,6 +61,8 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
         from("direct:sendOverAllInProgressImportStatus")
                 .routeId("sendOverAllInProgressImportStatus")
                 .process(scanDataImportOverAllStatusProcessor)
+                .log("Scan import request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: Starting scan data import process.")
                 .process(scanDataImportPersistScanDataProcessor)
                 .to("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false");
     }

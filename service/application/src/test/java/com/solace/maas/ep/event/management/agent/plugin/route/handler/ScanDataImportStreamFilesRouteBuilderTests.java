@@ -70,8 +70,8 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "parseAndStreamImportFiles",
                 route -> {
-                    route.weaveByToUri("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
-                            .replace().to("mock:perRouteScanStatusPublisher");
+                    route.weaveByToUri("direct:markRouteImportStatusInProgress?block=false&failIfNoConsumers=false")
+                            .replace().to("mock:markRouteImportStatusInProgress");
                     route.weaveByType(PollEnrichDefinition.class).replace().process(exchange1 ->
                             exchange1.getIn().setHeader("CamelFileName", "topicListing.json"));
                     route.weaveByToUri("direct:streamImportFiles").replace().to("mock:streamImportFiles");
@@ -118,7 +118,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "processEndOfFileImportStatus",
                 route -> {
-                    route.weaveByToUri("direct:processScanStatusAsComplete").replace().to("mock:processScanStatusAsComplete");
+                    route.weaveByToUri("direct:markRouteImportStatusComplete").replace().to("mock:markRouteImportStatusComplete");
                     route.weaveAddLast().to("mock:direct:processEndOfFileImportStatusResult");
                 });
 

@@ -55,12 +55,12 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
 
     @Test
     @SneakyThrows
-    public void testMockParseMetaInfoAndSendOverAllImportStatusRoute() {
+    public void testMockParseMetaInfoAndPerformHandShakeWithEP() {
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
 
-        AdviceWith.adviceWith(camelContext, "parseMetaInfoAndSendOverAllImportStatus",
+        AdviceWith.adviceWith(camelContext, "parseMetaInfoAndPerformHandShakeWithEP",
                 route -> {
                     route.weaveByType(PollEnrichDefinition.class).replace().process(exchange1 -> {
                         exchange1.getIn().setHeader("CamelFileName", "META_INF.json");
@@ -70,7 +70,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
                 });
 
         mockParseMetaInfoResult.expectedMessageCount(1);
-        producerTemplate.send("direct:parseMetaInfoAndSendOverAllImportStatus", exchange);
+        producerTemplate.send("direct:parseMetaInfoAndPerformHandShakeWithEP", exchange);
         mockParseMetaInfoResult.assertIsSatisfied();
     }
 
@@ -111,8 +111,8 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
                     = mock(ScanDataImportPersistFilePathsProcessor.class);
 
             return new ScanDataImportParseMetaInfFileRouteBuilder(scanDataImportParseMetaInfFileProcessor,
-                    scanDataImportOverAllStatusProcessor, scanDataImportPublishProcessor,
-                    scanDataImportPersistScanDataProcessor, scanDataImportPersistFilePathsProcessor);
+                    scanDataImportPersistFilePathsProcessor, scanDataImportPublishProcessor,
+                    scanDataImportOverAllStatusProcessor, scanDataImportPersistScanDataProcessor);
         }
 
         public static String getMetaInfJson() throws JSONException {

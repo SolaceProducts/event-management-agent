@@ -8,6 +8,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDe
 import com.solace.maas.ep.event.management.agent.service.ManualImportDetailsService;
 import com.solace.maas.ep.event.management.agent.service.ManualImportFilesService;
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCAN_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCAN_TYPE;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Slf4j
 @Component
@@ -44,14 +46,18 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
     }
 
     @Override
-    public void receiveMessage(String destinationName, ScanDataImportMessage message) {
-        log.debug("Received startImportScan command message: {} for messaging service: {}",
-                message, message.getMessagingServiceId());
+    public void receiveMessage(String destinationName, ScanDataImportMessage scanDataImportMessage) {
+        String scanId = scanDataImportMessage.getScanId();
+        String traceId = scanDataImportMessage.getTraceId();
+        String messagingServiceId = scanDataImportMessage.getMessagingServiceId();
+        String scanTypes = String.join(",", scanDataImportMessage.getScanTypes());
 
-        String scanId = message.getScanId();
-
-        String scanTypes = String.join(",", message.getScanTypes());
         List<ManualImportFilesEntity> manualImportFilesEntityList = manualImportFilesService.getAllByScanId(scanId);
+
+        log.trace("Received startImportScan command message: {} for event broker: {}, traceId: {}",
+                scanDataImportMessage, messagingServiceId, traceId);
+
+        log.info("Scan import request [{}], trace ID: [{}]: Handshake with EP is complete.", scanId, traceId);
 
         if (manualImportFilesEntityList.isEmpty()) {
             throw new RuntimeException(String.format("can't retrieve any manualImportFiles for scanId: %s", scanId));
@@ -67,13 +73,18 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
                         .build())
                 .collect(Collectors.toList());
 
-        producerTemplate.send("direct:continueImportFiles", exchange -> {
+        log.info("Scan import request [{}], traceId: [{}]: Total of {} scan types to be imported: [{}].",
+                scanId, traceId, scanDataImportMessage.getScanTypes().size(), StringUtils.join(scanDataImportMessage.getScanTypes(), ", "));
+
+        producerTemplate.send("direct:continueImportingFiles", exchange -> {
             exchange.getIn().setHeader(SCAN_ID, scanId);
+            exchange.getIn().setHeader(TRACE_ID, traceId);
             exchange.getIn().setHeader(SCHEDULE_ID, manualImportDetailsEntity.getScheduleId());
             exchange.getIn().setHeader(EVENT_MANAGEMENT_ID, manualImportDetailsEntity.getEmaId());
             exchange.getIn().setHeader(IMPORT_ID, manualImportDetailsEntity.getImportId());
-            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, message.getMessagingServiceId());
+            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(SCAN_TYPE, scanTypes);
+
             exchange.getIn().setBody(metaInfFileDetailsBOList);
         });
     }

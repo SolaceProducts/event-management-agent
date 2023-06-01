@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class ScanDataImportPublishImportScanEventProcessor implements Processor {
     private final String orgId;
     private final String runtimeAgentId;
-
     private final ScanDataPublisher scanDataPublisher;
 
     public ScanDataImportPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher,
@@ -36,13 +35,16 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
 
     @Override
     public void process(Exchange exchange) throws Exception {
-
-        List<MetaInfFileDetailsBO> files = (List<MetaInfFileDetailsBO>) exchange.getIn().getBody();
-        List<String> scanTypes = files.stream().map(MetaInfFileDetailsBO::getDataEntityType).collect(Collectors.toUnmodifiableList());
-
+        Map<String, String> topicDetails = new HashMap<>();
         exchange.getIn().setHeader(RouteConstants.IS_DATA_IMPORT, true);
 
-        Map<String, String> topicDetails = new HashMap<>();
+        List<MetaInfFileDetailsBO> files = (List<MetaInfFileDetailsBO>) exchange.getIn().getBody();
+
+        List<String> scanTypes = files.stream()
+                .map(MetaInfFileDetailsBO::getDataEntityType)
+                .collect(Collectors.toUnmodifiableList());
+
+        String traceId = (String) exchange.getProperty(RouteConstants.TRACE_ID);
 
         Map<String, Object> properties = exchange.getIn().getHeaders();
 
@@ -51,13 +53,15 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataImportMessage importDataMessage =
-                new ScanDataImportMessage(orgId, scanId, messagingServiceId, scanTypes, runtimeAgentId);
+                new ScanDataImportMessage(orgId, scanId, traceId, messagingServiceId, runtimeAgentId, scanTypes);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
         topicDetails.put("isImportOp", String.valueOf(isImportOp));
+
+        log.debug("Performing handshake with EP. Sending ScanDataImportMessage: {}", importDataMessage);
 
         scanDataPublisher.sendScanData(importDataMessage, topicDetails);
     }

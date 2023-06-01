@@ -13,16 +13,36 @@ public class ScanStatusMarkerAndLoggerRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         from("direct:markRouteScanStatusInProgress")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: The status of [${header." +
+                        RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
                 .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
-                        + "}] details from messaging service [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].");
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: Retrieving [${header." + RouteConstants.SCAN_TYPE
+                        + "}] details from event broker [${header." + RouteConstants.MESSAGING_SERVICE_ID + "}].");
 
 
         from("direct:markRouteScanStatusComplete")
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
-                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}]: The status of [${header."
-                        + RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].");
+                .log("Scan request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: The status of [${header." +
+                        RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].");
+
+
+        from("direct:markRouteImportStatusInProgress")
+                .log("Scan import request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: The status of [${header." +
+                        RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
+                .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
+                .log("Scan import request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: Retrieving [${header." +
+                        RouteConstants.SCAN_TYPE + "}] details from file: [${body.fileName}].");
+
+
+        from("direct:markRouteImportStatusComplete")
+                .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
+                .log("Scan import request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
+                        RouteConstants.TRACE_ID + "}]: The status of [${header." +
+                        RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.COMPLETE + "].");
     }
 }

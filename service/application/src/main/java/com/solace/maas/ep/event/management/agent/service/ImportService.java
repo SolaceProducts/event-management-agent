@@ -16,6 +16,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.file.GenericFile;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Slf4j
 @Service
@@ -68,7 +70,9 @@ public class ImportService {
                 .active(true)
                 .build();
 
+        String traceId = MDC.get("traceId");
         producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
+            exchange.getIn().setHeader(TRACE_ID, traceId);
             exchange.getIn().setHeader(IMPORT_ID, importId);
             exchange.getIn().setBody(files);
         });

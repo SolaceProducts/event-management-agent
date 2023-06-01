@@ -21,6 +21,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCAN_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Slf4j
 @Component
@@ -42,25 +43,29 @@ public class ScanDataImportPersistFilePathsProcessor implements Processor {
     @Override
     @Transactional
     public void process(Exchange exchange) throws Exception {
-
         List<MetaInfFileDetailsBO> files = (List<MetaInfFileDetailsBO>) exchange.getIn().getBody();
+
+        String traceId = (String) exchange.getProperty(TRACE_ID);
 
         Map<String, Object> properties = exchange.getIn().getHeaders();
 
-        String scanId = (String) properties.get(SCAN_ID);
         String scheduleId = (String) properties.get(SCHEDULE_ID);
+        String scanId = (String) properties.get(SCAN_ID);
         String emaId = (String) properties.get(EVENT_MANAGEMENT_ID);
         String importId = (String) exchange.getProperty(IMPORT_ID);
 
         ManualImportDetailsEntity manualImportDetailsEntity = ManualImportDetailsEntity.builder()
                 .id(idGenerator.generateRandomUniqueId())
-                .importId(importId)
                 .scheduleId(scheduleId)
-                .emaId(emaId)
                 .scanId(scanId)
+                .traceId(traceId)
+                .emaId(emaId)
+                .importId(importId)
                 .build();
+
         manualImportDetailsService.save(manualImportDetailsEntity);
-        log.debug("saved manualImportDetailsEntity: {}", manualImportDetailsEntity);
+
+        log.debug("saved import details: {}", manualImportDetailsEntity);
 
         List<ManualImportFilesEntity> manualImportFilesEntityList = files.stream()
                 .map(file -> ManualImportFilesEntity.builder()
@@ -70,7 +75,9 @@ public class ScanDataImportPersistFilePathsProcessor implements Processor {
                         .scanId(scanId)
                         .build())
                 .collect(Collectors.toList());
+
         manualImportFilesService.saveAll(manualImportFilesEntityList);
-        log.debug("saved manualImportFilesEntityList: {}", manualImportFilesEntityList);
+
+        log.debug("saved import files list: {}", manualImportFilesEntityList);
     }
 }

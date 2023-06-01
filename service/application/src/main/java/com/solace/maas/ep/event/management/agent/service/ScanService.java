@@ -38,7 +38,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
 
 /**
@@ -139,7 +138,7 @@ public class ScanService {
      */
     public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId, String traceId,
                              MessagingServiceEntity messagingServiceEntity, String runtimeAgentId) {
-        log.info("Scan request [{}]: Starting a single scan.", scanId);
+        log.info("Scan request [{}], trace ID [{}]: Starting a single scan.", scanId, traceId);
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
@@ -148,8 +147,8 @@ public class ScanService {
 
         save(routeBundleHierarchy, scanId);
 
-        log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
-                scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
+        log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
+                scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
         sendScanStatus(groupId, scanId, traceId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
                 StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
@@ -272,7 +271,8 @@ public class ScanService {
             exchange.getIn().setHeader(SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
-            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
 
             exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TERMINATION_TIMER, true);
             exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TYPE, SchedulerType.INTERVAL.name());

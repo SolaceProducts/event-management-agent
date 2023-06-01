@@ -40,8 +40,8 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
         List<String> destinations = new ArrayList<>();
         List<String> entityTypes = new ArrayList<>();
 
-        log.debug("Received scan command message: {} for messaging service: {}",
-                message, message.getMessagingServiceId());
+        log.debug("Received scan command message: {} for event broker: {}, traceId: {}",
+                message, message.getMessagingServiceId(), message.getTraceId());
 
         message.getScanTypes().forEach(scanType -> entityTypes.add(scanType.name()));
 
@@ -67,6 +67,7 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
                 .build();
 
         log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
+
         scanManager.scan(scanRequestBO);
     }
 }
