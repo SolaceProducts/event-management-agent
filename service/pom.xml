@@ -34,14 +34,16 @@
         <checkstyle.phase>validate</checkstyle.phase>
         <pmd.plugin.version>3.13.0</pmd.plugin.version>
         <pmd.phase>validate</pmd.phase>
-        <spotbugs.plugin.version>3.1.12.1</spotbugs.plugin.version>
+        <spotbugs.plugin.version>4.7.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
-        <spotbugs.version>4.0.0-beta4</spotbugs.version>
+        <spotbugs.version>4.7.3</spotbugs.version>
         <findsecbugs.version>1.10.1</findsecbugs.version>
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>3.16.0</camel.version>
+        <git.repository>SolaceLabs/event-management-agent</git.repository>
+        <project.scm.id>github</project.scm.id>
     </properties>
 
     <dependencyManagement>
@@ -109,7 +111,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.5</version>
+                    <version>0.8.10</version>
                     <configuration>
                         <excludes>
                             <exclude>**/config/*</exclude>
@@ -310,6 +312,15 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.0.0-M1</version>
+                    <configuration>
+                        <tagNameFormat>v@{project.version}</tagNameFormat>
+                        <arguments>-Dmaven.test.skip=true -Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip</arguments>
+                        <scmCommentPrefix>[ci skip]</scmCommentPrefix>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -390,6 +401,10 @@
             </build>
         </profile>
     </profiles>
+    <scm>
+        <developerConnection>scm:git:https://github.com/${git.repository}.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <distributionManagement>
         <repository>
             <id>github</id>

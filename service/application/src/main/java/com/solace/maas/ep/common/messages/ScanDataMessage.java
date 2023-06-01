@@ -23,7 +23,7 @@ public class ScanDataMessage extends MOPMessage {
     public ScanDataMessage(String orgId, String scanId, String traceId, String scanType, String data, String timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.event)
+                .withProtocol(MOPProtocol.scanData)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
 

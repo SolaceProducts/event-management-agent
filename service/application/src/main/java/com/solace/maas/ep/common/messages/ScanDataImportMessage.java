@@ -31,7 +31,7 @@ public class ScanDataImportMessage extends MOPMessage {
     public ScanDataImportMessage(String orgId, String scanId, String traceId, String messagingServiceId, String runtimeAgentId, List<String> scanTypes) {
         super();
         withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.event)
+                .withProtocol(MOPProtocol.scanDataControl)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
 

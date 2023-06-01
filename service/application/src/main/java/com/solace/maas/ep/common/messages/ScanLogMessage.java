@@ -23,7 +23,7 @@ public class ScanLogMessage extends MOPMessage {
     public ScanLogMessage(String orgId, String scanId, String traceId, String level, String log, Long timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.event)
+                .withProtocol(MOPProtocol.scanDataControl)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
 

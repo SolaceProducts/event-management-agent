@@ -27,7 +27,7 @@ public class ScanDataStatusMessage extends MOPMessage {
     public ScanDataStatusMessage(String orgId, String scanId, String traceId, String status, String description, String scanType) {
         super();
         withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.event)
+                .withProtocol(MOPProtocol.scanDataControl)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
 

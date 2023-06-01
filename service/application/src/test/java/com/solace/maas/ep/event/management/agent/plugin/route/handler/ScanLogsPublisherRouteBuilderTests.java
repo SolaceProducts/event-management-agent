@@ -4,8 +4,10 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
+import com.solace.maas.ep.common.messages.ScanLogMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.processor.ScanLogsProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
@@ -30,6 +32,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 @CamelSpringBootTest
@@ -76,6 +81,14 @@ public class ScanLogsPublisherRouteBuilderTests {
         producerTemplate.send("direct:scanLogsPublisher", exchange);
         mockResult.assertIsSatisfied();
     }
+
+    @Test
+    public void testScanLogMessageMOPProtocol() {
+        ScanLogMessage scanLogMessage = new ScanLogMessage("orgId", "scanId", "level",
+                "log", Instant.now().toEpochMilli());
+        assertThat(scanLogMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
+    }
+
 
     @Configuration
     static class TestConfig {
