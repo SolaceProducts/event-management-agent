@@ -29,10 +29,6 @@ jobs:
         env:
            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-#          gh api \
-#            -H "Accept: application/vnd.github+json" \
-#            -H "X-GitHub-Api-Version: 2022-11-28" \
-#            /orgs/SolaceLabs/teams/ema-release-team/members
           gh api --method GET /orgs/SolaceLabs/teams/ema-release-team/members
 #          > release_team.json
 #          user_is_in_release_team = $(jq -r --arg RELEASE_ACTOR ${{ github.actor }} '.[].login|select(.==$RELEASE_ACTOR)' release_team.json)
