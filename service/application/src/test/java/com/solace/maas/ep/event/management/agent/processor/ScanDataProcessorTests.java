@@ -59,8 +59,14 @@ public class ScanDataProcessorTests {
 
     @Test
     public void testScanMessageMOPProtocol() {
-        ScanDataMessage scanDataMessage =
-                new ScanDataMessage("orgId", "scanId", "scanType", "body", Instant.now().toString());
+        ScanDataMessage scanDataMessage = new ScanDataMessage(
+                "orgId",
+                "scanId",
+                "traceId",
+                "scanType",
+                " body",
+                Instant.now().toString());
+
         assertThat(scanDataMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanData);
     }
 }

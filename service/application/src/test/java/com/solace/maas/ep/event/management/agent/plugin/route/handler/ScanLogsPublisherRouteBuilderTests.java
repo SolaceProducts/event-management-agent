@@ -84,8 +84,13 @@ public class ScanLogsPublisherRouteBuilderTests {
 
     @Test
     public void testScanLogMessageMOPProtocol() {
-        ScanLogMessage scanLogMessage = new ScanLogMessage("orgId", "scanId", "level",
+        ScanLogMessage scanLogMessage = new ScanLogMessage(
+                "orgId",
+                "scanId",
+                "traceId",
+                "level",
                 "log", Instant.now().toEpochMilli());
+
         assertThat(scanLogMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 

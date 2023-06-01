@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
+import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
@@ -64,8 +65,14 @@ public class ScanStatusPerRouteProcessorTests {
 
     @Test
     public void testScanDataStatusMessageMOPProtocol() {
-        ScanDataStatusMessage scanDataStatusMessage = new
-                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", "queueListing");
+        ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(
+                null,
+                "scan1",
+                "traceId",
+                ScanStatus.IN_PROGRESS.name(),
+                "description",
+                "queueListing");
+
         assertThat(scanDataStatusMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 }

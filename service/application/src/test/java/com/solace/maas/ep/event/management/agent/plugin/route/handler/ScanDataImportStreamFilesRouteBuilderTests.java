@@ -118,7 +118,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "processEndOfFileImportStatus",
                 route -> {
-                    route.weaveByToUri("direct:markRouteImportStatusComplete").replace().to("mock:markRouteImportStatusComplete");
+                    route.weaveByToUri("direct:markRouteImportStatusComplete?block=false&failIfNoConsumers=false").replace().to("mock:markRouteImportStatusComplete");
                     route.weaveAddLast().to("mock:direct:processEndOfFileImportStatusResult");
                 });
 
