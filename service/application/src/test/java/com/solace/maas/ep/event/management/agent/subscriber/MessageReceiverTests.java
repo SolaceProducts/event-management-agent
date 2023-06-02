@@ -86,8 +86,8 @@ public class MessageReceiverTests {
                 "com.solace.maas.ep.common.messages.ScanCommandMessage");
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
-        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                solaceSubscriber, scanManager, scanRequestMapper);
+        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
+                solaceConfiguration, solaceSubscriber, scanManager);
 
         String topic = scanCommandMessageHandler.getTopicString();
         log.info("topic: {}", topic);
@@ -101,10 +101,10 @@ public class MessageReceiverTests {
     @Test
     @SneakyThrows
     public void testBadClass() {
-        Exception e = assertThrows(RuntimeException.class, () -> {
+        assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
-            ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                    solaceSubscriber, scanManager, scanRequestMapper);
+            ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
+                    solaceConfiguration, solaceSubscriber, scanManager);
             scanCommandMessageHandler.onMessage(inboundMessage);
         });
     }
@@ -112,8 +112,8 @@ public class MessageReceiverTests {
     @Test
     @SneakyThrows
     public void testScanCommandMessage() {
-        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                solaceSubscriber, scanManager, scanRequestMapper);
+        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
+                solaceConfiguration, solaceSubscriber, scanManager);
 
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",

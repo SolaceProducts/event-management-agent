@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 
 import com.solace.maas.ep.common.messages.ScanDataImportMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportFilesEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileDetailsBO;
@@ -15,14 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.EVENT_MANAGEMENT_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCAN_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCAN_TYPE;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Slf4j
 @Component
@@ -77,13 +70,13 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
                 scanId, traceId, scanDataImportMessage.getScanTypes().size(), StringUtils.join(scanDataImportMessage.getScanTypes(), ", "));
 
         producerTemplate.send("direct:continueImportingFiles", exchange -> {
-            exchange.getIn().setHeader(SCAN_ID, scanId);
-            exchange.getIn().setHeader(TRACE_ID, traceId);
-            exchange.getIn().setHeader(SCHEDULE_ID, manualImportDetailsEntity.getScheduleId());
-            exchange.getIn().setHeader(EVENT_MANAGEMENT_ID, manualImportDetailsEntity.getEmaId());
-            exchange.getIn().setHeader(IMPORT_ID, manualImportDetailsEntity.getImportId());
-            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
-            exchange.getIn().setHeader(SCAN_TYPE, scanTypes);
+            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+            exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, manualImportDetailsEntity.getScheduleId());
+            exchange.getIn().setHeader(RouteConstants.EVENT_MANAGEMENT_ID, manualImportDetailsEntity.getEmaId());
+            exchange.getIn().setHeader(RouteConstants.IMPORT_ID, manualImportDetailsEntity.getImportId());
+            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
 
             exchange.getIn().setBody(metaInfFileDetailsBOList);
         });

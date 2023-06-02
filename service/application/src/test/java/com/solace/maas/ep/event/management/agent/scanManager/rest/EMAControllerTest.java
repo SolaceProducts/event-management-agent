@@ -6,7 +6,6 @@ import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalP
 import com.solace.maas.ep.event.management.agent.config.eventPortal.GatewayMessagingProperties;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
-import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
@@ -34,9 +33,6 @@ public class EMAControllerTest {
 
     @Autowired
     private ScanRequestMapper scanRequestMapper;
-
-    @Autowired
-    private ScanItemMapper scanItemMapper;
 
 
     @Test

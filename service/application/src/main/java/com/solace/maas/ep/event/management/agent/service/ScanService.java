@@ -38,8 +38,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
-
 /**
  * Responsible for initiating and managing Messaging Service scans.
  */
@@ -268,7 +266,7 @@ public class ScanService {
     protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, RouteEntity route, String messagingServiceId) {
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
-            exchange.getIn().setHeader(SCHEDULE_ID, groupId);
+            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);

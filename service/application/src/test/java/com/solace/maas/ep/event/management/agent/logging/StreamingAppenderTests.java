@@ -5,8 +5,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import lombok.SneakyThrows;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
@@ -42,7 +42,7 @@ public class StreamingAppenderTests {
         ILoggingEvent event = new LoggingEvent(null, logger, Level.DEBUG,
                 "test message", new Throwable("throwable message"), null);
 
-        RouteEntity route = RouteEntity.builder()
+        RouteEntity.builder()
                 .id("seda:scanLogsPublisher")
                 .active(true)
                 .build();

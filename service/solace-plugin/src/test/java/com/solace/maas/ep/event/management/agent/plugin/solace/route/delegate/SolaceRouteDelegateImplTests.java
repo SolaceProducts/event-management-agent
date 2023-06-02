@@ -19,7 +19,7 @@ public class SolaceRouteDelegateImplTests {
     @InjectMocks
     private SolaceRouteDelegateImpl solaceRouteDelegate;
 
-    private List<RouteBundle> destinations = List.of(
+    private final List<RouteBundle> destinations = List.of(
             RouteBundle.builder()
                     .destinations(List.of())
                     .recipients(List.of())

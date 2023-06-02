@@ -64,7 +64,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(IMPORT_ID, UUID.randomUUID().toString());
+        exchange.getIn().setHeader(RouteConstants.IMPORT_ID, UUID.randomUUID().toString());
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setBody(files);
 
@@ -89,7 +89,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(IMPORT_ID, UUID.randomUUID().toString());
+        exchange.getIn().setHeader(RouteConstants.IMPORT_ID, UUID.randomUUID().toString());
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(Exchange.SPLIT_COMPLETE, true);
         exchange.getIn().setBody("test data");
@@ -118,7 +118,8 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         AdviceWith.adviceWith(camelContext, "processEndOfFileImportStatus",
                 route -> {
-                    route.weaveByToUri("direct:markRouteImportStatusComplete?block=false&failIfNoConsumers=false").replace().to("mock:markRouteImportStatusComplete");
+                    route.weaveByToUri("direct:markRouteImportStatusComplete?block=false&failIfNoConsumers=false")
+                            .replace().to("mock:markRouteImportStatusComplete");
                     route.weaveAddLast().to("mock:direct:processEndOfFileImportStatusResult");
                 });
 

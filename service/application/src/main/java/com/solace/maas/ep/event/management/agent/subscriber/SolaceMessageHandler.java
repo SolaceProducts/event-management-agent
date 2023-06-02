@@ -26,7 +26,7 @@ import java.util.Map;
 public abstract class SolaceMessageHandler<T extends MOPMessage> implements MessageReceiver.MessageHandler {
 
     private static final SimpleModule module = new SimpleModule();
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         // Register all the enums we expect to cross versions and allow them to be mapped to null instead of throwing an exception if unknown
@@ -42,7 +42,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
     }
 
     private final Map<String, Class> cachedJSONDecoders = new HashMap();
-    private String topicString;
+    private final String topicString;
 
     public SolaceMessageHandler(String topicString, SolaceSubscriber solaceSubscriber) {
         this.topicString = topicString;

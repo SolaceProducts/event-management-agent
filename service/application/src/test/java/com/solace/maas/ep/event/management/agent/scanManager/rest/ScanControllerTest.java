@@ -1,7 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanItemMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
@@ -35,9 +34,6 @@ public class ScanControllerTest {
     private ScanItemMapper scanItemMapper;
 
     @Mock
-    private EventPortalProperties eventPortalProperties;
-
-    @Mock
     private ScanManager scanManager;
 
     @InjectMocks
@@ -46,13 +42,13 @@ public class ScanControllerTest {
     @Test
     public void scanListTest() {
         List<ScanItemBO> responseList = List.of(ScanItemBO.builder()
-                        .id("scan_id")
-                        .createdAt(Instant.now())
-                        .messagingServiceId("msg_svc_id")
-                        .messagingServiceName("messaging service")
-                        .messagingServiceType("SOLACE")
-                        .emaId("ema1")
-                        .build());
+                .id("scan_id")
+                .createdAt(Instant.now())
+                .messagingServiceId("msg_svc_id")
+                .messagingServiceName("messaging service")
+                .messagingServiceType("SOLACE")
+                .emaId("ema1")
+                .build());
 
         ScanItemDTO mappedResponse = ScanItemDTO.builder()
                 .id("scan_id")
@@ -63,7 +59,7 @@ public class ScanControllerTest {
                 .emaId("ema1")
                 .build();
 
-        Page<ScanItemBO> response = new PageImpl<>(responseList, PageRequest.of(0,1), responseList.size());
+        Page<ScanItemBO> response = new PageImpl<>(responseList, PageRequest.of(0, 1), responseList.size());
 
         when(scanManager.findAll(any(Pageable.class)))
                 .thenReturn(response);
@@ -71,7 +67,7 @@ public class ScanControllerTest {
                 .thenReturn(mappedResponse);
 
         ResponseEntity<Page<ScanItemDTO>> reply =
-                controller.list(PageRequest.of(0,1));
+                controller.list(PageRequest.of(0, 1));
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(Objects.requireNonNull(reply.getBody()).toList().size()).isEqualTo(1);

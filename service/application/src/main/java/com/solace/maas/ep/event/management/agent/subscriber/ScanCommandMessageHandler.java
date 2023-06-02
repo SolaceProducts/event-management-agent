@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
-import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
@@ -23,14 +22,10 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
 
     private static final String DEFAULT_DESTINATION = "FILE_WRITER";
     private final ScanManager scanManager;
-    private final ScanRequestMapper scanRequestMapper;
 
-    public ScanCommandMessageHandler(
-            SolaceConfiguration solaceConfiguration,
-            SolaceSubscriber solaceSubscriber, ScanManager scanManager, ScanRequestMapper scanRequestMapper) {
+    public ScanCommandMessageHandler(SolaceConfiguration solaceConfiguration, SolaceSubscriber solaceSubscriber, ScanManager scanManager) {
         super(solaceConfiguration.getTopicPrefix() + "scan/command/v1/scanStart/>", solaceSubscriber);
         this.scanManager = scanManager;
-        this.scanRequestMapper = scanRequestMapper;
     }
 
     @Override

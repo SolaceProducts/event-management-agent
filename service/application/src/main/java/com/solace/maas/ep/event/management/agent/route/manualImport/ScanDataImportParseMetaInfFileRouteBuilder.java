@@ -32,6 +32,7 @@ public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
                                                       ScanDataImportOverAllStatusProcessor scanDataImportOverAllStatusProcessor,
                                                       ScanDataImportPersistScanDataProcessor scanDataImportPersistScanDataProcessor
     ) {
+        super();
         this.scanDataImportParseMetaInfFileProcessor = scanDataImportParseMetaInfFileProcessor;
         this.scanDataImportPersistFilePathsProcessor = scanDataImportPersistFilePathsProcessor;
         this.scanDataImportPublishImportScanEventProcessor = scanDataImportPublishImportScanEventProcessor;
