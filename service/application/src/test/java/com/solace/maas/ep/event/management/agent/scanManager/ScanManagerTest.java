@@ -82,7 +82,7 @@ class ScanManagerTest {
                 List.of("TEST_SCAN_1"),
                 List.of());
 
-        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
+        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOTopics));
 
         ScanRequestBO scanRequestBOConsumerGroups = new ScanRequestBO(
                 "id",
@@ -91,7 +91,7 @@ class ScanManagerTest {
                 List.of("TEST_SCAN_2"),
                 List.of());
 
-        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
+        Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOConsumerGroups));
     }
 
     @Test

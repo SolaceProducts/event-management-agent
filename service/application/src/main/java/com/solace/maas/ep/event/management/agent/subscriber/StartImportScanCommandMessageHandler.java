@@ -50,7 +50,7 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
         log.trace("Received startImportScan command message: {} for event broker: {}, traceId: {}",
                 scanDataImportMessage, messagingServiceId, traceId);
 
-        log.info("Scan import request [{}], trace ID: [{}]: Handshake with EP is complete.", scanId, traceId);
+        log.info("Scan import request [{}], trace ID [{}]: Handshake with EP is complete.", scanId, traceId);
 
         if (manualImportFilesEntityList.isEmpty()) {
             throw new RuntimeException(String.format("can't retrieve any manualImportFiles for scanId: %s", scanId));
@@ -66,7 +66,7 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
                         .build())
                 .collect(Collectors.toList());
 
-        log.info("Scan import request [{}], traceId: [{}]: Total of {} scan types to be imported: [{}].",
+        log.info("Scan import request [{}], trace ID [{}]: Total of {} scan types to be imported: [{}].",
                 scanId, traceId, scanDataImportMessage.getScanTypes().size(), StringUtils.join(scanDataImportMessage.getScanTypes(), ", "));
 
         producerTemplate.send("direct:continueImportingFiles", exchange -> {

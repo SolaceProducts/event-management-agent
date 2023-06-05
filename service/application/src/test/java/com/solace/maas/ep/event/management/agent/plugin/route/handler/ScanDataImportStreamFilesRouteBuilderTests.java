@@ -28,7 +28,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.UUID;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
 import static org.mockito.Mockito.mock;
 
 @CamelSpringBootTest
@@ -112,7 +111,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(IMPORT_ID, UUID.randomUUID().toString());
+        exchange.getIn().setHeader(RouteConstants.IMPORT_ID, UUID.randomUUID().toString());
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setBody("test data");
 
