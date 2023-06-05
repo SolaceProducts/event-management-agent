@@ -62,6 +62,8 @@ The Event Management Agent was tested to run with
 
 ### Downloading the Event Management Agent jar file
 
+The Event Management Agent must have access to the event brokers and schema registries.
+
 * Select the release and download download the jar, zip or tar file from https://github.com/SolaceLabs/event-management-agent/releases
 * (Optional) Unzip or untar the file if needed
 
@@ -155,8 +157,6 @@ In order to manually build the Event Management Agent, you also need to install 
 * Maven
 
 ### Cloning the Event Management Agent repository
-
-The Event Management Agent must have access to the event brokers.
 
 ```
 git clone https://github.com/SolaceLabs/event-management-agent.git
