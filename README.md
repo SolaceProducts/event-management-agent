@@ -64,7 +64,7 @@ The Event Management Agent was tested to run with
 
 The Event Management Agent must have access to the event brokers and schema registries.
 
-* Select the release and download download the jar, zip or tar file from https://github.com/SolaceLabs/event-management-agent/releases
+* Select the release and download the jar, zip or tar file from https://github.com/SolaceLabs/event-management-agent/releases
 * (Optional) Unzip or untar the file if needed
 
 ### Generating the Event Management Agent connection file
