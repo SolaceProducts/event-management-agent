@@ -82,7 +82,6 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
             Publisher<Exchange> exchanges = camel.fromStream("asyncProcessing_" + routeId);
 
-            camel.stop();
             Flux.from(exchanges)
                     .publishOn(Schedulers.boundedElastic())
                     .subscribe(asyncRoutePublisher::start);
