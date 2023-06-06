@@ -50,17 +50,16 @@ public class ImportService {
         this.eventPortalProperties = eventPortalProperties;
     }
 
+    @SuppressWarnings("PMD.CloseResource")
     public void importData(ImportRequestBO importRequestBO) throws IOException {
         boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
-        try (InputStream importStream = importRequestBO.getDataFile().getInputStream()) {
+        InputStream importStream = importRequestBO.getDataFile().getInputStream();
+        String importId = UUID.randomUUID().toString();
 
-            String importId = UUID.randomUUID().toString();
-
-            if (isEMAStandalone) {
-                throw new FileUploadException("Scan data could not be imported in standalone mode.");
-            } else {
-                initiateImport(importStream, importId);
-            }
+        if (isEMAStandalone) {
+            throw new FileUploadException("Scan data could not be imported in standalone mode.");
+        } else {
+            initiateImport(importStream, importId);
         }
     }
 
