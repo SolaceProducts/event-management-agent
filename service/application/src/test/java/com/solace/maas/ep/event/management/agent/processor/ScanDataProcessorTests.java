@@ -45,6 +45,7 @@ public class ScanDataProcessorTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.TOPIC, "test/ep/v1");

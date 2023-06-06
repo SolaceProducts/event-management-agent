@@ -177,7 +177,7 @@ public class ScanService {
     }
 
     @Transactional
-    protected void updateScan(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity) {
+    public void updateScan(RouteEntity route, RouteBundle routeBundle, ScanEntity scanEntity) {
         List<ScanDestinationEntity> destinationEntities = routeBundle.getDestinations().stream()
                 .map(destination -> ScanDestinationEntity.builder()
                         .scan(scanEntity)

@@ -59,12 +59,13 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
+        exchange.getIn().setHeader("CamelFileName", "META_INF.json");
+        exchange.getIn().setBody(getMetaInfJson());
 
         AdviceWith.adviceWith(camelContext, "parseMetaInfoAndPerformHandShakeWithEP",
                 route -> {
                     route.weaveByType(PollEnrichDefinition.class).replace().process(exchange1 -> {
-                        exchange1.getIn().setHeader("CamelFileName", "META_INF.json");
-                        exchange1.getIn().setBody(getMetaInfJson());
                     });
                     route.weaveAddLast().to("mock:direct:mockParseMetaInfoResult");
                 });

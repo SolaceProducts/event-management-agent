@@ -50,6 +50,7 @@ public class StreamingAppenderTests {
         streamingAppender.setStandalone(false);
 
         MDC.put(RouteConstants.SCAN_ID, "12345");
+        MDC.put(RouteConstants.TRACE_ID, "trace-12345");
         MDC.put(RouteConstants.SCAN_TYPE, "topicListing");
         MDC.put(RouteConstants.SCHEDULE_ID, "groupId");
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");

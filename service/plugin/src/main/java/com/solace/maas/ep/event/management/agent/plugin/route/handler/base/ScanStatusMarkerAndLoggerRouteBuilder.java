@@ -13,6 +13,7 @@ public class ScanStatusMarkerAndLoggerRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         from("direct:markRouteScanStatusInProgress")
+                .routeId("markRouteScanStatusInProgress")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
                         RouteConstants.TRACE_ID + "}]: The status of [${header." +
                         RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
@@ -23,6 +24,7 @@ public class ScanStatusMarkerAndLoggerRouteBuilder extends RouteBuilder {
 
 
         from("direct:markRouteScanStatusComplete")
+                .routeId("markRouteScanStatusComplete")
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
                 .log("Scan request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
                         RouteConstants.TRACE_ID + "}]: The status of [${header." +
@@ -30,6 +32,7 @@ public class ScanStatusMarkerAndLoggerRouteBuilder extends RouteBuilder {
 
 
         from("direct:markRouteImportStatusInProgress")
+                .routeId("markRouteImportStatusInProgress")
                 .log("Scan import request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
                         RouteConstants.TRACE_ID + "}]: The status of [${header." +
                         RouteConstants.SCAN_TYPE + "}]" + " is: [" + ScanStatus.IN_PROGRESS + "].")
@@ -40,6 +43,7 @@ public class ScanStatusMarkerAndLoggerRouteBuilder extends RouteBuilder {
 
 
         from("direct:markRouteImportStatusComplete")
+                .routeId("markRouteImportStatusComplete")
                 .to("direct:processScanStatusAsComplete?block=false&failIfNoConsumers=false")
                 .log("Scan import request [${header." + RouteConstants.SCAN_ID + "}], trace ID [${header." +
                         RouteConstants.TRACE_ID + "}]: The status of [${header." +
