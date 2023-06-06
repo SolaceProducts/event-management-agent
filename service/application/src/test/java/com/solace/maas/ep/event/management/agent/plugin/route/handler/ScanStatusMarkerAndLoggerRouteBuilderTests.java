@@ -3,12 +3,14 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.ScanStatusMarkerAndLoggerRouteBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
@@ -16,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("TEST")
@@ -133,5 +138,14 @@ public class ScanStatusMarkerAndLoggerRouteBuilderTests {
         mockMarkRouteImportStatusCompleteResult.expectedMessageCount(1);
         producerTemplate.send("direct:markRouteImportStatusComplete", exchange);
         mockMarkRouteImportStatusCompleteResult.assertIsSatisfied();
+    }
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public static RoutesBuilder createRouteBuilder() {
+            return new ScanStatusMarkerAndLoggerRouteBuilder();
+        }
     }
 }
