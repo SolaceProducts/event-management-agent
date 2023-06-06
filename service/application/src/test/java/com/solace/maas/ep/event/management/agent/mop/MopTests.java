@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.mop;
 import com.solace.maas.ep.common.messages.HeartbeatMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.AckStrategy;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import org.junit.jupiter.api.Test;
 
@@ -47,5 +48,11 @@ public class MopTests {
         message.getRepeat();
         String id = message.toLog();
         assertNull(id);
+    }
+
+    @Test
+    public void testHeartbeatAgentMOPProtocol() {
+        HeartbeatMessage message = new HeartbeatMessage("runtimeId", "timestamp");
+        assertEquals(message.getMopProtocol(), MOPProtocol.EMAHeartbeat);
     }
 }

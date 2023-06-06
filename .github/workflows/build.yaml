@@ -67,7 +67,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           mvn -B $SKIP_FLAGS_ALL_TESTS \
-            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_runtime-agent \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_event-management-agent \
             --file service/pom.xml
       - name: WhiteSource Scan
         if: env.WHITESOURCE_SCAN=='true'

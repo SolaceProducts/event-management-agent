@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashMap;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 
@@ -61,5 +63,12 @@ public class ScanStatusPerRouteProcessorTests {
         scanStatusPerRouteProcessor.process(exchange);
 
         assertThatNoException();
+    }
+
+    @Test
+    public void testScanDataStatusMessageMOPProtocol() {
+        ScanDataStatusMessage scanDataStatusMessage = new
+                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", "queueListing");
+        assertThat(scanDataStatusMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 }

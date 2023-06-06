@@ -4,6 +4,7 @@ import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportFilesEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
@@ -27,6 +28,7 @@ import java.util.Optional;
 
 import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
 import static com.solace.maas.ep.common.model.ScanType.KAFKA_ALL;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -119,6 +121,14 @@ public class MessageReceiverTests {
 
         scanCommandMessageHandler.receiveMessage("test", scanCommandMessage);
         assertThatNoException();
+    }
+
+    @Test
+    public void testScanCommandMessageMOPProtocol() {
+        ScanCommandMessage scanCommandMessage =
+                new ScanCommandMessage("messagingServiceId",
+                        "scanId", List.of(KAFKA_ALL), List.of(EVENT_PORTAL));
+        assertThat(scanCommandMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 
     @Test

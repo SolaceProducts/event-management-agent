@@ -58,17 +58,14 @@ The Event Management Agent was tested to run with
 
 ### Prerequisites:
 
-* Java 11 (JDK 11.0.14+)
-* Maven
 * Docker (recommended)
 
-### Cloning the Event Management Agent repository
+### Downloading the Event Management Agent jar file
 
-The Event Management Agent must have access to the event brokers.
+The Event Management Agent must have access to the event brokers and schema registries.
 
-```
-git clone https://github.com/SolaceLabs/event-management-agent.git
-```
+* Select the release and download the jar, zip or tar file from https://github.com/SolaceLabs/event-management-agent/releases
+* (Optional) Unzip or untar the file if needed
 
 ### Generating the Event Management Agent connection file
 
@@ -80,24 +77,17 @@ git clone https://github.com/SolaceLabs/event-management-agent.git
     - Or place the connection file anywhere and pass its path to the agent when starting it
 * Create the environment variables containing the passwords you provided when generating the connection file.
 
-### Installing Maven dependencies
-
-```
-cd event-management-agent/service
-mvn clean install
-```
-
 ### Running the Event Management Agent as a process (recommended for testing and proof of concept purposes only)
 
 Specify the location of the connection file if not using the default location (e.g. /path/to/file/AcmeRetail.yml)
 
 ```
-java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=/path/to/file/AcmeRetail.yml
+java -jar application/target/event-management-agent-1.0.0.jar --spring.config.location=/path/to/file/AcmeRetail.yml
 ```
 
 ### Running the Event Management Agent as a Docker container (recommended for production puroposes)
 
-#### Building the Event Management Agent
+#### Building the Event Management Agent Docker image
 
 Provide a tag for the Docker image (e.g. v1)
 
@@ -116,7 +106,7 @@ Edit the following script to add the environment variables containing the passwo
 service/application/docker/runEventManagementAgentDocker.sh
 ```
 
-#### Starting the Event Management Agent
+#### Starting the Event Management Agent Docker container
 
 Provide the Docker image tag (e.g. v1), the location of the connection file (e.g. /tmp/configFiles/perf1-ema.yml)
 
@@ -157,6 +147,32 @@ Can alternatively make these environment variables (these will also override the
 ```
 export AWS_ACCESS_KEY_ID=<aws_access_key>
 export AWS_SECRET_ACCESS_KEY=<aws_secret_key>
+```
+
+## Manually building the Event Management Agent jar file
+
+In order to manually build the Event Management Agent, you also need to install the following packages:
+
+* Java 11 (JDK 11.0.14+)
+* Maven
+
+### Cloning the Event Management Agent repository
+
+```
+git clone https://github.com/SolaceLabs/event-management-agent.git
+```
+
+### Installing Maven dependencies and building the Event Management Agent jar file
+
+```
+cd event-management-agent/service
+mvn clean install
+```
+
+The generated Event Management Agent jar file is found in:
+
+```
+application/target/event-management-agent-1.0.0-SNAPSHOT.jar
 ```
 
 ## Deployment
