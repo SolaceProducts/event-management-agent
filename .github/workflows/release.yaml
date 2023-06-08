@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
+
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
@@ -55,16 +55,20 @@ jobs:
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
+      - name: Prepare Maven Settings
+        env:
+          MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
+          MAVEN_REPO_SERVER_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
+          MAVEN_REPO_SERVER_PRIVATE_KEY: "~/.ssh/id_rsa"
+          SSH_PRIVATE_KEY: "${{ secrets.COMMIT_KEY }}"
+        run: cd .github/workflows/release_scripts && ./setup-ssh.sh
       - name: Set Release Configs
         run: |
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
+
       - name: Maven Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
       - name: Changelog
         uses: Bullrich/generate-release-changelog@master
