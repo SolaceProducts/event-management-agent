@@ -2,18 +2,12 @@ package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.
 
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.client.SolaceSempApiClient;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileClientConnectException;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileClientConnectExceptionResponse;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskConfig;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskLog;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskResult;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskState;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TemplateTaskProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskLog;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskState;
+import com.solace.maas.ep.event.management.agent.plugin.task.TemplateTaskProcessor;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 public abstract class SEMPv2MsgVpnBaseTaskProcessor<T> extends TemplateTaskProcessor<T> {
     protected String apiVersion;
@@ -51,18 +45,18 @@ public abstract class SEMPv2MsgVpnBaseTaskProcessor<T> extends TemplateTaskProce
     }
 
     protected String getNoOpOperationName(TaskConfig<T> config){
-        return String.format("noOp%s",((SEMPv2MsgVpnTaskConfig)config).getObjectType());
+        return String.format("noOp%s",config.getObjectType());
     }
     protected String getCreateOperationName(TaskConfig<T> config){
-        return String.format("create%s",((SEMPv2MsgVpnTaskConfig)config).getObjectType());
+        return String.format("create%s",config.getObjectType());
     }
     protected String getReadOperationName(TaskConfig<T> config){
-        return String.format("read%s",((SEMPv2MsgVpnTaskConfig)config).getObjectType());
+        return String.format("read%s",config.getObjectType());
     }
     protected String getUpdateOperationName(TaskConfig<T> config){
-        return String.format("update%s",((SEMPv2MsgVpnTaskConfig)config).getObjectType());
+        return String.format("update%s",config.getObjectType());
     }
     protected String getDeleteOperationName(TaskConfig<T> config){
-        return String.format("delete%s",((SEMPv2MsgVpnTaskConfig)config).getObjectType());
+        return String.format("delete%s",config.getObjectType());
     }
 }

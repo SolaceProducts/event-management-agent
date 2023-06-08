@@ -5,15 +5,15 @@ import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.s
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileSubscribeTopicExceptionResponse;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.SempMetaOnlyResponse;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semptask.SEMPv2MsgVpnBaseTaskProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskConfig;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskResult;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ACLProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVpnAclProfileSubscribeTopicException> {
-    public ACLProfileSubscribeExceptionTaskProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+public class AclProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVpnAclProfileSubscribeTopicException> {
+    public AclProfileSubscribeExceptionTaskProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
         super(messagingServiceDelegateService);
     }
 
@@ -28,11 +28,11 @@ public class ACLProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseT
                     null, null);
             return super.createSuccessfulTaskResult(
                     super.getReadOperationName(config),
-                    config.getConfigObject().getAclProfileName(), config.getTaskState(), response.getData());
+                    config.getConfigObject().getAclProfileName(), config.getState(), response.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.trace(e.getMessage(), e);
             return super.createFailureTaskResult(
-                    super.getReadOperationName(config), config.getConfigObject().getAclProfileName(), config.getTaskState(), e);
+                    super.getReadOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), e);
         }
     }
 
@@ -46,18 +46,18 @@ public class ACLProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseT
                     null, null);
             return super.createSuccessfulTaskResult(
                     super.getCreateOperationName(config),
-                    config.getConfigObject().getAclProfileName(), config.getTaskState(), response.getData());
+                    config.getConfigObject().getAclProfileName(), config.getState(), response.getData());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return super.createFailureTaskResult(
-                    super.getCreateOperationName(config), config.getConfigObject().getAclProfileName(), config.getTaskState(), e);
+                    super.getCreateOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), e);
         }
     }
 
     @Override
     protected TaskResult update(TaskConfig<MsgVpnAclProfileSubscribeTopicException> config) {
         return super.createSuccessfulTaskResult(super.getNoOpOperationName(config),
-                config.getConfigObject().getAclProfileName(), config.getTaskState(), null);
+                config.getConfigObject().getAclProfileName(), config.getState(), null);
     }
 
     @Override
@@ -69,11 +69,11 @@ public class ACLProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseT
                     config.getConfigObject().getSubscribeTopicExceptionSyntax().getValue(),
                     config.getConfigObject().getSubscribeTopicException());
             return super.createSuccessfulTaskResult(
-                    super.getDeleteOperationName(config), config.getConfigObject().getAclProfileName(), config.getTaskState(), response.getMeta());
+                    super.getDeleteOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), response.getMeta());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return super.createFailureTaskResult(super.getDeleteOperationName(config),
-                    config.getConfigObject().getAclProfileName(), config.getTaskState(), e);
+                    config.getConfigObject().getAclProfileName(), config.getState(), e);
         }
     }
 }

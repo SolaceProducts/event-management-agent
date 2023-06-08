@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task;
+package com.solace.maas.ep.event.management.agent.plugin.task;
 
 import lombok.Builder;
 import lombok.Data;

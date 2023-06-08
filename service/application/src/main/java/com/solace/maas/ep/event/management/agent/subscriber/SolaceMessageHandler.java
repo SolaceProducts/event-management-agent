@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -13,6 +14,7 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
+import com.solace.maas.ep.event.management.agent.util.string.ParseClassName;
 import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.MessageReceiver;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
     private String topicString;
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static final SimpleModule module = new SimpleModule();
-    private final Map<String, Class> cachedJSONDecoders = new HashMap();
+    private final Map<String, JavaType> cachedJSONDecoders = new HashMap();
 
     static {
         // Register all the enums we expect to cross versions and allow them to be mapped to null instead of throwing an exception if unknown
@@ -53,24 +55,37 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
     @Override
     public void onMessage(InboundMessage inboundMessage) {
         String messageAsString = inboundMessage.getPayloadAsString();
-        String mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
+        String mopMessageDecoder= inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
         try {
-            Class messageClass = cachedJSONDecoders.get(mopMessageSubclass);
+            JavaType messageClass = cachedJSONDecoders.get(mopMessageDecoder);
             T message = null;
 
             if (messageClass == null) {
-                messageClass = Class.forName(mopMessageSubclass);
-                cachedJSONDecoders.put(mopMessageSubclass, messageClass);
+                messageClass = getMessageDecoderJavaType(mopMessageDecoder);
+                cachedJSONDecoders.put(mopMessageDecoder, messageClass);
             }
 
             message = (T) objectMapper.readValue(messageAsString, messageClass);
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             log.trace("onMessage: {} {}", inboundMessage.getDestinationName(), message);
             receiveMessage(inboundMessage.getDestinationName(), message);
-        } catch (ClassNotFoundException | JsonProcessingException e) {
+        } catch (JsonProcessingException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private static JavaType getMessageDecoderJavaType(String mopMessageDecoderName) throws ClassNotFoundException {
+        JavaType messageClass;
+        if (mopMessageDecoderName.contains("<") && mopMessageDecoderName.contains(">")){
+            Class parametrized = ParseClassName.getClass(mopMessageDecoderName);
+            Class[] parameterClasses = ParseClassName.getParameterizedTypes(mopMessageDecoderName);
+            messageClass = objectMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
+        } else {
+            messageClass = objectMapper.getTypeFactory().constructFromCanonical(mopMessageDecoderName);
+        }
+        return messageClass;
+    }
+
 
     public abstract void receiveMessage(String destinationName, T message);
 }

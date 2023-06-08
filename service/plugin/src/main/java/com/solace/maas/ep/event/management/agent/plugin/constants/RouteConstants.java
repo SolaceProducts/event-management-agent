@@ -29,4 +29,7 @@ public class RouteConstants {
 
     public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
     public static final String IMPORT_ID = "IMPORT_ID";
+
+    // configuration tasks
+    public static final String TASK_ID = "TASK_ID";
 }

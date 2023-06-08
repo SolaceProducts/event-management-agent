@@ -1,13 +1,14 @@
 package com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfile;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileClientConnectException;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfilePublishTopicException;
 import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semp.model.MsgVpnAclProfileSubscribeTopicException;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.semptask.SEMPv2MsgVpnTaskConfig;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskResult;
-import com.solace.maas.ep.event.management.agent.plugin.solaceconfig.processor.task.TaskState;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
+import com.solace.maas.ep.event.management.agent.plugin.task.TaskState;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -16,15 +17,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 @ActiveProfiles("TEST")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
 @Testcontainers
 @SuppressWarnings("PMD")
 class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
@@ -37,10 +38,10 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
     private AclProfileClientConnectExceptionTaskProcessor aclProfileClientConnectExceptionTaskProcessor;
 
     @InjectMocks
-    private ACLProfileSubscribeExceptionTaskProcessor aclSubscribeExceptionTaskProcessor;
+    private AclProfileSubscribeExceptionTaskProcessor aclSubscribeExceptionTaskProcessor;
 
     @InjectMocks
-    private ACLProfilePublishExceptionTaskProcessor aclProfilePublishExceptionTaskProcessor;
+    private AclProfilePublishExceptionTaskProcessor aclProfilePublishExceptionTaskProcessor;
 
     @SneakyThrows
     @Test
@@ -49,13 +50,13 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setAclProfileName(ACL_PROFILE_NAME);
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setClientConnectExceptionAddress("10.0.0.0/24");
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException> config = SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfileClientConnectException>builder().configObject(e).objectType(MsgVpnAclProfileClientConnectException.class.getSimpleName()).state(TaskState.PRESENT).build();
-        TaskResult r = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        TaskConfig<MsgVpnAclProfileClientConnectException> config = TaskConfig.<MsgVpnAclProfileClientConnectException>builder().configObject(e).objectType(MsgVpnAclProfileClientConnectException.class.getSimpleName()).state(TaskState.PRESENT).build();
+        List<TaskResult>  r = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult>  r2 = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -65,17 +66,19 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setAclProfileName(ACL_PROFILE_NAME);
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setClientConnectExceptionAddress("10.0.0.0/24");
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException> config = SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfileClientConnectException>builder().configObject(e).objectType(MsgVpnAclProfileClientConnectException.class.getSimpleName()).state(TaskState.PRESENT).build();
-        TaskResult o = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        TaskConfig<MsgVpnAclProfileClientConnectException> config = TaskConfig.<MsgVpnAclProfileClientConnectException>builder().configObject(e).objectType(MsgVpnAclProfileClientConnectException.class.getSimpleName()).state(TaskState.PRESENT).build();
+        List<TaskResult> o = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(o, notNullValue());
-        assertThat(o.isSuccess(), equalTo(true));
-        config.setTaskState(TaskState.ABSENT);
-        TaskResult r = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
-        assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
-        assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(o.size(), equalTo(1));
+        assertThat(o.get(0).isSuccess(), equalTo(true));
+        config.setState(TaskState.ABSENT);
+        List<TaskResult> r = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.size(), equalTo(1));
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r2 = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r2.size(), equalTo(1));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
+
     }
 
     @SneakyThrows
@@ -85,10 +88,11 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setAclProfileName("mooAcl");
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setClientConnectExceptionAddress("10.0.0.0/24");
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileClientConnectException> config = SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfileClientConnectException>builder().configObject(e).objectType(MsgVpnAclProfileClientConnectException.class.getSimpleName()).state(TaskState.PRESENT).build();
-        TaskResult r = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        TaskConfig<MsgVpnAclProfileClientConnectException> config = TaskConfig.<MsgVpnAclProfileClientConnectException>builder().configObject(e).objectType(MsgVpnAclProfileClientConnectException.class.getSimpleName()).state(TaskState.PRESENT).build();
+        List<TaskResult> r = this.aclProfileClientConnectExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(false));
+        assertThat(r.size(), equalTo(1));
+        assertThat(r.get(0).isSuccess(), equalTo(false));
 
     }
 
@@ -100,16 +104,16 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setSubscribeTopicException("hello/world");
         e.setSubscribeTopicExceptionSyntax(MsgVpnAclProfileSubscribeTopicException.SubscribeTopicExceptionSyntaxEnum.SMF);
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileSubscribeTopicException> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfileSubscribeTopicException>builder()
+        TaskConfig<MsgVpnAclProfileSubscribeTopicException> config =
+                TaskConfig.<MsgVpnAclProfileSubscribeTopicException>builder()
                         .configObject(e).objectType(MsgVpnAclProfileSubscribeTopicException.class.getSimpleName())
                         .state(TaskState.PRESENT).build();
-        TaskResult r = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r2 = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -120,20 +124,20 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setSubscribeTopicException("hello/world");
         e.setSubscribeTopicExceptionSyntax(MsgVpnAclProfileSubscribeTopicException.SubscribeTopicExceptionSyntaxEnum.SMF);
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileSubscribeTopicException> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfileSubscribeTopicException>builder()
+        TaskConfig<MsgVpnAclProfileSubscribeTopicException> config =
+                TaskConfig.<MsgVpnAclProfileSubscribeTopicException>builder()
                         .configObject(e).objectType(MsgVpnAclProfileSubscribeTopicException.class.getSimpleName())
                         .state(TaskState.PRESENT).build();
-        TaskResult o = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> o = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(o, notNullValue());
-        assertThat(o.isSuccess(), equalTo(true));
-        config.setTaskState(TaskState.ABSENT);
-        TaskResult r = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(o.get(0).isSuccess(), equalTo(true));
+        config.setState(TaskState.ABSENT);
+        List<TaskResult> r = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r2 = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -144,13 +148,13 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setMsgVpnName("mooAcl");
         e.setSubscribeTopicException("hello/world");
         e.setSubscribeTopicExceptionSyntax(MsgVpnAclProfileSubscribeTopicException.SubscribeTopicExceptionSyntaxEnum.SMF);
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfileSubscribeTopicException> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfileSubscribeTopicException>builder()
+        TaskConfig<MsgVpnAclProfileSubscribeTopicException> config =
+                TaskConfig.<MsgVpnAclProfileSubscribeTopicException>builder()
                         .configObject(e).objectType(MsgVpnAclProfileSubscribeTopicException.class.getSimpleName())
                         .state(TaskState.PRESENT).build();
-        TaskResult o = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> o = this.aclSubscribeExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(o, notNullValue());
-        assertThat(o.isSuccess(), equalTo(false));
+        assertThat(o.get(0).isSuccess(), equalTo(false));
 
 
     }
@@ -163,16 +167,16 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setPublishTopicException("hello/world");
         e.setPublishTopicExceptionSyntax(MsgVpnAclProfilePublishTopicException.PublishTopicExceptionSyntaxEnum.SMF);
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfilePublishTopicException> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfilePublishTopicException>builder()
+        TaskConfig<MsgVpnAclProfilePublishTopicException> config =
+                TaskConfig.<MsgVpnAclProfilePublishTopicException>builder()
                         .configObject(e).objectType(MsgVpnAclProfilePublishTopicException.class.getSimpleName())
                         .state(TaskState.PRESENT).build();
-        TaskResult r = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r2 = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -183,20 +187,20 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setMsgVpnName(MSG_VPN_NAME);
         e.setPublishTopicException("hello/world");
         e.setPublishTopicExceptionSyntax(MsgVpnAclProfilePublishTopicException.PublishTopicExceptionSyntaxEnum.SMF);
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfilePublishTopicException> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfilePublishTopicException>builder()
+        TaskConfig<MsgVpnAclProfilePublishTopicException> config =
+                TaskConfig.<MsgVpnAclProfilePublishTopicException>builder()
                         .configObject(e).objectType(MsgVpnAclProfilePublishTopicException.class.getSimpleName())
                         .state(TaskState.PRESENT).build();
-        TaskResult o = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> o = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(o, notNullValue());
-        assertThat(o.isSuccess(), equalTo(true));
-        config.setTaskState(TaskState.ABSENT);
-        TaskResult r = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(o.get(0).isSuccess(), equalTo(true));
+        config.setState(TaskState.ABSENT);
+        List<TaskResult> r = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r2 = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -207,13 +211,13 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         e.setMsgVpnName("mooAcl");
         e.setPublishTopicException("hello/world");
         e.setPublishTopicExceptionSyntax(MsgVpnAclProfilePublishTopicException.PublishTopicExceptionSyntaxEnum.SMF);
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfilePublishTopicException> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfilePublishTopicException>builder()
+        TaskConfig<MsgVpnAclProfilePublishTopicException> config =
+                TaskConfig.<MsgVpnAclProfilePublishTopicException>builder()
                         .configObject(e).objectType(MsgVpnAclProfilePublishTopicException.class.getSimpleName())
                         .state(TaskState.PRESENT).build();
-        TaskResult o = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> o = this.aclProfilePublishExceptionTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(o, notNullValue());
-        assertThat(o.isSuccess(), equalTo(false));
+        assertThat(o.get(0).isSuccess(), equalTo(false));
 
 
     }
@@ -228,10 +232,10 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         p.setSubscribeTopicDefaultAction(MsgVpnAclProfile.SubscribeTopicDefaultActionEnum.DISALLOW);
         p.setSubscribeShareNameDefaultAction(MsgVpnAclProfile.SubscribeShareNameDefaultActionEnum.ALLOW);
 
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfile> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.PRESENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
-        if (!r.isSuccess()) {
+        TaskConfig<MsgVpnAclProfile> config =
+                TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.PRESENT).build();
+        List<TaskResult> r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
+        if (!r.get(0).isSuccess()) {
             throw new RuntimeException("could not bootstrap unit test - can;t create prerequisite ACL Profile");
         }
     }
@@ -242,10 +246,10 @@ class AclProfileExceptionsTaskProcessorTest extends BaseTaskProcessorTest {
         p.setAclProfileName(ACL_PROFILE_NAME);
         p.setMsgVpnName(MSG_VPN_NAME);
 
-        SEMPv2MsgVpnTaskConfig<MsgVpnAclProfile> config =
-                SEMPv2MsgVpnTaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.ABSENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
-        if (!r.isSuccess()) {
+        TaskConfig<MsgVpnAclProfile> config =
+                TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.ABSENT).build();
+        List<TaskResult> r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
+        if (!r.get(0).isSuccess()) {
             throw new RuntimeException("could not tear down unit test - unable to delete ACL profile");
         }
     }
