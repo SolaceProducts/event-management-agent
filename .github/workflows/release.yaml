@@ -55,12 +55,13 @@ jobs:
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
-      - name: Prepate Maven Settings
+      - name: Prepare Maven Settings
         env:
           MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
           MAVEN_REPO_SERVER_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
           MAVEN_REPO_SERVER_PRIVATE_KEY: "~/.ssh/id_rsa"
           SSH_PRIVATE_KEY: "${{ secrets.COMMIT_KEY }}"
+        run: cd .github/workflows/release_scripts && ./setup-ssh.sh
       - name: Set Release Configs
         run: |
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
