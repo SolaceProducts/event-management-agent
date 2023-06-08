@@ -8,6 +8,8 @@ import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalP
 import com.solace.maas.ep.event.management.agent.configurationTaskManager.ConfigurationTaskManager;
 import com.solace.maas.ep.event.management.agent.configurationTaskManager.model.ConfigurationTaskBO;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.task.TaskLog;
 import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
 import com.solace.maas.ep.event.management.agent.publisher.ConfigurationTaskResultsPublisher;
@@ -18,11 +20,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 @ExcludeFromJacocoGeneratedReport
 @Slf4j
 @Component
@@ -46,8 +50,9 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
     }
 
     @Override
-    public void receiveMessage(String destinationName, ConfigurationTaskMessage message) {
+    public void receiveMessage(String destinationName, ConfigurationTaskMessage messageIn) {
         MDC.clear();
+        ConfigurationTaskMessage<?> message = messageIn;
         log.debug("Received config message: {} for messaging service: {}",
                 message, message.getMessagingServiceId());
         List<String> destinations = new ArrayList<>();
@@ -64,7 +69,7 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
                 .id(!StringUtils.isEmpty(message.getTaskId()) ? message.getTaskId() : UUID.randomUUID().toString())
                 .messagingServiceId(message.getMessagingServiceId())
                 .configType(message.getConfigType())
-                .taskConfigs(message.getTaskConfigs())
+                .taskConfigs(Collections.unmodifiableList(message.getTaskConfigs()))
                 .destinations(configDestinations)
                 .build();
         log.info("Received scan request {}. Request details: {}", configurationTaskBO.getConfigType(), configurationTaskBO.getId());
@@ -85,6 +90,9 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
         msg.setTaskId(message.getTaskId());
         msg.setTaskResults(List.of(r));
         msg.setConfigType(message.getConfigType());
+        msg.setMopVer("0");
+        msg.setMopProtocol(MOPProtocol.topology);
+        msg.setMopMsgType(MOPMessageType.generic);
 
         Map<String, String> topicDetails = new HashMap<>();
         topicDetails.put("taskId", message.getTaskId());
