@@ -13,12 +13,12 @@ import java.util.List;
 
 @ExcludeFromJacocoGeneratedReport
 @Data
-public class ConfigurationTaskMessage extends MOPMessage {
+public class ConfigurationTaskMessage<Y> extends MOPMessage {
 
     private String configType;
     private String messagingServiceId;
     private String taskId;
-    private List<TaskConfig<?>> taskConfigs;
+    private List<TaskConfig<Y>> taskConfigs;
 
     private List<ConfigDestination> destinations;
 
@@ -29,7 +29,7 @@ public class ConfigurationTaskMessage extends MOPMessage {
     public ConfigurationTaskMessage(String messagingServiceId,
                                     String configType,
                                     String taskId,
-                                    List<TaskConfig<?>> taskConfigs,
+                                    List<TaskConfig<Y>> taskConfigs,
                                     List<ConfigDestination> destinations) {
         super();
         withMessageType(MOPMessageType.generic)
