@@ -5,9 +5,11 @@ import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultPro
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-public abstract class TemplateTaskProcessor<T>  extends ResultProcessorImpl<TaskResult, TaskConfig<T>> implements ITaskProcessor<T> {
+public abstract class TemplateTaskProcessor<T>  extends ResultProcessorImpl<List<TaskResult>, TaskConfig<T>> implements ITaskProcessor<T> {
 
 
     protected final MessagingServiceDelegateService messagingServiceDelegateService;
@@ -77,9 +79,9 @@ public abstract class TemplateTaskProcessor<T>  extends ResultProcessorImpl<Task
         }
     }
 
-    public final TaskResult handleEvent(Map<String, Object> properties, TaskConfig<T> body) throws Exception {
+    public final List<TaskResult> handleEvent(Map<String, Object> properties, TaskConfig<T> body) throws Exception {
         this.init((String) properties.get(RouteConstants.MESSAGING_SERVICE_ID));
-        return this.execute(body);
+        return List.of(this.execute(body));
     }
 
 
