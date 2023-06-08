@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ACLProfilePublishExceptionTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVpnAclProfilePublishTopicException> {
-    public ACLProfilePublishExceptionTaskProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+public class AclProfilePublishExceptionTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVpnAclProfilePublishTopicException> {
+    public AclProfilePublishExceptionTaskProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
         super(messagingServiceDelegateService);
     }
 

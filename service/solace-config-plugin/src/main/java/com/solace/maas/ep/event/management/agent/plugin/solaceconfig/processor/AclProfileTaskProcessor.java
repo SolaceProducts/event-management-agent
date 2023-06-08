@@ -29,7 +29,7 @@ public class AclProfileTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVp
                     super.getReadOperationName(config),
                     config.getConfigObject().getAclProfileName(), config.getState(), response.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.trace(e.getMessage(), e);
             return super.createFailureTaskResult(
                     super.getReadOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), e);
         }
@@ -47,7 +47,7 @@ public class AclProfileTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVp
                     super.getCreateOperationName(config),
                     config.getConfigObject().getAclProfileName(), config.getState(), response.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.trace(e.getMessage(), e);
             return super.createFailureTaskResult(
                     super.getCreateOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), e);
         }

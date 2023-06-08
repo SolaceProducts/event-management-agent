@@ -27,7 +27,7 @@ public class AclProfileClientConnectExceptionTaskProcessor extends SEMPv2MsgVpnB
                             config.getConfigObject().getClientConnectExceptionAddress(), null, null);
             return super.createSuccessfulTaskResult(super.getReadOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), result.getData());
         } catch (Exception re) {
-            log.error(re.getMessage(), re);
+            log.trace(re.getMessage(), re);
             return super.createFailureTaskResult(super.getCreateOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), re);
         }
     }

@@ -47,6 +47,47 @@ public class SolaceConfigRouteDelegateImpl extends MessagingServiceRouteDelegate
             }
             case MsgVpnClientUsername:{
                 result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnClientUsername, SolaceSEMPv2RouteId.MsgVpnClientUsername));
+                break;
+            }
+            case MsgVpnClientProfile:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnClientProfile, SolaceSEMPv2RouteId.MsgVpnClientProfile));
+                break;
+            }
+            case MsgVpnMqttSession:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnMqttSession, SolaceSEMPv2RouteId.MsgVpnMqttSession));
+                break;
+            }
+            case MsgVpnAuthorizationGroup:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnAuthorizationGroup, SolaceSEMPv2RouteId.MsgVpnAuthorizationGroup));
+                break;
+            }
+            case MsgVpnQueue:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnQueue, SolaceSEMPv2RouteId.MsgVpnQueue));
+                break;
+            }
+            case MsgVpnQueueSubscription:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnQueueSubscription, SolaceSEMPv2RouteId.MsgVpnQueueSubscription));
+                break;
+            }
+            case MsgVpnRestDeliveryPoint:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnRestDeliveryPoint, SolaceSEMPv2RouteId.MsgVpnRestDeliveryPoint));
+                break;
+            }
+            case MsgVpnRestDeliveryPointRestConsumer:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnRestDeliveryPointRestConsumer, SolaceSEMPv2RouteId.MsgVpnRestDeliveryPointRestConsumer));
+                break;
+            }
+            case MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonName:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonName, SolaceSEMPv2RouteId.MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonName));
+                break;
+            }
+            case MsgVpnRestDeliveryPointQueueBinding:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnRestDeliveryPointQueueBinding, SolaceSEMPv2RouteId.MsgVpnRestDeliveryPointQueueBinding));
+                break;
+            }
+            case MsgVpnRestDeliveryPointQueueBindingRequestHeader:{
+                result.add(commandProcessingRouteBundle(destinations, recipients, messagingServiceId, SolaceSEMPv2RouteType.MsgVpnRestDeliveryPointQueueBindingRequestHeader, SolaceSEMPv2RouteId.MsgVpnRestDeliveryPointQueueBindingRequestHeader));
+                break;
             }
         }
 

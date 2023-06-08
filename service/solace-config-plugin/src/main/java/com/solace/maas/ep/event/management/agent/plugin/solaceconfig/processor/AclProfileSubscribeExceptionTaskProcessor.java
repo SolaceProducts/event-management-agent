@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ACLProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVpnAclProfileSubscribeTopicException> {
-    public ACLProfileSubscribeExceptionTaskProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+public class AclProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<MsgVpnAclProfileSubscribeTopicException> {
+    public AclProfileSubscribeExceptionTaskProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
         super(messagingServiceDelegateService);
     }
 
@@ -30,7 +30,7 @@ public class ACLProfileSubscribeExceptionTaskProcessor extends SEMPv2MsgVpnBaseT
                     super.getReadOperationName(config),
                     config.getConfigObject().getAclProfileName(), config.getState(), response.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.trace(e.getMessage(), e);
             return super.createFailureTaskResult(
                     super.getReadOperationName(config), config.getConfigObject().getAclProfileName(), config.getState(), e);
         }

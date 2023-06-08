@@ -26,7 +26,7 @@ public class ClientUsernameTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<M
             return super.createSuccessfulTaskResult(super.getReadOperationName(config),
                     config.getConfigObject().getClientUsername(), config.getState(), response.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.trace(e.getMessage(), e);
             return super.createFailureTaskResult(super.getReadOperationName(config),
                     config.getConfigObject().getClientUsername(), config.getState(), e);
         }
