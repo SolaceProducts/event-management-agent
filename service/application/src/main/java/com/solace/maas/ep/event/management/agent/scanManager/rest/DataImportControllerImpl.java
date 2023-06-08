@@ -62,6 +62,7 @@ public class DataImportControllerImpl implements DataImportController {
 
     @Override
     @GetMapping(value = "/export/{scanId}/zip")
+    @SuppressWarnings("PMD.CloseResource")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "scanId") String scanId) {
         try {
             ZipRequestBO zipRequestBO = ZipRequestBO.builder()

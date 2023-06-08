@@ -48,6 +48,7 @@ public class ImportService {
         this.eventPortalProperties = eventPortalProperties;
     }
 
+    @SuppressWarnings("PMD.CloseResource")
     public void importData(ImportRequestBO importRequestBO) throws IOException {
         String importId = UUID.randomUUID().toString();
         String traceId = importRequestBO.getTraceId();
