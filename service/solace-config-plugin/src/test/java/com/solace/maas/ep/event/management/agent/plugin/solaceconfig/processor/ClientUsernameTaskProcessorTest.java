@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,12 +41,12 @@ class ClientUsernameTaskProcessorTest extends BaseTaskProcessorTest {
     public void testHandleEventMsgVpnAclProfileClientConnectExceptionEventPresent() {
         MsgVpnClientUsername e = createClientUsername();
         TaskConfig<MsgVpnClientUsername> config = TaskConfig.<MsgVpnClientUsername>builder().configObject(e).objectType(MsgVpnClientUsername.class.getSimpleName()).state(TaskState.PRESENT).build();
-        TaskResult r = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult>  r2 = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @NonNull
@@ -65,16 +66,16 @@ class ClientUsernameTaskProcessorTest extends BaseTaskProcessorTest {
     public void testHandleEventMsgVpnAclProfileClientConnectExceptionAbsent() {
         MsgVpnClientUsername e = this.createClientUsername();
         TaskConfig<MsgVpnClientUsername> config = TaskConfig.<MsgVpnClientUsername>builder().configObject(e).objectType(MsgVpnClientUsername.class.getSimpleName()).state(TaskState.PRESENT).build();
-        TaskResult o = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult>  o = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(o, notNullValue());
-        assertThat(o.isSuccess(), equalTo(true));
+        assertThat(o.get(0).isSuccess(), equalTo(true));
         config.setState(TaskState.ABSENT);
-        TaskResult r = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult>  r = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult>  r2 = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -83,9 +84,9 @@ class ClientUsernameTaskProcessorTest extends BaseTaskProcessorTest {
         MsgVpnClientUsername e = this.createClientUsername();
         e.setAclProfileName("mooAcl");
         TaskConfig<MsgVpnClientUsername> config = TaskConfig.<MsgVpnClientUsername>builder().configObject(e).objectType(MsgVpnClientUsername.class.getSimpleName()).state(TaskState.PRESENT).build();
-        TaskResult r = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult>  r = this.clientUsernameTaskProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(false));
+        assertThat(r.get(0).isSuccess(), equalTo(false));
 
     }
 
@@ -102,8 +103,8 @@ class ClientUsernameTaskProcessorTest extends BaseTaskProcessorTest {
 
         TaskConfig<MsgVpnAclProfile> config =
                 TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.PRESENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
-        if (!r.isSuccess()) {
+        List<TaskResult>  r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
+        if (!r.get(0).isSuccess()) {
             throw new RuntimeException("could not bootstrap unit test - can;t create prerequisite ACL Profile");
         }
     }
@@ -121,8 +122,8 @@ class ClientUsernameTaskProcessorTest extends BaseTaskProcessorTest {
 
         TaskConfig<MsgVpnAclProfile> config =
                 TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.ABSENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
-        if (!r.isSuccess()) {
+        List<TaskResult>  r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), config);
+        if (!r.get(0).isSuccess()) {
             throw new RuntimeException("could not tear down unit test - unable to delete ACL profile");
         }
     }

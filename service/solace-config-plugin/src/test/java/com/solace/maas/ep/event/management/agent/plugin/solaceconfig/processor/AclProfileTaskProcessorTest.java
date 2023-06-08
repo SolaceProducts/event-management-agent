@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
 import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -78,12 +79,12 @@ class AclProfileTaskProcessorTest  {
 
         TaskConfig<MsgVpnAclProfile> config =
                 TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.PRESENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
-        TaskResult r2 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r2 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -99,16 +100,16 @@ class AclProfileTaskProcessorTest  {
 
         TaskConfig<MsgVpnAclProfile> config =
                 TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.PRESENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(true));
+        assertThat(r.get(0).isSuccess(), equalTo(true));
         config.setState(TaskState.ABSENT);
-        TaskResult r2 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r2 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
-        TaskResult r3 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
+        List<TaskResult> r3 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r3, notNullValue());
-        assertThat(r3.isSuccess(), equalTo(true));
+        assertThat(r3.get(0).isSuccess(), equalTo(true));
     }
 
     @SneakyThrows
@@ -124,9 +125,9 @@ class AclProfileTaskProcessorTest  {
 
         TaskConfig<MsgVpnAclProfile> config =
                 TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.ABSENT).build();
-        TaskResult r2 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r2 = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r2, notNullValue());
-        assertThat(r2.isSuccess(), equalTo(true));
+        assertThat(r2.get(0).isSuccess(), equalTo(true));
     }
     @SneakyThrows
     @Test
@@ -140,10 +141,10 @@ class AclProfileTaskProcessorTest  {
 
         TaskConfig<MsgVpnAclProfile> config =
                 TaskConfig.<MsgVpnAclProfile>builder().objectType("MsgVpnAclProfile").configObject(p).state(TaskState.PRESENT).build();
-        TaskResult r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
+        List<TaskResult> r = aclProfileConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, MSG_SVC_ID), config);
         assertThat(r, notNullValue());
-        assertThat(r.isSuccess(), equalTo(false));
-        assertThat(r.getLog().getInfo().toString(), containsString("400 Bad"));
+        assertThat(r.get(0).isSuccess(), equalTo(false));
+        assertThat(r.get(0).getLog().getInfo().toString(), containsString("400 Bad"));
     }
 
     //@Override
