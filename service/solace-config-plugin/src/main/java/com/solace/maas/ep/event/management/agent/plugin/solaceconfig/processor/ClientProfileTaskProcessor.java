@@ -70,15 +70,7 @@ public class ClientProfileTaskProcessor extends SEMPv2MsgVpnBaseTaskProcessor<Ms
 
     @Override
     protected TaskResult delete(TaskConfig<MsgVpnClientProfile> config) {
-        try {
-            SempMetaOnlyResponse response = this.client.getMsgVpnApi().deleteMsgVpnClientProfile(
-                    config.getConfigObject().getMsgVpnName(), config.getConfigObject().getClientProfileName());
-            return super.createSuccessfulTaskResult(super.getDeleteOperationName(config),
-                    config.getConfigObject().getClientProfileName(), config.getState(), response.getMeta());
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return super.createFailureTaskResult(super.getDeleteOperationName(config),
-                    config.getConfigObject().getClientProfileName(), config.getState(), e);
-        }
+        return super.createSuccessfulTaskResult(super.getNoOpOperationName(config),
+                config.getConfigObject().getClientProfileName(), config.getState(), null);
     }
 }
