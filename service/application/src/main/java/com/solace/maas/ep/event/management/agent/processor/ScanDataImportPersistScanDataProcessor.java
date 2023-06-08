@@ -48,6 +48,7 @@ public class ScanDataImportPersistScanDataProcessor implements Processor {
         String messagingServiceId = (String) exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID);
         String emaId = (String) exchange.getIn().getHeader(RouteConstants.EVENT_MANAGEMENT_ID);
         String scanId = (String) exchange.getIn().getHeader(RouteConstants.SCAN_ID);
+        String traceId = (String) exchange.getIn().getHeader(RouteConstants.TRACE_ID);
         String scheduleId = (String) exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID);
         String scanType = (String) exchange.getIn().getHeader(RouteConstants.SCAN_TYPE);
 
@@ -60,6 +61,7 @@ public class ScanDataImportPersistScanDataProcessor implements Processor {
                 .id(scanId)
                 .messagingService(messagingServiceEntity)
                 .emaId(emaId)
+                .traceId(traceId)
                 .build();
 
         List<DataCollectionFileEntity> fileEntities = prepareFiles(scanEntity, files, scheduleId, scanId);

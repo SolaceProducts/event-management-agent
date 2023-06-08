@@ -44,9 +44,11 @@ public class ScanManager {
     public String scan(ScanRequestBO scanRequestBO) {
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
         String scanId = scanRequestBO.getScanId();
+        String traceId = scanRequestBO.getTraceId();
         String groupId = UUID.randomUUID().toString();
 
         MDC.put(RouteConstants.SCAN_ID, scanId);
+        MDC.put(RouteConstants.TRACE_ID, traceId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
@@ -95,7 +97,7 @@ public class ScanManager {
                 )
                 .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
 
-        return scanService.singleScan(routes, groupId, scanId, messagingServiceEntity, runtimeAgentId);
+        return scanService.singleScan(routes, groupId, scanId, traceId, messagingServiceEntity, runtimeAgentId);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {

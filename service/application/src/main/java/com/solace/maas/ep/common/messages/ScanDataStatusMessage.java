@@ -16,13 +16,15 @@ public class ScanDataStatusMessage extends MOPMessage {
 
     String scanId;
 
+    String traceId;
+
     String status;
 
     String description;
 
     String scanType;
 
-    public ScanDataStatusMessage(String orgId, String scanId, String status, String description, String scanType) {
+    public ScanDataStatusMessage(String orgId, String scanId, String traceId, String status, String description, String scanType) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanDataControl)
@@ -31,6 +33,7 @@ public class ScanDataStatusMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.scanId = scanId;
+        this.traceId = traceId;
         this.status = status;
         this.description = description;
         this.scanType = scanType;

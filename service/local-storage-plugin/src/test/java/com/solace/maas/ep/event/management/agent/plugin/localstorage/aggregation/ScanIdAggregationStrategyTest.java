@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.localstorage.aggregation;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.route.aggregation.base.ScanIdAggregationStrategyImpl;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -26,17 +27,17 @@ public class ScanIdAggregationStrategyTest {
                 Mockito.mock(ScanIdAggregationStrategyImpl.class, Mockito.CALLS_REAL_METHODS);
 
         Exchange oldExchange = new DefaultExchange(camelContext);
-        oldExchange.getIn().setHeader(SCAN_ID, "oldId");
+        oldExchange.getIn().setHeader(RouteConstants.SCAN_ID, "oldId");
         oldExchange.getIn().setBody("old exchange");
 
         Exchange newExchange = new DefaultExchange(camelContext);
-        newExchange.getIn().setHeader(SCAN_ID, "newId");
+        newExchange.getIn().setHeader(RouteConstants.SCAN_ID, "newId");
         newExchange.getIn().setBody("new exchange");
 
         scanIdAggregationStrategyImpl.aggregate(oldExchange, newExchange);
 
-        oldExchange.getIn().setHeader(SCAN_ID, "sameId");
-        newExchange.getIn().setHeader(SCAN_ID, "sameId");
+        oldExchange.getIn().setHeader(RouteConstants.SCAN_ID, "sameId");
+        newExchange.getIn().setHeader(RouteConstants.SCAN_ID, "sameId");
         scanIdAggregationStrategyImpl.aggregate(oldExchange, newExchange);
 
         scanIdAggregationStrategyImpl.aggregate(null, newExchange);

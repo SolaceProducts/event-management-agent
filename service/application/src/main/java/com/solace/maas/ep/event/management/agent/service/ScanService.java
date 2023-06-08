@@ -38,9 +38,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.SCHEDULE_ID;
-
 /**
  * Responsible for initiating and managing Messaging Service scans.
  */
@@ -137,9 +134,9 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId,
+    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId, String traceId,
                              MessagingServiceEntity messagingServiceEntity, String runtimeAgentId) {
-        log.info("Scan request [{}]: Starting a single scan.", scanId);
+        log.info("Scan request [{}], trace ID [{}]: Starting a single scan.", scanId, traceId);
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
 
@@ -148,17 +145,17 @@ public class ScanService {
 
         save(routeBundleHierarchy, scanId);
 
-        log.info("Scan request [{}]: Total of {} scan types to be retrieved: [{}]",
-                scanId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
+        log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
+                scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
-        sendScanStatus(scanId, groupId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+        sendScanStatus(groupId, scanId, traceId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
                 StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
         String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
 
-        ScanEntity returnedScanEntity = setupScan(scanEntityId, messagingServiceEntity, runtimeAgentId);
+        ScanEntity returnedScanEntity = setupScan(scanEntityId, traceId, messagingServiceEntity, runtimeAgentId);
 
         for (RouteBundle routeBundle : routeBundles) {
             log.trace("Processing RouteBundles: {}", routeBundle);
@@ -168,15 +165,15 @@ public class ScanService {
 
             updateScan(route, routeBundle, returnedScanEntity);
 
-            scanAsync(groupId, scanEntityId, route, routeBundle.getMessagingServiceId());
+            scanAsync(groupId, scanEntityId, traceId, route, routeBundle.getMessagingServiceId());
         }
 
         return scanId;
     }
 
     @Transactional
-    protected ScanEntity setupScan(String scanId, MessagingServiceEntity messagingServiceEntity, String emaId) {
-        return saveScanEntity(scanId, messagingServiceEntity, emaId);
+    protected ScanEntity setupScan(String scanId, String traceId, MessagingServiceEntity messagingServiceEntity, String emaId) {
+        return saveScanEntity(scanId, traceId, messagingServiceEntity, emaId);
     }
 
     @Transactional
@@ -210,10 +207,10 @@ public class ScanService {
         setupRecipientsForScan(scanEntity, routeBundle);
     }
 
-    private ScanEntity saveScanEntity(String scanId, MessagingServiceEntity messagingServiceEntity,
-                                      String emaId) {
+    private ScanEntity saveScanEntity(String scanId, String traceId, MessagingServiceEntity messagingServiceEntity, String emaId) {
         ScanEntity scan = ScanEntity.builder()
                 .id(scanId)
+                .traceId(traceId)
                 .messagingService(messagingServiceEntity)
                 .emaId(emaId)
                 .build();
@@ -244,16 +241,6 @@ public class ScanService {
         return repository.findById(scanId);
     }
 
-    protected Exchange scan(String groupId, String scanId, RouteEntity route,
-                            String messagingServiceId) {
-        return producerTemplate.send("seda:" + route.getId(), exchange -> {
-            // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
-            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(SCHEDULE_ID, groupId);
-            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
-        });
-    }
-
     /**
      * Sends the initial scan  status message to signal the start of Messaging Service scan.
      *
@@ -263,11 +250,12 @@ public class ScanService {
      * @param scanTypes          The scan types included in the scan request.
      * @param status             The status of scan.
      */
-    public void sendScanStatus(String scanId, String groupId, String messagingServiceId, String scanTypes,
+    public void sendScanStatus(String groupId, String scanId, String traceId, String messagingServiceId, String scanTypes,
                                ScanStatus status) {
         producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
-            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
+            exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+            exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
@@ -275,12 +263,14 @@ public class ScanService {
         });
     }
 
-    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, RouteEntity route, String messagingServiceId) {
+    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, RouteEntity route, String messagingServiceId) {
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
+            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
-            exchange.getIn().setHeader(SCHEDULE_ID, groupId);
-            exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
 
             exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TERMINATION_TIMER, true);
             exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_TYPE, SchedulerType.INTERVAL.name());
@@ -289,8 +279,9 @@ public class ScanService {
             exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_INTERVAL, 5000);
             exchange.getIn().setHeader(SchedulerConstants.SCHEDULER_REPEAT_COUNT, 0);
 
-            MDC.put(RouteConstants.SCAN_ID, scanId);
             MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+            MDC.put(RouteConstants.SCAN_ID, scanId);
+            MDC.put(RouteConstants.TRACE_ID, traceId);
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
         }).whenComplete((exchange, exception) -> {
             if (exception != null) {

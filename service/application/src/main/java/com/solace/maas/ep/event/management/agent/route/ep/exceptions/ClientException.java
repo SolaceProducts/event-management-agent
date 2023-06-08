@@ -11,6 +11,7 @@ public class ClientException extends RuntimeException {
     private Map<String, List<Exception>> exceptionStore;
 
     ClientException(final String message, final Map<String, List<Exception>> validationDetails) {
+        super();
         this.message = message;
         this.exceptionStore = validationDetails;
     }

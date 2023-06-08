@@ -9,6 +9,7 @@ public class ScanRouteBuilder extends RouteBuilder {
     private final StartScanProcessor startScanProcessor;
 
     public ScanRouteBuilder(StartScanProcessor startScanProcessor) {
+        super();
         this.startScanProcessor = startScanProcessor;
     }
 

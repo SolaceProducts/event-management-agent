@@ -55,22 +55,23 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
 
     @Test
     @SneakyThrows
-    public void testMockParseMetaInfoAndSendOverAllImportStatusRoute() {
+    public void testMockParseMetaInfoAndPerformHandShakeWithEP() {
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
+        exchange.getIn().setHeader("CamelFileName", "META_INF.json");
+        exchange.getIn().setBody(getMetaInfJson());
 
-        AdviceWith.adviceWith(camelContext, "parseMetaInfoAndSendOverAllImportStatus",
+        AdviceWith.adviceWith(camelContext, "parseMetaInfoAndPerformHandShakeWithEP",
                 route -> {
                     route.weaveByType(PollEnrichDefinition.class).replace().process(exchange1 -> {
-                        exchange1.getIn().setHeader("CamelFileName", "META_INF.json");
-                        exchange1.getIn().setBody(getMetaInfJson());
                     });
                     route.weaveAddLast().to("mock:direct:mockParseMetaInfoResult");
                 });
 
         mockParseMetaInfoResult.expectedMessageCount(1);
-        producerTemplate.send("direct:parseMetaInfoAndSendOverAllImportStatus", exchange);
+        producerTemplate.send("direct:parseMetaInfoAndPerformHandShakeWithEP", exchange);
         mockParseMetaInfoResult.assertIsSatisfied();
     }
 
@@ -111,8 +112,8 @@ public class ScanDataImportParseMetaInfFileRouteBuilderTests {
                     = mock(ScanDataImportPersistFilePathsProcessor.class);
 
             return new ScanDataImportParseMetaInfFileRouteBuilder(scanDataImportParseMetaInfFileProcessor,
-                    scanDataImportOverAllStatusProcessor, scanDataImportPublishProcessor,
-                    scanDataImportPersistScanDataProcessor, scanDataImportPersistFilePathsProcessor);
+                    scanDataImportPersistFilePathsProcessor, scanDataImportPublishProcessor,
+                    scanDataImportOverAllStatusProcessor, scanDataImportPersistScanDataProcessor);
         }
 
         public static String getMetaInfJson() throws JSONException {

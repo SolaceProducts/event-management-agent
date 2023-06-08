@@ -45,11 +45,11 @@ public class ScanDataProcessor implements Processor {
 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
-        ScanDataMessage scanDataMessage =
-                new ScanDataMessage(orgId, scanId, scanType, body, Instant.now().toString());
+        ScanDataMessage scanDataMessage = new ScanDataMessage(orgId, scanId, traceId, scanType, body, Instant.now().toString());
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);

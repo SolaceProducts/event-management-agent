@@ -19,7 +19,7 @@ public class KafkaRouteDelegateImplTests {
     @InjectMocks
     private KafkaRouteDelegateImpl kafkaRouteDelegate;
 
-    private List<RouteBundle> destinations = List.of(
+    private final List<RouteBundle> destinations = List.of(
             RouteBundle.builder()
                     .destinations(List.of())
                     .recipients(List.of())

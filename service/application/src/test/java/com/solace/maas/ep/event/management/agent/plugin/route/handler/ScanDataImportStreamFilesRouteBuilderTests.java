@@ -28,7 +28,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.UUID;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
 import static org.mockito.Mockito.mock;
 
 @CamelSpringBootTest
@@ -64,14 +63,14 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(IMPORT_ID, UUID.randomUUID().toString());
+        exchange.getIn().setHeader(RouteConstants.IMPORT_ID, UUID.randomUUID().toString());
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setBody(files);
 
         AdviceWith.adviceWith(camelContext, "parseAndStreamImportFiles",
                 route -> {
-                    route.weaveByToUri("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
-                            .replace().to("mock:perRouteScanStatusPublisher");
+                    route.weaveByToUri("direct:markRouteImportStatusInProgress?block=false&failIfNoConsumers=false")
+                            .replace().to("mock:markRouteImportStatusInProgress");
                     route.weaveByType(PollEnrichDefinition.class).replace().process(exchange1 ->
                             exchange1.getIn().setHeader("CamelFileName", "topicListing.json"));
                     route.weaveByToUri("direct:streamImportFiles").replace().to("mock:streamImportFiles");
@@ -89,7 +88,7 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(IMPORT_ID, UUID.randomUUID().toString());
+        exchange.getIn().setHeader(RouteConstants.IMPORT_ID, UUID.randomUUID().toString());
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setHeader(Exchange.SPLIT_COMPLETE, true);
         exchange.getIn().setBody("test data");
@@ -112,13 +111,14 @@ public class ScanDataImportStreamFilesRouteBuilderTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
-        exchange.getIn().setHeader(IMPORT_ID, UUID.randomUUID().toString());
+        exchange.getIn().setHeader(RouteConstants.IMPORT_ID, UUID.randomUUID().toString());
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
         exchange.getIn().setBody("test data");
 
         AdviceWith.adviceWith(camelContext, "processEndOfFileImportStatus",
                 route -> {
-                    route.weaveByToUri("direct:processScanStatusAsComplete").replace().to("mock:processScanStatusAsComplete");
+                    route.weaveByToUri("direct:markRouteImportStatusComplete?block=false&failIfNoConsumers=false")
+                            .replace().to("mock:markRouteImportStatusComplete");
                     route.weaveAddLast().to("mock:direct:processEndOfFileImportStatusResult");
                 });
 

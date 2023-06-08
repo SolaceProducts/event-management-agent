@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequest
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -39,8 +40,10 @@ public class DataImportControllerImpl implements DataImportController {
     @PostMapping(value = "/import")
     public ResponseEntity<String> read(@RequestParam("file") MultipartFile file) {
         try {
+            String traceId = MDC.get("traceId");
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
+                    .traceId(traceId)
                     .build();
 
             log.info("Received import request for data file: {}", importRequestBO.getDataFile().getOriginalFilename());
@@ -59,6 +62,7 @@ public class DataImportControllerImpl implements DataImportController {
 
     @Override
     @GetMapping(value = "/export/{scanId}/zip")
+    @SuppressWarnings("PMD.CloseResource")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "scanId") String scanId) {
         try {
             ZipRequestBO zipRequestBO = ZipRequestBO.builder()

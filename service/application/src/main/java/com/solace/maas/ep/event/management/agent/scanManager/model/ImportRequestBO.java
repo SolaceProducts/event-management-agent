@@ -16,4 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImportRequestBO extends AbstractBaseBO<String> {
 
     private MultipartFile dataFile;
+
+    private String traceId;
 }

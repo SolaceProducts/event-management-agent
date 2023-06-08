@@ -29,6 +29,7 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
             if (!event.getMDCPropertyMap().get(RouteConstants.SCAN_ID).isEmpty()) {
                 sendLogsAsync(event,
                         event.getMDCPropertyMap().get(RouteConstants.SCAN_ID),
+                        event.getMDCPropertyMap().get(RouteConstants.TRACE_ID),
                         event.getMDCPropertyMap().get(RouteConstants.SCAN_TYPE),
                         event.getMDCPropertyMap().get(RouteConstants.SCHEDULE_ID),
                         event.getMDCPropertyMap().get(RouteConstants.MESSAGING_SERVICE_ID));
@@ -36,13 +37,13 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
         }
     }
 
-    public void sendLogsAsync(ILoggingEvent event, String scanId, String scanType, String groupId,
-                              String messagingServiceId) {
+    public void sendLogsAsync(ILoggingEvent event, String scanId, String traceId, String scanType, String groupId, String messagingServiceId) {
         RouteEntity route = creatLoggingRoute(scanType, messagingServiceId);
 
         producerTemplate.asyncSend(route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+            exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);

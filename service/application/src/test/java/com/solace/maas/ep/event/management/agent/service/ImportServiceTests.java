@@ -56,6 +56,9 @@ public class ImportServiceTests {
     EventPortalProperties eventPortalProperties;
 
     @Autowired
+    ScanServiceHelper scanServiceHelper;
+
+    @Autowired
     private CamelContext camelContext;
 
     @Mock
@@ -73,7 +76,7 @@ public class ImportServiceTests {
     @SneakyThrows
     @Test
     public void testImportData() {
-        MultipartFile multipartFile = new MockMultipartFile("file.tmp", "test".getBytes());
+        MultipartFile multipartFile = new MockMultipartFile("file.tmp", "test" .getBytes());
 
         ImportRequestBO importRequestBO = ImportRequestBO.builder()
                 .dataFile(multipartFile)
@@ -92,7 +95,7 @@ public class ImportServiceTests {
     @SneakyThrows
     @Test
     public void testImportDataInStandAloneMode() {
-        MultipartFile multipartFile = new MockMultipartFile("file.tmp", "test".getBytes());
+        MultipartFile multipartFile = new MockMultipartFile("file.tmp", "test" .getBytes());
 
         ImportRequestBO importRequestBO = ImportRequestBO.builder()
                 .dataFile(multipartFile)
@@ -114,26 +117,23 @@ public class ImportServiceTests {
                 .scanId("scanId")
                 .build();
 
+        ScanEntity returnedFindAllByScanId = scanServiceHelper.buildScanEntity(
+                UUID.randomUUID().toString(), "emaId", List.of(), MessagingServiceEntity.builder().build());
+        MessagingServiceEntity returnedMessagingService = scanServiceHelper.buildMessagingServiceEntity(
+                UUID.randomUUID().toString(), "staging service", MessagingServiceType.SOLACE.name());
+        ScanEntity returnedFindById = scanServiceHelper.buildScanEntity(
+                UUID.randomUUID().toString(), "emaId", List.of(), returnedMessagingService);
+
         when(dataCollectionFileService.findAllByScanId("scanId"))
                 .thenReturn(List.of(DataCollectionFileEntity.builder()
                         .id(UUID.randomUUID().toString())
                         .path("data_collection/" + UUID.randomUUID() + "/" + UUID.randomUUID() + "/topicListing.json")
-                        .scan(ScanEntity.builder()
-                                .id(UUID.randomUUID().toString())
-                                .build())
+                        .scan(returnedFindAllByScanId)
                         .purged(false)
                         .build()));
 
         when(scanService.findById("scanId"))
-                .thenReturn(Optional.ofNullable(ScanEntity.builder()
-                        .id(UUID.randomUUID().toString())
-                        .emaId("emdId")
-                        .messagingService(MessagingServiceEntity.builder()
-                                .id(UUID.randomUUID().toString())
-                                .name("staging service")
-                                .type(MessagingServiceType.SOLACE.name())
-                                .build())
-                        .build()));
+                .thenReturn(Optional.ofNullable(returnedFindById));
 
         Path file = tempDir.resolve("test.json");
         Files.write(file, Collections.singleton("test data"));
