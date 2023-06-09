@@ -58,13 +58,8 @@ public class ScanDataImportPersistScanDataProcessorTests {
         String groupId = UUID.randomUUID().toString();
         String scanId = "sanId";
         String emaId = "emaId";
+        String traceId = "traceId";
         String scanType = "queueConfiguration,queueListing,subscriptionConfiguration";
-
-
-//        messagingServiceId "d8i99kj5qzj"
-//        emaId "5lcf7wa5jpu"
-//        scheduleId "07a075f4-29a3-4387-8fb5-8644c8fff5d3"
-//        scanId "xtfz7xyewma"
 
         List<MetaInfFileDetailsBO> fileDetailsBOS = List.of(
                 MetaInfFileDetailsBO.builder()
@@ -79,6 +74,7 @@ public class ScanDataImportPersistScanDataProcessorTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
         exchange.getIn().setHeader(RouteConstants.EVENT_MANAGEMENT_ID, emaId);
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
         exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);

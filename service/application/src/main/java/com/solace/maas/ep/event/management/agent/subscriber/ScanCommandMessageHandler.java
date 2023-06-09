@@ -23,9 +23,7 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
     private static final String DEFAULT_DESTINATION = "FILE_WRITER";
     private final ScanManager scanManager;
 
-    public ScanCommandMessageHandler(
-            SolaceConfiguration solaceConfiguration,
-            SolaceSubscriber solaceSubscriber, ScanManager scanManager) {
+    public ScanCommandMessageHandler(SolaceConfiguration solaceConfiguration, SolaceSubscriber solaceSubscriber, ScanManager scanManager) {
         super(solaceConfiguration.getTopicPrefix() + "scan/command/v1/scanStart/>", solaceSubscriber);
         this.scanManager = scanManager;
     }
@@ -37,8 +35,8 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
         List<String> destinations = new ArrayList<>();
         List<String> entityTypes = new ArrayList<>();
 
-        log.debug("Received scan command message: {} for messaging service: {}",
-                message, message.getMessagingServiceId());
+        log.debug("Received scan command message: {} for event broker: {}, traceId: {}",
+                message, message.getMessagingServiceId(), message.getTraceId());
 
         message.getScanTypes().forEach(scanType -> entityTypes.add(scanType.name()));
 
@@ -58,11 +56,13 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
         ScanRequestBO scanRequestBO = ScanRequestBO.builder()
                 .messagingServiceId(message.getMessagingServiceId())
                 .scanId(!StringUtils.isEmpty(message.getScanId()) ? message.getScanId() : UUID.randomUUID().toString())
+                .traceId(message.getTraceId())
                 .scanTypes(entityTypes)
                 .destinations(scanRequestDestinations)
                 .build();
 
         log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
+
         scanManager.scan(scanRequestBO);
     }
 }

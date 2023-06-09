@@ -5,8 +5,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import lombok.SneakyThrows;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
@@ -50,6 +50,7 @@ public class StreamingAppenderTests {
         streamingAppender.setStandalone(false);
 
         MDC.put(RouteConstants.SCAN_ID, "12345");
+        MDC.put(RouteConstants.TRACE_ID, "trace-12345");
         MDC.put(RouteConstants.SCAN_TYPE, "topicListing");
         MDC.put(RouteConstants.SCHEDULE_ID, "groupId");
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");

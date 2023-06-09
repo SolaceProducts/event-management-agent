@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.EnumDeserializer;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
@@ -16,6 +17,7 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.MessageReceiver;
 import lombok.extern.slf4j.Slf4j;
+import org.jboss.logging.MDC;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +25,8 @@ import java.util.Map;
 @Slf4j
 public abstract class SolaceMessageHandler<T extends MOPMessage> implements MessageReceiver.MessageHandler {
 
-    private final String topicString;
-    private static ObjectMapper objectMapper = new ObjectMapper();
     private static final SimpleModule module = new SimpleModule();
-    private final Map<String, Class> cachedJSONDecoders = new HashMap();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         // Register all the enums we expect to cross versions and allow them to be mapped to null instead of throwing an exception if unknown
@@ -41,6 +41,9 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
+    private final Map<String, Class> cachedJSONDecoders = new HashMap();
+    private final String topicString;
+
     public SolaceMessageHandler(String topicString, SolaceSubscriber solaceSubscriber) {
         this.topicString = topicString;
         solaceSubscriber.registerMessageHandler(this);
@@ -54,6 +57,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
     public void onMessage(InboundMessage inboundMessage) {
         String messageAsString = inboundMessage.getPayloadAsString();
         String mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
+
         try {
             Class messageClass = cachedJSONDecoders.get(mopMessageSubclass);
             T message = null;
@@ -61,6 +65,20 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
             if (messageClass == null) {
                 messageClass = Class.forName(mopMessageSubclass);
                 cachedJSONDecoders.put(mopMessageSubclass, messageClass);
+            }
+
+            String receivedClassName = messageClass.getSimpleName();
+
+            if ("ScanCommandMessage" .equals(receivedClassName) || "ScanDataImportMessage" .equals(receivedClassName)) {
+                Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
+                String scanId = (String) map.get("scanId");
+                String traceId = (String) map.get("traceId");
+                String messagingServiceId = (String) map.get("messagingServiceId");
+
+                MDC.clear();
+                MDC.put(RouteConstants.SCAN_ID, scanId);
+                MDC.put(RouteConstants.TRACE_ID, traceId);
+                MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             }
 
             message = (T) objectMapper.readValue(messageAsString, messageClass);

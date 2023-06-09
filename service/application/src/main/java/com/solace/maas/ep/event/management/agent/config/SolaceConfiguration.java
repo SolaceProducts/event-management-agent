@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,7 +37,8 @@ public class SolaceConfiguration {
     private String topicPrefix;
 
     @Autowired
-    public SolaceConfiguration(Properties vmrConfig, List<String> sessionConfig,
+    @SuppressWarnings("PMD.LooseCoupling")
+    public SolaceConfiguration(Properties vmrConfig, ArrayList<String> sessionConfig,
                                EventPortalProperties eventPortalProperties) {
         this.vmrConfiguration = vmrConfig;
         this.sessionConfiguration = sessionConfig;

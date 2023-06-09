@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.11</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>
-    <url>https://github.com/SolaceLabs/event-management-agent</url>
     <modules>
         <module>plugin</module>
         <module>rabbitmq-plugin</module>
@@ -42,8 +40,6 @@
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>3.16.0</camel.version>
-        <git.repository>SolaceLabs/event-management-agent</git.repository>
-        <project.scm.id>github</project.scm.id>
     </properties>
 
     <dependencyManagement>
@@ -402,7 +398,9 @@
         </profile>
     </profiles>
     <scm>
-        <developerConnection>scm:git:https://github.com/${git.repository}.git</developerConnection>
+        <connection>scm:git:${project.scm.url}</connection>
+        <developerConnection>scm:git:${project.scm.url}</developerConnection>
+        <url>git@github.com:SolaceLabs/event-management-agent.git</url>
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>

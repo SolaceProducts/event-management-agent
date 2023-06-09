@@ -105,6 +105,7 @@ public class ScanStatusPublisherRouteBuilderTests {
         Exchange exchange = new DefaultExchange(camelContext);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
 

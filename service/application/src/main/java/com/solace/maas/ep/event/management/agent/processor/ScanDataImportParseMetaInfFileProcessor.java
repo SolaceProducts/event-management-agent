@@ -10,6 +10,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Slf4j
 @Component
@@ -19,6 +22,7 @@ public class ScanDataImportParseMetaInfFileProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         MetaInfFileBO metaInfFileBO = exchange.getIn().getBody(MetaInfFileBO.class);
+        String traceId = (String) exchange.getProperty(TRACE_ID);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, metaInfFileBO.getScanId());
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, metaInfFileBO.getMessagingServiceId());
@@ -27,5 +31,14 @@ public class ScanDataImportParseMetaInfFileProcessor implements Processor {
 
         List<MetaInfFileDetailsBO> filesDetails = metaInfFileBO.getFiles();
         exchange.getIn().setBody(filesDetails);
+
+        log.debug("Scan import request [{}]: Parsing the zip file, event broker: [{}], EMA Id: [{}], files: [{}], traceId: [{}]",
+                metaInfFileBO.getScanId(),
+                metaInfFileBO.getMessagingServiceId(),
+                metaInfFileBO.getEmaId(),
+                filesDetails.stream()
+                        .map(MetaInfFileDetailsBO::getFileName)
+                        .collect(Collectors.joining(", ")),
+                traceId);
     }
 }

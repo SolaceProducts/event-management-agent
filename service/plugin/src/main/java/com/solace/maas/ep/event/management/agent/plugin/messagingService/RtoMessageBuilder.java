@@ -53,11 +53,13 @@ public interface RtoMessageBuilder {
             this.sessionEventCallback = sessionEventCallback;
         }
 
+        @Override
         public RtoMessageBuilder fromProperties(List<String> sessionConfiguration) {
             this.sessionConfig = sessionConfiguration;
             return this;
         }
 
+        @Override
         public RtoMessageBuilder createContext() {
             // Initialize the API
             Solclient.init(new String[0]);
@@ -68,6 +70,7 @@ public interface RtoMessageBuilder {
             return this;
         }
 
+        @Override
         public RtoMessageBuilder createSession() {
             log.info(" Creating the session ...");
             String[] props = new String[sessionConfig.size()];
@@ -79,12 +82,14 @@ public interface RtoMessageBuilder {
             return this;
         }
 
+        @Override
         public RtoMessageBuilder connect() {
             log.info("Connecting the session ...");
             sessionHandle.connect();
             return this;
         }
 
+        @Override
         public RtoMessageBuilder publish(String message, Topic topic) {
             log.info("Creating the message to publish ...");
             messageHandle = Solclient.Allocator.newMessageHandle();
@@ -117,6 +122,7 @@ public interface RtoMessageBuilder {
             return this;
         }
 
+        @Override
         public RtoMessageBuilder destroy() {
             try {
                 // destroy the message

@@ -40,14 +40,14 @@ class ScanManagerTest {
     @Mock
     MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
 
-    @Mock
-    private ScanService scanService;
-
     @InjectMocks
     ScanManager scanManager;
 
     @Autowired
     ConfluentSchemaRegistryRouteDelegateImpl confluentSchemaRegistryRouteDelegate;
+
+    @Mock
+    private ScanService scanService;
 
     @Test
     @SneakyThrows
@@ -62,20 +62,35 @@ class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), "groupId", "scanId",
-                mock(MessagingServiceEntity.class), "runtimeAgent1")).thenReturn(Mockito.anyString());
+        when(scanService.singleScan(List.of(), "groupId", "scanId", "traceId",
+                mock(MessagingServiceEntity.class), "runtimeAgent1"))
+                .thenReturn(Mockito.anyString());
 
-        ScanRequestBO scanRequestBO =
-                new ScanRequestBO("id", "scanId", List.of("topics"), List.of());
+        ScanRequestBO scanRequestBO = new ScanRequestBO(
+                "id",
+                "scanId",
+                "traceId",
+                List.of("topics"),
+                List.of());
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
-        ScanRequestBO scanRequestBOTopics =
-                new ScanRequestBO("id", "scanId", List.of("TEST_SCAN_1"), List.of());
+        ScanRequestBO scanRequestBOTopics = new ScanRequestBO(
+                "id",
+                "scanId",
+                "traceId",
+                List.of("TEST_SCAN_1"),
+                List.of());
+
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOTopics));
 
-        ScanRequestBO scanRequestBOConsumerGroups =
-                new ScanRequestBO("id", "scanId", List.of("TEST_SCAN_2"), List.of());
+        ScanRequestBO scanRequestBOConsumerGroups = new ScanRequestBO(
+                "id",
+                "scanId",
+                "traceId",
+                List.of("TEST_SCAN_2"),
+                List.of());
+
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOConsumerGroups));
     }
 
@@ -84,9 +99,11 @@ class ScanManagerTest {
     void testScanManager() {
         String messagingServiceId = "messagingServiceId";
         String confluentSchemaRegistryId = "confluentId";
-        ScanRequestBO scanRequestBO =
-                new ScanRequestBO(messagingServiceId, "scanId", List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
-                        List.of("FILE_WRITER"));
+
+        ScanRequestBO scanRequestBO = new ScanRequestBO(
+                messagingServiceId, "scanId", "traceId",
+                List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
+                List.of("FILE_WRITER"));
 
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id(messagingServiceId)
@@ -102,8 +119,7 @@ class ScanManagerTest {
                 .connections(List.of())
                 .build();
 
-        KafkaRouteDelegateImpl kafkaRouteDelegate =
-                mock(KafkaRouteDelegateImpl.class);
+        KafkaRouteDelegateImpl kafkaRouteDelegate = mock(KafkaRouteDelegateImpl.class);
         DataCollectionFileWriterDelegateImpl dataCollectionFileWriterDelegate =
                 mock(DataCollectionFileWriterDelegateImpl.class);
 
@@ -131,8 +147,8 @@ class ScanManagerTest {
                     .thenReturn(destinations);
             when(kafkaRouteDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
-            when(scanService.singleScan(List.of(), "groupId", "scanId", mock(MessagingServiceEntity.class),
-                    "runtimeAgent1"))
+            when(scanService.singleScan(List.of(), "groupId", "scanId", "traceId",
+                    mock(MessagingServiceEntity.class), "runtimeAgent1"))
                     .thenReturn(Mockito.anyString());
 
             scanManager.scan(scanRequestBO);

@@ -15,6 +15,7 @@ import com.solace.messaging.receiver.InboundMessage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
 import static com.solace.maas.ep.common.model.ScanType.KAFKA_ALL;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -70,7 +72,7 @@ public class MessageReceiverTests {
 
         String basePayload = "{\n" +
                 "  \"mopVer\" : \"1\",\n" +
-                "  \"mopProtocol\" : \"event\",\n" +
+                "  \"mopProtocol\" : \"scanDataControl\",\n" +
                 "  \"mopMsgType\" : \"generic\",\n" +
                 "  \"msgUh\" : \"ignore\",\n" +
                 "  \"repeat\" : false,\n" +
@@ -86,8 +88,8 @@ public class MessageReceiverTests {
                 "com.solace.maas.ep.common.messages.ScanCommandMessage");
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
-        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                solaceSubscriber, scanManager);
+        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
+                solaceConfiguration, solaceSubscriber, scanManager);
 
         String topic = scanCommandMessageHandler.getTopicString();
         log.info("topic: {}", topic);
@@ -103,8 +105,8 @@ public class MessageReceiverTests {
     public void testBadClass() {
         assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
-            ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                    solaceSubscriber, scanManager);
+            ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
+                    solaceConfiguration, solaceSubscriber, scanManager);
             scanCommandMessageHandler.onMessage(inboundMessage);
         });
     }
@@ -112,8 +114,8 @@ public class MessageReceiverTests {
     @Test
     @SneakyThrows
     public void testScanCommandMessage() {
-        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(solaceConfiguration,
-                solaceSubscriber, scanManager);
+        ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
+                solaceConfiguration, solaceSubscriber, scanManager);
 
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",
@@ -136,7 +138,7 @@ public class MessageReceiverTests {
     public void startImportScanCommandMessageHandlerTest() {
         String payload = "{\n" +
                 "  \"mopVer\" : \"1\",\n" +
-                "  \"mopProtocol\" : \"event\",\n" +
+                "  \"mopProtocol\" : \"scanDataControl\",\n" +
                 "  \"mopMsgType\" : \"generic\",\n" +
                 "  \"msgUh\" : \"ignore\",\n" +
                 "  \"repeat\" : false,\n" +
@@ -176,6 +178,38 @@ public class MessageReceiverTests {
         startImportScanCommandMessageHandler.onMessage(inboundMessage);
         assertThatNoException();
     }
+
+    @SneakyThrows
+    @Test
+    public void startImportScanCommandMessageHandlerWithEmptyFilesTest() {
+        String payload = "{\n" +
+                "  \"mopVer\" : \"1\",\n" +
+                "  \"mopProtocol\" : \"scanDataControl\",\n" +
+                "  \"mopMsgType\" : \"generic\",\n" +
+                "  \"msgUh\" : \"ignore\",\n" +
+                "  \"repeat\" : false,\n" +
+                "  \"isReplyMessage\" : false,\n" +
+                "  \"msgPriority\" : 4,\n" +
+                "  \"traceId\" : \"80817f0d335b6221\",\n" +
+                "  \"scanId\" : \"someScanId\",\n" +
+                "  \"scanTypes\" : [\"a\",\"b\",\"c\"]\n" +
+                "}";
+
+        when(inboundMessage.getPayloadAsString()).thenReturn(payload);
+        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
+                "com.solace.maas.ep.common.messages.ScanDataImportMessage");
+        when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
+        when(manualImportFilesService.getAllByScanId(anyString())).thenReturn(List.of());
+
+        StartImportScanCommandMessageHandler startImportScanCommandMessageHandler = new StartImportScanCommandMessageHandler(solaceConfiguration,
+                solaceSubscriber, producerTemplate, manualImportFilesService, manualImportDetailsService);
+
+        RuntimeException thrown = Assert.assertThrows(RuntimeException.class,
+                () -> startImportScanCommandMessageHandler.onMessage(inboundMessage));
+
+        assertEquals("can't retrieve any manualImportFiles for scanId: someScanId", thrown.getMessage());
+    }
+
 
     @Test
     @SneakyThrows

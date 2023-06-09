@@ -27,12 +27,15 @@ public class ManualImportDetailsEntity implements Serializable {
     @Column(name = "SCHEDULE_ID")
     private String scheduleId;
 
+    @Column(name = "SCAN_ID")
+    private String scanId;
+
+    @Column(name = "TRACE_ID")
+    private String traceId;
+
     @Column(name = "EMA_ID")
     private String emaId;
 
     @Column(name = "IMPORT_ID")
     private String importId;
-
-    @Column(name = "SCAN_ID")
-    private String scanId;
 }

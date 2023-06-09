@@ -49,10 +49,9 @@ public class ScanDataImportRouteBuilderTests {
 
     private static byte[] getZippedText(String entryName) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try(
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream("TEXT" .getBytes(StandardCharsets.UTF_8));
-            ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
-        ) {
+
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream("TEXT" .getBytes(StandardCharsets.UTF_8));
+             ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
             zipOutputStream.putNextEntry(new ZipEntry(entryName));
             IOHelper.copy(byteArrayInputStream, zipOutputStream);
         }

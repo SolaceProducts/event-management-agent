@@ -18,6 +18,8 @@ public class FileParseAggregationStrategy implements AggregationStrategy {
                 oldExchange.getIn().getHeader(RouteConstants.SCAN_ID));
         newExchange.getIn().setHeader(RouteConstants.SCHEDULE_ID,
                 oldExchange.getIn().getHeader(RouteConstants.SCHEDULE_ID));
+        newExchange.getIn().setHeader(RouteConstants.TRACE_ID,
+                oldExchange.getIn().getHeader(RouteConstants.TRACE_ID));
         newExchange.getIn().setHeader(RouteConstants.SCAN_TYPE,
                 oldExchange.getIn().getHeader(RouteConstants.SCAN_TYPE));
         newExchange.getIn().setHeader(RouteConstants.SCAN_STATUS,

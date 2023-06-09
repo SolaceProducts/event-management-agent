@@ -32,19 +32,20 @@ public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
         Map<String, Object> properties = exchange.getIn().getHeaders();
 
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
 
-        log.info("Scan request [{}]: Encountered an empty scan type [{}].", scanId, scanType);
+        log.info("Scan request [{}], trace ID [{}]: Encountered an empty scan type [{}].", scanId, traceId, scanType);
 
         emptyScanTypes.add(scanType);
 
-        List<String> emptyDescendents = checkScanTypeDescendents(scanId, scanType);
+        List<String> emptyDescendents = checkScanTypeDescendents(scanId, traceId, scanType);
         emptyScanTypes.addAll(emptyDescendents);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, emptyScanTypes);
     }
 
-    private List<String> checkScanTypeDescendents(String scanId, String scanType) {
+    private List<String> checkScanTypeDescendents(String scanId, String traceId, String scanType) {
         List<String> emptyDescendentsForScanType = new ArrayList<>();
         List<ScanRecipientHierarchyEntity> scanRecipientHierarchyEntities =
                 scanRecipientHierarchyRepository.findScanRecipientHierarchyEntitiesByScanId(scanId);
@@ -63,11 +64,12 @@ public class EmptyScanEntityProcessorImpl extends EmptyScanEntityProcessor {
                 List<String> childScanTypes = emptyScanTypes.subList(parentScanTypeIndex + 1, emptyScanTypes.size());
 
                 childScanTypes.forEach(childScanType -> {
-                    log.info("Scan request [{}]: Encountered an empty scan type [{}].", scanId, childScanType);
+                    log.info("Scan request [{}], trace ID [{}]: Encountered an empty scan type [{}].", scanId, traceId, childScanType);
                     emptyDescendentsForScanType.add(childScanType);
                 });
             }
         });
+
         return emptyDescendentsForScanType;
     }
 }

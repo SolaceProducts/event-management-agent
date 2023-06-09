@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.logging.StreamingAppender;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
@@ -17,16 +18,14 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeReposit
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.SneakyThrows;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.ExchangeBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -85,79 +84,37 @@ public class ScanServiceTests {
     @InjectMocks
     private ScanService scanService;
 
+    @Autowired
+    private ScanServiceHelper scanServiceHelper;
+
     @Test
     @SneakyThrows
     public void testSingleScanWithRouteBundle() {
-        RouteBundle consumerGroupsConfiguration = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("consumerGroupsConfiguration").destinations(List.of())
-                .recipients(List.of())
-                .build();
-
-        RouteBundle consumerGroups = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("consumerGroups").destinations(List.of())
-                .recipients(List.of(consumerGroupsConfiguration))
-                .build();
+        RouteBundle consumerGroupsConfiguration = scanServiceHelper.buildRouteBundle("consumerGroupsConfiguration", List.of(), List.of());
+        RouteBundle consumerGroups = scanServiceHelper.buildRouteBundle("consumerGroups", List.of(), List.of(consumerGroupsConfiguration));
+        RouteBundle topicConfiguration = scanServiceHelper.buildRouteBundle("topicConfiguration", List.of(), List.of());
+        RouteBundle overrideTopicConfiguration = scanServiceHelper.buildRouteBundle("overrideTopicConfiguration", List.of(), List.of());
 
         RouteBundle routeBundleDestination = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("log:deadend")
-                .scanType("none").destinations(List.of())
-                .recipients(List.of())
-                .build();
-
-        RouteBundle topicConfiguration = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("topicConfiguration").destinations(List.of())
-                .recipients(List.of())
-                .build();
-
-        RouteBundle overrideTopicConfiguration = RouteBundle.builder()
                 .messagingServiceId("service1")
-                .routeId("route1").scanType("overrideTopicConfiguration")
-                .destinations(List.of()).recipients(List.of())
-                .build();
-
-        RouteBundle topicListing = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("topicListing").destinations(List.of(routeBundleDestination))
-                .recipients(List.of(topicConfiguration, overrideTopicConfiguration))
-                .build();
-
-        RouteBundle additionalConsumerGroupConfigPart1 = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("additionalConsumerGroupConfigPart1")
-                .destinations(List.of(routeBundleDestination))
+                .routeId("log:deadend")
+                .scanType("none")
+                .destinations(List.of())
                 .recipients(List.of())
                 .build();
 
-        RouteBundle additionalConsumerGroupConfigPart2 = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("additionalConsumerGroupConfigPart2")
-                .destinations(List.of(routeBundleDestination))
-                .recipients(List.of())
-                .build();
+        RouteBundle topicListing = scanServiceHelper.buildRouteBundle("topicListing", List.of(routeBundleDestination),
+                List.of(topicConfiguration, overrideTopicConfiguration));
+        RouteBundle additionalConsumerGroupConfigPart1 = scanServiceHelper.buildRouteBundle("additionalConsumerGroupConfigPart1",
+                List.of(routeBundleDestination), List.of());
+        RouteBundle additionalConsumerGroupConfigPart2 = scanServiceHelper.buildRouteBundle("additionalConsumerGroupConfigPart2",
+                List.of(routeBundleDestination), List.of());
+        RouteBundle additionalConsumerGroupConfigBundle = scanServiceHelper.buildRouteBundle("consumerGroupsConfiguration",
+                List.of(routeBundleDestination), List.of(additionalConsumerGroupConfigPart1, additionalConsumerGroupConfigPart2));
 
-        RouteBundle additionalConsumerGroupConfigBundle = RouteBundle.builder()
-                .messagingServiceId("service1").routeId("route1")
-                .scanType("consumerGroupsConfiguration").destinations(List.of(routeBundleDestination))
-                .recipients(List.of(additionalConsumerGroupConfigPart1, additionalConsumerGroupConfigPart2))
-                .build();
-
-        RouteEntity returnedEntity = RouteEntity.builder()
-                .id(routeId).childRouteIds("")
-                .active(true)
-                .build();
-
-        ScanEntity scanEntity = ScanEntity.builder()
-                .id(UUID.randomUUID().toString())
-                .route(List.of(returnedEntity))
-                .build();
-
-        ScanTypeEntity scanType = ScanTypeEntity.builder()
-                .id("scan1").name("scanType")
-                .scan(scanEntity)
-                .build();
+        RouteEntity returnedEntity = scanServiceHelper.buildRouteEntity(routeId, "", true);
+        ScanEntity scanEntity = scanServiceHelper.buildScanEntity("123", "emaId1", List.of(returnedEntity), null);
+        ScanTypeEntity scanType = scanServiceHelper.buildScanTypeEntity("scan1", "scanType", scanEntity, null);
 
         when(idGenerator.generateRandomUniqueId())
                 .thenReturn("abc123");
@@ -179,20 +136,11 @@ public class ScanServiceTests {
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
 
         scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
-                "groupId", "scanId", mock(MessagingServiceEntity.class), "runtimeAgent1");
-
-        assertThatNoException();
-    }
-
-    @Test
-    @SneakyThrows
-    public void testScan() {
-        Exchange exchange = ExchangeBuilder.anExchange(mock(ExtendedCamelContext.class)).build();
-
-        when(producerTemplate.send(any(String.class), any(Processor.class)))
-                .thenReturn(exchange);
-
-        scanService.scan("group1", "scan1", RouteEntity.builder().build(), "service1");
+                "groupId",
+                "scanId",
+                "traceId",
+                mock(MessagingServiceEntity.class),
+                "runtimeAgent1");
 
         assertThatNoException();
     }
@@ -221,23 +169,17 @@ public class ScanServiceTests {
     @Test
     @SneakyThrows
     public void testFindAll() {
+        MessagingServiceEntity messagingService = scanServiceHelper.buildMessagingServiceEntity(
+                "service1", "service1", MessagingServiceType.SOLACE.name());
+        ScanStatusEntity scanStatus = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
+        ScanTypeEntity scanType = scanServiceHelper.buildScanTypeEntity("123", "SOLACE_ALL", null, scanStatus);
+
         ScanEntity result = ScanEntity.builder()
                 .id("id1")
                 .createdAt(Instant.now())
-                .messagingService(MessagingServiceEntity.builder()
-                        .id("service1")
-                        .name("service1")
-                        .type("SOLACE")
-                        .build())
-                .scanTypes(List.of(
-                        ScanTypeEntity.builder()
-                                .name("SOLACE_ALL")
-                                .status(ScanStatusEntity.builder()
-                                        .id("status1")
-                                        .status("COMPLETE")
-                                        .build())
-                                .build())
-                ).build();
+                .messagingService(messagingService)
+                .scanTypes(List.of(scanType))
+                .build();
 
         Pageable pageable = PageRequest.of(0, 1);
 
@@ -252,23 +194,17 @@ public class ScanServiceTests {
     @Test
     @SneakyThrows
     public void testFindByMessagingServiceId() {
+        MessagingServiceEntity messagingService = scanServiceHelper.buildMessagingServiceEntity(
+                "service1", "service1", MessagingServiceType.SOLACE.name());
+        ScanStatusEntity scanStatus = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
+        ScanTypeEntity scanType = scanServiceHelper.buildScanTypeEntity("123", "SOLACE_ALL", null, scanStatus);
+
         ScanEntity result = ScanEntity.builder()
                 .id("id1")
                 .createdAt(Instant.now())
-                .messagingService(MessagingServiceEntity.builder()
-                        .id("service1")
-                        .name("service1")
-                        .type("SOLACE")
-                        .build())
-                .scanTypes(List.of(
-                        ScanTypeEntity.builder()
-                                .name("SOLACE_ALL")
-                                .status(ScanStatusEntity.builder()
-                                        .id("status1")
-                                        .status("COMPLETE")
-                                        .build())
-                                .build())
-                ).build();
+                .messagingService(messagingService)
+                .scanTypes(List.of(scanType))
+                .build();
 
         Pageable pageable = PageRequest.of(0, 1);
 
@@ -358,7 +294,7 @@ public class ScanServiceTests {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanTypeRepository.class),
                 mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
-        service.sendScanStatus("scanId", "groupId", "messagingServiceId",
+        service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
         assertThatNoException();
