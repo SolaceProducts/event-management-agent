@@ -106,9 +106,9 @@ jobs:
         if: env.DOCKER_PUSH=='true'
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: "use-eat-1"
       - name: Login to Amazon ECR
         if: env.DOCKER_PUSH=='true'
         id: login-ecr
