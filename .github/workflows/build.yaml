@@ -104,7 +104,7 @@ jobs:
 #          java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
       - name: Configure AWS credentials
         if: env.DOCKER_PUSH=='true'
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -112,7 +112,7 @@ jobs:
       - name: Login to Amazon ECR
         if: env.DOCKER_PUSH=='true'
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v1.6.0
 #      - name: Docker Build/Push
 #        if: env.DOCKER_PUSH=='true'
 #        run: |
