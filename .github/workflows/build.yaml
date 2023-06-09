@@ -117,7 +117,8 @@ jobs:
         if: env.DOCKER_PUSH=='true'
         run: |
           cd service/application/docker && ./buildEventManagementAgentDocker.sh -t main
-          docker push "${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          cd service/application/docker && docker image ls
+          cd service/application/docker && docker push "${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
 #      - name: Deploy Artifacts
 #        if: env.GITHUB_PACKAGES_DEPLOY=='true'
 #        env:
