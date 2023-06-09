@@ -104,7 +104,7 @@ jobs:
       - name: Docker Build/Push
         if: env.DOCKER_PUSH=='true'
         run: |
-          cd service/docker && ./buildEventManagementAgentDocker.sh -t main
+          cd service/application/docker && ./buildEventManagementAgentDocker.sh -t main
           docker images ls
 #      - name: Deploy Artifacts
 #        if: env.GITHUB_PACKAGES_DEPLOY=='true'
