@@ -2,11 +2,11 @@ name: Build
 on:
   push:
     branches:
-      - main
-    paths-ignore:
-      - '.gitignore'
-      - '.github/**'
-      - '**/*.md'
+      - add_docker_build
+#    paths-ignore:
+#      - '.gitignore'
+#      - '.github/**'
+#      - '**/*.md'
   pull_request:
     types: [opened, synchronize, reopened]
 
