@@ -53,6 +53,7 @@ jobs:
             export GITHUB_PACKAGES_DEPLOY=false
             export DOCKER_PUSH=false
           fi
+          echo "DOCKER_PUSH=$DOCKER_PUSH" >> $GITHUB_ENV
           echo "WHITESOURCE_SCAN=$WHITESOURCE_SCAN" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
 #      - name: Static Code Analysis
