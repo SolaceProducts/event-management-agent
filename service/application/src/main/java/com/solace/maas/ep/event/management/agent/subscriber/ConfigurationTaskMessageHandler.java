@@ -91,7 +91,7 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
         msg.setTaskResults(List.of(r));
         msg.setConfigType(message.getConfigType());
         msg.setMopVer("0");
-        msg.setMopProtocol(MOPProtocol.topology);
+        msg.setMopProtocol(MOPProtocol.event);
         msg.setMopMsgType(MOPMessageType.generic);
 
         Map<String, String> topicDetails = new HashMap<>();
