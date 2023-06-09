@@ -18,7 +18,7 @@ jobs:
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
-    environment: ${{ github.ref=='refs/heads/add_docker_build2' && 'build_main' || 'build_pr' }}
+    environment: ${{ github.ref=='refs/heads/add_docker_build' && 'build_main' || 'build_pr' }}
     timeout-minutes: 20
     permissions:
        contents: read
