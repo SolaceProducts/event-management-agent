@@ -61,9 +61,9 @@ jobs:
 #        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
 #      - name: Unit Tests
 #        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
-#      - name: Generate Artifacts
-#        run: |
-#          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
+      - name: Generate Artifacts
+        run: |
+          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
 #      - name: Sonar Scan
 #        env:
 #          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -113,10 +113,11 @@ jobs:
         if: env.DOCKER_PUSH=='true'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1.6.0
-#      - name: Docker Build/Push
-#        if: env.DOCKER_PUSH=='true'
-#        run: |
-#          cd service/application/docker && ./buildEventManagementAgentDocker.sh -t main
+      - name: Docker Build/Push
+        if: env.DOCKER_PUSH=='true'
+        run: |
+          cd service/application/docker && ./buildEventManagementAgentDocker.sh -t main
+          docker push "${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
 #      - name: Deploy Artifacts
 #        if: env.GITHUB_PACKAGES_DEPLOY=='true'
 #        env:
