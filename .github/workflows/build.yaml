@@ -118,9 +118,9 @@ jobs:
         working-directory: service/application/docker
         run: |
           ./buildEventManagementAgentDocker.sh -t main
-          DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
-          echo "$DOCKER_IMAGE"
-#          docker push
+          ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          docker tag "${{ github.event.repository.name }}:main" $ECR_DOCKER_IMAGE
+          docker push $ECR_DOCKER_IMAGE
 #          cd service/application/docker && docker image ls
 #          cd service/application/docker && docker push "${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
 #      - name: Deploy Artifacts
