@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - add_docker_build
+      - main
 #    paths-ignore:
 #      - '.gitignore'
 #      - '.github/**'
@@ -18,7 +18,7 @@ jobs:
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
-    environment: ${{ github.ref=='refs/heads/add_docker_build' && 'build_main' || 'build_pr' }}
+    environment: ${{ github.ref=='refs/heads/main' && 'build_main' || 'build_pr' }}
     timeout-minutes: 20
     permissions:
        contents: read
@@ -45,7 +45,7 @@ jobs:
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
           echo "$GITHUB_REF_NAME"
           echo "$GITHUB_EVENT_NAME"
-          if [[ $GITHUB_REF_NAME == "add_docker_build" ]]; then
+          if [[ $GITHUB_REF_NAME == "main" ]]; then
             export WHITESOURCE_SCAN=true
             export GITHUB_PACKAGES_DEPLOY=true
             export DOCKER_PUSH=true
