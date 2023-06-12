@@ -34,4 +34,9 @@ public class ScanLogMessage extends MOPMessage {
         this.log = log;
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

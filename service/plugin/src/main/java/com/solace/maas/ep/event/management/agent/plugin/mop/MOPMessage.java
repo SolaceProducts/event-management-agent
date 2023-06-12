@@ -169,8 +169,6 @@ public abstract class MOPMessage implements Serializable {
         return repeat == null ? FALSE : repeat;
     }
 
-    public String toLog() {
-        return null;
-    }
+    public abstract String toLog();
 
 }

@@ -69,6 +69,7 @@ public class ScanEntity implements Serializable {
     @JoinColumn(name = "MESSAGING_SERVICE_ID", referencedColumnName = "ID", nullable = false)
     private MessagingServiceEntity messagingService;
 
+    @Override
     public String toString() {
         return "ScanEntity " + id;
     }

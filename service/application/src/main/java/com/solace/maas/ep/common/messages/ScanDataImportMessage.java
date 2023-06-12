@@ -42,4 +42,9 @@ public class ScanDataImportMessage extends MOPMessage {
         this.runtimeAgentId = runtimeAgentId;
         this.scanTypes = scanTypes;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

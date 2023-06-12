@@ -68,7 +68,6 @@ public class DataImportControllerImpl implements DataImportController {
             ZipRequestBO zipRequestBO = ZipRequestBO.builder()
                     .scanId(scanId)
                     .build();
-
             log.info("Received zip request for scan: {}", scanId);
 
             InputStream zipInputStream = importService.zip(zipRequestBO);

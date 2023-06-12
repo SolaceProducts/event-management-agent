@@ -44,9 +44,9 @@ public class EMAControllerTest {
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of());
         ScanRequestBO scanRequestBO = new ScanRequestBO(
                 "id",
-                "scanId",
+                "scanConnected",
                 "traceId",
-                List.of("TEST_SCAN"),
+                List.of("TEST_SCAN_TYPE"),
                 List.of());
 
         when(eventPortalProperties.getGateway())

@@ -12,6 +12,7 @@ public class AsyncManagerRouteBuilder extends RouteBuilder {
     private final AsyncManagerProcessor asyncManagerProcessor;
 
     public AsyncManagerRouteBuilder(AsyncManagerProcessor asyncManagerProcessor) {
+        super();
         this.asyncManagerProcessor = asyncManagerProcessor;
     }
 

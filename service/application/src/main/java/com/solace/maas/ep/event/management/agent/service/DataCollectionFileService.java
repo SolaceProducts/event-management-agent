@@ -54,6 +54,7 @@ public class DataCollectionFileService implements FileStoreManager {
                 });
     }
 
+    @Override
     @Transactional
     public void storeRecord(AggregatedFileEvent aggregatedFileEvent) {
         Iterable<DataCollectionFileEntity> files = repository.findAllById(aggregatedFileEvent.getFileIds());

@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Slf4j
@@ -28,7 +28,7 @@ public class VMRConfiguration {
     @Bean
     @ConditionalOnBean(VMRProperties.class)
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.rto-session", havingValue = "true")
-    public ArrayList<String> sessionConfig(VMRProperties sessionProperties) {
+    public List<String> sessionConfig(VMRProperties sessionProperties) {
         return sessionProperties.getRTOSessionProperties();
     }
 }

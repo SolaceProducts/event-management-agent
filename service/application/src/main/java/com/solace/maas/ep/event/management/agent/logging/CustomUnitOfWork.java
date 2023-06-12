@@ -41,6 +41,7 @@ public class CustomUnitOfWork extends DefaultUnitOfWork implements UnitOfWork {
             this.routeId = MDC.get(MDC_ROUTE_ID);
         }
 
+        @Override
         public void done(boolean doneSync) {
             try {
                 if (!doneSync) {

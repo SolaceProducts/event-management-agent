@@ -25,7 +25,7 @@ public abstract class MessagingServiceRouteDelegateImpl implements MessagingServ
     }
 
     @Override
-    public void register(String id) {
+    public final void register(String id) {
         PluginLoader.addPlugin(id, this);
     }
 }
