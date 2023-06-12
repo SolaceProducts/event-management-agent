@@ -72,36 +72,36 @@ jobs:
 #          mvn -B $SKIP_FLAGS_ALL_TESTS \
 #            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_event-management-agent \
 #            --file service/pom.xml
-#      - name: WhiteSource Scan
-#        if: env.WHITESOURCE_SCAN=='true'
-#        env:
-#          unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
-#          unified_agent_sha_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar.sha256"
-#          WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
-#          WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
-#          TARGET_DIR: "service/application/target/lib"
-#          WS_EXCLUDES: "local-storage-plugin*.jar,plugin*.jar,kafka-plugin*.jar,confluent-schema-registry-plugin*.jar"
-#        run: |
-#          echo "Whitesource- Downloading and verifying latest Agent"
-#
-#          curl -LJOs ${{ env.unified_agent_url }}
-#          sha_from_jar=$(sha256sum  wss-unified-agent.jar | awk '{print $1}')
-#          curl -LJOs ${{ env.unified_agent_sha_url }}
-#          sha_from_file=$(cat wss-unified-agent.jar.sha256 | awk '{print $1}')
-#          if [[ "$sha_from_file" == "$sha_from_jar" ]]; then
-#              echo "Integrity of the wss-unified-agent.jar file verified .."
-#          else
-#              echo "Integrity check of wss-unified-agent.jar file failed .."
-#              echo "sha_from_jar: $sha_from_jar"
-#              echo "sha_from_file: $sha_from_file"
-#              exit 1
-#          fi
-#
-#          echo "Whitesource- Copying Maven Dependencies"
-#          mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
-#
-#          echo "Whitesource- Running scan"
-#          java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
+      - name: WhiteSource Scan
+        if: env.WHITESOURCE_SCAN=='true'
+        env:
+          unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
+          unified_agent_sha_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar.sha256"
+          WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
+          WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          TARGET_DIR: "service/application/target/lib"
+          WS_EXCLUDES: "local-storage-plugin*.jar,plugin*.jar,kafka-plugin*.jar,confluent-schema-registry-plugin*.jar"
+        run: |
+          echo "Whitesource- Downloading and verifying latest Agent"
+
+          curl -LJOs ${{ env.unified_agent_url }}
+          sha_from_jar=$(sha256sum  wss-unified-agent.jar | awk '{print $1}')
+          curl -LJOs ${{ env.unified_agent_sha_url }}
+          sha_from_file=$(cat wss-unified-agent.jar.sha256 | awk '{print $1}')
+          if [[ "$sha_from_file" == "$sha_from_jar" ]]; then
+              echo "Integrity of the wss-unified-agent.jar file verified .."
+          else
+              echo "Integrity check of wss-unified-agent.jar file failed .."
+              echo "sha_from_jar: $sha_from_jar"
+              echo "sha_from_file: $sha_from_file"
+              exit 1
+          fi
+
+          echo "Whitesource- Copying Maven Dependencies"
+          mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
+
+          echo "Whitesource- Running scan"
+          java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
       - name: Configure AWS credentials
         if: env.DOCKER_PUSH=='true'
         uses: aws-actions/configure-aws-credentials@v2
