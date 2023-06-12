@@ -120,7 +120,7 @@ jobs:
           #./buildEventManagementAgentDocker.sh -t main
           ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
           SHORT_GIT_SHA=${GITHUB_SHA:0:10}
-          JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file service/pom.xml)
+          JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ../pom.xml)
           ADDITIONAL_DOCKER_IMAGE_TAG="$ECR_DOCKER_IMAGE-$JAR_VERSION-$SHORT_GIT_SHA"
           echo "Additional Tags: $ADDITIONAL_DOCKER_IMAGE_TAG"
           #docker tag "${{ github.event.repository.name }}:main" $ECR_DOCKER_IMAGE
