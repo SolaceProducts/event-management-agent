@@ -3,10 +3,10 @@ on:
   push:
     branches:
       - main
-#    paths-ignore:
-#      - '.gitignore'
-#      - '.github/**'
-#      - '* *  /*.md'
+    paths-ignore:
+      - '.gitignore'
+      - '.github/**'
+      - '* * /*.md'
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -57,21 +57,21 @@ jobs:
           echo "DOCKER_PUSH=$DOCKER_PUSH" >> $GITHUB_ENV
           echo "WHITESOURCE_SCAN=$WHITESOURCE_SCAN" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
-#      - name: Static Code Analysis
-#        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-#      - name: Unit Tests
-#        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
+      - name: Static Code Analysis
+        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+      - name: Unit Tests
+        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
       - name: Generate Artifacts
         run: |
           mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-#      - name: Sonar Scan
-#        env:
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#        run: |
-#          mvn -B $SKIP_FLAGS_ALL_TESTS \
-#            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_event-management-agent \
-#            --file service/pom.xml
+      - name: Sonar Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn -B $SKIP_FLAGS_ALL_TESTS \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceLabs_event-management-agent \
+            --file service/pom.xml
       - name: WhiteSource Scan
         if: env.WHITESOURCE_SCAN=='true'
         env:
@@ -127,39 +127,39 @@ jobs:
           ADDITIONAL_ECR_DOCKER_IMAGE_TAG="$ECR_DOCKER_IMAGE-$JAR_VERSION-$SHORT_GIT_SHA"
           docker tag "${{ github.event.repository.name }}:main" $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
           docker push $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
-#      - name: Deploy Artifacts
-#        if: env.GITHUB_PACKAGES_DEPLOY=='true'
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
-#      - name: Publishing Test Results - Checkstyle
-#        if: always()
-#        uses: jwgmeligmeyling/checkstyle-github-action@master
-#        with:
-#          path: '**/checkstyle-result.xml'
-#      - name: Publishing Test Results - PMD
-#        if: always()
-#        uses: jwgmeligmeyling/pmd-github-action@master
-#        with:
-#          path: '**/pmd.xml'
-#      - name: Publishing Test Results - SpotBugs
-#        if: always()
-#        uses: jwgmeligmeyling/spotbugs-github-action@master
-#        with:
-#          path: '**/spotbugsXml.xml'
-#      - name: Publishing Test Results - Unit Tests Pre-Condition
-#        if: always()
-#        id: unit_test_report_exists
-#        uses: andstor/file-existence-action@v2
-#        with:
-#          files: "**/surefire-reports/**/*.xml"
-#      - name: Publishing Test Results - Unit Tests
-#        uses: dorny/test-reporter@v1
-#        if: always() && steps.unit_test_report_exists.outputs.files_exists == 'true'
-#        with:
-#          name: Unit Tests
-#          path: "**/surefire-reports/**/*.xml"
-#          reporter: java-junit
-#          fail-on-error: true
-#          only-summary: 'true'
+      - name: Deploy Artifacts
+        if: env.GITHUB_PACKAGES_DEPLOY=='true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
+      - name: Publishing Test Results - Checkstyle
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@master
+        with:
+          path: '**/checkstyle-result.xml'
+      - name: Publishing Test Results - PMD
+        if: always()
+        uses: jwgmeligmeyling/pmd-github-action@master
+        with:
+          path: '**/pmd.xml'
+      - name: Publishing Test Results - SpotBugs
+        if: always()
+        uses: jwgmeligmeyling/spotbugs-github-action@master
+        with:
+          path: '**/spotbugsXml.xml'
+      - name: Publishing Test Results - Unit Tests Pre-Condition
+        if: always()
+        id: unit_test_report_exists
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "**/surefire-reports/**/*.xml"
+      - name: Publishing Test Results - Unit Tests
+        uses: dorny/test-reporter@v1
+        if: always() && steps.unit_test_report_exists.outputs.files_exists == 'true'
+        with:
+          name: Unit Tests
+          path: "**/surefire-reports/**/*.xml"
+          reporter: java-junit
+          fail-on-error: true
+          only-summary: 'true'
