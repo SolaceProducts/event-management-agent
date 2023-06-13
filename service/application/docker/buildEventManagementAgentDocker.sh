@@ -105,13 +105,14 @@ export BASE_IMAGE=event-management-agent-base:${BASE_IMAGE_TAG}
 export GITHASH=$(git rev-parse HEAD)
 export GITBRANCH=$(git branch --show-current)
 export BUILD_TIMESTAMP=$(date -u)
-cp ../target/event-management-agent-1.0.0-SNAPSHOT.jar .
+export JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ../pom.xml)
+cp ../target/event-management-agent-${JAR_VERSION}.jar .
 
 cd ..
 docker build docker -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
-       --build-arg JAR_FILE=event-management-agent-1.0.0-SNAPSHOT.jar --build-arg GITHASH=${GITHASH}\
+       --build-arg JAR_FILE=event-management-agent-${JAR_VERSION}.jar --build-arg GITHASH=${GITHASH}\
        --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}
 cd ${script_dir}
 
 # cleanup
-rm event-management-agent-1.0.0-SNAPSHOT.jar
+rm event-management-agent-${JAR_VERSION}.jar

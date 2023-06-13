@@ -18,6 +18,7 @@ jobs:
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
+    environment: ${{ github.ref=='refs/heads/main' && 'build_main' || 'build_pr' }}
     timeout-minutes: 20
     permissions:
        contents: read
@@ -47,11 +48,13 @@ jobs:
           if [[ $GITHUB_REF_NAME == "main" ]]; then
             export WHITESOURCE_SCAN=true
             export GITHUB_PACKAGES_DEPLOY=true
+            export DOCKER_PUSH=true
           else
             export WHITESOURCE_SCAN=false
             export GITHUB_PACKAGES_DEPLOY=false
+            export DOCKER_PUSH=false
           fi
-          echo "$WHITESOURCE_SCAN"
+          echo "DOCKER_PUSH=$DOCKER_PUSH" >> $GITHUB_ENV
           echo "WHITESOURCE_SCAN=$WHITESOURCE_SCAN" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
       - name: Static Code Analysis
@@ -99,7 +102,31 @@ jobs:
 
           echo "Whitesource- Running scan"
           java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
-
+      - name: Configure AWS credentials
+        if: env.DOCKER_PUSH=='true'
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      - name: Login to Amazon ECR
+        if: env.DOCKER_PUSH=='true'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1.6.0
+      - name: Docker Build/Push
+        if: env.DOCKER_PUSH=='true'
+        working-directory: service/application/docker
+        run: |
+          ./buildEventManagementAgentDocker.sh -t main
+          ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          docker tag "${{ github.event.repository.name }}:main" $ECR_DOCKER_IMAGE
+          docker push $ECR_DOCKER_IMAGE
+          #Tag/Push additional Docker image
+          SHORT_GIT_SHA=${GITHUB_SHA:0:10}
+          JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ../pom.xml)
+          ADDITIONAL_ECR_DOCKER_IMAGE_TAG="$ECR_DOCKER_IMAGE-$JAR_VERSION-$SHORT_GIT_SHA"
+          docker tag "${{ github.event.repository.name }}:main" $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
+          docker push $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
       - name: Deploy Artifacts
         if: env.GITHUB_PACKAGES_DEPLOY=='true'
         env:
