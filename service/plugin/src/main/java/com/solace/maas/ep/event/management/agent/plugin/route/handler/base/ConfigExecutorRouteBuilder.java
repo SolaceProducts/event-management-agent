@@ -63,11 +63,12 @@ public class ConfigExecutorRouteBuilder extends RouteBuilder {
 
         from("seda:" + routeId + "?blockWhenFull=true&size=100")
                 // Define a Route ID so we can kill this Route if needed.
-                .process(exchange -> MDC.put("scanId", exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class)))
+                .process(exchange -> MDC.put("configTaskId", exchange.getIn().getHeader(RouteConstants.CONFIG_TASK_ID, String.class)))
                 .routeId(routeId)
                 // Injecting the Data Collection Processor. This will normally be the processor that
                 // connects to the Messaging Service.
                 .process(processor)
+                .to("direct:configurationTaskResultPublisher")
                 .end();
 
         if (Objects.nonNull(routeManager)) {

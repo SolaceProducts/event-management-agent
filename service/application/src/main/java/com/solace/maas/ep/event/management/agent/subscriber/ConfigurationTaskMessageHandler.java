@@ -74,33 +74,5 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
                 .build();
         log.info("Received scan request {}. Request details: {}", configurationTaskBO.getConfigType(), configurationTaskBO.getId());
         boolean status = this.configurationTaskManager.execute(configurationTaskBO);
-        TaskLog log = TaskLog.builder()
-                .action("")
-                .info(null)
-                .build();
-        TaskResult r = TaskResult.builder()
-                .data(message.getTaskConfigs().get(0))
-                .log(log)
-                .state(message.getTaskConfigs().get(0).getState())
-                .success(status)
-                .build();
-        ConfigurationTaskResultMessage msg = new ConfigurationTaskResultMessage();
-        msg.setMessagingServiceId(message.getMessagingServiceId());
-        msg.setDestinations(message.getDestinations());
-        msg.setTaskId(message.getTaskId());
-        msg.setTaskResults(List.of(r));
-        msg.setConfigType(message.getConfigType());
-        msg.setMopVer("0");
-        msg.setMopProtocol(MOPProtocol.event);
-        msg.setMopMsgType(MOPMessageType.generic);
-
-        Map<String, String> topicDetails = new HashMap<>();
-        topicDetails.put("taskId", message.getTaskId());
-        topicDetails.put("configType", message.getConfigType());
-        topicDetails.put("orgId", this.eventPortalProperties.getOrganizationId());
-        topicDetails.put("runtimeAgentId", this.eventPortalProperties.getRuntimeAgentId());
-        topicDetails.put("messagingServiceId", message.getMessagingServiceId());
-        this.configurationTaskResultsPublisher.sendConfigurationTaskResult(msg, topicDetails);
-
     }
 }
