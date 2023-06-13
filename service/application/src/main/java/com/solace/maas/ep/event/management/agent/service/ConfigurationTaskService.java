@@ -3,9 +3,7 @@ package com.solace.maas.ep.event.management.agent.service;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
-import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -48,8 +46,9 @@ public class ConfigurationTaskService {
     protected Exchange executeRoute(String groupId, String taskId, RouteEntity route,
                                String messagingServiceId, TaskConfig taskConfig) {
         return producerTemplate.send("seda:" + route.getId(), exchange -> {
-            exchange.getIn().setHeader(RouteConstants.TASK_ID, taskId);
+            exchange.getIn().setHeader(RouteConstants.CONFIG_TASK_ID, taskId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, taskId);
+            exchange.getIn().setHeader(RouteConstants.CONFIG_TASK_TYPE, taskConfig.getObjectType());
             exchange.getIn().setHeader(SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setBody(taskConfig);

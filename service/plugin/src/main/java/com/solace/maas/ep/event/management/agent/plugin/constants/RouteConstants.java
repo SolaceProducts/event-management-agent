@@ -31,5 +31,8 @@ public class RouteConstants {
     public static final String IMPORT_ID = "IMPORT_ID";
 
     // configuration tasks
-    public static final String TASK_ID = "TASK_ID";
+    public static final String CONFIG_TASK_ID = "CONFIG_TASK_ID";
+    public static final String CONFIG_TASK_TYPE = "CONFIG_TASK_TYPE";
+    public static final String CONFIG_TASK_STATUS = "CONFIG_TASK_STATUS";
+    public static final String CONFIG_TASK_STATUS_DESC = "CONFIG_TASK_STATUS_DESC";
 }

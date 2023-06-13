@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.configurationTaskManager;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.configurationTaskManager.model.ConfigurationTaskBO;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
@@ -41,7 +40,7 @@ public class ConfigurationTaskManager {
         String commandId = configurationTaskCommandBO.getId();
         String groupId = UUID.randomUUID().toString();
 
-        MDC.put(RouteConstants.TASK_ID, commandId);
+        MDC.put(RouteConstants.CONFIG_TASK_ID, commandId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
@@ -53,13 +52,10 @@ public class ConfigurationTaskManager {
                 String.format("Unable to find messaging service plugin for plugin type %s. Valid types are %s.",
                         configurationTaskCommandBO.getConfigType(),
                         String.join(", ", PluginLoader.getKeys())));
-        List<String> objectTypes = configurationTaskCommandBO.getTaskConfigs().stream().map(s->{
-           return s.getObjectType();
+        List<String> objectTypes = configurationTaskCommandBO.getTaskConfigs().stream().map(s -> {
+            return s.getObjectType();
         }).collect(Collectors.toUnmodifiableList());
-        List<RouteBundle> routes = configurationTaskCommandBO.getDestinations().stream()
-                .map(s -> {
-                    return PluginLoader.findPlugin(configurationTaskCommandBO.getConfigType());
-                })
+        List<RouteBundle> destinations = List.of(PluginLoader.findPlugin("CONFIGURATION_TASK_RESULT_PUBLISHER")).stream()
                 .filter(Objects::nonNull)
                 .map(delegate -> delegate.generateRouteList(
                                 List.of(),
@@ -70,6 +66,17 @@ public class ConfigurationTaskManager {
                         .findFirst()
                         .orElseThrow())
                 .collect(Collectors.toUnmodifiableList());
+        List<RouteBundle> routes =
+                List.of(PluginLoader.findPlugin(configurationTaskCommandBO.getConfigType())).stream().filter(Objects::nonNull)
+                        .map(delegate -> delegate.generateRouteList(
+                                        destinations,
+                                        List.of(),
+                                        objectTypes.stream().findFirst().orElseThrow(),
+                                        messagingServiceId
+                                ).stream()
+                                .findFirst()
+                                .orElseThrow())
+                        .collect(Collectors.toUnmodifiableList());
 
 
         return this.configurationTaskService.execute(
