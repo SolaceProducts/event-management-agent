@@ -81,10 +81,10 @@ prisma_vulnerabilities_to_resolve = find_all_high_critical_vulnerabilities_to_re
 if len(prisma_vulnerabilities_to_resolve) != 0:
     print(f"❌ Following {PRISMA_BLOCKING_VULNERABILITIES} Prisma vulnerabilities should get resolved before release: ")
     for vulnerability_name in prisma_vulnerabilities_to_resolve:
-        print(f"➡️ {vulnerability_name}")
+        print(f"🔴️ {vulnerability_name}")
         # print descriptions for this vulnerability
         for vulnerability_description in prisma_vulnerabilities_to_resolve[vulnerability_name]:
-            block_print(f'\t • {vulnerability_description}\n')
+            block_print(f'\t ➡️ {vulnerability_description}\n')
     exit(1)
 else:
     print(f"No {PRISMA_BLOCKING_VULNERABILITIES} Prisma vulnerabilities found! ✅")
