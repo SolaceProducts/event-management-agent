@@ -15,7 +15,7 @@ DOCKER_IMAGE_TO_CHECK = os.getenv("DOCKER_IMAGE_TO_CHECK")
 PRISMA_BLOCKING_VULNERABILITIES = "critical,high"
 
 
-def get_excluded_libraries():
+def get_excluded_packages():
     dynamodb_client = boto3.resource('dynamodb')
 
     whitesource_exclusion_table = dynamodb_client.Table('prisma-excluded-packages')
@@ -76,7 +76,7 @@ def find_all_high_critical_vulnerabilities_to_resolve(excluded_libraries):
     return vulnerabilities_to_resolve
 
 
-prisma_exclusion_list = get_excluded_libraries()
+prisma_exclusion_list = get_excluded_packages()
 prisma_vulnerabilities_to_resolve = find_all_high_critical_vulnerabilities_to_resolve(prisma_exclusion_list)
 if len(prisma_vulnerabilities_to_resolve) != 0:
     print(f"❌ Following {PRISMA_BLOCKING_VULNERABILITIES} Prisma vulnerabilities should get resolved before release: ")
