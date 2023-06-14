@@ -65,6 +65,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
         run: |
+          export VIRTUAL_ENV=./venv
+          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
 #      - name: Prepare Maven Settings
 #        env:
