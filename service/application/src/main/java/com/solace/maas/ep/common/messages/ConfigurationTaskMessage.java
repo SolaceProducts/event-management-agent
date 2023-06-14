@@ -18,6 +18,7 @@ public class ConfigurationTaskMessage<Y> extends MOPMessage {
     private String configType;
     private String messagingServiceId;
     private String taskId;
+    private String taskSetId;
     private List<TaskConfig<Y>> taskConfigs;
 
     private List<ConfigDestination> destinations;
@@ -29,6 +30,7 @@ public class ConfigurationTaskMessage<Y> extends MOPMessage {
     public ConfigurationTaskMessage(String messagingServiceId,
                                     String configType,
                                     String taskId,
+                                    String taskSetId,
                                     List<TaskConfig<Y>> taskConfigs,
                                     List<ConfigDestination> destinations) {
         super();
@@ -38,6 +40,7 @@ public class ConfigurationTaskMessage<Y> extends MOPMessage {
                 .withUhFlag(MOPUHFlag.ignore);
         this.messagingServiceId = messagingServiceId;
         this.taskId = taskId;
+        this.taskSetId = taskSetId;
         this.taskConfigs = taskConfigs;
         this.destinations = destinations;
         this.configType = configType;
