@@ -65,7 +65,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
         run: |
-          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py.py
+          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
 #      - name: Prepare Maven Settings
 #        env:
 #          MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
