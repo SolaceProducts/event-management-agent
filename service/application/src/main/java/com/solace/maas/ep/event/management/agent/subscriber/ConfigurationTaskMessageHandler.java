@@ -1,18 +1,11 @@
 package com.solace.maas.ep.event.management.agent.subscriber;
 
 import com.solace.maas.ep.common.messages.ConfigurationTaskMessage;
-import com.solace.maas.ep.common.messages.ConfigurationTaskResultMessage;
 import com.solace.maas.ep.common.model.ConfigDestination;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
-import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.configurationTaskManager.ConfigurationTaskManager;
 import com.solace.maas.ep.event.management.agent.configurationTaskManager.model.ConfigurationTaskBO;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
-import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
-import com.solace.maas.ep.event.management.agent.plugin.task.TaskLog;
-import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
-import com.solace.maas.ep.event.management.agent.publisher.ConfigurationTaskResultsPublisher;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
@@ -21,9 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,15 +29,10 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
 
     private final ConfigurationTaskManager configurationTaskManager;
 
-    private final ConfigurationTaskResultsPublisher configurationTaskResultsPublisher;
-
-    private final EventPortalProperties eventPortalProperties;
     public ConfigurationTaskMessageHandler(SolaceConfiguration solaceConfiguration,
-                                           SolaceSubscriber solaceSubscriber, ConfigurationTaskManager configurationTaskManager, ConfigurationTaskResultsPublisher configurationTaskResultsPublisher, EventPortalProperties eventPortalProperties) {
+                                           SolaceSubscriber solaceSubscriber, ConfigurationTaskManager configurationTaskManager) {
         super(solaceConfiguration.getTopicPrefix() + TOPIC_SUFFIX, solaceSubscriber);
         this.configurationTaskManager = configurationTaskManager;
-        this.configurationTaskResultsPublisher = configurationTaskResultsPublisher;
-        this.eventPortalProperties = eventPortalProperties;
     }
 
     @Override
