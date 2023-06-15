@@ -110,7 +110,7 @@ jobs:
           ECR_REPO="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}"
           MAIN_IMAGE="$ECR_REPO:main"
           RELEASE_IMAGE="$ECR_REPO:${{ github.event.inputs.releaseVersion }}"
-          echo "main is $MAIN_IMAGE , release is $RELEASE_IMAGE" 
+          echo "Release image : $RELEASE_IMAGE" 
           docker pull $MAIN_IMAGE  
           docker tag  $MAIN_IMAGE $RELEASE_IMAGE
           docker push $RELEASE_IMAGE
