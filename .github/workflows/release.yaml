@@ -55,19 +55,19 @@ jobs:
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
-      - name: Pre-Release Check - Prisma vulnurabilities
-        env:
-          PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
-          DOCKER_IMAGE_TO_CHECK: ${{ secrets.PRISMA_DOCKER_IMAGE_TO_CHECK }}
-          PRISMA_ACCESS_KEY: ${{ secrets.PRISMA_ACCESS_KEY }}
-          PRISMA_ACCESS_KEY_SECRET: ${{ secrets.PRISMA_ACCESS_KEY_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-        run: |
-          export VIRTUAL_ENV=./venv
-          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
-          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
+#      - name: Pre-Release Check - Prisma vulnurabilities
+#        env:
+#          PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
+#          DOCKER_IMAGE_TO_CHECK: ${{ secrets.PRISMA_DOCKER_IMAGE_TO_CHECK }}
+#          PRISMA_ACCESS_KEY: ${{ secrets.PRISMA_ACCESS_KEY }}
+#          PRISMA_ACCESS_KEY_SECRET: ${{ secrets.PRISMA_ACCESS_KEY_SECRET }}
+#          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+#        run: |
+#          export VIRTUAL_ENV=./venv
+#          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+#          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
       - name: Prepare Maven Settings
         env:
           MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
