@@ -107,14 +107,10 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1.6.0
       - name: ECR Docker Image Release
         run: |
-          MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json | jq --raw-output '.images[].imageManifest')
-          echo $MANIFEST
-          aws ecr put-image --repository-name ${{ github.event.repository.name }} --image-tag ${{ github.event.inputs.releaseVersion }} --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-#          
-#          ECR_REPO="${{ steps.login-ecr.outputs.registry }}/"
-#          MAIN_IMAGE="$ECR_REPO:main"
-#          RELEASE_IMAGE="$ECR_REPO:${{ github.event.inputs.releaseVersion }}"
-#          echo "Release image : $RELEASE_IMAGE" 
-#          docker pull $MAIN_IMAGE  
-#          docker tag  $MAIN_IMAGE $RELEASE_IMAGE
-#          docker push $RELEASE_IMAGE
+          MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} \
+          --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json \
+          | jq --raw-output '.images[].imageManifest')
+          
+          aws ecr put-image --repository-name ${{ github.event.repository.name }} \
+            --image-tag ${{ github.event.inputs.releaseVersion }} \
+            --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
