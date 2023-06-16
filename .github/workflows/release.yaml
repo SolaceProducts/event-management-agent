@@ -109,7 +109,7 @@ jobs:
         run: |
           MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} --image-ids imageTag=main --query 'images[].imageManifest' --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output text)
           echo $MANIFEST
-#          aws ecr put-image --repository-name ${{ github.event.repository.name }} --image-tag ${{ github.event.inputs.releaseVersion }} --image-manifest $MANIFEST --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+          aws ecr put-image --repository-name ${{ github.event.repository.name }} --image-tag ${{ github.event.inputs.releaseVersion }} --image-manifest \"\$MANIFEST\" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
 #          
 #          ECR_REPO="${{ steps.login-ecr.outputs.registry }}/"
 #          MAIN_IMAGE="$ECR_REPO:main"
