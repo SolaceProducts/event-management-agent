@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.manager.client;
 
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
@@ -15,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +26,31 @@ import java.util.stream.Collectors;
 @Slf4j
 @Data
 public class KafkaClientManagerImpl implements MessagingServiceClientManager<AdminClient> {
+    private final int maxIdle;
+    private final TimeUnit maxIdleTimeUnit;
+
+    private final int requestTimeout;
+    private final TimeUnit requestTimeoutTimeUnit;
+
+    private final int reconnectBackoff;
+    private final TimeUnit reconnectBackoffTimeUnit;
+
+    private final int maxReconnectBackoff;
+    private final TimeUnit maxReconnectBackoffTimeUnit;
+
+    public KafkaClientManagerImpl(KafkaClientConfig kafkaClientConfig) {
+        this.maxIdle = kafkaClientConfig.getConnections().getMaxIdle().getValue();
+        this.maxIdleTimeUnit = kafkaClientConfig.getConnections().getMaxIdle().getUnit();
+
+        this.requestTimeout = kafkaClientConfig.getConnections().getRequestTimeout().getValue();
+        this.requestTimeoutTimeUnit = kafkaClientConfig.getConnections().getRequestTimeout().getUnit();
+
+        this.reconnectBackoff = kafkaClientConfig.getReconnections().getBackoff().getValue();
+        this.reconnectBackoffTimeUnit = kafkaClientConfig.getReconnections().getBackoff().getUnit();
+
+        this.maxReconnectBackoff = kafkaClientConfig.getReconnections().getMaxBackoff().getValue();
+        this.maxReconnectBackoffTimeUnit = kafkaClientConfig.getReconnections().getMaxBackoff().getUnit();
+    }
 
     @Override
     public AdminClient getClient(ConnectionDetailsEvent connectionDetailsEvent) {
@@ -42,11 +69,13 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
         }
     }
 
-    Properties buildProperties(ConnectionDetailsEvent connectionDetailsEvent) {
+    public Properties buildProperties(ConnectionDetailsEvent connectionDetailsEvent) {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionDetailsEvent.getUrl());
-        properties.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 10_000);
-        properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 5000);
+        properties.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, maxIdle);
+        properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, requestTimeout);
+        properties.put(ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG, reconnectBackoff);
+        properties.put(ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, maxReconnectBackoff);
 
         Optional<AuthenticationDetailsEvent> authenticationDetailsEvent =
                 connectionDetailsEvent.getAuthenticationDetails().stream().findFirst();

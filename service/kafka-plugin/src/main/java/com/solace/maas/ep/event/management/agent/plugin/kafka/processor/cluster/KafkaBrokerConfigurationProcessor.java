@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.cluster
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.cluster.KafkaBrokerConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.cluster.KafkaClusterConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaConfigurationEntryEvent;
@@ -25,11 +26,16 @@ import java.util.stream.Collectors;
 public class KafkaBrokerConfigurationProcessor extends ResultProcessorImpl<List<KafkaBrokerConfigurationEvent>,
         List<KafkaClusterConfigurationEvent>> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
+    private final long timeout;
+    private final TimeUnit timeUnit;
 
     @Autowired
-    public KafkaBrokerConfigurationProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+    public KafkaBrokerConfigurationProcessor(MessagingServiceDelegateService messagingServiceDelegateService,
+                                             KafkaClientConfig kafkaClientConfig) {
         super();
         this.messagingServiceDelegateService = messagingServiceDelegateService;
+        timeout = kafkaClientConfig.getConnections().getTimeout().getValue();
+        timeUnit = kafkaClientConfig.getConnections().getTimeout().getUnit();
     }
 
     @Override
@@ -45,7 +51,7 @@ public class KafkaBrokerConfigurationProcessor extends ResultProcessorImpl<List<
                 .collect(Collectors.toUnmodifiableList());
 
         return adminClient.describeConfigs(brokers).all()
-                .get(30, TimeUnit.SECONDS)
+                .get(timeout, timeUnit)
                 .entrySet()
                 .stream()
                 .map(result -> {

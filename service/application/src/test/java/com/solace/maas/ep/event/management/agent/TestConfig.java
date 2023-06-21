@@ -3,6 +3,11 @@ package com.solace.maas.ep.event.management.agent;
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConnection;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConnectionConfig;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnection;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnectionConfig;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
@@ -24,6 +29,7 @@ import org.springframework.context.annotation.Profile;
 
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -36,6 +42,7 @@ public class TestConfig {
 
     @Autowired
     ProducerTemplate producerTemplate;
+
     @Autowired
     private CamelContext camelContext;
 
@@ -110,5 +117,57 @@ public class TestConfig {
         IDGenerator idGenerator = new IDGenerator(idGeneratorProperties());
         idGenerator.setRandom(random());
         return idGenerator;
+    }
+
+    @Bean
+    @Primary
+    KafkaClientConnection kafkaClientConnection() {
+        return mock(KafkaClientConnection.class);
+    }
+
+    @Bean
+    @Primary
+    KafkaClientReconnection kafkaClientReconnection() {
+        return mock(KafkaClientReconnection.class);
+    }
+
+    @Bean
+    @Primary
+    public KafkaClientConfig kafkaClientConfig() {
+        KafkaClientConfig kafkaClientConfig = mock(KafkaClientConfig.class);
+        KafkaClientConnection kafkaClientConnection = mock(KafkaClientConnection.class);
+        KafkaClientReconnection kafkaClientReconnection = mock(KafkaClientReconnection.class);
+
+        KafkaClientConnectionConfig kafkaClientConnectionConfigTimeout = mock(KafkaClientConnectionConfig.class);
+        KafkaClientConnectionConfig kafkaClientConnectionConfigMaxIdle = mock(KafkaClientConnectionConfig.class);
+        KafkaClientConnectionConfig kafkaClientConnectionConfigRequestTimeout = mock(KafkaClientConnectionConfig.class);
+
+        KafkaClientReconnectionConfig kafkaClientReconnectionConfigBackoff = mock(KafkaClientReconnectionConfig.class);
+        KafkaClientReconnectionConfig kafkaClientReconnectionConfigBackoffMax = mock(KafkaClientReconnectionConfig.class);
+
+        when(kafkaClientConfig.getConnections()).thenReturn(kafkaClientConnection);
+        when(kafkaClientConfig.getReconnections()).thenReturn(kafkaClientReconnection);
+
+        when(kafkaClientConnection.getTimeout()).thenReturn(kafkaClientConnectionConfigTimeout);
+        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(30_000);
+        when(kafkaClientConnectionConfigTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
+
+        when(kafkaClientConnection.getMaxIdle()).thenReturn(kafkaClientConnectionConfigMaxIdle);
+        when(kafkaClientConnectionConfigMaxIdle.getValue()).thenReturn(10_000);
+        when(kafkaClientConnectionConfigMaxIdle.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
+
+        when(kafkaClientConnection.getRequestTimeout()).thenReturn(kafkaClientConnectionConfigRequestTimeout);
+        when(kafkaClientConnectionConfigRequestTimeout.getValue()).thenReturn(5_000);
+        when(kafkaClientConnectionConfigRequestTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
+
+        when(kafkaClientReconnection.getBackoff()).thenReturn(kafkaClientReconnectionConfigBackoff);
+        when(kafkaClientReconnectionConfigBackoff.getValue()).thenReturn(50);
+        when(kafkaClientReconnectionConfigBackoff.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
+
+        when(kafkaClientReconnection.getMaxBackoff()).thenReturn(kafkaClientReconnectionConfigBackoffMax);
+        when(kafkaClientReconnectionConfigBackoffMax.getValue()).thenReturn(1000);
+        when(kafkaClientReconnectionConfigBackoffMax.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
+
+        return kafkaClientConfig;
     }
 }
