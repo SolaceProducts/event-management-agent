@@ -2,55 +2,53 @@ package com.solace.maas.ep.event.management.agent.plugin.kafka.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.KafkaTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicConfigurationEvent;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
-import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic.KafkaTopicConfigurationProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.cluster.KafkaBrokerConfigurationProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.cluster.KafkaBrokerConfigurationEvent;
+import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.cluster.KafkaClusterConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConnection;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConnectionConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnection;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnectionConfig;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.DescribeTopicsResult;
-import org.apache.kafka.clients.admin.TopicDescription;
+import org.apache.kafka.clients.admin.Config;
+import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.clients.admin.DescribeConfigsResult;
 import org.apache.kafka.common.KafkaFuture;
-import org.apache.kafka.common.Node;
-import org.apache.kafka.common.TopicPartitionInfo;
-import org.apache.kafka.common.Uuid;
-import org.apache.kafka.common.acl.AclOperation;
+import org.apache.kafka.common.config.ConfigResource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = KafkaTestConfig.class)
-@SuppressWarnings("PMD")
-class KafkaTopicConfigurationProcessorTests {
+class KafkaBrokerConfigurationProcessorTests {
 
     @Mock
-    private MessagingServiceDelegateService messagingServiceDelegateService;
+    MessagingServiceDelegateService messagingServiceDelegateService;
 
     @Mock
-    private KafkaClientConfig kafkaClientConfig;
+    KafkaClientConfig kafkaClientConfig;
 
-    private KafkaTopicConfigurationProcessor kafkaTopicConfigurationProcessor;
+    private KafkaBrokerConfigurationProcessor kafkaBrokerConfigurationProcessor;
 
     @BeforeEach
-    void setupMocks() {
+    void mockSetup() {
         KafkaClientConnection kafkaClientConnection = mock(KafkaClientConnection.class);
         KafkaClientReconnection kafkaClientReconnection = mock(KafkaClientReconnection.class);
 
@@ -84,61 +82,57 @@ class KafkaTopicConfigurationProcessorTests {
         when(kafkaClientReconnectionConfigBackoffMax.getValue()).thenReturn(1000);
         when(kafkaClientReconnectionConfigBackoffMax.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
-        kafkaTopicConfigurationProcessor = new
-                KafkaTopicConfigurationProcessor(messagingServiceDelegateService, kafkaClientConfig);
+        kafkaBrokerConfigurationProcessor = new KafkaBrokerConfigurationProcessor(messagingServiceDelegateService, kafkaClientConfig);
     }
 
+    @SneakyThrows
     @Test
-    void testHandleEvents() throws Exception {
-        Node node = new Node(0, "host1", 9090);
-        TopicDescription topic1 = new TopicDescription(
-                "topic1",
-                false,
-                List.of(new TopicPartitionInfo(0, node, List.of(node), List.of(node))),
-                Set.of(AclOperation.CREATE),
-                Uuid.randomUuid());
+    void testHandleEvent() {
+        List<KafkaClusterConfigurationEvent> body = List.of(
+                KafkaClusterConfigurationEvent.builder()
+                        .id("0")
+                        .host("localhost")
+                        .rack("rack1")
+                        .port(9090)
+                        .build(),
+                KafkaClusterConfigurationEvent.builder()
+                        .id("1")
+                        .host("localhost")
+                        .rack("rack2")
+                        .port(9092)
+                        .build()
+        );
+
+        List<ConfigEntry> entries = new ArrayList<>();
+        entries.add(new ConfigEntry("A1", "value1"));
+        entries.add(new ConfigEntry("B1", "value2"));
+
+        ConfigResource configResource = new ConfigResource(ConfigResource.Type.BROKER, "configResource1");
+        Config config = new Config(entries);
 
         AdminClient adminClient = mock(AdminClient.class);
-        DescribeTopicsResult describeTopicsResult = mock(DescribeTopicsResult.class);
-        KafkaFuture<Map<String, TopicDescription>> future = mock(KafkaFuture.class);
+        DescribeConfigsResult describeConfigsResult = mock(DescribeConfigsResult.class);
+        KafkaFuture<Map<ConfigResource, Config>> future = mock(KafkaFuture.class);
 
         when(messagingServiceDelegateService.getMessagingServiceClient("testService"))
                 .thenReturn(adminClient);
-        when(adminClient.describeTopics(any(List.class)))
-                .thenReturn(describeTopicsResult);
-        when(describeTopicsResult.all()).thenReturn(future);
+        when(adminClient.describeConfigs(anyCollection()))
+                .thenReturn(describeConfigsResult);
+        when(describeConfigsResult.all())
+                .thenReturn(future);
         when(future.get(30_000, TimeUnit.MILLISECONDS))
-                .thenReturn(Map.of("0", topic1));
+                .thenReturn(Map.of(configResource, config));
 
-        List<KafkaTopicConfigurationEvent> kafkaTopicConfigurationEvents =
-                kafkaTopicConfigurationProcessor.handleEvent(
-                        Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"),
-                        List.of(
-                                KafkaTopicEvent.builder()
-                                        .name("topic1")
-                                        .topicId("id1")
-                                        .internal(false)
-                                        .build())
-                );
+        List<KafkaBrokerConfigurationEvent> kafkaBrokerConfigurationEvents =
+                kafkaBrokerConfigurationProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"), body);
 
-        KafkaTopicConfigurationEvent kafkaTopicConfigurationEvent = kafkaTopicConfigurationEvents.get(0);
+        KafkaBrokerConfigurationEvent kafkaBrokerConfigurationEvent = kafkaBrokerConfigurationEvents.stream().findFirst().orElseThrow();
+        assertThat(kafkaBrokerConfigurationEvents).hasSize(1);
+        assertThat(kafkaBrokerConfigurationEvent.getName()).isEqualTo("configResource1");
+        assertThat(kafkaBrokerConfigurationEvent.getConfigurations()).hasSize(2);
 
-        assertThat(kafkaTopicConfigurationEvents).hasSize(1);
-        assertThat(kafkaTopicConfigurationEvent.getTopicId()).isNotNull();
-        assertThat(kafkaTopicConfigurationEvent.getName()).isEqualTo("topic1");
-        assertThat(kafkaTopicConfigurationEvent.getAcls()).hasSize(1);
-        assertThat(kafkaTopicConfigurationEvent.getAcls().get(0).getName()).isEqualTo("CREATE");
-        assertThat(kafkaTopicConfigurationEvent.getPartitions()).hasSize(1);
-        assertThat(kafkaTopicConfigurationEvent.getPartitions().get(0).getReplicas()).hasSize(1);
-        assertThat(kafkaTopicConfigurationEvent.getPartitions().get(0).getIsr()).hasSize(1);
-        assertThat(kafkaTopicConfigurationEvent.getPartitions().get(0).getLeader().getHost()).isEqualTo("host1");
-
-        List<KafkaTopicConfigurationEvent> empty =
-                kafkaTopicConfigurationProcessor.handleEvent(
-                        Map.of(RouteConstants.MESSAGING_SERVICE_ID, "testService"),
-                        List.of());
-
-        assertThat(empty).isEmpty();
+        assertThat(kafkaBrokerConfigurationEvent.getConfigurations().get(0).getName()).isEqualTo("A1");
+        assertThat(kafkaBrokerConfigurationEvent.getConfigurations().get(1).getName()).isEqualTo("B1");
 
         assertThatNoException();
     }
