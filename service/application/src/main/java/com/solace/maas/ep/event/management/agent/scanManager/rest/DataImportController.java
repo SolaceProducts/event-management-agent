@@ -4,7 +4,6 @@ package com.solace.maas.ep.event.management.agent.scanManager.rest;
 import com.solace.maas.ep.common.model.EventErrorDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,9 +16,6 @@ public interface DataImportController {
     @Operation(
             summary = "Imports data collection files",
             description = "Use this API to trigger manual import of data collection for the specified resource.",
-            parameters = {
-                    @Parameter(name = "file", description = "The scan data zip file to be imported.", in = ParameterIn.QUERY)
-            },
             responses = {
                     @ApiResponse(
                             responseCode = "200",
