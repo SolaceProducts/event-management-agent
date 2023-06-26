@@ -40,9 +40,6 @@ if len(hotspots_to_resolve) != 0:
     for hotspot in hotspots_to_resolve:
         block_print(f"🔴️ {hotspot}")
         block_print(f'\t ➡️ {hotspots_to_resolve[hotspot]}\n')
-        # print descriptions for this vulnerability
-        # for vulnerability_description in prisma_vulnerabilities_to_resolve[vulnerability_name]:
-        #    block_print(f'\t ➡️ {vulnerability_description}\n')
     exit(1)
 else:
     print(f"No non-reviewed {SONARQUBE_BLOCKING_VULNERABILITIES} SonarQube hotspots found! ✅")
