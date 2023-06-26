@@ -55,6 +55,14 @@ jobs:
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
+      - name: Pre-Release Check - SonarQube Hotspots
+        env:
+          SONARQUBE_HOTSPOTS_API_URL: ${{ secrets.SONARQUBE_HOTSPOTS_API_URL }}
+          SONARQUBE_QUERY_TOKEN: ${{ secrets.SONARQUBE_QUERY_TOKEN }}
+        run: |
+          export VIRTUAL_ENV=./venv
+          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+          cd ./.github/workflows/release_scripts/  && python3.8 sonarqube_vulnurability_checker.py
 #      - name: Pre-Release Check - Prisma vulnurabilities
 #        env:
 #          PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
@@ -110,7 +118,7 @@ jobs:
           MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} \
           --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json \
           | jq --raw-output '.images[].imageManifest')
-          
+
           aws ecr put-image --repository-name ${{ github.event.repository.name }} \
             --image-tag ${{ github.event.inputs.releaseVersion }} \
             --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
