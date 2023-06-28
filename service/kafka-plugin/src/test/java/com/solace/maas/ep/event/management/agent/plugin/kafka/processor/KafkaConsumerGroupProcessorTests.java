@@ -57,7 +57,7 @@ class KafkaConsumerGroupProcessorTests {
         when(kafkaClientConfig.getReconnections()).thenReturn(kafkaClientReconnection);
 
         when(kafkaClientConnection.getTimeout()).thenReturn(kafkaClientConnectionConfigTimeout);
-        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(30_000);
+        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(60_000);
         when(kafkaClientConnectionConfigTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
         when(kafkaClientConnection.getMaxIdle()).thenReturn(kafkaClientConnectionConfigMaxIdle);
@@ -96,7 +96,7 @@ class KafkaConsumerGroupProcessorTests {
         when(listConsumerGroupsResult.all())
                 .thenReturn(future);
 
-        when(future.get(30_000, TimeUnit.MILLISECONDS))
+        when(future.get(60_000, TimeUnit.MILLISECONDS))
                 .thenReturn(List.of(consumerGroupListings));
 
         kafkaConsumerGroupProcessor.handleEvent(Map.of(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId"), null);

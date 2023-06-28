@@ -59,7 +59,7 @@ class KafkaClientManagerTests {
         when(kafkaClientConfig.getReconnections()).thenReturn(kafkaClientReconnection);
 
         when(kafkaClientConnection.getTimeout()).thenReturn(kafkaClientConnectionConfigTimeout);
-        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(30_000);
+        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(60_000);
         when(kafkaClientConnectionConfigTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
         when(kafkaClientConnection.getMaxIdle()).thenReturn(kafkaClientConnectionConfigMaxIdle);
@@ -102,15 +102,17 @@ class KafkaClientManagerTests {
                 .build();
 
         Properties properties = kafkaClientManager.buildProperties(connectionDetailsEvent);
-        assertThat(properties.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo("connection_url");
-        assertThat(properties.get(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG)).isEqualTo(10000);
-        assertThat(properties.get(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG)).isEqualTo(5000);
-        assertThat(properties.get(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG)).isEqualTo("SSL");
-        assertThat(properties.get(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG)).isEqualTo("/trust/location/truststore.jks");
-        assertThat(properties.get(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG)).isEqualTo("trustpass");
-        assertThat(properties.get(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG)).isEqualTo("keypass");
-        assertThat(properties.get(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG)).isEqualTo("/trust/location/keystore.jks");
-        assertThat(properties.get(SslConfigs.SSL_KEY_PASSWORD_CONFIG)).isEqualTo("keyPass");
+        
+        assertThat(properties)
+                .containsEntry(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "connection_url")
+                .containsEntry(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 10000)
+                .containsEntry(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 5000)
+                .containsEntry(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL")
+                .containsEntry(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, "/trust/location/truststore.jks")
+                .containsEntry(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, "trustpass")
+                .containsEntry(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, "keypass")
+                .containsEntry(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, "/trust/location/keystore.jks")
+                .containsEntry(SslConfigs.SSL_KEY_PASSWORD_CONFIG, "keyPass");
     }
 
     @Test

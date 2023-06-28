@@ -63,7 +63,7 @@ class KafkaBrokerConfigurationProcessorTests {
         when(kafkaClientConfig.getReconnections()).thenReturn(kafkaClientReconnection);
 
         when(kafkaClientConnection.getTimeout()).thenReturn(kafkaClientConnectionConfigTimeout);
-        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(30_000);
+        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(60_000);
         when(kafkaClientConnectionConfigTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
         when(kafkaClientConnection.getMaxIdle()).thenReturn(kafkaClientConnectionConfigMaxIdle);
@@ -120,7 +120,7 @@ class KafkaBrokerConfigurationProcessorTests {
                 .thenReturn(describeConfigsResult);
         when(describeConfigsResult.all())
                 .thenReturn(future);
-        when(future.get(30_000, TimeUnit.MILLISECONDS))
+        when(future.get(60_000, TimeUnit.MILLISECONDS))
                 .thenReturn(Map.of(configResource, config));
 
         List<KafkaBrokerConfigurationEvent> kafkaBrokerConfigurationEvents =

@@ -59,7 +59,7 @@ class KafkaClusterConfigurationProcessorTests {
         when(kafkaClientConfig.getReconnections()).thenReturn(kafkaClientReconnection);
 
         when(kafkaClientConnection.getTimeout()).thenReturn(kafkaClientConnectionConfigTimeout);
-        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(30_000);
+        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(60_000);
         when(kafkaClientConnectionConfigTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
         when(kafkaClientConnection.getMaxIdle()).thenReturn(kafkaClientConnectionConfigMaxIdle);
@@ -96,7 +96,7 @@ class KafkaClusterConfigurationProcessorTests {
                 .thenReturn(describeClusterResult);
         when(describeClusterResult.nodes())
                 .thenReturn(future);
-        when(future.get(30_000, TimeUnit.MILLISECONDS))
+        when(future.get(60_000, TimeUnit.MILLISECONDS))
                 .thenReturn(List.of(node1, node2));
 
         List<KafkaClusterConfigurationEvent> kafkaClusterConfigurationEvents =

@@ -59,7 +59,7 @@ class KafkaTopicListingProcessorTests {
         when(kafkaClientConfig.getReconnections()).thenReturn(kafkaClientReconnection);
 
         when(kafkaClientConnection.getTimeout()).thenReturn(kafkaClientConnectionConfigTimeout);
-        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(30_000);
+        when(kafkaClientConnectionConfigTimeout.getValue()).thenReturn(60_000);
         when(kafkaClientConnectionConfigTimeout.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
         when(kafkaClientConnection.getMaxIdle()).thenReturn(kafkaClientConnectionConfigMaxIdle);
@@ -93,7 +93,7 @@ class KafkaTopicListingProcessorTests {
                 .thenReturn(adminClient);
         when(adminClient.listTopics()).thenReturn(listTopicsResult);
         when(listTopicsResult.listings()).thenReturn(future);
-        when(future.get(30_000, TimeUnit.MILLISECONDS))
+        when(future.get(60_000, TimeUnit.MILLISECONDS))
                 .thenReturn(List.of(new TopicListing("name",
                         new Uuid(0L, 1L), true)));
 

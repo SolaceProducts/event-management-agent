@@ -44,7 +44,7 @@ kafka:
     config:
       connections:
         timeout:
-          value: 30_000
+          value: 60_000
           unit: milliseconds
         max-idle:
           value: 10_000
