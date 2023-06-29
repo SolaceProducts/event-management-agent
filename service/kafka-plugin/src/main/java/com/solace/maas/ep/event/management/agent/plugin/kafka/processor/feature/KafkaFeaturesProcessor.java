@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.feature
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.feature.KafkaFeatureEvent;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +20,16 @@ import java.util.stream.Collectors;
 @Component
 public class KafkaFeaturesProcessor extends ResultProcessorImpl<List<KafkaFeatureEvent>, Void> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
+    private final long timeout;
+    private final TimeUnit timeUnit;
 
     @Autowired
-    public KafkaFeaturesProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+    public KafkaFeaturesProcessor(MessagingServiceDelegateService messagingServiceDelegateService,
+                                  KafkaClientConfig kafkaClientConfig) {
         super();
         this.messagingServiceDelegateService = messagingServiceDelegateService;
+        timeout = kafkaClientConfig.getConnections().getTimeout().getValue();
+        timeUnit = kafkaClientConfig.getConnections().getTimeout().getUnit();
     }
 
     @Override
@@ -35,7 +41,7 @@ public class KafkaFeaturesProcessor extends ResultProcessorImpl<List<KafkaFeatur
 
         List<KafkaFeatureEvent> finalizedFeatures = new ArrayList<>(adminClient.describeFeatures()
                 .featureMetadata()
-                .get(30, TimeUnit.SECONDS)
+                .get(timeout, timeUnit)
                 .finalizedFeatures()
                 .entrySet()
                 .stream()
@@ -49,7 +55,7 @@ public class KafkaFeaturesProcessor extends ResultProcessorImpl<List<KafkaFeatur
 
         List<KafkaFeatureEvent> supportedFeatures = adminClient.describeFeatures()
                 .featureMetadata()
-                .get(30, TimeUnit.SECONDS)
+                .get(timeout, timeUnit)
                 .supportedFeatures()
                 .entrySet()
                 .stream()

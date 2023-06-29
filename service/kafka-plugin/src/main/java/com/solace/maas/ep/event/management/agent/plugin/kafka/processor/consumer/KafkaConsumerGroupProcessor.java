@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.consumer;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.consumer.KafkaConsumerGroupEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -23,11 +24,16 @@ import java.util.stream.Collectors;
 @Component
 public class KafkaConsumerGroupProcessor extends ResultProcessorImpl<List<KafkaConsumerGroupEvent>, Void> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
+    private final long timeout;
+    private final TimeUnit timeUnit;
 
     @Autowired
-    public KafkaConsumerGroupProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+    public KafkaConsumerGroupProcessor(MessagingServiceDelegateService messagingServiceDelegateService,
+                                       KafkaClientConfig kafkaClientConfig) {
         super();
         this.messagingServiceDelegateService = messagingServiceDelegateService;
+        timeout = kafkaClientConfig.getConnections().getTimeout().getValue();
+        timeUnit = kafkaClientConfig.getConnections().getTimeout().getUnit();
     }
 
     @Override
@@ -39,7 +45,7 @@ public class KafkaConsumerGroupProcessor extends ResultProcessorImpl<List<KafkaC
         ListConsumerGroupsResult listConsumerGroupsResult = adminClient.listConsumerGroups();
 
         Collection<ConsumerGroupListing> consumerGroupListings = listConsumerGroupsResult.all()
-                .get(30, TimeUnit.SECONDS);
+                .get(timeout, timeUnit);
 
         return consumerGroupListings
                 .stream()

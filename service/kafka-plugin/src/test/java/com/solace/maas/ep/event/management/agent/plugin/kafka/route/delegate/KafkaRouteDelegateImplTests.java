@@ -15,7 +15,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = KafkaTestConfig.class)
-public class KafkaRouteDelegateImplTests {
+class KafkaRouteDelegateImplTests {
     @InjectMocks
     private KafkaRouteDelegateImpl kafkaRouteDelegate;
 
@@ -30,7 +30,7 @@ public class KafkaRouteDelegateImplTests {
     );
 
     @Test
-    public void testGenerateKafkaTopicListingRouteList() {
+    void testGenerateKafkaTopicListingRouteList() {
         List<RouteBundle> routeBundles =
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_TOPIC_LISTING.name(),
                 "service1");
@@ -40,7 +40,7 @@ public class KafkaRouteDelegateImplTests {
     }
 
     @Test
-    public void testGenerateKafkaTopicConfigurationRouteList() {
+    void testGenerateKafkaTopicConfigurationRouteList() {
         List<RouteBundle> routeBundles =
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_TOPIC_CONFIGURATION.name(),
                         "service1");
@@ -50,7 +50,7 @@ public class KafkaRouteDelegateImplTests {
     }
 
     @Test
-    public void testGenerateKafkaTopicConfigurationFullRouteList() {
+    void testGenerateKafkaTopicConfigurationFullRouteList() {
         List<RouteBundle> routeBundles =
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_TOPIC_CONFIGURATION_FULL.name(),
                         "service1");
@@ -60,7 +60,7 @@ public class KafkaRouteDelegateImplTests {
     }
 
     @Test
-    public void testGenerateKafkaConsumerGroupsRouteList() {
+    void testGenerateKafkaConsumerGroupsRouteList() {
         List<RouteBundle> routeBundles =
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_CONSUMER_GROUPS.name(),
                         "service1");
@@ -70,7 +70,7 @@ public class KafkaRouteDelegateImplTests {
     }
 
     @Test
-    public void testGenerateKafkaConsumerGroupsConfigRouteList() {
+    void testGenerateKafkaConsumerGroupsConfigRouteList() {
         List<RouteBundle> routeBundles =
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(),
                         KafkaScanType.KAFKA_CONSUMER_GROUPS_CONFIGURATION.name(),
@@ -81,7 +81,7 @@ public class KafkaRouteDelegateImplTests {
     }
 
     @Test
-    public void testGenerateKafkaAllRouteList() {
+    void testGenerateKafkaAllRouteList() {
         List<RouteBundle> routeBundles =
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_ALL.name(),
                         "service1");
