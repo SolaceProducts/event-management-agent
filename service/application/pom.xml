@@ -17,6 +17,7 @@
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-cloud-starter-sleuth.version>3.1.5</spring-cloud-starter-sleuth.version>
+        <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
         <spring-kafka.version>2.9.0</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
     </properties>
@@ -59,6 +60,11 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-sleuth</artifactId>
             <version>${spring-cloud-starter-sleuth.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-rsa</artifactId>
+            <version>${spring-security-rsa.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
@@ -145,9 +151,19 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.94.Final</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.94.Final</version>
         </dependency>
         <!-- logback/logstash integration -->
         <dependency>

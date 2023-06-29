@@ -48,6 +48,16 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.94.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.94.Final</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
             <version>${camel.version}</version>
