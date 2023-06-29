@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>
@@ -401,7 +401,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>git@github.com:SolaceLabs/event-management-agent.git</url>
-        <tag>v1.0.2</tag>
+        <tag>HEAD</tag>
     </scm>
     <distributionManagement>
         <repository>
