@@ -23,7 +23,7 @@ def get_excluded_packages():
 
     exclusions = set()
     for exclusion in whitesource_exclusion_entries:
-        exclusions.add(exclusion['package'])
+        exclusions.add(exclusion['packageName'])
 
     return exclusions
 
