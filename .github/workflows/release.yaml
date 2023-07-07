@@ -26,18 +26,18 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
-#      - name: Pre-Release Check - Version
-#        env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          gh api --method GET /repos/${{github.repository}}/releases -f sort=updated -f direction=asc > releases.json
-#          release_version_exists=$(jq -r --arg RELEASE_VERSION v${{ github.event.inputs.releaseVersion }} '.[].name|select(.|test($RELEASE_VERSION))'  releases.json)
-#          if [[ ! -z "$release_version_exists" ]]; then
-#                echo "Version ${{ github.event.inputs.releaseVersion }} has been previously released. Please change release version."
-#                exit 1
-#          else
-#                echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
-#          fi
+      - name: Pre-Release Check - Version
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method GET /repos/${{github.repository}}/releases -f sort=updated -f direction=asc > releases.json
+          release_version_exists=$(jq -r --arg RELEASE_VERSION v${{ github.event.inputs.releaseVersion }} '.[].name|select(.|test($RELEASE_VERSION))'  releases.json)
+          if [[ ! -z "$release_version_exists" ]]; then
+                echo "Version ${{ github.event.inputs.releaseVersion }} has been previously released. Please change release version."
+                exit 1
+          else
+                echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
+          fi
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
@@ -76,49 +76,49 @@ jobs:
           export VIRTUAL_ENV=./venv
           python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
           cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
-#      - name: Prepare Maven Settings
-#        env:
-#          MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
-#          MAVEN_REPO_SERVER_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
-#          MAVEN_REPO_SERVER_PRIVATE_KEY: "~/.ssh/id_rsa"
-#          SSH_PRIVATE_KEY: "${{ secrets.COMMIT_KEY }}"
-#        run: cd .github/workflows/release_scripts && ./setup-ssh.sh
-#      - name: Set Release Configs
-#        run: |
-#          export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
-#          echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
-#          echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-#
-#      - name: Maven Release
-#        run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
-#      - name: Changelog
-#        uses: Bullrich/generate-release-changelog@master
-#        id: Changelog
-#        env:
-#          REPO: ${{ github.repository }}
-#      - name: Create GitHub Release
-#        uses: ncipollo/release-action@v1
-#        with:
-#          tag: "v${{ github.event.inputs.releaseVersion }}"
-#          artifacts: "**/application/target/*.jar"
-#          generateReleaseNotes: true
-#          makeLatest: true
-#          body: ${{ steps.Changelog.outputs.changelog }}
-#      - name: Configure AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v2
-#        with:
-#          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
-#          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-#          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-#      - name: Login to Amazon ECR
-#        id: login-ecr
-#        uses: aws-actions/amazon-ecr-login@v1.6.0
-#      - name: ECR Docker Image Release
-#        run: |
-#          MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} \
-#          --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json \
-#          | jq --raw-output '.images[].imageManifest')
-#
-#          aws ecr put-image --repository-name ${{ github.event.repository.name }} \
-#            --image-tag ${{ github.event.inputs.releaseVersion }} \
-#            --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      - name: Prepare Maven Settings
+        env:
+          MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
+          MAVEN_REPO_SERVER_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
+          MAVEN_REPO_SERVER_PRIVATE_KEY: "~/.ssh/id_rsa"
+          SSH_PRIVATE_KEY: "${{ secrets.COMMIT_KEY }}"
+        run: cd .github/workflows/release_scripts && ./setup-ssh.sh
+      - name: Set Release Configs
+        run: |
+          export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
+          echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
+          echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
+
+      - name: Maven Release
+        run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+      - name: Changelog
+        uses: Bullrich/generate-release-changelog@master
+        id: Changelog
+        env:
+          REPO: ${{ github.repository }}
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ github.event.inputs.releaseVersion }}"
+          artifacts: "**/application/target/*.jar"
+          generateReleaseNotes: true
+          makeLatest: true
+          body: ${{ steps.Changelog.outputs.changelog }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1.6.0
+      - name: ECR Docker Image Release
+        run: |
+          MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} \
+          --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json \
+          | jq --raw-output '.images[].imageManifest')
+
+          aws ecr put-image --repository-name ${{ github.event.repository.name }} \
+            --image-tag ${{ github.event.inputs.releaseVersion }} \
+            --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
