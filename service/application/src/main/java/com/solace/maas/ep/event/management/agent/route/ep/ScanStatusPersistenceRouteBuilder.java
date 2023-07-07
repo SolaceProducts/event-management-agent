@@ -1,5 +1,7 @@
 package com.solace.maas.ep.event.management.agent.route.ep;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AbstractRouteBuilder;
 import com.solace.maas.ep.event.management.agent.processor.RouteCompleteProcessorImpl;
 import org.springframework.stereotype.Component;
 
@@ -7,8 +9,9 @@ import org.springframework.stereotype.Component;
 public class ScanStatusPersistenceRouteBuilder extends AbstractRouteBuilder {
     private final RouteCompleteProcessorImpl routeCompleteProcessor;
 
-    public ScanStatusPersistenceRouteBuilder(RouteCompleteProcessorImpl routeCompleteProcessor) {
-        super();
+    public ScanStatusPersistenceRouteBuilder(RouteCompleteProcessorImpl routeCompleteProcessor,
+                                             ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
+        super(scanTypeDescendentsProcessor);
         this.routeCompleteProcessor = routeCompleteProcessor;
     }
 

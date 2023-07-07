@@ -38,6 +38,10 @@ spring:
 camel:
   springboot:
     use-mdc-logging: true
+  errorHandling:
+    maximumRedeliveries: 10
+    maximumRedeliveryDelay: 60000
+    redeliveryDelay: 1000
 
 kafka:
   client:

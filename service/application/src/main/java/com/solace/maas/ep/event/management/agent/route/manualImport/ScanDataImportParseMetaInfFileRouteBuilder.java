@@ -6,7 +6,7 @@ import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMe
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistFilePathsProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishImportScanEventProcessor;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers.ScanDataImportExceptionHandler;
+import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.ScanDataImportExceptionHandler;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;

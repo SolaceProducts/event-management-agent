@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class EmptyScanEntityProcessorTests {
+public class ScanTypeDescendentsProcessorTests {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -37,7 +37,7 @@ public class EmptyScanEntityProcessorTests {
 
     @Spy
     @InjectMocks
-    EmptyScanEntityProcessorImpl emptyScanEntityProcessor;
+    ScanTypeDescendentsProcessorImpl emptyScanEntityProcessor;
 
     @Mock
     private ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
@@ -49,6 +49,7 @@ public class EmptyScanEntityProcessorTests {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scanId");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "topicListing");
+        exchange.getIn().setHeader(RouteConstants.IS_EMPTY_SCAN_TYPES, true);
 
         exchange.getIn().setBody(new ArrayList<>());
 
@@ -81,6 +82,7 @@ public class EmptyScanEntityProcessorTests {
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scanId");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "topicListing");
+        exchange.getIn().setHeader(RouteConstants.IS_EMPTY_SCAN_TYPES, true);
 
         exchange.getIn().setBody(new ArrayList<>());
 

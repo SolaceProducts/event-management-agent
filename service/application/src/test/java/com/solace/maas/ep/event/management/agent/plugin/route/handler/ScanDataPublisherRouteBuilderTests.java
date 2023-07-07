@@ -1,10 +1,11 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanDataPublisherRouteBuilder;
-import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.mock;
         properties = {"camel.springboot.name=routeHandlerTest"}
 )
 @ActiveProfiles("TEST")
-public class ScanDataPublisherRouteBuilderTests {
+class ScanDataPublisherRouteBuilderTests {
 
     @Autowired
     private ProducerTemplate template;
@@ -45,7 +46,7 @@ public class ScanDataPublisherRouteBuilderTests {
 
     @Test
     @SneakyThrows
-    public void testMockRoute() throws Exception {
+    void testMockRoute() {
         AdviceWith.adviceWith(camelContext, "scanDataPublisher",
                 route -> {
                     route.replaceFromWith("direct:eventPortal");
@@ -67,8 +68,9 @@ public class ScanDataPublisherRouteBuilderTests {
 
             ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher);
             ScanDataProcessor scanDataProcessor = new ScanDataProcessor(scanDataPublisher, eventPortalProperties);
+            ScanTypeDescendentsProcessor scanTypeDescendentsProcessor = mock(ScanTypeDescendentsProcessor.class);
 
-            return new ScanDataPublisherRouteBuilder(scanDataProcessor);
+            return new ScanDataPublisherRouteBuilder(scanDataProcessor, scanTypeDescendentsProcessor);
         }
     }
 }
