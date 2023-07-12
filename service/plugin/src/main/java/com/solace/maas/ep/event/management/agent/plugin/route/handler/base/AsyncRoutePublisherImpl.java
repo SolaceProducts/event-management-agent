@@ -19,6 +19,7 @@ public abstract class AsyncRoutePublisherImpl implements AsyncRoutePublisher {
         this.asyncManager = asyncManager;
     }
 
+    @Override
     public void start(Exchange exchange) {
         String scanId = exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class);
         String scanType = exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class);

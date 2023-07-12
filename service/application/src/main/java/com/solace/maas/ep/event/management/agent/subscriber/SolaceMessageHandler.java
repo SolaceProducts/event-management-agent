@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.EnumDeserializer;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
@@ -18,6 +19,7 @@ import com.solace.maas.ep.event.management.agent.util.string.ParseClassName;
 import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.MessageReceiver;
 import lombok.extern.slf4j.Slf4j;
+import org.jboss.logging.MDC;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +27,6 @@ import java.util.Map;
 @Slf4j
 public abstract class SolaceMessageHandler<T extends MOPMessage> implements MessageReceiver.MessageHandler {
 
-    private String topicString;
-    private static ObjectMapper objectMapper = new ObjectMapper();
     private static final SimpleModule module = new SimpleModule();
     private final Map<String, JavaType> cachedJSONDecoders = new HashMap();
 
@@ -42,6 +42,9 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
+
+    private final Map<String, Class> cachedJSONDecoders = new HashMap();
+    private final String topicString;
 
     public SolaceMessageHandler(String topicString, SolaceSubscriber solaceSubscriber) {
         this.topicString = topicString;
@@ -63,6 +66,20 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
             if (messageClass == null) {
                 messageClass = getMessageDecoderJavaType(mopMessageDecoder);
                 cachedJSONDecoders.put(mopMessageDecoder, messageClass);
+            }
+
+            String receivedClassName = messageClass.getSimpleName();
+
+            if ("ScanCommandMessage" .equals(receivedClassName) || "ScanDataImportMessage" .equals(receivedClassName)) {
+                Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
+                String scanId = (String) map.get("scanId");
+                String traceId = (String) map.get("traceId");
+                String messagingServiceId = (String) map.get("messagingServiceId");
+
+                MDC.clear();
+                MDC.put(RouteConstants.SCAN_ID, scanId);
+                MDC.put(RouteConstants.TRACE_ID, traceId);
+                MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             }
 
             message = (T) objectMapper.readValue(messageAsString, messageClass);

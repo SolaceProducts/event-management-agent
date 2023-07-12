@@ -10,14 +10,17 @@ import org.springframework.stereotype.Component;
 public class MDCProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
+        MDC.put(RouteConstants.SCHEDULE_ID,
+                exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
+
         MDC.put(RouteConstants.SCAN_ID,
                 exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class));
 
+        MDC.put(RouteConstants.TRACE_ID,
+                exchange.getIn().getHeader(RouteConstants.TRACE_ID, String.class));
+
         MDC.put(RouteConstants.SCAN_TYPE,
                 exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class));
-
-        MDC.put(RouteConstants.SCHEDULE_ID,
-                exchange.getIn().getHeader(RouteConstants.SCHEDULE_ID, String.class));
 
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
                 exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));

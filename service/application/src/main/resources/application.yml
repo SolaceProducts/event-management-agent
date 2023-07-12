@@ -39,6 +39,27 @@ camel:
   springboot:
     use-mdc-logging: true
 
+kafka:
+  client:
+    config:
+      connections:
+        timeout:
+          value: 60_000
+          unit: milliseconds
+        max-idle:
+          value: 10_000
+          unit: milliseconds
+        request-timeout:
+          value: 5_000
+          unit: milliseconds
+      reconnections:
+        backoff:
+          value: 50
+          unit: milliseconds
+        max-backoff:
+          value: 1_000
+          unit: milliseconds
+
 eventPortal:
   runtimeAgentId: ${EP_RUNTIME_AGENT_ID:defaultAgentId}
   organizationId: ${EP_ORGANIZATION_ID:defaultOrgId}

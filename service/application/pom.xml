@@ -4,18 +4,22 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.3-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>event-management-agent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>2.0</snakeyaml.version>
+        <spring-cloud-starter-sleuth.version>3.1.5</spring-cloud-starter-sleuth.version>
+        <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
+        <spring-kafka.version>2.9.0</spring-kafka.version>
+        <kafka-clients.version>3.5.0</kafka-clients.version>
     </properties>
     <repositories>
         <repository>
@@ -35,6 +39,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>9.0.75</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>2.7.12</version>
@@ -48,8 +57,29 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-sleuth</artifactId>
+            <version>${spring-cloud-starter-sleuth.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-rsa</artifactId>
+            <version>${spring-security-rsa.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+            <version>${spring-kafka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka-clients.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <version>1.1.10.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -126,9 +156,19 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.94.Final</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.94.Final</version>
         </dependency>
         <!-- logback/logstash integration -->
         <dependency>
@@ -148,17 +188,17 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
@@ -173,12 +213,12 @@
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
 
         <!-- for testing -->
@@ -197,7 +237,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.1</version>
+            <version>2.2.8</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -309,7 +349,7 @@
                             <rulesets>
                                 <ruleset>../resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>
                         <executions>

@@ -61,20 +61,21 @@ public class DataPublisherRouteBuilderTests {
 
     @Test
     public void testMockRoute() throws Exception {
-        DirectVmEndpoint ep = new DirectVmEndpoint("scanStatusPublisher", null);
-        camelContext.addEndpoint("direct:scanStatusPublisher", ep);
+        try (DirectVmEndpoint ep = new DirectVmEndpoint("scanStatusPublisher", null)) {
+            camelContext.addEndpoint("direct:scanStatusPublisher", ep);
 
-        AdviceWith.adviceWith(camelContext, "dataPublisherRoute",
-                route -> {
-                    route.replaceFromWith("direct:dataPublisherRoute");
-                    route.weaveAddLast().to("mock:direct:result");
-                });
+            AdviceWith.adviceWith(camelContext, "dataPublisherRoute",
+                    route -> {
+                        route.replaceFromWith("direct:dataPublisherRoute");
+                        route.weaveAddLast().to("mock:direct:result");
+                    });
 
-        mockResult.expectedMessageCount(1);
+            mockResult.expectedMessageCount(1);
 
-        producerTemplate.sendBody("direct:dataPublisherRoute", null);
+            producerTemplate.sendBody("direct:dataPublisherRoute", null);
 
-        mockResult.assertIsSatisfied();
+            mockResult.assertIsSatisfied();
+        }
     }
 
     @AllArgsConstructor

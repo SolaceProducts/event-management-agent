@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
 import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultProcessorImpl;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -22,11 +23,16 @@ import java.util.stream.Collectors;
 @Component
 public class KafkaTopicListingProcessor extends ResultProcessorImpl<List<KafkaTopicEvent>, Void> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
+    private final long timeout;
+    private final TimeUnit timeUnit;
 
     @Autowired
-    public KafkaTopicListingProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+    public KafkaTopicListingProcessor(MessagingServiceDelegateService messagingServiceDelegateService,
+                                      KafkaClientConfig kafkaClientConfig) {
         super();
         this.messagingServiceDelegateService = messagingServiceDelegateService;
+        timeout = kafkaClientConfig.getConnections().getTimeout().getValue();
+        timeUnit = kafkaClientConfig.getConnections().getTimeout().getUnit();
     }
 
     @Override
@@ -38,7 +44,7 @@ public class KafkaTopicListingProcessor extends ResultProcessorImpl<List<KafkaTo
 
         ListTopicsResult listTopicsResult = adminClient.listTopics();
         Collection<TopicListing> topicListings = listTopicsResult.listings()
-                .get(30, TimeUnit.SECONDS);
+                .get(timeout, timeUnit);
 
         return topicListings
                 .stream()

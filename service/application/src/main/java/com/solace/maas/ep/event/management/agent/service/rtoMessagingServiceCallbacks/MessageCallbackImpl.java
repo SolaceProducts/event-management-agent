@@ -20,8 +20,8 @@ import java.util.List;
 public class MessageCallbackImpl implements MessageCallback {
     private final boolean logCallbacks;
     private String callBackId;
-    private boolean keepRxMessage = false;
-    private int messageCount = 0;
+    private boolean keepRxMessage;
+    private int messageCount;
     private List<MessageHandle> _rxMessages = new LinkedList<>();
 
     public MessageCallbackImpl(String id, boolean logCalls) {

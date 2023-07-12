@@ -45,6 +45,7 @@ public class ScanDataProcessorTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.TOPIC, "test/ep/v1");
@@ -59,8 +60,14 @@ public class ScanDataProcessorTests {
 
     @Test
     public void testScanMessageMOPProtocol() {
-        ScanDataMessage scanDataMessage =
-                new ScanDataMessage("orgId", "scanId", "scanType", "body", Instant.now().toString());
+        ScanDataMessage scanDataMessage = new ScanDataMessage(
+                "orgId",
+                "scanId",
+                "traceId",
+                "scanType",
+                " body",
+                Instant.now().toString());
+
         assertThat(scanDataMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanData);
     }
 }

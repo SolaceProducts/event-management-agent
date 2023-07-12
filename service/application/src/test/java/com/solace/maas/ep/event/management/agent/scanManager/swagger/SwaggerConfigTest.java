@@ -24,7 +24,7 @@ public class SwaggerConfigTest {
 
     @Test
     @SneakyThrows
-    public void SwaggerConfigTest() {
+    public void testSwaggerConfig() {
         swaggerConfig.swagger(resourceLoader);
 
         assertThatNoException();

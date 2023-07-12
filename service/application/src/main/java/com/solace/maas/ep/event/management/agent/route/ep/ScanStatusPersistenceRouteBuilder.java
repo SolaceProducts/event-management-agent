@@ -8,6 +8,7 @@ public class ScanStatusPersistenceRouteBuilder extends AbstractRouteBuilder {
     private final RouteCompleteProcessorImpl routeCompleteProcessor;
 
     public ScanStatusPersistenceRouteBuilder(RouteCompleteProcessorImpl routeCompleteProcessor) {
+        super();
         this.routeCompleteProcessor = routeCompleteProcessor;
     }
 

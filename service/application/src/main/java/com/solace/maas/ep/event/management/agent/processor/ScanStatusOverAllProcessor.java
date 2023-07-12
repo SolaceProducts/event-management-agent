@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings("CPD-START")
 @Slf4j
 @Component
 @ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
@@ -40,6 +40,7 @@ public class ScanStatusOverAllProcessor implements Processor {
 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
 
@@ -53,8 +54,7 @@ public class ScanStatusOverAllProcessor implements Processor {
         topicDetails.put("scanType", scanType);
         topicDetails.put("status", status.name());
 
-        ScanStatusMessage generalStatusMessage = new
-                ScanStatusMessage(orgId, scanId, status.name(), description, scanTypes);
+        ScanStatusMessage generalStatusMessage = new ScanStatusMessage(orgId, scanId, traceId, status.name(), description, scanTypes);
 
         exchange.getIn().setHeader(RouteConstants.GENERAL_STATUS_MESSAGE, generalStatusMessage);
         exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);

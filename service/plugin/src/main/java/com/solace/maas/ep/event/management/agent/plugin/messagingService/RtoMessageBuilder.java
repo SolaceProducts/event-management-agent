@@ -18,13 +18,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.util.List;
 
 @ProviderType
 @ConditionalOnBean(VMRProperties.class)
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.rto-session", havingValue = "true")
 public interface RtoMessageBuilder {
-    RtoMessageBuilder fromProperties(ArrayList<String> sessionConfiguration);
+    RtoMessageBuilder fromProperties(List<String> sessionConfiguration);
 
     RtoMessageBuilder createContext();
 
@@ -43,7 +43,7 @@ public interface RtoMessageBuilder {
     class RtoMessageBuilderImpl implements RtoMessageBuilder {
         private final MessageCallback messageCallback;
         private final SessionEventCallback sessionEventCallback;
-        private ArrayList<String> sessionConfig;
+        private List<String> sessionConfig;
         private ContextHandle contextHandle;
         private SessionHandle sessionHandle;
         private MessageHandle messageHandle;
@@ -53,11 +53,13 @@ public interface RtoMessageBuilder {
             this.sessionEventCallback = sessionEventCallback;
         }
 
-        public RtoMessageBuilder fromProperties(ArrayList<String> sessionConfiguration) {
+        @Override
+        public RtoMessageBuilder fromProperties(List<String> sessionConfiguration) {
             this.sessionConfig = sessionConfiguration;
             return this;
         }
 
+        @Override
         public RtoMessageBuilder createContext() {
             // Initialize the API
             Solclient.init(new String[0]);
@@ -68,6 +70,7 @@ public interface RtoMessageBuilder {
             return this;
         }
 
+        @Override
         public RtoMessageBuilder createSession() {
             log.info(" Creating the session ...");
             String[] props = new String[sessionConfig.size()];
@@ -79,12 +82,14 @@ public interface RtoMessageBuilder {
             return this;
         }
 
+        @Override
         public RtoMessageBuilder connect() {
             log.info("Connecting the session ...");
             sessionHandle.connect();
             return this;
         }
 
+        @Override
         public RtoMessageBuilder publish(String message, Topic topic) {
             log.info("Creating the message to publish ...");
             messageHandle = Solclient.Allocator.newMessageHandle();
@@ -117,6 +122,7 @@ public interface RtoMessageBuilder {
             return this;
         }
 
+        @Override
         public RtoMessageBuilder destroy() {
             try {
                 // destroy the message
@@ -129,7 +135,7 @@ public interface RtoMessageBuilder {
                 // destroy the context
                 destroyHandle(contextHandle, "contextHandle");
             } catch (Throwable t) {
-                System.err.println("Unable to call destroy on messageCallback " + t.getCause());
+                log.error("Unable to call destroy on messageCallback " + t.getCause());
             }
             return this;
         }

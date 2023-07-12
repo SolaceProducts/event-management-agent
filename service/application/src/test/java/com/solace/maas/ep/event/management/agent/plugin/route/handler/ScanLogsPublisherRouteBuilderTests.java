@@ -65,6 +65,7 @@ public class ScanLogsPublisherRouteBuilderTests {
         Exchange exchange = new DefaultExchange(camelContext);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingService");
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.TOPIC, "test/ep/v1");
@@ -84,8 +85,13 @@ public class ScanLogsPublisherRouteBuilderTests {
 
     @Test
     public void testScanLogMessageMOPProtocol() {
-        ScanLogMessage scanLogMessage = new ScanLogMessage("orgId", "scanId", "level",
+        ScanLogMessage scanLogMessage = new ScanLogMessage(
+                "orgId",
+                "scanId",
+                "traceId",
+                "level",
                 "log", Instant.now().toEpochMilli());
+
         assertThat(scanLogMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 

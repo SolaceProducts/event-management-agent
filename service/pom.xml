@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>
@@ -350,7 +350,7 @@
                             <rulesets>
                                 <ruleset>resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>
                         <executions>

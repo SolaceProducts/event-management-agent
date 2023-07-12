@@ -38,6 +38,7 @@ public class RouteEntity implements Serializable {
     @ManyToMany(mappedBy = "route", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private List<ScanEntity> scans;
 
+    @Override
     public String toString() {
         return "RouteEntity " + id;
     }

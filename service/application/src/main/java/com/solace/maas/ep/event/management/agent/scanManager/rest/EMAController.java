@@ -16,8 +16,8 @@ public interface EMAController {
 
     @Operation(
             summary = "Triggers data collections",
-            description = "Use this API to trigger a data collection for the specified resource.",
-            parameters = {@Parameter(description = "The ID of the resource.", name = "resourceId", required = true)},
+            description = "Use this API to trigger a data collection scan for the specified resource.",
+            parameters = {@Parameter(description = "The ID of the resource to be scanned.", name = "resourceId", required = true)},
             requestBody = @RequestBody(description = "The scan request object.\n\n" +
                     "<b>List of scan types:</b>\n" +
                     "```\n" +

@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.kafka.processor.topic;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.general.KafkaConfigurationEntryEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaOverrideTopicConfigurationEvent;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.processor.event.topic.KafkaTopicEvent;
@@ -25,11 +26,16 @@ import java.util.stream.Collectors;
 public class KafkaOverrideTopicConfigurationProcessor
         extends ResultProcessorImpl<List<KafkaOverrideTopicConfigurationEvent>, List<KafkaTopicEvent>> {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
+    private final long timeout;
+    private final TimeUnit timeUnit;
 
     @Autowired
-    public KafkaOverrideTopicConfigurationProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
+    public KafkaOverrideTopicConfigurationProcessor(MessagingServiceDelegateService messagingServiceDelegateService,
+                                                    KafkaClientConfig kafkaClientConfig) {
         super();
         this.messagingServiceDelegateService = messagingServiceDelegateService;
+        timeout = kafkaClientConfig.getConnections().getTimeout().getValue();
+        timeUnit = kafkaClientConfig.getConnections().getTimeout().getUnit();
     }
 
     @Override
@@ -45,7 +51,7 @@ public class KafkaOverrideTopicConfigurationProcessor
 
             if (!configs.isEmpty()) {
                 return adminClient.describeConfigs(configs).all()
-                        .get(30, TimeUnit.SECONDS)
+                        .get(timeout, timeUnit)
                         .entrySet()
                         .stream()
                         .map(result -> {

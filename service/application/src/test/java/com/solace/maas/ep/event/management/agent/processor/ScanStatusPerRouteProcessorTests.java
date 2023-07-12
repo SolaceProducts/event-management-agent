@@ -43,14 +43,12 @@ public class ScanStatusPerRouteProcessorTests {
 
         Exchange exchange = new DefaultExchange(camelContext);
         exchange.getIn().setHeader(RouteConstants.SCAN_ID, "scan1");
+        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "traceId");
         exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, "messagingServiceId");
 
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "description");
-
-        ScanDataStatusMessage scanDataStatusMessage = new
-                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", "queueListing");
 
         HashMap<String, String> topicDetails = new HashMap<>();
         topicDetails.put("orgId", null);
@@ -67,8 +65,14 @@ public class ScanStatusPerRouteProcessorTests {
 
     @Test
     public void testScanDataStatusMessageMOPProtocol() {
-        ScanDataStatusMessage scanDataStatusMessage = new
-                ScanDataStatusMessage(null, "scan1", ScanStatus.IN_PROGRESS.name(), "description", "queueListing");
+        ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(
+                null,
+                "scan1",
+                "traceId",
+                ScanStatus.IN_PROGRESS.name(),
+                "description",
+                "queueListing");
+
         assertThat(scanDataStatusMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
     }
 }

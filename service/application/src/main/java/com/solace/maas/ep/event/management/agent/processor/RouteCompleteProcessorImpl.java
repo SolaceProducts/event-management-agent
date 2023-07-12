@@ -16,6 +16,7 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
     private final ScanStatusService scanStatusService;
 
     public RouteCompleteProcessorImpl(ScanStatusService scanStatusService) {
+        super();
         this.scanStatusService = scanStatusService;
     }
 

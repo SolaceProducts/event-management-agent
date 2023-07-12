@@ -19,10 +19,10 @@ import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
 
 @Slf4j
 @Service
@@ -50,31 +48,35 @@ public class ImportService {
         this.eventPortalProperties = eventPortalProperties;
     }
 
+    @SuppressWarnings("PMD.CloseResource")
     public void importData(ImportRequestBO importRequestBO) throws IOException {
+        String importId = UUID.randomUUID().toString();
+        String traceId = importRequestBO.getTraceId();
+
         boolean isEMAStandalone = eventPortalProperties.getGateway().getMessaging().isStandalone();
         InputStream importStream = importRequestBO.getDataFile().getInputStream();
-        String importId = UUID.randomUUID().toString();
 
         if (isEMAStandalone) {
             throw new FileUploadException("Scan data could not be imported in standalone mode.");
         } else {
-            initiateImport(importStream, importId);
+            initiateImport(importStream, importId, traceId);
         }
     }
 
-    private void initiateImport(InputStream files, String importId) {
+    private void initiateImport(InputStream files, String importId, String traceId) {
         RouteEntity route = RouteEntity.builder()
                 .id("importScanData")
                 .active(true)
                 .build();
 
         producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
-            exchange.getIn().setHeader(IMPORT_ID, importId);
+            exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.IMPORT_ID, importId);
             exchange.getIn().setBody(files);
         });
     }
 
-    public InputStream zip(ZipRequestBO zipRequestBO) throws FileNotFoundException {
+    public InputStream zip(ZipRequestBO zipRequestBO) throws IOException {
         String scanId = zipRequestBO.getScanId();
 
         List<DataCollectionFileEntity> files = dataCollectionFileService.findAllByScanId(scanId);
@@ -107,7 +109,7 @@ public class ImportService {
         GenericFile<?> downloadedGenericFile = exchange.getIn().getBody(GenericFile.class);
         File downloadedFile = (File) downloadedGenericFile.getFile();
 
-        return new FileInputStream(downloadedFile);
+        return Files.newInputStream(Paths.get(downloadedFile.toURI()));
     }
 
     private MetaInfFileBO prepareMetaInfJson(List<DataCollectionFileEntity> files, String messagingServiceId,

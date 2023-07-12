@@ -4,7 +4,9 @@ import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,11 +38,14 @@ public class DataImportControllerImpl implements DataImportController {
     }
 
     @Override
-    @PostMapping(value = "/import")
-    public ResponseEntity<String> read(@RequestParam("file") MultipartFile file) {
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> read(@Parameter(description = "The scan data zip file to be imported.")
+                                       @RequestPart("file") final MultipartFile file) {
         try {
+            String traceId = MDC.get("traceId");
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
+                    .traceId(traceId)
                     .build();
 
             log.info("Received import request for data file: {}", importRequestBO.getDataFile().getOriginalFilename());
@@ -59,12 +64,12 @@ public class DataImportControllerImpl implements DataImportController {
 
     @Override
     @GetMapping(value = "/export/{scanId}/zip")
+    @SuppressWarnings("PMD.CloseResource")
     public ResponseEntity<InputStreamResource> zip(@PathVariable(value = "scanId") String scanId) {
         try {
             ZipRequestBO zipRequestBO = ZipRequestBO.builder()
                     .scanId(scanId)
                     .build();
-
             log.info("Received zip request for scan: {}", scanId);
 
             InputStream zipInputStream = importService.zip(zipRequestBO);

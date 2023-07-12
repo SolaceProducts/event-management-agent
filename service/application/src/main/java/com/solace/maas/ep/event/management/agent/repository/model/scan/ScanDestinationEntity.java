@@ -45,6 +45,7 @@ public class ScanDestinationEntity implements Serializable {
     @Column(name = "DESTINATION", nullable = false)
     private String destination;
 
+    @Override
     public String toString() {
         return "ScanDestinationEntity " + scanDestinationId;
     }
