@@ -5,4 +5,4 @@ if [ -z "$1" ]
     echo "usage: buildBaseImage <tag>"
     exit 1
 fi
-docker build . -t event-management-agent-base:$1
+docker build .  --platform linux/amd64  -t event-management-agent-base:$1
