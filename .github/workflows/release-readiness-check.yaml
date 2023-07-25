@@ -1,8 +1,6 @@
 name: Release Readiness Checks
 on:
-  push:
-    branches:
-      - add_workflow_check_prisma_ws
+  workflow_dispatch:
 
 jobs:
   pre_release_checks:
