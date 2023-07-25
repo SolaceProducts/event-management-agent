@@ -1,0 +1,52 @@
+name: Release Readiness Checks
+on:
+  workflow_dispatch:
+
+jobs:
+  pre_release_checks:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
+      - name: Pre-Release Check - Whitesource vulnurabilities
+        env:
+          WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
+          WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+        run: |
+          pip install --quiet --upgrade pip
+          export VIRTUAL_ENV=./venv
+          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+          cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
+      - name: Pre-Release Check - SonarQube Hotspots
+        if: ${{ always() }}
+        env:
+          SONARQUBE_HOTSPOTS_API_URL: ${{ secrets.SONARQUBE_HOTSPOTS_API_URL }}
+          SONARQUBE_QUERY_TOKEN: ${{ secrets.SONARQUBE_QUERY_TOKEN }}
+        run: |
+          export VIRTUAL_ENV=./venv
+          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+          cd ./.github/workflows/release_scripts/  && python3.8 sonarqube_vulnurability_checker.py
+      - name: Pre-Release Check - Prisma vulnurabilities
+        if: ${{ always() }}
+        env:
+          PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
+          DOCKER_IMAGE_TO_CHECK: ${{ secrets.PRISMA_DOCKER_IMAGE_TO_CHECK }}
+          PRISMA_ACCESS_KEY: ${{ secrets.PRISMA_ACCESS_KEY }}
+          PRISMA_ACCESS_KEY_SECRET: ${{ secrets.PRISMA_ACCESS_KEY_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+        run: |
+          export VIRTUAL_ENV=./venv
+          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py          
