@@ -84,6 +84,11 @@
             <version>2.15.2</version>
         </dependency>
         <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>third-party-jackson-core</artifactId>
+            <version>2.20.109</version>
+        </dependency>
+        <dependency>
             <groupId>software.amazon.msk</groupId>
             <artifactId>aws-msk-iam-auth</artifactId>
             <version>${aws-msk-iam-auth.version}</version>
