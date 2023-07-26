@@ -1,16 +1,11 @@
 package com.solace.maas.ep.event.management.agent.publisher;
 
 import com.solace.maas.ep.common.messages.ConfigurationTaskResultMessage;
-import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
-import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ClientException;
 import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ConfigurationTaskStatusException;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ScanStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;

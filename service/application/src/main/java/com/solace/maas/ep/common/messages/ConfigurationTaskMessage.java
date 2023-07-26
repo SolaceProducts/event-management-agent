@@ -45,4 +45,9 @@ public class ConfigurationTaskMessage<Y> extends MOPMessage {
         this.destinations = destinations;
         this.configType = configType;
     }
+
+    @Override
+    public String toLog() {
+        return null;
+    }
 }

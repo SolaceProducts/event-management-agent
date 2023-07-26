@@ -2,7 +2,6 @@ package com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.ConfigurationTaskStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;

@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.route.ep.exceptions;
 
-import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
 
@@ -18,14 +17,14 @@ public class ConfigurationTaskStatusException extends ClientException {
             String statusType, List<String> scanTypes, TaskResult taskResult) {
         super(message, validationDetails);
         this.statusType = statusType;
-        this.configTypes = scanTypes;
+        configTypes = scanTypes;
         this.taskResult = taskResult;
     }
 
     @Override
     public String toString() {
-        return "ConfigurationTaskStatusException{message=" + this.getMessage() +
-                ", exceptionStore=" + this.getExceptionStore() +
+        return "ConfigurationTaskStatusException{message=" + getMessage() +
+                ", exceptionStore=" + getExceptionStore() +
                 ", statusType='" + statusType + '\'' +
                 ", configTypes='" + configTypes + '\'' +
                 ", taskResult=" + taskResult.toString() +

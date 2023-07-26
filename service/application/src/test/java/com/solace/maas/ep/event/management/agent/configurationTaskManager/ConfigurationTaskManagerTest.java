@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -83,7 +82,6 @@ public class ConfigurationTaskManagerTest {
 
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
-        MessagingServiceEntity mockMessagingService = mock(MessagingServiceEntity.class);
         when(configurationTaskService.execute(
                 eq(List.of()),
                 eq("groupId"),

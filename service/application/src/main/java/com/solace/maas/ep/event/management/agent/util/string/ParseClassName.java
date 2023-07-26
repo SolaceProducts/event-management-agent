@@ -7,7 +7,7 @@ import java.util.List;
 public class ParseClassName {
 
     public static Class getClass(String className) throws ClassNotFoundException {
-        int idx = className.indexOf("<");
+        int idx = className.indexOf('<');
         if (idx>-1) {
             String classPart = className.substring(0, idx);
 
@@ -17,7 +17,7 @@ public class ParseClassName {
         }
     }
     public static Class[] getParameterizedTypes(String className) throws ClassNotFoundException {
-        int idx = className.indexOf("<");
+        int idx = className.indexOf('<');
         if (idx>-1) {
             List<Class> types = new ArrayList<>();
             String genericsPart = className.substring(idx);
@@ -30,14 +30,14 @@ public class ParseClassName {
     }
 
     private static void getGenerics(String genericsPart, List<Class> types) throws ClassNotFoundException {
-        String genericType = genericsPart.substring(genericsPart.indexOf("<")+1);
-        int nextOpeningBracket = genericType.indexOf("<");
+        String genericType = genericsPart.substring(genericsPart.indexOf('<')+1);
+        int nextOpeningBracket = genericType.indexOf('<');
         String className;
         if (nextOpeningBracket>-1){
             className = genericType.substring(0, nextOpeningBracket);
             getGenerics(genericType.substring(nextOpeningBracket+1), types);
         } else {
-            className = genericType.substring(0, genericType.indexOf(">"));
+            className = genericType.substring(0, genericType.indexOf('>'));
         }
         types.add(Class.forName(className));
     }
