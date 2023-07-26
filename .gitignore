@@ -48,3 +48,4 @@ application-mysql-*.yml
 .env
 
 *dependency-reduced-pom.xml
+service/solace-config-client/.openapi-generator

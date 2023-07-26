@@ -21,3 +21,26 @@
 #docs/*.md
 # Then explicitly reverse the ignore rule for a single file:
 #!docs/README.md
+
+./pom.xml
+pom.xml
+**/pom.xml
+
+.openapi-generator-ignore
+
+.github/**
+gradle*
+gradle/**
+*gradle*
+*.gradle
+docs/**
+.openapi-generator/**
+api/**
+.travis.yml
+*.sh
+*.sbt
+README.md
+
+**/AndroidManifest.xml
+
+.gitignore

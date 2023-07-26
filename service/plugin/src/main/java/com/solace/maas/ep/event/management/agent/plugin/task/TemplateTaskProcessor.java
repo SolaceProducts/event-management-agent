@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.plugin.processor.base.ResultPro
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
