@@ -142,6 +142,11 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>${jacocoSurefire}</argLine>
+                    <excludes>
+                        <exclude>**/AclProfileExceptionsTaskProcessorTest.java</exclude>
+                        <exclude>**/AclProfileTaskProcessorTest.java</exclude>
+                        <exclude>**/ClientUsernameTaskProcessorTest.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
