@@ -87,21 +87,21 @@ setup_colors
 # If the base docker container tag isn't set, use the same tag that was
 # provided for the event-management-agent.
 
-[[ -z "${BASE_IMAGE_TAG-}" ]] && BASE_IMAGE_TAG=${IMAGE_TAG}
-
-if [[ "$(docker images -q event-management-agent-base:${BASE_IMAGE_TAG} 2> /dev/null)" == "" ]]; then
-  # do something
-  msg "${RED}The base image does not exist, building\n${NOFORMAT}"
-  cd base-image
-  ./buildBaseImage.sh ${BASE_IMAGE_TAG}
-  cd ${script_dir}
-else
-  msg "${GREEN}Base image found, using:${YELLOW} event-management-agent-base:${BASE_IMAGE_TAG}\n${NOFORMAT}"
-fi
+#[[ -z "${BASE_IMAGE_TAG-}" ]] && BASE_IMAGE_TAG=${IMAGE_TAG}
+#
+#if [[ "$(docker images -q event-management-agent-base:${BASE_IMAGE_TAG} 2> /dev/null)" == "" ]]; then
+#  # do something
+#  msg "${RED}The base image does not exist, building\n${NOFORMAT}"
+#  cd base-image
+#  ./buildBaseImage.sh ${BASE_IMAGE_TAG}
+#  cd ${script_dir}
+#else
+#  msg "${GREEN}Base image found, using:${YELLOW} event-management-agent-base:${BASE_IMAGE_TAG}\n${NOFORMAT}"
+#fi
 
 msg "${GREEN}Building image:${YELLOW} event-management-agent:${IMAGE_TAG}\n${NOFORMAT}"
 
-export BASE_IMAGE=event-management-agent-base:${BASE_IMAGE_TAG}
+export BASE_IMAGE=eclipse-temurin:11.0.19_7-jdk
 export GITHASH=$(git rev-parse HEAD)
 export GITBRANCH=$(git branch --show-current)
 export BUILD_TIMESTAMP=$(date -u)
