@@ -28,6 +28,8 @@ import java.util.Map;
 public abstract class SolaceMessageHandler<T extends MOPMessage> implements MessageReceiver.MessageHandler {
 
     private static final SimpleModule module = new SimpleModule();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     private final Map<String, JavaType> cachedJSONDecoders = new HashMap();
 
     static {
@@ -43,7 +45,6 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
-    private final Map<String, Class> cachedJSONDecoders = new HashMap();
     private final String topicString;
 
     public SolaceMessageHandler(String topicString, SolaceSubscriber solaceSubscriber) {
@@ -68,7 +69,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
                 cachedJSONDecoders.put(mopMessageDecoder, messageClass);
             }
 
-            String receivedClassName = messageClass.getSimpleName();
+            String receivedClassName = messageClass.getRawClass().getSimpleName();
 
             if ("ScanCommandMessage" .equals(receivedClassName) || "ScanDataImportMessage" .equals(receivedClassName)) {
                 Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);

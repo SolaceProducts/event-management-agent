@@ -90,7 +90,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- code generation form OpenAPI SEMPv2 -->
+                <!-- code generation from OpenAPI SEMPv2 -->
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <!-- required >6.5.0 due to changes in codegen from 6.4.0->6.5.0-->
@@ -139,10 +139,10 @@
                 </executions>
                 <configuration>
                     <!--
-                       Modify APiCLient.java code - Spring Rest template by default uses a HTTP client that doesn't support PATCH.
+                       Modify APIClient.java code - Spring Rest template by default uses a HTTP client that doesn't support PATCH.
                        Replace use of the standard request factory with HttpComponentsClientHttpRequestFactory
                     -->
-                    <file>src/main/java/com/solace/maas/ep/event/management/agent/plugin/solaceconfig/processor/semp/invoker/ApiClient.java</file>
+                    <file>${project.basedir}/src/main/java/com/solace/maas/ep/event/management/agent/plugin/solaceconfig/processor/semp/invoker/ApiClient.java</file>
                     <replacements>
                         <replacement>
                             <token>restTemplate.getRequestFactory</token>

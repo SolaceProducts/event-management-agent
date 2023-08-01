@@ -6,7 +6,6 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
-import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
 import com.solace.maas.ep.event.management.agent.plugin.task.TaskResult;
 import lombok.Data;
 
@@ -42,5 +41,10 @@ public class ConfigurationTaskResultMessage extends MOPMessage {
         this.taskResults = taskResults;
         this.destinations = destinations;
         this.configType = configType;
+    }
+
+    @Override
+    public String toLog() {
+        return null;
     }
 }

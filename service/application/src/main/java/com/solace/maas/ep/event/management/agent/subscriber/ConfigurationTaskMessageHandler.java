@@ -59,6 +59,7 @@ public class ConfigurationTaskMessageHandler  extends SolaceMessageHandler<Confi
                 .destinations(configDestinations)
                 .build();
         log.info("Received scan request {}. Request details: {}", configurationTaskBO.getConfigType(), configurationTaskBO.getId());
-        boolean status = this.configurationTaskManager.execute(configurationTaskBO);
+        boolean status = configurationTaskManager.execute(configurationTaskBO);
+        log.trace("Received status {} from execute", status);
     }
 }

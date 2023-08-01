@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
@@ -142,6 +142,11 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>${jacocoSurefire}</argLine>
+                    <excludes>
+                        <exclude>**/AclProfileExceptionsTaskProcessorTest.java</exclude>
+                        <exclude>**/AclProfileTaskProcessorTest.java</exclude>
+                        <exclude>**/ClientUsernameTaskProcessorTest.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

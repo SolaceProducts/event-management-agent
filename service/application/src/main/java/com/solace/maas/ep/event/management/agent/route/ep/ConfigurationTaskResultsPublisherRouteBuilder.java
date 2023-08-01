@@ -1,9 +1,6 @@
 package com.solace.maas.ep.event.management.agent.route.ep;
 
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.processor.ConfigurationTaskResultProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanStatusOverAllProcessor;
-import com.solace.maas.ep.event.management.agent.processor.ScanStatusPerRouteProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Profile;

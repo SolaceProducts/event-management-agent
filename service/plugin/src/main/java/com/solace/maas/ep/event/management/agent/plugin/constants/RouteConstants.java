@@ -9,6 +9,7 @@ public class RouteConstants {
 
     public static final String SCAN_ID = "SCAN_ID";
 
+    public static final String TRACE_ID = "TRACE_ID";
 
     public static final String SCAN_TYPE = "SCAN_TYPE";
 
@@ -31,7 +32,6 @@ public class RouteConstants {
     public static final String SCAN_DATA_STATUS_MESSAGE = "SCAN_DATA_STATUS_MESSAGE";
 
     public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
-    public static final String IMPORT_ID = "IMPORT_ID";
 
     // configuration tasks
     public static final String CONFIG_TASK_ID = "CONFIG_TASK_ID";

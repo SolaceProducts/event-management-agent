@@ -1,14 +1,11 @@
 package com.solace.maas.ep.event.management.agent.configurationTaskManager;
 
-import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.configurationTaskManager.model.ConfigurationTaskBO;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
-import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.service.ConfigurationTaskService;
-import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +20,11 @@ import java.util.stream.Collectors;
 @Service
 public class ConfigurationTaskManager {
 
-    private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ConfigurationTaskService configurationTaskService;
-    private final String runtimeAgentId;
 
     @Autowired
-    public ConfigurationTaskManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                                    ConfigurationTaskService configurationTaskService, EventPortalProperties eventPortalProperties) {
-        this.messagingServiceDelegateService = messagingServiceDelegateService;
+    public ConfigurationTaskManager(ConfigurationTaskService configurationTaskService) {
         this.configurationTaskService = configurationTaskService;
-        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     public boolean execute(ConfigurationTaskBO configurationTaskCommandBO) {
@@ -43,8 +35,6 @@ public class ConfigurationTaskManager {
         MDC.put(RouteConstants.CONFIG_TASK_ID, commandId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
-
-        MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
         MessagingServiceRouteDelegate configurationDelegate =
                 PluginLoader.findPlugin(configurationTaskCommandBO.getConfigType());
@@ -79,15 +69,11 @@ public class ConfigurationTaskManager {
                         .collect(Collectors.toUnmodifiableList());
 
 
-        return this.configurationTaskService.execute(
+        return configurationTaskService.execute(
                 routes,
                 groupId,
                 configurationTaskCommandBO.getId(),
                 configurationTaskCommandBO.getTaskConfigs()
         );
-    }
-
-    private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {
-        return messagingServiceDelegateService.getMessagingServiceById(messagingServiceId);
     }
 }

@@ -4,7 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.task.TaskConfig;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ParseClassNameTest {
 
