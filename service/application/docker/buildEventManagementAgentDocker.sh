@@ -115,4 +115,4 @@ docker build docker -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAG
 cd ${script_dir}
 
 # cleanup
-rm event-management-agent-${JAR_VERSION}.jar
+#rm event-management-agent-${JAR_VERSION}.jar
