@@ -132,4 +132,4 @@ jobs:
           export image_tag=${{ github.event.inputs.releaseVersion }}
           export chart_version="n/a"
           export sha=${{ github.sha }}
-          ./release_scripts/update_release_manifest.sh          
+          ./.github/workflows/release_scripts/update_release_manifest.sh          
