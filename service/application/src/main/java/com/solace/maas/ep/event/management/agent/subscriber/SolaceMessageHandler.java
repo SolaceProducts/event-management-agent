@@ -69,7 +69,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
                 cachedJSONDecoders.put(mopMessageDecoder, messageClass);
             }
 
-            String receivedClassName = messageClass.getClass().getSimpleName();
+            String receivedClassName = messageClass.getRawClass().getSimpleName();
 
             if ("ScanCommandMessage" .equals(receivedClassName) || "ScanDataImportMessage" .equals(receivedClassName)) {
                 Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
