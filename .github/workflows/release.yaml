@@ -122,3 +122,14 @@ jobs:
           aws ecr put-image --repository-name ${{ github.event.repository.name }} \
             --image-tag ${{ github.event.inputs.releaseVersion }} \
             --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      - name: Update Release Manifest DB
+        run: | 
+          export squad="event-portal"
+          export repository="event-management-agent"
+          export release_tag=production
+          export version=${{ github.event.inputs.releaseVersion }}
+          export release_version=${{ github.event.inputs.releaseVersion }}
+          export image_tag=${{ github.event.inputs.releaseVersion }}
+          export chart_version="n/a"
+          export sha=${{ github.sha }}
+          ./.github/workflows/release_scripts/update_release_manifest.sh          
