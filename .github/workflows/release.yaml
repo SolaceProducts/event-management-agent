@@ -131,5 +131,5 @@ jobs:
           export release_version=${{ github.event.inputs.releaseVersion }}
           export image_tag=${{ github.event.inputs.releaseVersion }}
           export chart_version="n/a"
-          export sha=${{ env.MAAS_COMMIT_ID }}
+          export sha=${{ github.sha }}
           ./release_scripts/update_release_manifest.sh          
