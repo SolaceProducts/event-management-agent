@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.route.ep.exceptions;
+package com.solace.maas.ep.event.management.agent.plugin.route.exceptions;
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 

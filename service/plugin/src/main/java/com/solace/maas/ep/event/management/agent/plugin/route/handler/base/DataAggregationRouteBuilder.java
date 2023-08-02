@@ -3,7 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.AggregationStrategy;
@@ -35,8 +35,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
      */
     public DataAggregationRouteBuilder(Processor processor, String routeId, String routeType, RouteManager routeManager,
                                        AggregationStrategy aggregationStrategy, Integer aggregationSize,
-                                       MDCProcessor mdcProcessor, EmptyScanEntityProcessor emptyScanEntityProcessor) {
-        super(processor, routeId, routeType, routeManager, mdcProcessor, emptyScanEntityProcessor);
+                                       MDCProcessor mdcProcessor, ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
+        super(processor, routeId, routeType, routeManager, mdcProcessor, scanTypeDescendentsProcessor);
 
         this.aggregationStrategy = aggregationStrategy;
         this.aggregationSize = aggregationSize;
@@ -48,7 +48,10 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
      */
     @SuppressWarnings("CPD-START")
     @Override
-    public void configure() {
+    public void configure() throws Exception {
+
+        super.exceptionHandling();
+
         interceptFrom()
                 .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
                 .process(mdcProcessor);
@@ -84,7 +87,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .process(processor)
                 // Checking for empty scan types.
                 .choice().when(simple("${body.size} == 0"))
-                .process(emptyScanEntityProcessor)
+                .setHeader(RouteConstants.IS_EMPTY_SCAN_TYPES, constant(true))
+                .process(scanTypeDescendentsProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
                 .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
                 .end()
