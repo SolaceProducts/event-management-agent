@@ -78,9 +78,6 @@ parse_params() {
 parse_params "$@"
 setup_colors
 
-# If the base docker container tag isn't set, use the same tag that was
-# provided for the event-management-agent.
-
 msg "${GREEN}Building image:${YELLOW} event-management-agent:${IMAGE_TAG}\n${NOFORMAT}"
 
 export BASE_IMAGE=eclipse-temurin:11.0.19_7-jdk
