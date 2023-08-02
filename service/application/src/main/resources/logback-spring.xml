@@ -35,7 +35,7 @@
     </appender>
     <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
 
-    <springProfile name="default,mysql,mysql-dev,DEV,TEST,greg1,gameday">vi d
+    <springProfile name="default,mysql,mysql-dev,DEV,TEST">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RollingFile"/>
