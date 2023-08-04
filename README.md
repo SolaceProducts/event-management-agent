@@ -1,14 +1,14 @@
 # Event Management Agent
 
-The Event Management Agent is a tool for architects and developers working with Event-Driven Architectures (EDAs) to discover event streams flowing through event brokers as well as the related broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
+The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
 
-* As the Event Management Agent component of the Solace’s PubSub+ Event Portal product to:
+* As the Event Management Agent component of Solace PubSub+ Cloud Event Portal to:
     - discover runtime event data from event brokers and schema registries
-    - populate the Event Portal with the discovered runtime data to enable the management and reuse of EDA assets
-    - audit the runtime data and flag discrepancies between the runtime and the design time intent for event data governance purposes, and ensure that the runtime and design time configurations stay in-sync
+    - populate Event Portal with the discovered runtime data to enable the management and reuse of EDA assets
+    - audit the runtime data and flag discrepancies between the runtime and the design time intent for event data governance purposes, and to ensure that the runtime and design time configurations stay in-sync
 * As a standalone tool that discovers runtime event data from event or message brokers and schema registries.
 
-Our plan is to open source the Event Management Agent to enable architects and developers to contribute to it as well a to build new plugins so that:
+Our plan is to open source the Event Management Agent to enable architects and developers to contribute to it as well as to build new plugins so that:
 
 * the agent can discover data from different broker types
 * existing plugins can be extended to discover additional data
@@ -54,7 +54,7 @@ The Event Management Agent was tested to run with
 
 ## Downloading the Event Management Agent
 
-The Event Management Agent must be installed in a location that have access to your event brokers and schema registries.
+The Event Management Agent must be installed in a location that has access to your event brokers and schema registries.
 
 Pull the Event Management Agent Docker image from Docker Hub:
 ```
@@ -64,7 +64,7 @@ docker pull solace/event-management-agent
 ## Generating the Event Management Agent connection file
 
 * Log in the Solace Cloud Console: https://console.solace.cloud/login/
-* Follow the steps for generating the connection file described in the Solace Cloud documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
+* Follow the steps for generating the connection file described in the Solace documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
     - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variable names that will contain the passwords when generating the connection file.
 * Download the connection file next to the Event Management Agent
 * Create the environment variables containing the actual passwords you provided in place of the passwords when generating the connection file
@@ -104,7 +104,7 @@ The Event Management Agent must have access to your event brokers and schema reg
 docker pull solace/event-management-agent
 ```
 
-* clone the Event Management Agent Github repository
+* clone the Event Management Agent GitHub repository
 ```
 git clone https://github.com/SolaceLabs/event-management-agent.git
 cd event-management-agent
@@ -199,7 +199,7 @@ curl -X 'POST' \
 * Java 11 (JDK 11.0.14+)
 * Maven
 
-## Cloning the Github Event Management Agent repository
+## Cloning the GitHub Event Management Agent repository
 
 ```
 git@github.com:SolaceLabs/event-management-agent.git
