@@ -14,8 +14,6 @@ Our plan is to open source the Event Management Agent to enable architects and d
 * existing plugins can be extended to discover additional data
 * EDA data can be discovered from other systems, e.g. schemas from schema registries
 
-At this stage (August 2023), the Event Management Agent is still in an active development phase.
-
 ## Available today:
 
 * Users can discover Solace PubSub+ and Apache and Confluent Kafka brokers event flow data:
