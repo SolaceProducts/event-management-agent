@@ -234,7 +234,7 @@ The Event Management Agent is ready.
 
 The Event Management Agent comes with the following event or message broker plugins included:
 
-* Apache Kafka
+* Apache and Confluent Kafka
 * Solace PubSub+
 * Confluent Schema Registry
 * MSK
@@ -251,7 +251,7 @@ aws_access_key_id = <aws_access_key>
 aws_secret_access_key = <aws_secret_key>
 ```
 
-Can alternatively make these environment variables (these will also override the credentials file if present)
+Alternatively, you can make these environment variables (these will also override the credentials file if present)
 
 ```
 export AWS_ACCESS_KEY_ID=<aws_access_key>
