@@ -1,5 +1,7 @@
 package com.solace.maas.ep.event.management.agent.route.ep;
 
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AbstractRouteBuilder;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -11,8 +13,9 @@ public class ScanDataPublisherRouteBuilder extends AbstractRouteBuilder {
     private final ScanDataProcessor processor;
 
     @Autowired
-    public ScanDataPublisherRouteBuilder(ScanDataProcessor processor) {
-        super();
+    public ScanDataPublisherRouteBuilder(ScanDataProcessor processor,
+                                         ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
+        super(scanTypeDescendentsProcessor);
         this.processor = processor;
     }
 

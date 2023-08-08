@@ -3,12 +3,11 @@ package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
-import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.slf4j.MDC;
 
@@ -21,7 +20,7 @@ import java.util.Objects;
  */
 @ExcludeFromJacocoGeneratedReport
 @SuppressWarnings("CPD-START")
-public class DataPublisherRouteBuilder extends RouteBuilder {
+public class DataPublisherRouteBuilder extends AbstractRouteBuilder {
     protected final Processor processor;
 
     protected final String routeId;
@@ -32,7 +31,7 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
 
     protected final MDCProcessor mdcProcessor;
 
-    protected final EmptyScanEntityProcessor emptyScanEntityProcessor;
+    protected final ScanTypeDescendentsProcessor scanTypeDescendentsProcessor;
 
     /**
      * @param processor    The Processor handling the Data Collection for a Scan.
@@ -43,15 +42,15 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
     public DataPublisherRouteBuilder(Processor processor, String routeId,
                                      String routeType, RouteManager routeManager,
                                      MDCProcessor mdcProcessor,
-                                     EmptyScanEntityProcessor emptyScanEntityProcessor) {
-        super();
+                                     ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
+        super(scanTypeDescendentsProcessor);
 
         this.processor = processor;
         this.routeId = routeId;
         this.routeType = routeType;
         this.routeManager = routeManager;
         this.mdcProcessor = mdcProcessor;
-        this.emptyScanEntityProcessor = emptyScanEntityProcessor;
+        this.scanTypeDescendentsProcessor = scanTypeDescendentsProcessor;
     }
 
     /**
@@ -59,7 +58,10 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
      */
     @SuppressWarnings("CPD-START")
     @Override
-    public void configure() {
+    public void configure() throws Exception {
+
+        super.configure();
+
         interceptFrom()
                 .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
                 .process(mdcProcessor);
@@ -82,7 +84,8 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
                 // Checking for empty scan types. In case an empty scan type is encountered, the recipients are not injected. Rather,
                 // they are retrieved from the empty scan recipients store and a complete status message is sent to each recipient.
                 .choice().when(simple("${body.size} == 0"))
-                .process(emptyScanEntityProcessor)
+                .setHeader(RouteConstants.IS_EMPTY_SCAN_TYPES, constant(true))
+                .process(scanTypeDescendentsProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
                 .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
                 .end()
@@ -131,5 +134,9 @@ public class DataPublisherRouteBuilder extends RouteBuilder {
         }
 
         return String.join(";", destinations);
+    }
+
+    protected void exceptionHandling() throws Exception {
+        super.configure();
     }
 }

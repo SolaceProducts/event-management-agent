@@ -1,6 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.route.handler;
 
-import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
@@ -17,8 +17,8 @@ public class SolaceDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
      */
     @Autowired
     public SolaceDataPublisherRouteBuilder(SolaceQueueListingProcessor processor, RouteManager routeManager,
-                                           MDCProcessor mdcProcessor, EmptyScanEntityProcessor emptyScanEntityProcessor) {
+                                           MDCProcessor mdcProcessor, ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
         super(processor, SolaceRouteId.SOLACE_QUEUE_LISTING.label, SolaceRouteType.SOLACE_QUEUE_LISTING.label,
-                routeManager, mdcProcessor, emptyScanEntityProcessor);
+                routeManager, mdcProcessor, scanTypeDescendentsProcessor);
     }
 }

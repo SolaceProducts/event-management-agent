@@ -5,7 +5,7 @@ import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClie
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConnectionConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnection;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnectionConfig;
-import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -75,8 +75,8 @@ public class KafkaTestConfig {
 
     @Bean
     @Primary
-    public EmptyScanEntityProcessor emptyScanEntityProcessor() {
-        return mock(EmptyScanEntityProcessor.class);
+    public ScanTypeDescendentsProcessor emptyScanEntityProcessor() {
+        return mock(ScanTypeDescendentsProcessor.class);
     }
 
     @Bean
