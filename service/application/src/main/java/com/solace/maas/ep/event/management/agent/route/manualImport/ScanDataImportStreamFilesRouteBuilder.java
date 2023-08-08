@@ -4,7 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistScanFilesProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportStatusProcessor;
 import com.solace.maas.ep.event.management.agent.route.ep.aggregation.FileParseAggregationStrategy;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptionhandlers.ScanDataImportExceptionHandler;
+import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.ScanDataImportExceptionHandler;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

@@ -19,7 +19,6 @@ Available options:
 -h, --help      Print this help and exit
 -v, --verbose   Print script debug info
 -t, --tag      The docker container tag
--bt, --basetag     The docker container tag of the base image
 EOF
   exit
 }
@@ -62,10 +61,6 @@ parse_params() {
       IMAGE_TAG="${2-}"
       shift
       ;;
-    -bt | --basetag) # example named parameter
-      BASE_IMAGE_TAG="${2-}"
-      shift
-      ;;
     -?*) die "Unknown option: $1" ;;
     *) break ;;
     esac
@@ -76,7 +71,6 @@ parse_params() {
 
   # check required params and arguments
   [[ -z "${IMAGE_TAG-}" ]] && die "Missing required parameter: tag"
-  #[[ ${#args[@]} -eq 0 ]] && die "Missing script arguments"
 
   return 0
 }
@@ -84,24 +78,9 @@ parse_params() {
 parse_params "$@"
 setup_colors
 
-# If the base docker container tag isn't set, use the same tag that was
-# provided for the event-management-agent.
-
-[[ -z "${BASE_IMAGE_TAG-}" ]] && BASE_IMAGE_TAG=${IMAGE_TAG}
-
-if [[ "$(docker images -q event-management-agent-base:${BASE_IMAGE_TAG} 2> /dev/null)" == "" ]]; then
-  # do something
-  msg "${RED}The base image does not exist, building\n${NOFORMAT}"
-  cd base-image
-  ./buildBaseImage.sh ${BASE_IMAGE_TAG}
-  cd ${script_dir}
-else
-  msg "${GREEN}Base image found, using:${YELLOW} event-management-agent-base:${BASE_IMAGE_TAG}\n${NOFORMAT}"
-fi
-
 msg "${GREEN}Building image:${YELLOW} event-management-agent:${IMAGE_TAG}\n${NOFORMAT}"
 
-export BASE_IMAGE=event-management-agent-base:${BASE_IMAGE_TAG}
+export BASE_IMAGE=eclipse-temurin:11.0.19_7-jdk-alpine
 export GITHASH=$(git rev-parse HEAD)
 export GITBRANCH=$(git branch --show-current)
 export BUILD_TIMESTAMP=$(date -u)

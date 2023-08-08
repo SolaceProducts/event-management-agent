@@ -3,7 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.processor.schema.ConfluentSchemaRegistrySchemaProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.route.enumeration.ConfluentSchemaRegistryRouteId;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.route.enumeration.ConfluentSchemaRegistryRouteType;
-import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.RouteManager;
@@ -19,9 +19,9 @@ public class ConfluentSchemaRegistryDataPublisherRouteBuilder extends DataPublis
     public ConfluentSchemaRegistryDataPublisherRouteBuilder(ConfluentSchemaRegistrySchemaProcessor processor,
                                                             RouteManager routeManager,
                                                             MDCProcessor mdcProcessor,
-                                                            EmptyScanEntityProcessor emptyScanEntityProcessor) {
+                                                            ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
         super(processor, ConfluentSchemaRegistryRouteId.CONFLUENT_SCHEMA_REGISTRY_SCHEMA.label,
                 ConfluentSchemaRegistryRouteType.CONFLUENT_SCHEMA_REGISTRY_SCHEMA.label,
-                routeManager, mdcProcessor, emptyScanEntityProcessor);
+                routeManager, mdcProcessor, scanTypeDescendentsProcessor);
     }
 }

@@ -4,7 +4,8 @@ import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
 import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
-import com.solace.maas.ep.event.management.agent.route.ep.exceptions.ScanStatusException;
+import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanOverallStatusException;
+import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,7 @@ public class ScanStatusPublisher {
         try {
             solacePublisher.publish(message, topicString);
         } catch (Exception e) {
-            throw new ScanStatusException("Over all status exception: " + e.getMessage(),
+            throw new ScanOverallStatusException("Over all status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Overall status", Arrays.asList(scanType.split(",")), ScanStatus.valueOf(status));
         }
     }

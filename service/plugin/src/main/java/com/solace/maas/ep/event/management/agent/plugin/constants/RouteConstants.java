@@ -32,6 +32,8 @@ public class RouteConstants {
     public static final String SCAN_DATA_STATUS_MESSAGE = "SCAN_DATA_STATUS_MESSAGE";
 
     public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
+  
+    public static final String IS_EMPTY_SCAN_TYPES = "IS_EMPTY_SCAN_TYPES";
 
     // configuration tasks
     public static final String CONFIG_TASK_ID = "CONFIG_TASK_ID";

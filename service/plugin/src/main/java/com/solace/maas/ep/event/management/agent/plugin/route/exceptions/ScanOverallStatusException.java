@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.route.ep.exceptions;
+package com.solace.maas.ep.event.management.agent.plugin.route.exceptions;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 @ExcludeFromJacocoGeneratedReport
-public class ScanStatusException extends ClientException {
+public class ScanOverallStatusException extends ClientException {
     private final String statusType;
     private final List<String> scanTypes;
     private final ScanStatus scanStatus;
 
-    public ScanStatusException(
+    public ScanOverallStatusException(
             String message, Map<String, List<Exception>> validationDetails,
             String statusType, List<String> scanTypes, ScanStatus scanStatus) {
         super(message, validationDetails);

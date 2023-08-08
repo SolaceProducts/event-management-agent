@@ -1,6 +1,8 @@
 package com.solace.maas.ep.event.management.agent.route.ep;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AbstractRouteBuilder;
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusOverAllProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusPerRouteProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +22,9 @@ public class ScanStatusPublisherRouteBuilder extends AbstractRouteBuilder {
 
     @Autowired
     public ScanStatusPublisherRouteBuilder(ScanStatusOverAllProcessor scanStatusOverallProcessor,
-                                           ScanStatusPerRouteProcessor scanStatusPerRouteProcessor) {
-        super();
+                                           ScanStatusPerRouteProcessor scanStatusPerRouteProcessor,
+                                           ScanTypeDescendentsProcessor scanTypeDescendentsProcessor) {
+        super(scanTypeDescendentsProcessor);
         this.scanStatusOverallProcessor = scanStatusOverallProcessor;
         this.scanStatusPerRouteProcessor = scanStatusPerRouteProcessor;
     }

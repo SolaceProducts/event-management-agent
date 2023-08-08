@@ -1,6 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler;
 
-import com.solace.maas.ep.event.management.agent.plugin.processor.EmptyScanEntityProcessor;
+import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.processor.logging.MDCProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.DataPublisherRouteBuilder;
 import lombok.AllArgsConstructor;
@@ -92,13 +92,13 @@ public class DataPublisherRouteBuilderTests {
         @Primary
         public static RoutesBuilder createRouteBuilder() {
             MDCProcessor mdcProcessor = mock(MDCProcessor.class);
-            EmptyScanEntityProcessor emptyScanEntityProcessor = mock(EmptyScanEntityProcessor.class);
+            ScanTypeDescendentsProcessor scanTypeDescendentsProcessor = mock(ScanTypeDescendentsProcessor.class);
 
             return new DataPublisherRouteBuilder(exchange -> {
                 List<TestEvent> testData = generateTestData();
 
                 exchange.getIn().setBody(testData);
-            }, "dataPublisherRoute", "topicListing", null, mdcProcessor, emptyScanEntityProcessor);
+            }, "dataPublisherRoute", "topicListing", null, mdcProcessor, scanTypeDescendentsProcessor);
         }
     }
 }
