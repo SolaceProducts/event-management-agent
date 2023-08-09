@@ -14,6 +14,7 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatu
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
@@ -23,6 +24,7 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +43,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
@@ -62,6 +67,9 @@ public class ScanServiceTests {
 
     @Mock
     private ScanTypeRepository scanTypeRepository;
+
+    @Mock
+    private ScanStatusRepository scanStatusRepository;
 
     @Mock
     private ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
@@ -115,6 +123,7 @@ public class ScanServiceTests {
         RouteEntity returnedEntity = scanServiceHelper.buildRouteEntity(routeId, "", true);
         ScanEntity scanEntity = scanServiceHelper.buildScanEntity("123", "emaId1", List.of(returnedEntity), null);
         ScanTypeEntity scanType = scanServiceHelper.buildScanTypeEntity("scan1", "scanType", scanEntity, null);
+        ScanStatusEntity scanStatus = scanServiceHelper.buildScanStatusEntity("scanstatus1", "dummyStatus");
 
         when(idGenerator.generateRandomUniqueId())
                 .thenReturn("abc123");
@@ -132,6 +141,9 @@ public class ScanServiceTests {
                 .thenReturn(scanEntity);
         when(scanTypeRepository.save(scanType))
                 .thenReturn(scanType);
+        when(scanStatusRepository.save(scanStatus))
+                .thenReturn(scanStatus);
+
         when(scanRecipientHierarchyRepository.save(any(ScanRecipientHierarchyEntity.class)))
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
 
@@ -141,6 +153,12 @@ public class ScanServiceTests {
                 "traceId",
                 mock(MessagingServiceEntity.class),
                 "runtimeAgent1");
+
+        ArgumentCaptor<ScanStatusEntity> scanCaptor = ArgumentCaptor.forClass(ScanStatusEntity.class);
+        verify(scanStatusRepository, times(8)).save(scanCaptor.capture());
+
+        // Assert that the scanStatus is initialized to "INITIATED" for all scan types
+        scanCaptor.getAllValues().stream().forEach(entity -> assertThat(entity.getStatus().equals(ScanStatus.INITIATED.name())));
 
         assertThatNoException();
     }
@@ -293,7 +311,7 @@ public class ScanServiceTests {
     public void testSendScanStatus() {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanTypeRepository.class),
-                mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
+                mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
         service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
