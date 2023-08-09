@@ -8,9 +8,9 @@
     <name>Solace Event Management Agent - Confluent Schema Registry Plugin</name>
     <description>Solace Event Management Agent - Confluent Schema Registry Plugin</description>
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <spring-boot-starter-test.version>2.7.6</spring-boot-starter-test.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <spring-boot-starter-test.version>3.1.2</spring-boot-starter-test.version>
         <httpclient.version>4.5.13</httpclient.version>
         <mockwebserver.version>4.9.0</mockwebserver.version>
         <jupiter.version>5.3.1</jupiter.version>

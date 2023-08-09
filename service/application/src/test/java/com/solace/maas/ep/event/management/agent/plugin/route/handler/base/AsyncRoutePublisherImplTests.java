@@ -44,7 +44,7 @@ public class AsyncRoutePublisherImplTests {
     public void testStart() {
         AsyncWrapper asyncWrapper = mock(AsyncWrapper.class);
 
-        Exchange exchange = ExchangeBuilder.anExchange(mock(ExtendedCamelContext.class))
+        Exchange exchange = ExchangeBuilder.anExchange((CamelContext) mock(ExtendedCamelContext.class))
                 .withHeader(RouteConstants.SCAN_ID, "scan1")
                 .withHeader(RouteConstants.SCAN_TYPE, "testScan")
                 .build();
@@ -70,12 +70,12 @@ public class AsyncRoutePublisherImplTests {
     @Test
     @SneakyThrows
     public void testSendMessage() {
-        Exchange exchange = ExchangeBuilder.anExchange(mock(ExtendedCamelContext.class))
+        Exchange exchange = ExchangeBuilder.anExchange((CamelContext) mock(ExtendedCamelContext.class))
                 .withHeader(RouteConstants.SCAN_ID, "scan1")
                 .withHeader(RouteConstants.SCAN_TYPE, "testScan")
                 .build();
 
-        try (CamelContext extendedCamelContext = mock(ExtendedCamelContext.class)) {
+        try (CamelContext extendedCamelContext = (CamelContext) mock(ExtendedCamelContext.class)) {
             Exchange newExchange = mock(Exchange.class);
             Message message = mock(Message.class);
 

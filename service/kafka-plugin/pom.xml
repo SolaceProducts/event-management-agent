@@ -8,14 +8,14 @@
     <name>Solace Event Management Agent - Kafka Plugin</name>
     <description>Solace Event Management Agent - Kafka Plugin</description>
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <spring-kafka.version>2.9.0</spring-kafka.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <spring-kafka.version>3.0.9</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <spring-boot-starter-test.vresion>2.7.6</spring-boot-starter-test.vresion>
+        <spring-boot-starter-test.version>3.1.2</spring-boot-starter-test.version>
         <commons-collections4.vresion>4.4</commons-collections4.vresion>
         <jupiter.version>5.3.1</jupiter.version>
-        <camel.version>3.16.0</camel.version>
+        <camel.version>4.0.0-RC2</camel.version>
         <aws-msk-iam-auth.version>1.1.5</aws-msk-iam-auth.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-starter-test.vresion}</version>
+            <version>${spring-boot-starter-test.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.11</version>
+        <version>3.1.2</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
@@ -23,14 +23,14 @@
         <module>application</module>
     </modules>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.git.directory>${project.basedir}/../.git</project.git.directory>
         <dockerTimestamp>${maven.build.timestamp}</dockerTimestamp>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <docker.parent.version>1.2.1</docker.parent.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.phase>validate</checkstyle.phase>
-        <pmd.plugin.version>3.13.0</pmd.plugin.version>
+        <pmd.plugin.version>3.21.0</pmd.plugin.version>
         <pmd.phase>validate</pmd.phase>
         <spotbugs.plugin.version>4.7.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
@@ -39,7 +39,8 @@
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
-        <camel.version>3.16.0</camel.version>
+        <camel.version>4.0.0-RC2</camel.version>
+        <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
 
     <dependencyManagement>

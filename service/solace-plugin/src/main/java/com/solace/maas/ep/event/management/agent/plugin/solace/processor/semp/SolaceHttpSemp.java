@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+
 @ExcludeFromJacocoGeneratedReport
 @SuppressWarnings("CPD-START")
 @Slf4j
@@ -95,18 +98,17 @@ public class SolaceHttpSemp {
         try {
             getSempListRequest(sempObject, createUriBuilderFunction(uriPath, substitutionMap, selectFields));
         } catch (WebClientResponseException ex) {
-            switch (ex.getStatusCode()) {
-                case BAD_REQUEST:
-                    log.error("Error during SEMP Data Collection. Invalid path to data." +
-                            " Check that the SEMP URL and protocol are correct.", ex);
-                    throw new SempException(ex);
-                case UNAUTHORIZED:
-                    log.error("Error during SEMP Data Collection. Could not authenticate with the server." +
-                            "Check that the SEMP username and password are correct.", ex);
-                    throw new SempException(ex);
-                default:
-                    log.error("Error during SEMP Data Collection.", ex);
-                    throw new SempException(ex);
+            if (ex.getStatusCode() == BAD_REQUEST) {
+                log.error("Error during SEMP Data Collection. Invalid path to data." +
+                        " Check that the SEMP URL and protocol are correct.", ex);
+                throw new SempException(ex);
+            } else if (ex.getStatusCode() == UNAUTHORIZED) {
+                log.error("Error during SEMP Data Collection. Could not authenticate with the server." +
+                        "Check that the SEMP username and password are correct.", ex);
+                throw new SempException(ex);
+            } else {
+                log.error("Error during SEMP Data Collection.", ex);
+                throw new SempException(ex);
             }
         } catch (IOException ioException) {
             log.error("Error during SEMP Data Collection. The format of the collected data is unexpected.", ioException);
