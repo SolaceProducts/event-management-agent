@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 @Slf4j
+@SuppressWarnings("PMD.CloseResource")
 public class AsyncRoutePublisherImplTests {
     CamelContext camelContext = mock(CamelContext.class);
 
@@ -44,7 +45,10 @@ public class AsyncRoutePublisherImplTests {
     public void testStart() {
         AsyncWrapper asyncWrapper = mock(AsyncWrapper.class);
 
-        Exchange exchange = ExchangeBuilder.anExchange((CamelContext) mock(ExtendedCamelContext.class))
+        CamelContext cc = mock(CamelContext.class);
+        when(cc.getCamelContextExtension())
+                .thenReturn(mock(ExtendedCamelContext.class));
+        Exchange exchange = ExchangeBuilder.anExchange(cc)
                 .withHeader(RouteConstants.SCAN_ID, "scan1")
                 .withHeader(RouteConstants.SCAN_TYPE, "testScan")
                 .build();
@@ -70,17 +74,24 @@ public class AsyncRoutePublisherImplTests {
     @Test
     @SneakyThrows
     public void testSendMessage() {
-        Exchange exchange = ExchangeBuilder.anExchange((CamelContext) mock(ExtendedCamelContext.class))
+        CamelContext cc = mock(CamelContext.class);
+        when(cc.getCamelContextExtension())
+                .thenReturn(mock(ExtendedCamelContext.class));
+
+        Exchange exchange = ExchangeBuilder.anExchange(cc)
                 .withHeader(RouteConstants.SCAN_ID, "scan1")
                 .withHeader(RouteConstants.SCAN_TYPE, "testScan")
                 .build();
 
-        try (CamelContext extendedCamelContext = (CamelContext) mock(ExtendedCamelContext.class)) {
+        try (CamelContext camelContext = mock(CamelContext.class)) {
+            when(camelContext.getCamelContextExtension())
+                    .thenReturn(mock(ExtendedCamelContext.class));
+
             Exchange newExchange = mock(Exchange.class);
             Message message = mock(Message.class);
 
             when(camelReactiveStreamsService.getCamelContext())
-                    .thenReturn(extendedCamelContext);
+                    .thenReturn(camelContext);
 
             try (MockedStatic<CamelReactiveStreams> reactiveStreams = mockStatic(CamelReactiveStreams.class)) {
                 reactiveStreams.when(() -> CamelReactiveStreams.get(camelContext))
@@ -102,6 +113,7 @@ public class AsyncRoutePublisherImplTests {
                 asyncRoutePublisher.sendMesage("test", exchange);
             }
         }
+
         assertThatNoException();
     }
 }
