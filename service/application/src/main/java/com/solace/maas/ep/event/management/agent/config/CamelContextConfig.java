@@ -14,6 +14,7 @@ public class CamelContextConfig {
             @Override
             public void beforeApplicationStart(CamelContext context) {
                 context.setUseMDCLogging(true);
+                context.setStreamCaching(false);
             }
 
             @Override
