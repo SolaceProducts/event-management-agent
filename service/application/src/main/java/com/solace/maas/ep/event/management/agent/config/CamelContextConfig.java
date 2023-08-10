@@ -14,9 +14,6 @@ public class CamelContextConfig {
             @Override
             public void beforeApplicationStart(CamelContext context) {
                 context.setUseMDCLogging(true);
-                // TODO: GREG fix this
-                //context.getCamelContextExtension()
-                //context.adapt(ExtendedCamelContext.class).setUnitOfWorkFactory(CustomUnitOfWork::new);
             }
 
             @Override
