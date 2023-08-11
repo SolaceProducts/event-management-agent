@@ -43,7 +43,6 @@ public class TestConfig {
     @Autowired
     ProducerTemplate producerTemplate;
 
-
     @Autowired
     private CamelContext camelContext;
 
