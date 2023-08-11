@@ -12,10 +12,12 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDesti
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanTypeBO;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
@@ -50,6 +52,8 @@ public class ScanService {
 
     private final ScanTypeRepository scanTypeRepository;
 
+    private final ScanStatusRepository scanStatusRepository;
+
     private final ScanRouteService scanRouteService;
 
     private final RouteService routeService;
@@ -60,12 +64,13 @@ public class ScanService {
 
     public ScanService(ScanRepository repository,
                        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
-                       ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
+                       ScanTypeRepository scanTypeRepository, ScanStatusRepository scanStatusRepository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
                        IDGenerator idGenerator) {
         this.repository = repository;
         this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
         this.scanTypeRepository = scanTypeRepository;
+        this.scanStatusRepository = scanStatusRepository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
@@ -219,6 +224,8 @@ public class ScanService {
     }
 
     private void setScanType(RouteBundle routeBundle, ScanEntity scanEntity) {
+
+
         ScanTypeEntity scanType = ScanTypeEntity.builder()
                 .id(idGenerator.generateRandomUniqueId())
                 .name(routeBundle.getScanType())
@@ -226,8 +233,20 @@ public class ScanService {
                 .build();
 
         scanTypeRepository.save(scanType);
+
+        setScanStatus(scanType);
     }
 
+    private void setScanStatus(ScanTypeEntity scanType) {
+        ScanStatusEntity scanStatus = ScanStatusEntity.builder()
+                .id(idGenerator.generateRandomUniqueId())
+                .status(ScanStatus.INITIATED.name())
+                .scanType(scanType)
+                .build();
+
+        scanStatusRepository.save(scanStatus);
+
+    }
     protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle) {
 
         for (RouteBundle recipient : routeBundle.getRecipients()) {
