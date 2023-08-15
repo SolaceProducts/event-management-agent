@@ -2,8 +2,10 @@ package com.solace.maas.ep.event.management.agent.plugin.solace.processor;
 
 import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
+import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempException;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -11,9 +13,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
@@ -133,6 +137,46 @@ public class SolaceSempClientTests {
         );
 
         assertEquals("Could not construct URI from worst url ever", exception.getMessage());
+    }
+
+    @Test
+    public void throwBadRequestExceptionWhileGettingQueues() {
+        WebClient mockWebClient = mock(WebClient.class);
+
+        when(mockWebClient.get()).thenThrow(new WebClientResponseException(HttpStatus.BAD_REQUEST.value(), "bad", null, null, null));
+
+        SempClient mockSempClient = SempClient.builder()
+                .connectionUrl("http://myHost:12345")
+                .webClient(mockWebClient)
+                .username("myUsername")
+                .password("myPassword")
+                .msgVpn("xyz")
+                .build();
+        SolaceHttpSemp semp = new SolaceHttpSemp(mockSempClient);
+        SempException ex = Assertions.assertThrows(SempException.class, () -> {
+            semp.getQueues();
+        });
+        assertEquals(400, ((WebClientResponseException) ex.getCause()).getStatusCode().value());
+    }
+
+    @Test
+    public void throwUnauthorizedExceptionWhileGettingQueues() {
+        WebClient mockWebClient = mock(WebClient.class);
+
+        when(mockWebClient.get()).thenThrow(new WebClientResponseException(HttpStatus.UNAUTHORIZED.value(), "bad", null, null, null));
+
+        SempClient mockSempClient = SempClient.builder()
+                .connectionUrl("http://myHost:12345")
+                .webClient(mockWebClient)
+                .username("myUsername")
+                .password("myPassword")
+                .msgVpn("xyz")
+                .build();
+        SolaceHttpSemp semp = new SolaceHttpSemp(mockSempClient);
+        SempException ex = Assertions.assertThrows(SempException.class, () -> {
+            semp.getQueues();
+        });
+        assertEquals(401, ((WebClientResponseException) ex.getCause()).getStatusCode().value());
     }
 
     private void mockHttp(WebClient webClient) {

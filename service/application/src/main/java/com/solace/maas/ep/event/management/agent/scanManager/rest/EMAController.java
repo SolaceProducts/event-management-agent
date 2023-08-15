@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 public interface EMAController {
 

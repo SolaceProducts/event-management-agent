@@ -60,7 +60,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
 
         try {
             Class messageClass = cachedJSONDecoders.get(mopMessageSubclass);
-            T message = null;
+            T message;
 
             if (messageClass == null) {
                 messageClass = Class.forName(mopMessageSubclass);

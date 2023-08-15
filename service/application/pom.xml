@@ -18,7 +18,7 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-cloud-starter-sleuth.version>3.1.5</spring-cloud-starter-sleuth.version>
         <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
-        <spring-kafka.version>2.9.0</spring-kafka.version>
+        <spring-kafka.version>3.0.9</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
     </properties>
     <repositories>
@@ -41,12 +41,12 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>9.0.75</version>
+            <version>10.1.11</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>2.7.12</version>
+            <version>3.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -89,10 +89,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
+            <version>${mockito-inline.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -109,6 +116,11 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
             <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-directvm-starter</artifactId>
+            <version>4.0.0-M2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -259,6 +271,10 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>${snakeyaml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
     </dependencies>
     <build>

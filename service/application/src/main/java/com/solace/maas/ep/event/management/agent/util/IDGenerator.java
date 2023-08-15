@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Random;

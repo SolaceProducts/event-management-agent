@@ -194,7 +194,7 @@ curl -X 'POST' \
 
 ## Prerequisites
 
-* Java 11 (JDK 11.0.14+)
+* Java 17 (JDK 17.0.8_7+)
 * Maven
 
 ## Cloning the GitHub Event Management Agent repository
