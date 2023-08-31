@@ -11,7 +11,7 @@ public interface LivenessController {
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "The Event Management Agent is alive."
+                            description = "The Event Management Agent is available."
                     )
             }
     )

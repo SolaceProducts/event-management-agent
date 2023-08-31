@@ -24,7 +24,7 @@ public class LivenessControllerTest {
                 controller.liveness();
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat("EMA is alive".equals(reply.getBody()));
+        assertThat("EMA is available to process requests".equals(reply.getBody()));
         assertThatNoException();
     }
 }

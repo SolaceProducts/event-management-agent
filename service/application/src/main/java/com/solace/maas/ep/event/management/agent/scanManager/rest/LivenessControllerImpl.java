@@ -19,6 +19,6 @@ public class LivenessControllerImpl implements LivenessController {
     @Override
     @GetMapping
     public ResponseEntity<String> liveness() {
-        return ResponseEntity.ok().body("EMA is alive");
+        return ResponseEntity.ok().body("EMA is available to process requests");
     }
 }
