@@ -18,7 +18,7 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-cloud-starter-sleuth.version>3.1.5</spring-cloud-starter-sleuth.version>
         <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
-        <spring-kafka.version>3.0.9</spring-kafka.version>
+        <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
     </properties>
     <repositories>
