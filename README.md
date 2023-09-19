@@ -79,6 +79,8 @@ Specify:
 docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml --env KAFKA_PASSWORD --name event-management-agent solace/event-management-agent:latest
 ```
 
+> **_NOTE:_**  Depending on your OS, the container may fail to start if your connection filename contains spaces, upper case or special characters. If you see such failures, make sure your filename is within quotes or that it does not contain upper case or special character or spaces.
+
 The Event Management Agent takes a couple of minutes to start. The Event Management Agent logs are available via Docker:
 
 ```
