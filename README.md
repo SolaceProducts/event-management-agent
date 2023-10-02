@@ -1,4 +1,4 @@
-# Event Management Agent (Test in SolaceProducts)
+# Event Management Agent
 
 The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
 
