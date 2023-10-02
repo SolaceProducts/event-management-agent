@@ -106,7 +106,7 @@ docker pull solace/event-management-agent
 
 * clone the Event Management Agent GitHub repository
 ```
-git clone https://github.com/SolaceLabs/event-management-agent.git
+git clone https://github.com/SolaceProducts/event-management-agent.git
 cd event-management-agent
 ```
 
@@ -202,7 +202,7 @@ curl -X 'POST' \
 ## Cloning the GitHub Event Management Agent repository
 
 ```
-git@github.com:SolaceLabs/event-management-agent.git
+git@github.com:SolaceProducts/event-management-agent.git
 ```
 
 ### Installing Maven dependencies and building the Event Management Agent jar file

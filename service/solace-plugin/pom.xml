@@ -163,7 +163,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/SolaceLabs/event-management-agent</url>
+            <url>https://maven.pkg.github.com/SolaceProducts/event-management-agent</url>
         </repository>
     </distributionManagement>
 </project>
