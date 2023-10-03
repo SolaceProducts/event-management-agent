@@ -90,7 +90,7 @@ public class EMAControllerTest {
 
         ClientException thrown = assertThrows(ClientException.class, () -> controller.scan("id", scanRequestDTO));
 
-        assertThat(thrown.getMessage()).contains("Scan data could not be streamed to EP in standalone mode.");
+        assertThat(thrown.getMessage()).contains("Scan data could not be streamed to the Event Portal in standalone mode.");
     }
 
     @Test
