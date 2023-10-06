@@ -76,10 +76,10 @@ Specify:
 * the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 ```
-docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml --env KAFKA_PASSWORD --name event-management-agent solace/event-management-agent:latest
+docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml --env KAFKA_PASSWORD=myKafkaPassword --name event-management-agent solace/event-management-agent:latest
 ```
 
-> **_NOTE:_**  Depending on your OS, the container may fail to start if your connection filename contains spaces, upper case or special characters. If you see such failures, make sure your filename is within quotes or that it does not contain upper case or special character or spaces.
+> **_NOTE:_**  Depending on your OS, the container may fail to start if your connection filename contains spaces or special characters. If you see such failures, make sure your filenames are within quotes or that they do not contain spaces or special characters.
 
 The Event Management Agent takes a couple of minutes to start. The Event Management Agent logs are available via Docker:
 
@@ -129,6 +129,8 @@ Specify:
 ```
 docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml --name event-management-agent solace/event-management-agent:latest
 ```
+
+> **_NOTE:_**  Depending on your OS, the container may fail to start if your connection filename contains spaces or special characters. If you see such failures, make sure your filenames are within quotes or that they do not contain spaces or special characters.
 
 The Event Management Agent takes a couple of minutes to start. The Event Management Agent logs are available via Docker:
 
@@ -231,6 +233,186 @@ java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.
 ```
 
 The Event Management Agent is ready.
+
+# Deploying the Event Management Agent in a Kubernetes cluster
+
+## ConfigMap example
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ema-example1
+  namespace: ema
+data:
+  ema-properties: |
+    springdoc:
+      packages-to-scan: com.solace.maas.ep.event.management.agent.scanManager.rest
+      api-docs:
+        path: /docs/event-management-agent
+      swagger-ui:
+        path: /event-management-agent/swagger-ui.html
+    server:
+      port: 8180
+    spring:
+      h2:
+        console:
+          path: /h2
+          enabled: true
+          settings:
+            web-allow-others: true
+      datasource:
+        password: password
+        driver-class-name: org.h2.Driver
+        username: sa
+        url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
+      jpa:
+        hibernate:
+          ddl-auto: create-drop
+        database-platform: org.hibernate.dialect.H2Dialect
+        defer-datasource-initialization: true
+      servlet:
+        multipart:
+          max-request-size: ${MAX_REQUEST_SIZE:5MB}
+          max-file-size: ${MAX_FILE_SIZE:5MB}
+      main:
+        allow-bean-definition-overriding: true
+    camel:
+      springboot:
+        use-mdc-logging: true
+    kafka:
+      client:
+        config:
+          reconnections:
+            max-backoff:
+              unit: milliseconds
+              value: 1000
+            backoff:
+              unit: milliseconds
+              value: 50
+          connections:
+            max-idle:
+              unit: milliseconds
+              value: 10000
+            request-timeout:
+              unit: milliseconds
+              value: 5000
+            timeout:
+              unit: milliseconds
+              value: 60000
+    eventPortal:
+      gateway:
+        id: TOFILL
+        name: TOFILL
+        messaging:
+          standalone: false
+          rtoSession: false
+          enableHeartbeats: true
+          testHeartbeats: true
+          connections:
+            - name: eventPortalGateway
+              authenticationType: ${EP_GATEWAY_AUTH:basicAuthentication}
+              msgVpn: ${EP_GATEWAY_MSGVPN:perf-evmr}
+              url: ${EP_GATEWAY_URL:TOFILL}
+              users:
+                - name: TOFILL
+                  password: TOFILL
+                  username: ${EP_GATEWAY_USERNAME:TOFILL}
+                  clientName: TOFILL
+      organizationId: ${EP_ORGANIZATION_ID:TOFILL}
+      runtimeAgentId: ${EP_RUNTIME_AGENT_ID:TOFILL}
+      topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
+    plugins:
+      resources:
+      - id: TOFILL
+        type: kafka
+        name: TOFILL
+        connections:
+          - name: kafkaNoAuthConnection
+            url: ${KAFKA_BOOTSTRAP_SERVERS:TOFILL}
+            authentication:
+              - protocol: PLAINTEXT
+                credentials:
+                  - type: noAuth
+                    source: ENVIRONMENT_VARIABLE
+                    operations:
+                      - name: ALL
+                    properties: [
+                    ]
+      - id: TOFILL
+        type: CONFLUENT_SCHEMA_REGISTRY
+        name: TOFILL
+        relatedServices:
+          - TOFILL
+        connections:
+          - name: TOFILL
+            url: ${CONFLUENT_SCHEMA_REGISTRY_URL:http://TOFILL}
+```
+
+## Secret example
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: broker-passwords
+  namespace: ema
+type: Opaque
+data:
+  MY_KAFKA_PASSWORD: bXlTdXBlclNlY3JldFBhc3N3b3JkCg==
+```
+
+## Deployment example
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    test: deployment
+  name: ema-example1
+  namespace: ema
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ema
+  template:
+    metadata:
+      labels:
+        app: ema
+    spec:
+      containers:
+      - image: docker.io/solace/event-mangement-agent:1.1.1
+        imagePullPolicy: IfNotPresent
+        name: event-management-agent
+        volumeMounts:
+        - mountPath: /config
+          name: ema-example1
+        env: 
+            - name: MY_KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: broker-passwords
+                  key: MY_KAFKA_PASSWORD
+        ports:
+        - containerPort: 8180
+      restartPolicy: Always
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: ema-properties
+            mode: 420
+            path: ema.yml
+          name: ema-example1
+          optional: true
+        name: ema-example1
+```
+
+## Service example
+
+If users wish to run the EMA in offline mode, they will need to create a service in order to make the pod reachable for REST commands outside of the cluster.
 
 # Broker Plugins
 
