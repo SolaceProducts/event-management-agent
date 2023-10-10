@@ -18,17 +18,7 @@ public class HeartbeatMessage extends MOPMessage {
         super();
     }
 
-    public HeartbeatMessage(String runtimeAgentId, String timestamp) {
-        super();
-        withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.EMAHeartbeat)
-                .withVersion("1")
-                .withUhFlag(MOPUHFlag.ignore);
-        this.runtimeAgentId = runtimeAgentId;
-        this.timestamp = timestamp;
-    }
-
-    public HeartbeatMessage(String runtimeAgentId, String timestamp, String runtimeAgentVersion) {
+    public HeartbeatMessage(String runtimeAgentId, String timestamp,  String runtimeAgentVersion) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.EMAHeartbeat)
