@@ -29,7 +29,7 @@ public class HeartbeatGenerator {
         this.solacePublisher = solacePublisher;
         this.runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
         topic = solaceConfiguration.getTopicPrefix() + "heartbeat/v1";
-        this.runtimeAgentVersion = buildProperties.getVersion().substring(0, buildProperties.getVersion().indexOf('-'));
+        this.runtimeAgentVersion = getFormattedVersion(buildProperties.getVersion());
     }
 
     @Scheduled(fixedRate = 5000)
@@ -38,4 +38,10 @@ public class HeartbeatGenerator {
         solacePublisher.publish(message, topic);
     }
 
+    private String getFormattedVersion(String version) {
+        if (version.endsWith("-SNAPSHOT")) {
+            return version.replace("-SNAPSHOT", "");
+        }
+        return version;
+    }
 }
