@@ -1,12 +1,12 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
+import brave.Tracer;
 import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -32,10 +32,12 @@ import java.io.InputStream;
 @RequestMapping(RestEndpoint.MESSAGING_SERVICE_URL)
 public class DataImportControllerImpl implements DataImportController {
 
+    private final Tracer tracer;
     private final ImportService importService;
 
     @Autowired
-    public DataImportControllerImpl(ImportService importService) {
+    public DataImportControllerImpl(Tracer tracer, ImportService importService) {
+        this.tracer = tracer;
         this.importService = importService;
     }
 
@@ -44,7 +46,8 @@ public class DataImportControllerImpl implements DataImportController {
     public ResponseEntity<String> read(@Parameter(description = "The scan data zip file to be imported.")
                                        @RequestPart("file") final MultipartFile file) {
         try {
-            String traceId = MDC.get("traceId");
+            //String traceId = MDC.get("traceId");
+            String traceId = tracer.currentSpan().context().traceIdString();
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
                     .traceId(traceId)

@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
+import brave.Tracer;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
@@ -35,13 +36,15 @@ public class DataImportControllerTests {
     public ExpectedException exception = ExpectedException.none();
 
     @Mock
+    public Tracer tracer;
+    @Mock
     ImportService importService;
 
     @SneakyThrows
     @Test
     public void testDataImportControllerRead() {
 
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(tracer, importService);
 
         MultipartFile multipartFile =
                 new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
@@ -59,7 +62,7 @@ public class DataImportControllerTests {
     @Test
     public void testDataImportControllerZip() {
 
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(tracer, importService);
 
         ZipRequestBO zipRequestBO = ZipRequestBO.builder()
                 .scanId("scanId")
@@ -80,7 +83,7 @@ public class DataImportControllerTests {
     @Test
     public void testDataImportControllerZipWithBadRequest() {
 
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(tracer, importService);
 
         ResponseEntity<InputStreamResource> reply =
                 controller.zip("scanId");
@@ -93,7 +96,7 @@ public class DataImportControllerTests {
     @SneakyThrows
     @Test
     public void testDataImportControllerException() {
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(tracer, importService);
 
         MultipartFile multipartFile =
                 new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,

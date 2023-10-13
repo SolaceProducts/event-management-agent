@@ -88,9 +88,26 @@ export JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceSt
 cp ../target/event-management-agent-${JAR_VERSION}.jar .
 
 cd ..
-docker build docker -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
+if docker buildx inspect container > /dev/null ; then
+    echo "Found docker driver multiarch"
+else
+    echo "Creating docker driver multiarch"
+    docker buildx create --name container --driver=docker-container 
+fi
+
+#docker buildx use multiarch
+
+#docker buildx build --no-cache --platform=linux/amd64,linux/arm64 -t 868978040651.dkr.ecr.us-east-1.amazonaws.com/event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
+#       --build-arg JAR_FILE=event-management-agent-${JAR_VERSION}.jar --build-arg GITHASH=${GITHASH}\
+#       --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH} \
+#       --push --builder=container $(pwd)/docker
+docker buildx build --no-cache --platform=linux/amd64,linux/arm64 -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
        --build-arg JAR_FILE=event-management-agent-${JAR_VERSION}.jar --build-arg GITHASH=${GITHASH}\
-       --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}
+       --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH} \
+       --load --builder=container $(pwd)/docker
+#docker build docker --platform=linux/arm64,linux/amd64 -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
+#       --build-arg JAR_FILE=event-management-agent-${JAR_VERSION}.jar --build-arg GITHASH=${GITHASH}\
+#       --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}
 cd ${script_dir}
 
 # cleanup
