@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
-import brave.Tracer;
+import brave.context.slf4j.MDCScopeDecorator;
+import brave.propagation.ThreadLocalCurrentTraceContext;
 import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
@@ -32,12 +33,10 @@ import java.io.InputStream;
 @RequestMapping(RestEndpoint.MESSAGING_SERVICE_URL)
 public class DataImportControllerImpl implements DataImportController {
 
-    private final Tracer tracer;
     private final ImportService importService;
 
     @Autowired
-    public DataImportControllerImpl(Tracer tracer, ImportService importService) {
-        this.tracer = tracer;
+    public DataImportControllerImpl(ImportService importService) {
         this.importService = importService;
     }
 
@@ -46,8 +45,13 @@ public class DataImportControllerImpl implements DataImportController {
     public ResponseEntity<String> read(@Parameter(description = "The scan data zip file to be imported.")
                                        @RequestPart("file") final MultipartFile file) {
         try {
+            ThreadLocalCurrentTraceContext braveCurrentTraceContext = ThreadLocalCurrentTraceContext.newBuilder()
+                    .addScopeDecorator(MDCScopeDecorator.get()) // Example of Brave's
+                    // automatic MDC setup
+                    .build();
+
             //String traceId = MDC.get("traceId");
-            String traceId = tracer.currentSpan().context().traceIdString();
+            String traceId = braveCurrentTraceContext.get().traceIdString();
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
                     .traceId(traceId)
