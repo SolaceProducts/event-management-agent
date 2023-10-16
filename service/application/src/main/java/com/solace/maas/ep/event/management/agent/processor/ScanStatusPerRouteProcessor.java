@@ -38,9 +38,12 @@ public class ScanStatusPerRouteProcessor implements Processor {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
+        String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
+
+        //MDC.put(RouteConstants.ACTOR_ID, actorId);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
@@ -49,7 +52,8 @@ public class ScanStatusPerRouteProcessor implements Processor {
         topicDetails.put("status", status.name());
         topicDetails.put("scanDataType", scanType);
 
-        ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(orgId, scanId, traceId, status.name(), description, scanType);
+        ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(orgId, scanId, traceId, actorId,
+                status.name(), description, scanType);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_DATA_STATUS_MESSAGE, scanDataStatusMessage);
         exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);

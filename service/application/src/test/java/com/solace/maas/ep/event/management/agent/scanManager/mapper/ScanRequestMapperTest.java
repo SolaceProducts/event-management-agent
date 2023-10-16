@@ -1,9 +1,9 @@
 package com.solace.maas.ep.event.management.agent.scanManager.mapper;
 
+import com.solace.maas.ep.common.model.ScanRequestDTO;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.model.User;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
-import com.solace.maas.ep.common.model.ScanRequestDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +31,7 @@ public class ScanRequestMapperTest {
                 "id",
                 "scanId",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN"),
                 List.of());
 
@@ -47,6 +48,7 @@ public class ScanRequestMapperTest {
                 "id",
                 "scanId",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN"),
                 List.of());
 

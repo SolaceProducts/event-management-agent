@@ -17,7 +17,6 @@
     <properties>
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spring-cloud-starter-sleuth.version>3.1.5</spring-cloud-starter-sleuth.version>
         <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
@@ -61,11 +60,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-sleuth</artifactId>
-            <version>${spring-cloud-starter-sleuth.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -253,6 +247,11 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-observation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

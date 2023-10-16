@@ -4,11 +4,11 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants
 import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
 
-import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +33,7 @@ public class ScanTypeDescendentsProcessorImpl implements ScanTypeDescendentsProc
 
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
+        String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         boolean isEmptyScanTypes = (boolean) properties.get(RouteConstants.IS_EMPTY_SCAN_TYPES);
 
@@ -43,7 +44,8 @@ public class ScanTypeDescendentsProcessorImpl implements ScanTypeDescendentsProc
 
         if (isEmptyScanTypes) {
             allDescendentScanTypes.forEach(type ->
-                    log.info("Scan request [{}], trace ID [{}]: Encountered an empty scan type [{}].", scanId, traceId, type));
+                    log.info("Scan request [{}], trace ID [{}], actor ID [{}]: Encountered an empty scan type [{}].",
+                            scanId, traceId, actorId, type));
         }
 
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, allDescendentScanTypes);

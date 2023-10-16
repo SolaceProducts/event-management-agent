@@ -1,11 +1,10 @@
 package com.solace.maas.ep.event.management.agent.scanManager.rest;
 
-import brave.context.slf4j.MDCScopeDecorator;
-import brave.propagation.ThreadLocalCurrentTraceContext;
 import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
+import io.micrometer.tracing.Tracer;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +34,12 @@ public class DataImportControllerImpl implements DataImportController {
 
     private final ImportService importService;
 
+    private final Tracer trace;
+
     @Autowired
-    public DataImportControllerImpl(ImportService importService) {
+    public DataImportControllerImpl(ImportService importService, Tracer trace) {
         this.importService = importService;
+        this.trace = trace;
     }
 
     @Override
@@ -45,13 +47,7 @@ public class DataImportControllerImpl implements DataImportController {
     public ResponseEntity<String> read(@Parameter(description = "The scan data zip file to be imported.")
                                        @RequestPart("file") final MultipartFile file) {
         try {
-            ThreadLocalCurrentTraceContext braveCurrentTraceContext = ThreadLocalCurrentTraceContext.newBuilder()
-                    .addScopeDecorator(MDCScopeDecorator.get()) // Example of Brave's
-                    // automatic MDC setup
-                    .build();
-
-            //String traceId = MDC.get("traceId");
-            String traceId = braveCurrentTraceContext.get().traceIdString();
+            String traceId = trace.currentSpan().context().traceId();
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
                     .traceId(traceId)

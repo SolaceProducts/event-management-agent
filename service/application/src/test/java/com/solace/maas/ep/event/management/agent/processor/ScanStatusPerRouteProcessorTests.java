@@ -69,6 +69,7 @@ public class ScanStatusPerRouteProcessorTests {
                 null,
                 "scan1",
                 "traceId",
+                "actorId",
                 ScanStatus.IN_PROGRESS.name(),
                 "description",
                 "queueListing");

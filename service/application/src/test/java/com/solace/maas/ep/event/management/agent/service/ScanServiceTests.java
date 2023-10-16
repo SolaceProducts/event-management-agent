@@ -42,13 +42,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
@@ -151,6 +151,7 @@ public class ScanServiceTests {
                 "groupId",
                 "scanId",
                 "traceId",
+                "actorId",
                 mock(MessagingServiceEntity.class),
                 "runtimeAgent1");
 
@@ -312,7 +313,7 @@ public class ScanServiceTests {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanTypeRepository.class),
                 mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
-        service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId",
+        service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId", "actorId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
         assertThatNoException();

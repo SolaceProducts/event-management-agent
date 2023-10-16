@@ -45,6 +45,7 @@ public class EMAControllerTest {
                 "id",
                 "scanConnected",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN_TYPE"),
                 List.of());
 
@@ -75,6 +76,7 @@ public class EMAControllerTest {
                 "id",
                 "scanId",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN"),
                 List.of("EVENT_PORTAL"));
 
@@ -104,6 +106,7 @@ public class EMAControllerTest {
                 "id",
                 "scanId",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN"),
                 List.of());
 
