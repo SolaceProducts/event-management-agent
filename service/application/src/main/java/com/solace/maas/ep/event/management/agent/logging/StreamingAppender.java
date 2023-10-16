@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
+import org.slf4j.MDC;
 
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
 
             exchange.getIn().setBody(event);
 
-            //MDC.clear();
+            MDC.clear();
         }).whenComplete((exchange, exception) -> {
             if (exception != null) {
                 log.error("Exception occurred while executing route publishLogs for scan {}.", scanId, exception);
