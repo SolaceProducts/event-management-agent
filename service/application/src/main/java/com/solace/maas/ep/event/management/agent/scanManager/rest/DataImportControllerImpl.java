@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 @Slf4j
 @Validated
@@ -47,7 +48,7 @@ public class DataImportControllerImpl implements DataImportController {
     public ResponseEntity<String> read(@Parameter(description = "The scan data zip file to be imported.")
                                        @RequestPart("file") final MultipartFile file) {
         try {
-            String traceId = trace.currentSpan().context().traceId();
+            String traceId = Objects.requireNonNull(trace.currentSpan()).context().traceId();
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
                     .traceId(traceId)
