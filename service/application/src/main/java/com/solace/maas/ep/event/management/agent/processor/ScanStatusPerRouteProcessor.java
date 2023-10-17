@@ -43,8 +43,6 @@ public class ScanStatusPerRouteProcessor implements Processor {
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
 
-        //MDC.put(RouteConstants.ACTOR_ID, actorId);
-
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
