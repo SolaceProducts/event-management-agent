@@ -59,7 +59,7 @@ public class ScanStatusMarkerAndLoggerRouteBuilderTests {
         exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, "queueListing");
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.IN_PROGRESS);
         exchange.getIn().setHeader(RouteConstants.TRACE_ID, "1234");
-        exchange.getIn().setHeader(RouteConstants.TRACE_ID, "4321");
+        exchange.getIn().setHeader(RouteConstants.ACTOR_ID, "4321");
 
         AdviceWith.adviceWith(camelContext, "markRouteScanStatusInProgress",
                 route -> {
