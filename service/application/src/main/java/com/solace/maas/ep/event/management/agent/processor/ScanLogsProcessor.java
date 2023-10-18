@@ -3,8 +3,8 @@ package com.solace.maas.ep.event.management.agent.processor;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.solace.maas.ep.common.messages.ScanLogMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
-import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -42,9 +42,10 @@ public class ScanLogsProcessor implements Processor {
         ILoggingEvent event = (ILoggingEvent) exchange.getIn().getBody();
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
+        String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        ScanLogMessage logDataMessage = new ScanLogMessage(orgId, scanId, traceId, event.getLevel().toString(),
+        ScanLogMessage logDataMessage = new ScanLogMessage(orgId, scanId, traceId, actorId, event.getLevel().toString(),
                 String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
 
         topicDetails.put("orgId", orgId);

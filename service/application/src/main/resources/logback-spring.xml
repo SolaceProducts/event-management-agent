@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOG_LEVEL_PATTERN" value="%clr(%5p) %clr([%X{X-B3-TraceId:-}]){yellow}"/>
+    <property name="LOG_LEVEL_PATTERN" value="%clr(%5p) %clr([%X{traceId:-}]){yellow}"/>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 

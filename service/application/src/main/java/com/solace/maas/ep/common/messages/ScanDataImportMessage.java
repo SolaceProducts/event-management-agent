@@ -16,8 +16,6 @@ public class ScanDataImportMessage extends MOPMessage {
 
     String scanId;
 
-    String traceId;
-
     String messagingServiceId;
 
     String runtimeAgentId;
@@ -37,10 +35,10 @@ public class ScanDataImportMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.scanId = scanId;
-        this.traceId = traceId;
         this.messagingServiceId = messagingServiceId;
         this.runtimeAgentId = runtimeAgentId;
         this.scanTypes = scanTypes;
+        setTraceId(traceId);
     }
 
     @Override

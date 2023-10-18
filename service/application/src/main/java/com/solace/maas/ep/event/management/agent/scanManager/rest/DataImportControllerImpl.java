@@ -4,9 +4,9 @@ import com.solace.maas.ep.event.management.agent.constants.RestEndpoint;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
+import io.micrometer.tracing.Tracer;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 @Slf4j
 @Validated
@@ -34,9 +35,12 @@ public class DataImportControllerImpl implements DataImportController {
 
     private final ImportService importService;
 
+    private final Tracer trace;
+
     @Autowired
-    public DataImportControllerImpl(ImportService importService) {
+    public DataImportControllerImpl(ImportService importService, Tracer trace) {
         this.importService = importService;
+        this.trace = trace;
     }
 
     @Override
@@ -44,7 +48,7 @@ public class DataImportControllerImpl implements DataImportController {
     public ResponseEntity<String> read(@Parameter(description = "The scan data zip file to be imported.")
                                        @RequestPart("file") final MultipartFile file) {
         try {
-            String traceId = MDC.get("traceId");
+            String traceId = Objects.requireNonNull(trace.currentSpan()).context().traceId();
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(file)
                     .traceId(traceId)

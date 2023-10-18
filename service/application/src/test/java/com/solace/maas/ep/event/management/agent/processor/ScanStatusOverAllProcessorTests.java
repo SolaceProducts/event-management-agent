@@ -69,6 +69,7 @@ public class ScanStatusOverAllProcessorTests {
                 null,
                 "scan1",
                 "traceId",
+                "actorId",
                 ScanStatus.IN_PROGRESS.name(),
                 "description",
                 List.of("scanTypes"));

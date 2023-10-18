@@ -4,11 +4,13 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
+import io.micrometer.tracing.Tracer;
 import lombok.SneakyThrows;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
@@ -37,11 +39,14 @@ public class DataImportControllerTests {
     @Mock
     ImportService importService;
 
+    @Autowired
+    Tracer tracer;
+
     @SneakyThrows
     @Test
     public void testDataImportControllerRead() {
 
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(importService, tracer);
 
         MultipartFile multipartFile =
                 new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
@@ -59,7 +64,7 @@ public class DataImportControllerTests {
     @Test
     public void testDataImportControllerZip() {
 
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(importService, tracer);
 
         ZipRequestBO zipRequestBO = ZipRequestBO.builder()
                 .scanId("scanId")
@@ -80,7 +85,7 @@ public class DataImportControllerTests {
     @Test
     public void testDataImportControllerZipWithBadRequest() {
 
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(importService, tracer);
 
         ResponseEntity<InputStreamResource> reply =
                 controller.zip("scanId");
@@ -93,7 +98,7 @@ public class DataImportControllerTests {
     @SneakyThrows
     @Test
     public void testDataImportControllerException() {
-        DataImportController controller = new DataImportControllerImpl(importService);
+        DataImportController controller = new DataImportControllerImpl(importService, tracer);
 
         MultipartFile multipartFile =
                 new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
