@@ -9,14 +9,14 @@ import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Slf4j
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanDataImportPersistScanFilesProcessor implements Processor {
 
     private final ScanTypeService scanTypeService;

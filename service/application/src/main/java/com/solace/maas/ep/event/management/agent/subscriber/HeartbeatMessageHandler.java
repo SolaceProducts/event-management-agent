@@ -4,6 +4,7 @@ import com.solace.maas.ep.common.messages.HeartbeatMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,9 +14,9 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false " +
-        "and ${eventPortal.gateway.messaging.enableHeartbeats} " +
+@ConditionalOnExpression("${eventPortal.gateway.messaging.enableHeartbeats} " +
         "and ${eventPortal.gateway.messaging.testHeartbeats}")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class HeartbeatMessageHandler extends SolaceMessageHandler<HeartbeatMessage> {
 
     public HeartbeatMessageHandler(

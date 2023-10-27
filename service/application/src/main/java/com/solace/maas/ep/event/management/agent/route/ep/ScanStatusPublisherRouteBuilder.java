@@ -6,12 +6,12 @@ import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.Abstr
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusOverAllProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanStatusPerRouteProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 @Profile("!TEST")
 public class ScanStatusPublisherRouteBuilder extends AbstractRouteBuilder {
 

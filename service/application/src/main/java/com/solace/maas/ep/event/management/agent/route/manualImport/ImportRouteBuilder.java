@@ -3,14 +3,14 @@ package com.solace.maas.ep.event.management.agent.route.manualImport;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.ScanDataImportExceptionHandler;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ImportRouteBuilder extends RouteBuilder {
 
     @Override

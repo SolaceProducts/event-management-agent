@@ -1,23 +1,23 @@
 package com.solace.maas.ep.event.management.agent.route.manualImport;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.ScanDataImportExceptionHandler;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportOverAllStatusProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportParseMetaInfFileProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistFilePathsProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPersistScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataImportPublishImportScanEventProcessor;
-import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.ScanDataImportExceptionHandler;
 import com.solace.maas.ep.event.management.agent.scanManager.model.MetaInfFileBO;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.IMPORT_ID;
 
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanDataImportParseMetaInfFileRouteBuilder extends RouteBuilder {
 
     private final ScanDataImportParseMetaInfFileProcessor scanDataImportParseMetaInfFileProcessor;

@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalP
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,8 @@ import java.time.Instant;
 
 @ExcludeFromJacocoGeneratedReport
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false and ${eventPortal.gateway.messaging.enableHeartbeats}")
+@ConditionalOnExpression("${eventPortal.gateway.messaging.enableHeartbeats}")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class HeartbeatGenerator {
 
     private final SolacePublisher solacePublisher;
