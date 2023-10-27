@@ -89,6 +89,7 @@ public class ScanLogsPublisherRouteBuilderTests {
                 "orgId",
                 "scanId",
                 "traceId",
+                "actorId",
                 "level",
                 "log", Instant.now().toEpochMilli());
 

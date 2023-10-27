@@ -42,9 +42,10 @@ public class ScanLogsProcessor implements Processor {
         ILoggingEvent event = (ILoggingEvent) exchange.getIn().getBody();
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
+        String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
-        ScanLogMessage logDataMessage = new ScanLogMessage(orgId, scanId, traceId, event.getLevel().toString(),
+        ScanLogMessage logDataMessage = new ScanLogMessage(orgId, scanId, traceId, actorId, event.getLevel().toString(),
                 String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
 
         topicDetails.put("orgId", orgId);

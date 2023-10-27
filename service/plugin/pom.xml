@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.1.2-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Plugin</name>
     <description>Solace Event Management Agent - Plugin</description>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>10.1.13</version>
+            <version>10.1.14</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -106,11 +106,6 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-socks</artifactId>
-            <version>4.1.100.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-handler</artifactId>
             <version>4.1.100.Final</version>
         </dependency>
         <dependency>

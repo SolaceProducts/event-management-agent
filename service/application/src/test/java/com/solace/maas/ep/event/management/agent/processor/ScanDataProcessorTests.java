@@ -64,6 +64,7 @@ public class ScanDataProcessorTests {
                 "orgId",
                 "scanId",
                 "traceId",
+                "actorId",
                 "scanType",
                 " body",
                 Instant.now().toString());

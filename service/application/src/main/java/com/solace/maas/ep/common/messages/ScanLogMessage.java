@@ -12,15 +12,13 @@ public class ScanLogMessage extends MOPMessage {
 
     String scanId;
 
-    String traceId;
-
     String level;
 
     String log;
 
     Long timestamp;
 
-    public ScanLogMessage(String orgId, String scanId, String traceId, String level, String log, Long timestamp) {
+    public ScanLogMessage(String orgId, String scanId, String traceId, String actorId, String level, String log, Long timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanDataControl)
@@ -29,10 +27,11 @@ public class ScanLogMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.scanId = scanId;
-        this.traceId = traceId;
         this.level = level;
         this.log = log;
         this.timestamp = timestamp;
+        setTraceId(traceId);
+        setActorId(actorId);
     }
 
     @Override
