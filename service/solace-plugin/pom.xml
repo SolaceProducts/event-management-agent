@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.solace</groupId>
     <artifactId>solace-plugin</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Solace Plugin</name>
     <description>Solace Event Management Agent - Solace Plugin</description>
@@ -88,7 +88,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.3.1</version>
+            <version>1.3.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
