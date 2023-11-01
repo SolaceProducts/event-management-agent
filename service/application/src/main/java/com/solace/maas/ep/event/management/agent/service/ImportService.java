@@ -119,7 +119,6 @@ public class ImportService {
         files.forEach(file -> {
             String filePath = file.getPath();
             String fileName = StringUtils.substringAfterLast(filePath, File.separator);
-
             String dataEntityType = fileName.replace(".json", "");
 
             MetaInfFileDetailsBO metaInfFileDetailsBOFile =
