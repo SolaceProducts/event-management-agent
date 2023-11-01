@@ -97,7 +97,7 @@ public class ImportService {
                     String message = "Could not find scan files.";
                     log.error(message);
                     return new FileNotFoundException(message);
-                }).getPath(), "/");
+                }).getPath(), File.separator);
 
         MetaInfFileBO metaInfJson = prepareMetaInfJson(files, messagingServiceId, emaId, scheduleId, scanId);
 
@@ -118,7 +118,8 @@ public class ImportService {
         List<MetaInfFileDetailsBO> metaInfFileDetailsBOFiles = new ArrayList<>();
         files.forEach(file -> {
             String filePath = file.getPath();
-            String fileName = StringUtils.substringAfterLast(filePath, "/");
+            String fileName = StringUtils.substringAfterLast(filePath, File.separator);
+
             String dataEntityType = fileName.replace(".json", "");
 
             MetaInfFileDetailsBO metaInfFileDetailsBOFile =
