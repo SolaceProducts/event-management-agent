@@ -88,7 +88,7 @@ export JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceSt
 cp ../target/event-management-agent-${JAR_VERSION}.jar .
 
 cd ..
-docker build docker -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
+docker build docker --no-cache --platform linux/amd64 -t event-management-agent:${IMAGE_TAG} --build-arg BASE_IMAGE=${BASE_IMAGE}\
        --build-arg JAR_FILE=event-management-agent-${JAR_VERSION}.jar --build-arg GITHASH=${GITHASH}\
        --build-arg BUILD_TIMESTAMP="${BUILD_TIMESTAMP}" --build-arg GITBRANCH=${GITBRANCH}
 cd ${script_dir}

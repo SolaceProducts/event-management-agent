@@ -1,0 +1,6 @@
+spring:
+  main:
+    web-application-type: none
+plugins:
+  terraform:
+    workingDirectoryRoot: ${HOME}/config
