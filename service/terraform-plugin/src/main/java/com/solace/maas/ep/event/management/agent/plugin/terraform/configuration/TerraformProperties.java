@@ -8,7 +8,6 @@ import java.util.Optional;
 
 @Data
 @Configuration
-//@PropertySource("classpath:application.yml")
 @ConfigurationProperties(prefix = "plugins.terraform")
 public class TerraformProperties {
     private String workingDirectoryRoot = Optional.ofNullable(System.getenv("HOME")).orElse("/tmp") + "/config";
