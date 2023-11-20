@@ -3,4 +3,4 @@ spring:
     web-application-type: none
 plugins:
   terraform:
-    workingDirectoryRoot: ${HOME}/config
+    workingDirectoryRoot: /tmp/config

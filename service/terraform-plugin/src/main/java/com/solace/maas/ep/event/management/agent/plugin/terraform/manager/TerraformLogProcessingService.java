@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,21 +28,24 @@ public class TerraformLogProcessingService {
     public static final String KEY_MESSAGE = "@message";
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
-    private final TerraformProperties terraformProperties;
+
+    @Value("${plugins.terraform.workingDirectoryRoot:/${HOME}/config}")
+    private String workingDirectoryRoot;
     private final ObjectMapper objectMapper;
 
-    public TerraformLogProcessingService(ObjectMapper objectMapper, TerraformProperties terraformProperties) {
+    public TerraformLogProcessingService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.terraformProperties = terraformProperties;
     }
 
     public void saveLogToFile(CommandRequest request, List<String> logs) throws IOException {
         //format <root-workingdir>/<workingdir>/logs/<timestamp>-<jobid>-.job.log
-        Path out = Paths.get(terraformProperties.getWorkingDirectoryRoot()
+        Path out = Paths.get(workingDirectoryRoot
                 + File.separator
                 + request.getContext()
+                + "-"
+                + request.getMessagingServiceId()
                 + File.separator
-                + System.currentTimeMillis() + "-" + request.getJobId() + "-job.log"
+                + System.currentTimeMillis() + "-" + request.getCorrelationId() + "-job.log"
         );
         Files.write(out, logs, Charset.defaultCharset());
     }

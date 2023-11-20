@@ -239,22 +239,6 @@
                                 </resources>
                             </configuration>
                         </execution>
-                        <!--                        <execution>-->
-                        <!--                            <id>copy-docker</id>-->
-                        <!--                            <phase>compile</phase>-->
-                        <!--                            <goals>-->
-                        <!--                                <goal>copy-resources</goal>-->
-                        <!--                            </goals>-->
-                        <!--                            <configuration>-->
-                        <!--                                <outputDirectory>${project.build.directory}</outputDirectory>-->
-                        <!--                                <resources>-->
-                        <!--                                    <resource>-->
-                        <!--                                        <directory>docker</directory>-->
-                        <!--                                        <filtering>true</filtering>-->
-                        <!--                                    </resource>-->
-                        <!--                                </resources>-->
-                        <!--                            </configuration>-->
-                        <!--                        </execution>-->
                         <execution>
                             <id>copy-resources</id>
                             <phase>validate</phase>

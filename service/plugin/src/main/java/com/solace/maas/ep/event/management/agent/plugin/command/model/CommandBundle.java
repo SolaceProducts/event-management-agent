@@ -14,5 +14,5 @@ import java.util.List;
 public class CommandBundle {
     private String executionType; // (serial / parallel)
     private Boolean exitOnFailure;
-    private List<Command> commandList;
+    private List<Command> commands;
 }

@@ -29,7 +29,7 @@ public class CommandManager {
         Map<String, String> envVars = setBrokerSpecificEnvVars(request.getMessagingServiceId());
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
-            for (Command command : bundle.getCommandList()) {
+            for (Command command : bundle.getCommands()) {
                 switch (command.getCommandType()) {
                     case terraform:
                         terraformManager.execute(request, command, envVars);

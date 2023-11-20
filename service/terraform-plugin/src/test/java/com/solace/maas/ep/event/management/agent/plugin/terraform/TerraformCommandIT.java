@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -42,6 +46,36 @@ public class TerraformCommandIT {
     private ResourceLoader resourceLoader;
 
     @Test
+    public void testWriteHCL() throws IOException {
+
+        String newQueueTf = asString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        Command commandRequest = Command.builder()
+                .body(Base64.getEncoder().encodeToString(newQueueTf.getBytes(UTF_8)))
+                .commandType(CommandType.terraform)
+                .command("write_HCL")
+                .build();
+        CommandRequest terraformRequest = CommandRequest.builder()
+                .commandBundles(List.of(
+                        CommandBundle.builder()
+                                .executionType("serial")
+                                .exitOnFailure(false)
+                                .commands(List.of(commandRequest))
+                                .build()))
+                .correlationId("234")
+                .context("app123")
+                .messagingServiceId("ms1234")
+                .build();
+
+        terraformManager.execute(terraformRequest, commandRequest, Map.of());
+
+        // Validate that the file was written
+        String content = Files.readString(Path.of("/tmp/config/app123-ms1234/config.tf"));
+
+        assertEquals(content, newQueueTf);
+    }
+
+    @Test
     public void testCreateResourceHappyPath() throws IOException {
 
         String newQueueTf = asString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
@@ -55,9 +89,9 @@ public class TerraformCommandIT {
                         CommandBundle.builder()
                                 .executionType("serial")
                                 .exitOnFailure(false)
-                                .commandList(List.of(commandRequest))
+                                .commands(List.of(commandRequest))
                                 .build()))
-                .jobId("234")
+                .correlationId("234")
                 .context("app123")
                 .messagingServiceId("ms1234")
                 .build();

@@ -5,8 +5,9 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandReq
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
-import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -24,19 +25,24 @@ import java.util.Map;
 public class TerraformManager {
     private final TerraformClient terraformClient;
     private final TerraformLogProcessingService terraformLogProcessingService;
-    private final TerraformProperties terraformProperties;
+
+    @Value("${plugins.terraform.workingDirectoryRoot:/${HOME}/config}")
+    private String workingDirectoryRoot;
 
     private final static String TF_CONFIG_FILENAME = "config.tf";
 
-    public TerraformManager(TerraformClient terraformClient, TerraformLogProcessingService terraformLogProcessingService,
-                            TerraformProperties terraformProperties) {
+    public TerraformManager(TerraformClient terraformClient, TerraformLogProcessingService terraformLogProcessingService) {
         this.terraformClient = terraformClient;
         this.terraformLogProcessingService = terraformLogProcessingService;
-        this.terraformProperties = terraformProperties;
     }
 
     public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
-        Path configPath = Paths.get(terraformProperties.getWorkingDirectoryRoot() + File.separator + request.getContext());
+        Path configPath = Paths.get(workingDirectoryRoot + File.separator
+                + request.getContext()
+                + "-"
+                + request.getMessagingServiceId()
+                + File.separator
+        );
         if (Files.notExists(configPath)) {
             try {
                 Files.createDirectories(configPath);
@@ -67,7 +73,7 @@ public class TerraformManager {
                     String tfId = command.getParameters().get("tfId");
                     terraformClient.importCommand(envVars, address, tfId).get();
                 }
-                case "writeHCL" -> writeHclToFile(command, configPath);
+                case "write_HCL" -> writeHclToFile(command, configPath);
                 default -> log.error("Cannot handle arbitrary commands.");
             }
 
@@ -78,7 +84,7 @@ public class TerraformManager {
                         .status(JobStatus.success)
                         .build());
             } else {
-                if (!"writeHCL".equals(commandVerb)) {
+                if (!"write_HCL".equals(commandVerb)) {
                     terraformLogProcessingService.saveLogToFile(request, output);
 
                     if (commandVerb.equals("import")) {
@@ -108,8 +114,10 @@ public class TerraformManager {
     }
 
     private static void writeHclToFile(Command command, Path configPath) throws IOException {
-        byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
-        Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
+        if (StringUtils.isNotEmpty(command.getBody())) {
+            byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
+            Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
+        }
     }
 
     private static void deleteHclFile(Path configPath) throws IOException {

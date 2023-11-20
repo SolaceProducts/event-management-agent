@@ -86,22 +86,22 @@ public class TerraformClientRealTests {
                 .build();
 
         CommandRequest terraformRequest = CommandRequest.builder()
-                .jobId("abc123")
+                .correlationId("abc123")
                 .context("app123-consumer")
                 .commandBundles(List.of(
                         CommandBundle.builder()
-                                .commandList(List.of(commandRequest1, commandRequest2))
+                                .commands(List.of(commandRequest1, commandRequest2))
                                 .build())
                 )
                 .build();
 
-        for (Command command : terraformRequest.getCommandBundles().get(0).getCommandList()) {
+        for (Command command : terraformRequest.getCommandBundles().get(0).getCommands()) {
             terraformManager.execute(terraformRequest, command, tfEnvVars);
         }
 
         // Check the responses
         for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
-            for (Command command : commandBundle.getCommandList()) {
+            for (Command command : commandBundle.getCommands()) {
                 CommandResult result = command.getResult();
                 System.out.println("Logs " + result.getLogs());
                 System.out.println("Errors " + result.getErrors());
@@ -120,18 +120,18 @@ public class TerraformClientRealTests {
                 .build();
         CommandRequest terraformRequest = CommandRequest.builder()
                 .commandBundles(List.of(CommandBundle.builder()
-                        .commandList(List.of(commandRequest))
+                        .commands(List.of(commandRequest))
                         .build()))
                 .context("app123-consumer")
                 .build();
 
-        for (Command command : terraformRequest.getCommandBundles().get(0).getCommandList()) {
+        for (Command command : terraformRequest.getCommandBundles().get(0).getCommands()) {
             terraformManager.execute(terraformRequest, command, tfEnvVars);
         }
 
         // Check the responses
         for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
-            for (Command command : commandBundle.getCommandList()) {
+            for (Command command : commandBundle.getCommands()) {
                 CommandResult result = command.getResult();
                 System.out.println("Logs " + result.getLogs());
                 System.out.println("Errors " + result.getErrors());

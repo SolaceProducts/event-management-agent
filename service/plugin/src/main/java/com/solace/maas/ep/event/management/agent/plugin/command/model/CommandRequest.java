@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommandRequest {
-    private String jobId;
+    private String correlationId;
     private String context;
     private String messagingServiceId;
     private List<CommandBundle> commandBundles;
