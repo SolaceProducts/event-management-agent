@@ -12,18 +12,36 @@
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <spring-boot-starter-test.version>3.1.2</spring-boot-starter-test.version>
+        <spring-boot-version>3.1.5</spring-boot-version>
         <commons-collections4.vresion>4.4</commons-collections4.vresion>
         <jupiter.version>5.3.1</jupiter.version>
-        <camel.version>4.0.0-RC2</camel.version>
-        <aws-msk-iam-auth.version>1.1.5</aws-msk-iam-auth.version>
+        <camel.version>4.2.0</camel.version>
+        <aws-msk-iam-auth.version>1.1.9</aws-msk-iam-auth.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-
+        <jackson.version>2.16.0</jackson.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
@@ -42,7 +60,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-starter-test.version}</version>
+            <version>${spring-boot-version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -78,19 +96,14 @@
             <version>${camel.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.15.2</version>
-        </dependency>
-        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>third-party-jackson-core</artifactId>
             <version>2.20.109</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>netty-nio-client</artifactId>
+            <version>2.21.27</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.msk</groupId>
@@ -102,11 +115,6 @@
                     <artifactId>jackson-dataformat-cbor</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -149,6 +157,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <argLine>${jacocoSurefire}</argLine>
                 </configuration>
             </plugin>
