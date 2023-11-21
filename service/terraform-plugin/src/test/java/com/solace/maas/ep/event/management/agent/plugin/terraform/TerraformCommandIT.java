@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -48,26 +48,12 @@ public class TerraformCommandIT {
     @Test
     public void testWriteHCL() throws IOException {
 
-        String newQueueTf = asString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
 
-        Command commandRequest = Command.builder()
-                .body(Base64.getEncoder().encodeToString(newQueueTf.getBytes(UTF_8)))
-                .commandType(CommandType.terraform)
-                .command("write_HCL")
-                .build();
-        CommandRequest terraformRequest = CommandRequest.builder()
-                .commandBundles(List.of(
-                        CommandBundle.builder()
-                                .executionType("serial")
-                                .exitOnFailure(false)
-                                .commands(List.of(commandRequest))
-                                .build()))
-                .correlationId("234")
-                .context("app123")
-                .messagingServiceId("ms1234")
-                .build();
+        Command command = generateCommand("write_HCL", newQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(command);
 
-        terraformManager.execute(terraformRequest, commandRequest, Map.of());
+        terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the file was written
         String content = Files.readString(Path.of("/tmp/config/app123-ms1234/config.tf"));
@@ -78,23 +64,10 @@ public class TerraformCommandIT {
     @Test
     public void testCreateResourceHappyPath() throws IOException {
 
-        String newQueueTf = asString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
 
-        Command commandRequest = Command.builder()
-                .body(Base64.getEncoder().encodeToString(newQueueTf.getBytes(UTF_8)))
-                .command("apply")
-                .build();
-        CommandRequest terraformRequest = CommandRequest.builder()
-                .commandBundles(List.of(
-                        CommandBundle.builder()
-                                .executionType("serial")
-                                .exitOnFailure(false)
-                                .commands(List.of(commandRequest))
-                                .build()))
-                .correlationId("234")
-                .context("app123")
-                .messagingServiceId("ms1234")
-                .build();
+        Command command = generateCommand("apply", newQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(command);
 
         when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
         when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
@@ -106,7 +79,7 @@ public class TerraformCommandIT {
         doAnswer(invocation -> {
             Object arg0 = invocation.getArgument(0);
             Consumer<String> listener = (Consumer<String>) arg0;
-            outputResult.stream().forEach(listener::accept);
+            outputResult.forEach(listener);
             return null;
         }).when(terraformClient).setOutputListener(any());
 
@@ -119,7 +92,7 @@ public class TerraformCommandIT {
             return null;
         }).when(terraformClient).setErrorListener(any());
 
-        terraformManager.execute(terraformRequest, commandRequest, Map.of());
+        terraformManager.execute(terraformRequest, command, Map.of());
 
         // Check the responses
 //        for (Command command : terraformRequest.getCommands()) {
@@ -128,7 +101,31 @@ public class TerraformCommandIT {
 //        }
     }
 
-    public static String asString(Resource resource) {
+    private static Command generateCommand(String tfCommand, String body) {
+        Command command = Command.builder()
+                .body(Optional.ofNullable(body)
+                        .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
+                        .orElse(""))
+                .command(tfCommand)
+                .build();
+        return command;
+    }
+
+    private static CommandRequest generateCommandRequest(Command commandRequest) {
+        return CommandRequest.builder()
+                .commandBundles(List.of(
+                        CommandBundle.builder()
+                                .executionType("serial")
+                                .exitOnFailure(false)
+                                .commands(List.of(commandRequest))
+                                .build()))
+                .correlationId("234")
+                .context("app123")
+                .messagingServiceId("ms1234")
+                .build();
+    }
+
+    public static String getResourceAsString(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
             return FileCopyUtils.copyToString(reader);
         } catch (IOException e) {

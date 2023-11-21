@@ -17,6 +17,8 @@ public class RouteConstants {
 
     public static final String SCAN_STATUS = "SCAN_STATUS";
 
+    public static final String COMMAND_CORRELATION_ID = "COMMAND_CORRELATION_ID";
+
     public static final String SCAN_STATUS_DESC = "SCAN_STATUS_DESCRIPTION";
 
     public static final String AGGREGATION_ID = "AGGREGATION_ID";

@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.COMMAND_CORRELATION_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
 
 @Service
 @Slf4j
@@ -37,6 +41,13 @@ public class TerraformManager {
     }
 
     public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
+
+        MDC.put(COMMAND_CORRELATION_ID, request.getCorrelationId());
+        MDC.put(MESSAGING_SERVICE_ID, request.getMessagingServiceId());
+
+        log.debug("Executing command {} for ms {} correlationId {} context {}", command, request.getMessagingServiceId(),
+                request.getCorrelationId(), request.getContext());
+
         Path configPath = Paths.get(workingDirectoryRoot + File.separator
                 + request.getContext()
                 + "-"
@@ -125,9 +136,9 @@ public class TerraformManager {
 
         boolean isDeleted = Files.deleteIfExists(filePath);
         if (isDeleted) {
-            System.out.println("File deleted successfully.");
+            log.info("File deleted successfully.");
         } else {
-            System.out.println("File does not exist or could not be deleted.");
+            log.error("File does not exist or could not be deleted.");
         }
     }
 }
