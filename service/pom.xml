@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.2</version>
+        <version>3.1.5</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
@@ -39,7 +39,7 @@
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
-        <camel.version>4.0.0-RC2</camel.version>
+        <camel.version>4.2.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
 
@@ -343,7 +343,6 @@
                         <artifactId>maven-pmd-plugin</artifactId>
                         <version>${pmd.plugin.version}</version>
                         <configuration>
-                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                             <minimumTokens>100</minimumTokens>
                             <targetJdk>${java.version}</targetJdk>
                             <rulesets>
