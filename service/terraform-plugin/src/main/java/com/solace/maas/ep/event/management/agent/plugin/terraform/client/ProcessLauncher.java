@@ -128,7 +128,9 @@ final class ProcessLauncher {
             try {
                 return process.waitFor();
             } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+                log.warn("Interrupted during terraform command execution", ex);
+                Thread.currentThread().interrupt();
+                return null;
             }
         }, executor);
     }

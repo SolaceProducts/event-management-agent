@@ -66,11 +66,16 @@ public class TerraformManager {
                 log.debug("Terraform output: {}", tfLog);
             });
             String commandVerb = command.getCommand();
+
             switch (commandVerb) {
                 case "apply" -> {
                     writeHclToFile(command, configPath);
-                    terraformClient.plan(envVars).get();
-                    terraformClient.apply(envVars).get();
+                    try {
+                        terraformClient.plan(envVars).get();
+                        terraformClient.apply(envVars).get();
+                    } catch (InterruptedException ex) {
+                        throw new InterruptedException(ex.getMessage());
+                    }
                 }
                 case "write_HCL" -> writeHclToFile(command, configPath);
                 default -> log.error("Cannot handle arbitrary commands.");
