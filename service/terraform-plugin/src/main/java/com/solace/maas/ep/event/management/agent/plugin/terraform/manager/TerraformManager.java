@@ -28,7 +28,6 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 @Service
 @Slf4j
 public class TerraformManager {
-    //private final TerraformClient terraformClient;
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
@@ -69,20 +68,10 @@ public class TerraformManager {
             String commandVerb = command.getCommand();
             try {
                 switch (commandVerb) {
-                    case "plan" -> {
-                        writeHclToFile(command, configPath);
-                        terraformClient.plan(envVars).get();
-                    }
                     case "apply" -> {
                         writeHclToFile(command, configPath);
                         terraformClient.plan(envVars).get();
                         terraformClient.apply(envVars).get();
-                    }
-                    case "import" -> {
-                        writeHclToFile(command, configPath);
-                        String address = command.getParameters().get("address");
-                        String tfId = command.getParameters().get("tfId");
-                        terraformClient.importCommand(envVars, address, tfId).get();
                     }
                     case "write_HCL" -> writeHclToFile(command, configPath);
                     default -> log.error("Cannot handle arbitrary commands.");
@@ -92,19 +81,18 @@ public class TerraformManager {
                 if (Boolean.TRUE.equals(command.getIgnoreResult())) {
                     command.setResult(CommandResult.builder()
                             .status(JobStatus.success)
+                            .logs(List.of())
+                            .errors(List.of())
                             .build());
                 } else {
                     if (!"write_HCL".equals(commandVerb)) {
                         terraformLogProcessingService.saveLogToFile(request, output);
-
-                        if (commandVerb.equals("import")) {
-                            setOutputForImportCommand(command, output);
-                        } else {
-                            command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
-                        }
+                        command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
                     } else {
                         command.setResult(CommandResult.builder()
                                 .status(JobStatus.success)
+                                .logs(List.of())
+                                .errors(List.of())
                                 .build());
                     }
                 }
@@ -113,11 +101,6 @@ public class TerraformManager {
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
-        } finally {
-            MDC.remove(COMMAND_CORRELATION_ID);
-            MDC.remove(MESSAGING_SERVICE_ID);
-            MDC.remove("traceId");
-            MDC.remove("spanId");
         }
     }
 
@@ -139,31 +122,10 @@ public class TerraformManager {
         return configPath;
     }
 
-    private static void setOutputForImportCommand(Command command, List<String> output) {
-        command.setResult(CommandResult.builder()
-                .status(JobStatus.success)
-                .logs(List.of(
-                        Map.of("address", command.getParameters().get("address"),
-                                "message", output)))
-                .errors(List.of())
-                .build());
-    }
-
     private static void writeHclToFile(Command command, Path configPath) throws IOException {
         if (StringUtils.isNotEmpty(command.getBody())) {
             byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
             Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
-        }
-    }
-
-    private static void deleteHclFile(Path configPath) throws IOException {
-        Path filePath = configPath.resolve(TF_CONFIG_FILENAME);
-
-        boolean isDeleted = Files.deleteIfExists(filePath);
-        if (isDeleted) {
-            log.info("File deleted successfully.");
-        } else {
-            log.error("File does not exist or could not be deleted.");
         }
     }
 }

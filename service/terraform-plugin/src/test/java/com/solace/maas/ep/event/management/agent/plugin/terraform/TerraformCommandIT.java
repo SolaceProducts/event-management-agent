@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -51,6 +53,9 @@ public class TerraformCommandIT {
 
     @Autowired
     private TerraformClient terraformClient;
+
+    @Autowired
+    private TerraformProperties terraformProperties;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -71,7 +76,7 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the file was written
-        String content = Files.readString(Path.of("/tmp/tfconfig/app123-ms1234/config.tf"));
+        String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/config.tf"));
 
         assertEquals(content, newQueueTf);
     }
@@ -103,8 +108,73 @@ public class TerraformCommandIT {
 
                 CommandResult result = tfCommand.getResult();
                 assertEquals(JobStatus.success, result.getStatus());
-                assert (result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
-                assert (result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
+                assertTrue(result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
+                assertTrue(result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
+            }
+        }
+    }
+
+    @Test
+    public void testCreateResourceFailurePath() throws IOException {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        List<String> newQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfAddErrorSubscriptionAlreadyPresent.txt"));
+
+        Command command = generateCommand("apply", newQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+        when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+
+        // Setup the output
+        setupLogMock(newQueueTfLogs);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan api is called
+        verify(terraformClient, times(1)).plan(any());
+        verify(terraformClient, times(1)).apply(any());
+
+        // Check the responses
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.error, result.getStatus());
+                assertTrue(result.getErrors().get(0).get("diagnosticDetail").toString().contains("Subscription a/b/c/> already exists"));
+            }
+        }
+    }
+
+    @Test
+    public void testIgnoreResult() throws IOException {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        List<String> newQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfAddHappyPath.txt"));
+
+        Command command = generateCommand("apply", newQueueTf, true);
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+        when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+
+        // Setup the output
+        setupLogMock(newQueueTfLogs);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan and apply apis are called
+        verify(terraformClient, times(1)).plan(any());
+        verify(terraformClient, times(1)).apply(any());
+
+        // Check the responses
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.success, result.getStatus());
+                assertTrue(result.getLogs().isEmpty());
+                assertTrue(result.getErrors().isEmpty());
             }
         }
     }
@@ -136,19 +206,24 @@ public class TerraformCommandIT {
 
                 CommandResult result = tfCommand.getResult();
                 assertEquals(JobStatus.success, result.getStatus());
-                assert (result.getLogs().get(2).get("message").toString().contains("Destruction complete after"));
-                assert (result.getLogs().get(3).get("message").toString().contains("Destruction complete after"));
+                assertTrue(result.getLogs().get(2).get("message").toString().contains("Destruction complete after"));
+                assertTrue(result.getLogs().get(3).get("message").toString().contains("Destruction complete after"));
             }
         }
     }
 
     private static Command generateCommand(String tfCommand, String body) {
+        return generateCommand(tfCommand, body, false);
+    }
+
+    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult) {
         return Command.builder()
                 .body(Optional.ofNullable(body)
                         .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
                         .orElse(""))
                 .command(tfCommand)
                 .commandType(CommandType.terraform)
+                .ignoreResult(ignoreResult)
                 .build();
     }
 

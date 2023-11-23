@@ -31,6 +31,7 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform.client;
  * SOFTWARE
  */
 
+import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -46,6 +47,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@ExcludeFromJacocoGeneratedReport
 @Slf4j
 final class ProcessLauncher {
     private Process process;
