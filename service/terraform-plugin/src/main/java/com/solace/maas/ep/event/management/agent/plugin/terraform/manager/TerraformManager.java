@@ -70,12 +70,8 @@ public class TerraformManager {
             switch (commandVerb) {
                 case "apply" -> {
                     writeHclToFile(command, configPath);
-                    try {
-                        terraformClient.plan(envVars).get();
-                        terraformClient.apply(envVars).get();
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    }
+                    terraformClient.plan(envVars).get();
+                    terraformClient.apply(envVars).get();
                 }
                 case "write_HCL" -> writeHclToFile(command, configPath);
                 default -> log.error("Cannot handle arbitrary commands.");
@@ -100,6 +96,8 @@ public class TerraformManager {
                             .build());
                 }
             }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
