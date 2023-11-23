@@ -14,14 +14,14 @@ public class CommandMessage extends MOPMessage {
 
     private String correlationId;
     private String context;
-    private String messagingServiceId;
+    private String serviceId;
     private List<CommandBundle> commandBundles;
 
     public CommandMessage() {
         super();
     }
 
-    public CommandMessage(String messagingServiceId,
+    public CommandMessage(String serviceId,
                           String correlationId,
                           String context,
                           List<CommandBundle> commandBundles) {
@@ -30,7 +30,7 @@ public class CommandMessage extends MOPMessage {
                 .withProtocol(MOPProtocol.commandProtocol)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
-        this.messagingServiceId = messagingServiceId;
+        this.serviceId = serviceId;
         this.correlationId = correlationId;
         this.context = context;
         this.commandBundles = commandBundles;

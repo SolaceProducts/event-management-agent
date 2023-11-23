@@ -98,7 +98,7 @@ public class TerraformCommandIT {
 
         terraformManager.execute(terraformRequest, command, Map.of());
 
-        // Validate that the plan api is called
+        // Validate that the plan and apply apis are called
         verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
@@ -135,7 +135,7 @@ public class TerraformCommandIT {
         verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
-        // Check the responses
+        // Validate that the plan and apply apis are called
         for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
             for (Command tfCommand : commandBundle.getCommands()) {
 
@@ -237,7 +237,7 @@ public class TerraformCommandIT {
                                 .build()))
                 .correlationId("234")
                 .context("app123")
-                .messagingServiceId("ms1234")
+                .serviceId("ms1234")
                 .build();
     }
 

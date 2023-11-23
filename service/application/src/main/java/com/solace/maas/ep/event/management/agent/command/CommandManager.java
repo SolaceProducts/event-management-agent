@@ -26,7 +26,7 @@ public class CommandManager {
     }
 
     public void execute(CommandRequest request) {
-        Map<String, String> envVars = setBrokerSpecificEnvVars(request.getMessagingServiceId());
+        Map<String, String> envVars = setBrokerSpecificEnvVars(request.getServiceId());
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
             for (Command command : bundle.getCommands()) {

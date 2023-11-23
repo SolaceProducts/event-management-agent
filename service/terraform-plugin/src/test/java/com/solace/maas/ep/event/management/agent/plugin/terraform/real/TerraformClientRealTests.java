@@ -153,7 +153,7 @@ public class TerraformClientRealTests {
                         .commands(List.of(commandRequest))
                         .build()))
                 .context(context)
-                .messagingServiceId("abc123")
+                .serviceId("abc123")
                 .correlationId("myCorrelationId")
                 .build();
 

@@ -14,6 +14,6 @@ import java.util.List;
 public class CommandRequest {
     private String correlationId;
     private String context;
-    private String messagingServiceId;
+    private String serviceId;
     private List<CommandBundle> commandBundles;
 }

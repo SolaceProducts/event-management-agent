@@ -43,7 +43,7 @@ public class TerraformLogProcessingService {
                 + File.separator
                 + request.getContext()
                 + "-"
-                + request.getMessagingServiceId()
+                + request.getServiceId()
                 + File.separator
                 + "logs"
         );

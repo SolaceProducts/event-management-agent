@@ -44,11 +44,11 @@ public class TerraformManager {
     public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
 
         MDC.put(COMMAND_CORRELATION_ID, request.getCorrelationId());
-        MDC.put(MESSAGING_SERVICE_ID, request.getMessagingServiceId());
+        MDC.put(MESSAGING_SERVICE_ID, request.getServiceId());
         String traceId = MDC.get("traceId");
         String spanId = MDC.get("spanId");
 
-        log.debug("Executing command {} for ms {} correlationId {} context {}", command.getCommand(), request.getMessagingServiceId(),
+        log.debug("Executing command {} for ms {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                 request.getCorrelationId(), request.getContext());
 
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
@@ -107,7 +107,7 @@ public class TerraformManager {
         Path configPath = Paths.get(terraformProperties.getWorkingDirectoryRoot() + File.separator
                 + request.getContext()
                 + "-"
-                + request.getMessagingServiceId()
+                + request.getServiceId()
                 + File.separator
         );
 
