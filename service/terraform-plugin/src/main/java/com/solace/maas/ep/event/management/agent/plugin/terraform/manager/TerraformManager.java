@@ -66,38 +66,34 @@ public class TerraformManager {
                 log.debug("Terraform output: {}", tfLog);
             });
             String commandVerb = command.getCommand();
-            try {
-                switch (commandVerb) {
-                    case "apply" -> {
-                        writeHclToFile(command, configPath);
-                        terraformClient.plan(envVars).get();
-                        terraformClient.apply(envVars).get();
-                    }
-                    case "write_HCL" -> writeHclToFile(command, configPath);
-                    default -> log.error("Cannot handle arbitrary commands.");
+            switch (commandVerb) {
+                case "apply" -> {
+                    writeHclToFile(command, configPath);
+                    terraformClient.plan(envVars).get();
+                    terraformClient.apply(envVars).get();
                 }
+                case "write_HCL" -> writeHclToFile(command, configPath);
+                default -> log.error("Cannot handle arbitrary commands.");
+            }
 
-                // Process logs and create the result
-                if (Boolean.TRUE.equals(command.getIgnoreResult())) {
+            // Process logs and create the result
+            if (Boolean.TRUE.equals(command.getIgnoreResult())) {
+                command.setResult(CommandResult.builder()
+                        .status(JobStatus.success)
+                        .logs(List.of())
+                        .errors(List.of())
+                        .build());
+            } else {
+                if (!"write_HCL".equals(commandVerb)) {
+                    terraformLogProcessingService.saveLogToFile(request, output);
+                    command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
+                } else {
                     command.setResult(CommandResult.builder()
                             .status(JobStatus.success)
                             .logs(List.of())
                             .errors(List.of())
                             .build());
-                } else {
-                    if (!"write_HCL".equals(commandVerb)) {
-                        terraformLogProcessingService.saveLogToFile(request, output);
-                        command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
-                    } else {
-                        command.setResult(CommandResult.builder()
-                                .status(JobStatus.success)
-                                .logs(List.of())
-                                .errors(List.of())
-                                .build());
-                    }
                 }
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e);
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
