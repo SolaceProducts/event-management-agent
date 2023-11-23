@@ -74,7 +74,7 @@ public class TerraformManager {
                         terraformClient.plan(envVars).get();
                         terraformClient.apply(envVars).get();
                     } catch (InterruptedException ex) {
-                        throw new InterruptedException(ex.getMessage());
+                        Thread.currentThread().interrupt();
                     }
                 }
                 case "write_HCL" -> writeHclToFile(command, configPath);
