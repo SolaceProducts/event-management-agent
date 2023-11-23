@@ -3,9 +3,15 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import org.apache.commons.lang.StringUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
@@ -19,17 +25,21 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -45,6 +55,11 @@ public class TerraformCommandIT {
     @Autowired
     private ResourceLoader resourceLoader;
 
+    @AfterEach
+    public void reset_mocks() {
+        Mockito.reset(terraformClient);
+    }
+
     @Test
     public void testWriteHCL() throws IOException {
 
@@ -56,7 +71,7 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the file was written
-        String content = Files.readString(Path.of("/tmp/config/app123-ms1234/config.tf"));
+        String content = Files.readString(Path.of("/tmp/tfconfig/app123-ms1234/config.tf"));
 
         assertEquals(content, newQueueTf);
     }
@@ -65,6 +80,7 @@ public class TerraformCommandIT {
     public void testCreateResourceHappyPath() throws IOException {
 
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        List<String> newQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfAddHappyPath.txt"));
 
         Command command = generateCommand("apply", newQueueTf);
         CommandRequest terraformRequest = generateCommandRequest(command);
@@ -73,42 +89,67 @@ public class TerraformCommandIT {
         when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
 
         // Setup the output
-        List<String> outputResult = List.of(
-                "{ \"result1\": \"okay\" }",
-                "{ \"result2\": \"okay\" }");
-        doAnswer(invocation -> {
-            Object arg0 = invocation.getArgument(0);
-            Consumer<String> listener = (Consumer<String>) arg0;
-            outputResult.forEach(listener);
-            return null;
-        }).when(terraformClient).setOutputListener(any());
-
-        // Setup the error
-        String errorResult = "{ \"error\": null }";
-        doAnswer(invocation -> {
-            Object arg0 = invocation.getArgument(0);
-            Consumer<String> listener = (Consumer<String>) arg0;
-            listener.accept(errorResult);
-            return null;
-        }).when(terraformClient).setErrorListener(any());
+        setupLogMock(newQueueTfLogs);
 
         terraformManager.execute(terraformRequest, command, Map.of());
 
+        // Validate that the plan api is called
+        verify(terraformClient, times(1)).plan(any());
+        verify(terraformClient, times(1)).apply(any());
+
         // Check the responses
-//        for (Command command : terraformRequest.getCommands()) {
-//            CommandResult result = command.getResult();
-////            result.getLogs();
-//        }
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.success, result.getStatus());
+                assert (result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
+                assert (result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
+            }
+        }
+    }
+
+    @Test
+    public void testDeleteResourceHappyPath() throws IOException {
+
+        String deleteQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/deleteQueue.tf"));
+        List<String> deleteQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfDeleteHappyPath.txt"));
+
+        Command command = generateCommand("apply", deleteQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+        when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+
+        // Setup the output
+        setupLogMock(deleteQueueTfLogs);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan api is called
+        verify(terraformClient, times(1)).plan(any());
+        verify(terraformClient, times(1)).apply(any());
+
+        // Check the responses
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.success, result.getStatus());
+                assert (result.getLogs().get(2).get("message").toString().contains("Destruction complete after"));
+                assert (result.getLogs().get(3).get("message").toString().contains("Destruction complete after"));
+            }
+        }
     }
 
     private static Command generateCommand(String tfCommand, String body) {
-        Command command = Command.builder()
+        return Command.builder()
                 .body(Optional.ofNullable(body)
                         .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
                         .orElse(""))
                 .command(tfCommand)
+                .commandType(CommandType.terraform)
                 .build();
-        return command;
     }
 
     private static CommandRequest generateCommandRequest(Command commandRequest) {
@@ -125,6 +166,16 @@ public class TerraformCommandIT {
                 .build();
     }
 
+    private void setupLogMock(List<String> logs) {
+        doAnswer(invocation -> {
+            Object arg0 = invocation.getArgument(0);
+            Consumer<String> listener = (Consumer<String>) arg0;
+            logs.forEach(listener);
+            return null;
+        }).when(terraformClient).setOutputListener(any());
+    }
+
+
     public static String getResourceAsString(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
             return FileCopyUtils.copyToString(reader);
@@ -133,4 +184,13 @@ public class TerraformCommandIT {
         }
     }
 
+    public static List<String> getResourceAsStringArray(Resource resource) {
+        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
+            return Arrays.stream(FileCopyUtils.copyToString(reader).split("\n"))
+                    .filter(StringUtils::isNotEmpty)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 }

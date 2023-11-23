@@ -5,10 +5,11 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandReq
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClientFactory;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -27,33 +28,107 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 @Service
 @Slf4j
 public class TerraformManager {
-    private final TerraformClient terraformClient;
+    //private final TerraformClient terraformClient;
     private final TerraformLogProcessingService terraformLogProcessingService;
-
-    @Value("${plugins.terraform.workingDirectoryRoot:/${HOME}/config}")
-    private String workingDirectoryRoot;
+    private final TerraformProperties terraformProperties;
+    private final TerraformClientFactory terraformClientFactory;
 
     private final static String TF_CONFIG_FILENAME = "config.tf";
 
-    public TerraformManager(TerraformClient terraformClient, TerraformLogProcessingService terraformLogProcessingService) {
-        this.terraformClient = terraformClient;
+    public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
+                            TerraformProperties terraformProperties, TerraformClientFactory terraformClientFactory) {
         this.terraformLogProcessingService = terraformLogProcessingService;
+        this.terraformProperties = terraformProperties;
+        this.terraformClientFactory = terraformClientFactory;
     }
 
     public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
 
         MDC.put(COMMAND_CORRELATION_ID, request.getCorrelationId());
         MDC.put(MESSAGING_SERVICE_ID, request.getMessagingServiceId());
+        String traceId = MDC.get("traceId");
+        String spanId = MDC.get("spanId");
 
-        log.debug("Executing command {} for ms {} correlationId {} context {}", command, request.getMessagingServiceId(),
+        log.debug("Executing command {} for ms {} correlationId {} context {}", command.getCommand(), request.getMessagingServiceId(),
                 request.getCorrelationId(), request.getContext());
 
-        Path configPath = Paths.get(workingDirectoryRoot + File.separator
+        try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
+
+            Path configPath = createConfigPath(request);
+            terraformClient.setWorkingDirectory(configPath.toFile());
+            List<String> output = new ArrayList<>();
+
+            // Write each terraform to the output list so that it can be processed later
+            // Also write the output to the main log to be streamed back to EP
+            terraformClient.setOutputListener(tfLog -> {
+                MDC.put("traceId", traceId);
+                MDC.put("spanId", spanId);
+                output.add(tfLog);
+                log.debug("Terraform output: {}", tfLog);
+            });
+            String commandVerb = command.getCommand();
+            try {
+                switch (commandVerb) {
+                    case "plan" -> {
+                        writeHclToFile(command, configPath);
+                        terraformClient.plan(envVars).get();
+                    }
+                    case "apply" -> {
+                        writeHclToFile(command, configPath);
+                        terraformClient.plan(envVars).get();
+                        terraformClient.apply(envVars).get();
+                    }
+                    case "import" -> {
+                        writeHclToFile(command, configPath);
+                        String address = command.getParameters().get("address");
+                        String tfId = command.getParameters().get("tfId");
+                        terraformClient.importCommand(envVars, address, tfId).get();
+                    }
+                    case "write_HCL" -> writeHclToFile(command, configPath);
+                    default -> log.error("Cannot handle arbitrary commands.");
+                }
+
+                // Process logs and create the result
+                if (Boolean.TRUE.equals(command.getIgnoreResult())) {
+                    command.setResult(CommandResult.builder()
+                            .status(JobStatus.success)
+                            .build());
+                } else {
+                    if (!"write_HCL".equals(commandVerb)) {
+                        terraformLogProcessingService.saveLogToFile(request, output);
+
+                        if (commandVerb.equals("import")) {
+                            setOutputForImportCommand(command, output);
+                        } else {
+                            command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
+                        }
+                    } else {
+                        command.setResult(CommandResult.builder()
+                                .status(JobStatus.success)
+                                .build());
+                    }
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        } finally {
+            MDC.remove(COMMAND_CORRELATION_ID);
+            MDC.remove(MESSAGING_SERVICE_ID);
+            MDC.remove("traceId");
+            MDC.remove("spanId");
+        }
+    }
+
+    private Path createConfigPath(CommandRequest request) {
+        Path configPath = Paths.get(terraformProperties.getWorkingDirectoryRoot() + File.separator
                 + request.getContext()
                 + "-"
                 + request.getMessagingServiceId()
                 + File.separator
         );
+
         if (Files.notExists(configPath)) {
             try {
                 Files.createDirectories(configPath);
@@ -61,57 +136,7 @@ public class TerraformManager {
                 throw new IllegalArgumentException(e);
             }
         }
-        terraformClient.setWorkingDirectory(configPath.toFile());
-        List<String> output = new ArrayList<>();
-        // The output is a series of individual JSON objects
-        // We collect them into lists and eventually concatenate them into a single valid JSON list
-        terraformClient.setOutputListener(output::add);
-        String commandVerb = command.getCommand();
-        try {
-            switch (commandVerb) {
-                case "plan" -> {
-                    writeHclToFile(command, configPath);
-                    terraformClient.plan(envVars).get();
-                }
-                case "apply" -> {
-                    writeHclToFile(command, configPath);
-                    terraformClient.plan(envVars).get();
-                    terraformClient.apply(envVars).get();
-                }
-                case "import" -> {
-                    writeHclToFile(command, configPath);
-                    String address = command.getParameters().get("address");
-                    String tfId = command.getParameters().get("tfId");
-                    terraformClient.importCommand(envVars, address, tfId).get();
-                }
-                case "write_HCL" -> writeHclToFile(command, configPath);
-                default -> log.error("Cannot handle arbitrary commands.");
-            }
-
-            // Process logs and create the result
-            //TODO: We may need to have a log rotation/cleaning mechanism
-            if (Boolean.TRUE.equals(command.getIgnoreResult())) {
-                command.setResult(CommandResult.builder()
-                        .status(JobStatus.success)
-                        .build());
-            } else {
-                if (!"write_HCL".equals(commandVerb)) {
-                    terraformLogProcessingService.saveLogToFile(request, output);
-
-                    if (commandVerb.equals("import")) {
-                        setOutputForImportCommand(command, output);
-                    } else {
-                        command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
-                    }
-                } else {
-                    command.setResult(CommandResult.builder()
-                            .status(JobStatus.success)
-                            .build());
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+        return configPath;
     }
 
     private static void setOutputForImportCommand(Command command, List<String> output) {

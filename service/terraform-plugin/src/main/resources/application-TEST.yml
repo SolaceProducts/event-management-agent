@@ -3,4 +3,6 @@ spring:
     web-application-type: none
 plugins:
   terraform:
-    workingDirectoryRoot: /tmp/config
+    workingDirectoryRoot: /tmp/tfconfig
+logging:
+  config: classpath:logback-spring-test.xml

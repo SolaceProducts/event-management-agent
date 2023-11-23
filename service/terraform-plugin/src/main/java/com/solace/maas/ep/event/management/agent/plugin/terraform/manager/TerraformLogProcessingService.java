@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class TerraformLogProcessingService {
     public static final String KEY_LOG_LEVEL = "@level";
     public static final String VALUE_LOG_LEVEL_ERROR = "error";
@@ -28,25 +30,31 @@ public class TerraformLogProcessingService {
     public static final String KEY_MESSAGE = "@message";
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
-
-    @Value("${plugins.terraform.workingDirectoryRoot:/${HOME}/config}")
-    private String workingDirectoryRoot;
+    private final TerraformProperties terraformProperties;
     private final ObjectMapper objectMapper;
 
-    public TerraformLogProcessingService(ObjectMapper objectMapper) {
+    public TerraformLogProcessingService(ObjectMapper objectMapper, TerraformProperties terraformProperties) {
         this.objectMapper = objectMapper;
+        this.terraformProperties = terraformProperties;
     }
 
     public void saveLogToFile(CommandRequest request, List<String> logs) throws IOException {
-        //format <root-workingdir>/<workingdir>/logs/<timestamp>-<jobid>-.job.log
-        Path out = Paths.get(workingDirectoryRoot
+        Path logPath = Paths.get(terraformProperties.getWorkingDirectoryRoot()
                 + File.separator
                 + request.getContext()
                 + "-"
                 + request.getMessagingServiceId()
                 + File.separator
-                + System.currentTimeMillis() + "-" + request.getCorrelationId() + "-job.log"
+                + "logs"
         );
+
+        if (Files.notExists(logPath)) {
+            Files.createDirectories(logPath);
+        }
+
+        Path out = Files.createTempFile(logPath, System.currentTimeMillis() + "-"
+                + request.getCorrelationId() + "-job", ".log");
+
         Files.write(out, logs, Charset.defaultCharset());
     }
 

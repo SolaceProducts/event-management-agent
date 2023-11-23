@@ -31,6 +31,8 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform.client;
  * SOFTWARE
  */
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +46,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 final class ProcessLauncher {
     private Process process;
     private final ProcessBuilder builder;
@@ -104,7 +107,7 @@ final class ProcessLauncher {
             builder.inheritIO();
         }
 
-        System.out.println("Executing command: " + String.join(" ", builder.command()));
+        log.debug("Executing command: " + String.join(" ", builder.command()));
 
         try {
             process = builder.start();

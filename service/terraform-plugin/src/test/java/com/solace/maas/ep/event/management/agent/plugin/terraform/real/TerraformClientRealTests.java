@@ -23,6 +23,9 @@ import java.io.UncheckedIOException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -51,6 +54,29 @@ public class TerraformClientRealTests {
     @Test
     public void createNewQueue() {
         executeTerraformCommand("addQueue.tf", "apply");
+    }
+
+    @Test
+    public void create2Queues() {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        Future<List<CommandBundle>> future1 = executorService.submit(() ->
+                executeTerraformCommand("addQueue.tf", "apply"));
+        Future<List<CommandBundle>> future2 = executorService.submit(() ->
+                executeTerraformCommand("addQueue2.tf", "apply", "app123-consumer2"));
+        // wait for the futures to complete
+        try {
+            List<CommandBundle> command1Bundles = future1.get();
+            List<CommandBundle> command2Bundles = future2.get();
+        } catch (Exception e) {
+            log.error("Error waiting for futures to complete", e);
+        }
+    }
+
+    @Test
+    public void delete2Queues() {
+        executeTerraformCommand("deleteQueue.tf", "apply");
+        executeTerraformCommand("deleteQueue2.tf", "apply", "app123-consumer2");
+
     }
 
     @Test
@@ -112,6 +138,10 @@ public class TerraformClientRealTests {
     }
 
     private List<CommandBundle> executeTerraformCommand(String hclFileName, String tfVerb) {
+        return executeTerraformCommand(hclFileName, tfVerb, "app123-consumer");
+    }
+
+    private List<CommandBundle> executeTerraformCommand(String hclFileName, String tfVerb, String context) {
         String terraformString = asString(resourceLoader.getResource("classpath:realTfFiles" + File.separator + hclFileName));
 
         Command commandRequest = Command.builder()
@@ -122,7 +152,9 @@ public class TerraformClientRealTests {
                 .commandBundles(List.of(CommandBundle.builder()
                         .commands(List.of(commandRequest))
                         .build()))
-                .context("app123-consumer")
+                .context(context)
+                .messagingServiceId("abc123")
+                .correlationId("myCorrelationId")
                 .build();
 
         for (Command command : terraformRequest.getCommandBundles().get(0).getCommands()) {

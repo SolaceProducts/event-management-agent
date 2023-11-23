@@ -1,6 +1,9 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClientFactory;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformLogProcessingService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import org.springframework.context.annotation.Bean;
@@ -17,14 +20,32 @@ public class TerraformTestConfig {
 
     @Bean
     @Primary
-    public TerraformLogProcessingService getTfLogProcessingService() {
-        return mock(TerraformLogProcessingService.class);
+    public ObjectMapper getObjectMapper() {
+        return new ObjectMapper();
     }
 
     @Bean
     @Primary
-    public TerraformManager getTfManager(TerraformClient tfClient, TerraformLogProcessingService terraformLogProcessingService) {
-        return new TerraformManager(tfClient, terraformLogProcessingService);
+    public TerraformProperties getTfProperties() {
+        return new TerraformProperties();
     }
 
+    @Bean
+    @Primary
+    public TerraformLogProcessingService getTfLogProcessingService(ObjectMapper objectMapper, TerraformProperties terraformProperties) {
+        return new TerraformLogProcessingService(objectMapper, terraformProperties);
+    }
+
+    @Bean
+    @Primary
+    public TerraformClientFactory getTfClientFactory(TerraformClient terraformClient) {
+        return () -> terraformClient;
+    }
+
+    @Bean
+    @Primary
+    public TerraformManager getTfManager(TerraformLogProcessingService terraformLogProcessingService,
+                                         TerraformProperties terraformProperties, TerraformClientFactory terraformClientFactory) {
+        return new TerraformManager(terraformLogProcessingService, terraformProperties, terraformClientFactory);
+    }
 }
