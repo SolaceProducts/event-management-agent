@@ -337,7 +337,7 @@ public class TerraformCommandIT {
     }
 
 
-    public static String getResourceAsString(Resource resource) {
+    private static String getResourceAsString(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
             return FileCopyUtils.copyToString(reader);
         } catch (IOException e) {
@@ -345,7 +345,7 @@ public class TerraformCommandIT {
         }
     }
 
-    public static List<String> getResourceAsStringArray(Resource resource) {
+    private static List<String> getResourceAsStringArray(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
             return Arrays.stream(FileCopyUtils.copyToString(reader).split("\n"))
                     .filter(StringUtils::isNotEmpty)
