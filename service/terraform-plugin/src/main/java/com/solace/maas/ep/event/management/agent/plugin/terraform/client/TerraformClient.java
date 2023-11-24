@@ -143,12 +143,12 @@ public class TerraformClient implements AutoCloseable {
     private CompletableFuture<Boolean> run(Map<String, String> envVars, String... commands) throws IOException {
         assert commands.length > 0;
         ProcessLauncher[] launchers = new ProcessLauncher[commands.length];
-        for (int i = 0; i < launchers.length; i++) {
+        for (int i = 0; i < commands.length; i++) {
             launchers[i] = getTerraformLauncher(commands[i], envVars);
         }
 
         CompletableFuture<Integer> result = launchers[0].launch().thenApply(c -> c == 0 ? 1 : -1);
-        for (int i = 1; i < commands.length; i++) {
+        for (int i = 1; i < launchers.length; i++) {
             result = result.thenCompose(index -> {
                 if (index > 0) {
                     return launchers[index].launch().thenApply(c -> c == 0 ? index + 1 : -1);
