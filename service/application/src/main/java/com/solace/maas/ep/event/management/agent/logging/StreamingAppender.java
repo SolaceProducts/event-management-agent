@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         if (!standalone) {
-            if (!event.getMDCPropertyMap().get(RouteConstants.SCAN_ID).isEmpty()) {
+            if (StringUtils.isNotEmpty(event.getMDCPropertyMap().get(RouteConstants.SCAN_ID))) {
                 sendLogsAsync(event,
                         event.getMDCPropertyMap().get(RouteConstants.SCAN_ID),
                         event.getMDCPropertyMap().get(RouteConstants.TRACE_ID),
@@ -34,6 +35,8 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
                         event.getMDCPropertyMap().get(RouteConstants.SCAN_TYPE),
                         event.getMDCPropertyMap().get(RouteConstants.SCHEDULE_ID),
                         event.getMDCPropertyMap().get(RouteConstants.MESSAGING_SERVICE_ID));
+            } else if (StringUtils.isNotEmpty(event.getMDCPropertyMap().get(RouteConstants.COMMAND_CORRELATION_ID))) {
+                log.trace("This is a placeholder for DATAGO-64298");
             }
         }
     }
