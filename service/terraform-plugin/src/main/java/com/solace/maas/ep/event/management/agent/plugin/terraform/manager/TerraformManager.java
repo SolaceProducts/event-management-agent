@@ -49,7 +49,7 @@ public class TerraformManager {
         String traceId = MDC.get("traceId");
         String spanId = MDC.get("spanId");
 
-        log.debug("Executing command {} for ms {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
+        log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                 request.getCorrelationId(), request.getContext());
 
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
