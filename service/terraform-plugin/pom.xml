@@ -14,7 +14,6 @@
         <spring-boot-starter-web.version>3.1.5</spring-boot-starter-web.version>
         <spring-boot-starter-test.version>3.1.5</spring-boot-starter-test.version>
         <jupiter.version>5.3.1</jupiter.version>
-        <camel.version>4.0.0-RC2</camel.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>

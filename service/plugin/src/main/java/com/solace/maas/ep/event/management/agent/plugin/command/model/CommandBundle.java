@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommandBundle {
-    private String executionType; // (serial / parallel)
+    private ExecutionType executionType;
     private Boolean exitOnFailure;
     private List<Command> commands;
 }

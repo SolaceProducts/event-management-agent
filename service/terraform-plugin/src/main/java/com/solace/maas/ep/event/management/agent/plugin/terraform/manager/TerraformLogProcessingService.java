@@ -60,7 +60,7 @@ public class TerraformLogProcessingService {
 
     public CommandResult buildTfCommandResult(List<String> jsonLogs) {
         if (CollectionUtils.isEmpty(jsonLogs)) {
-            throw new IllegalArgumentException("Cannot extract information empty logs");
+            throw new IllegalArgumentException("No terraform logs were collected. Unable to process response.");
         }
 
         List<Map<String, Object>> successLogs = jsonLogs.stream()
@@ -128,11 +128,11 @@ public class TerraformLogProcessingService {
         if (diagnostic == null) {
             return "";
         }
-        if (!(diagnostic instanceof Map)) {
-            throw new IllegalArgumentException("Unsupported object type encountered");
+        if (diagnostic instanceof Map diagnosticMap) {
+            return String.valueOf(diagnosticMap.get("detail"));
         }
-        return String.valueOf(((Map<String, Object>) diagnostic).get("detail"));
 
+        throw new IllegalArgumentException("Unsupported terraform log object type encountered");
     }
 
     private String extractResourceAddressFromDiagnostic(Object diagnostic) {

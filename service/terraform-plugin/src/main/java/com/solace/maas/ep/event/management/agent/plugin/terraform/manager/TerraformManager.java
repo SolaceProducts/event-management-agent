@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
@@ -54,53 +55,77 @@ public class TerraformManager {
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
 
             Path configPath = createConfigPath(request);
-            terraformClient.setWorkingDirectory(configPath.toFile());
-            List<String> output = new ArrayList<>();
+            List<String> logOutput = setupTerraformClient(terraformClient, configPath, traceId, spanId);
+            String commandVerb = executeTerraformCommand(command, envVars, configPath, terraformClient);
+            processTerraformResponse(request, command, commandVerb, logOutput);
+        } catch (InterruptedException e) {
+            log.error("Received a thread interrupt while executing the terraform command", e);
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            log.error("An error was encountered while executing the terraform command", e);
+            setCommandError(command, e);
+        }
+    }
 
-            // Write each terraform to the output list so that it can be processed later
-            // Also write the output to the main log to be streamed back to EP
-            terraformClient.setOutputListener(tfLog -> {
-                MDC.put("traceId", traceId);
-                MDC.put("spanId", spanId);
-                output.add(tfLog);
-                log.debug("Terraform output: {}", tfLog);
-            });
-            String commandVerb = command.getCommand();
+    private static List<String> setupTerraformClient(TerraformClient terraformClient, Path configPath, String traceId, String spanId) {
+        terraformClient.setWorkingDirectory(configPath.toFile());
+        List<String> output = new ArrayList<>();
 
-            switch (commandVerb) {
-                case "apply" -> {
-                    writeHclToFile(command, configPath);
-                    terraformClient.plan(envVars).get();
-                    terraformClient.apply(envVars).get();
-                }
-                case "write_HCL" -> writeHclToFile(command, configPath);
-                default -> log.error("Cannot handle arbitrary commands.");
+        // Write each terraform to the output list so that it can be processed later
+        // Also write the output to the main log to be streamed back to EP
+        terraformClient.setOutputListener(tfLog -> {
+            MDC.put("traceId", traceId);
+            MDC.put("spanId", spanId);
+            output.add(tfLog);
+            log.debug("Terraform output: {}", tfLog);
+        });
+        return output;
+    }
+
+    private static String executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath, TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
+        String commandVerb = command.getCommand();
+        switch (commandVerb) {
+            case "apply" -> {
+                writeHclToFile(command, configPath);
+                terraformClient.plan(envVars).get();
+                terraformClient.apply(envVars).get();
             }
+            case "write_HCL" -> writeHclToFile(command, configPath);
+            default -> throw new IllegalArgumentException("Unsupported command " + commandVerb);
+        }
+        return commandVerb;
+    }
 
-            // Process logs and create the result
-            if (Boolean.TRUE.equals(command.getIgnoreResult())) {
+    private void processTerraformResponse(CommandRequest request, Command command, String commandVerb, List<String> output) throws IOException {
+        // Process logs and create the result
+        if (Boolean.TRUE.equals(command.getIgnoreResult())) {
+            command.setResult(CommandResult.builder()
+                    .status(JobStatus.success)
+                    .logs(List.of())
+                    .errors(List.of())
+                    .build());
+        } else {
+            if (!"write_HCL".equals(commandVerb)) {
+                terraformLogProcessingService.saveLogToFile(request, output);
+                command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
+            } else {
                 command.setResult(CommandResult.builder()
                         .status(JobStatus.success)
                         .logs(List.of())
                         .errors(List.of())
                         .build());
-            } else {
-                if (!"write_HCL".equals(commandVerb)) {
-                    terraformLogProcessingService.saveLogToFile(request, output);
-                    command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
-                } else {
-                    command.setResult(CommandResult.builder()
-                            .status(JobStatus.success)
-                            .logs(List.of())
-                            .errors(List.of())
-                            .build());
-                }
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
         }
+    }
+
+    private void setCommandError(Command command, Exception e) {
+        command.setResult(CommandResult.builder()
+                .status(JobStatus.error)
+                .logs(List.of())
+                .errors(List.of(
+                        Map.of("message", e.getMessage(),
+                                "errorType", e.getClass().getName())))
+                .build());
     }
 
     private Path createConfigPath(CommandRequest request) {
@@ -123,8 +148,18 @@ public class TerraformManager {
 
     private static void writeHclToFile(Command command, Path configPath) throws IOException {
         if (StringUtils.isNotEmpty(command.getBody())) {
-            byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
-            Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
+            // At the moment, we only support base64 decoding
+            Map<String, String> parameters = command.getParameters();
+            if (parameters != null && parameters.containsKey("Content-Encoding") && "base64".equals(parameters.get("Content-Encoding"))) {
+                byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
+                Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
+            } else {
+                if (parameters == null || !parameters.containsKey("Content-Encoding")) {
+                    throw new IllegalArgumentException("Missing Content-Encoding property in command parameters.");
+                }
+
+                throw new IllegalArgumentException("Unsupported encoding type " + parameters.get("Content-Encoding"));
+            }
         }
     }
 }

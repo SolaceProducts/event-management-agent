@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBun
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
@@ -115,7 +116,7 @@ public class TerraformCommandIT {
     }
 
     @Test
-    public void testCreateResourceFailurePath() throws IOException {
+    public void testCreateResourceTerraformErrorFailurePath() throws IOException {
 
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
         List<String> newQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfAddErrorSubscriptionAlreadyPresent.txt"));
@@ -142,6 +143,83 @@ public class TerraformCommandIT {
                 CommandResult result = tfCommand.getResult();
                 assertEquals(JobStatus.error, result.getStatus());
                 assertTrue(result.getErrors().get(0).get("diagnosticDetail").toString().contains("Subscription a/b/c/> already exists"));
+            }
+        }
+    }
+
+    @Test
+    public void testCreateResourceMissingParameterFailurePath() {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        // Generate a command without the expected base64 parameters
+        Command command = generateCommand("apply", newQueueTf, false, Map.of());
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan and apply apis are called
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.error, result.getStatus());
+                assertTrue(result.getErrors().get(0).get("errorType").toString().contains("java.lang.IllegalArgumentException"));
+                assertTrue(result.getErrors().get(0).get("message").toString().contains("Missing Content-Encoding property in command parameters."));
+            }
+        }
+    }
+
+    @Test
+    public void testCreateResourceNoLogsFailurePath() throws IOException {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        Command command = generateCommand("apply", newQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+        when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+
+        // Setup the empty output
+        setupLogMock(List.of());
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan api is called
+        verify(terraformClient, times(1)).plan(any());
+        verify(terraformClient, times(1)).apply(any());
+
+        // Validate that the plan and apply apis are called
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.error, result.getStatus());
+                assertTrue(result.getErrors().get(0).get("errorType").toString().contains("java.lang.IllegalArgumentException"));
+                assertTrue(result.getErrors().get(0).get("message").toString().contains("No terraform logs were collected. Unable to process response."));
+            }
+        }
+    }
+
+    @Test
+    public void testCreateResourceUnknownCommandFailurePath() {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        Command command = generateCommand("appply", newQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan and apply apis are called
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.error, result.getStatus());
+                assertTrue(result.getErrors().get(0).get("errorType").toString().contains("java.lang.IllegalArgumentException"));
+                assertTrue(result.getErrors().get(0).get("message").toString().contains("Unsupported command appply"));
             }
         }
     }
@@ -217,6 +295,12 @@ public class TerraformCommandIT {
     }
 
     private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult) {
+        return generateCommand(tfCommand, body, ignoreResult,
+                Map.of("Content-Type", "application/hcl",
+                        "Content-Encoding", "base64"));
+    }
+
+    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult, Map<String, String> parameters) {
         return Command.builder()
                 .body(Optional.ofNullable(body)
                         .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
@@ -224,14 +308,16 @@ public class TerraformCommandIT {
                 .command(tfCommand)
                 .commandType(CommandType.terraform)
                 .ignoreResult(ignoreResult)
+                .parameters(parameters)
                 .build();
     }
+
 
     private static CommandRequest generateCommandRequest(Command commandRequest) {
         return CommandRequest.builder()
                 .commandBundles(List.of(
                         CommandBundle.builder()
-                                .executionType("serial")
+                                .executionType(ExecutionType.serial)
                                 .exitOnFailure(false)
                                 .commands(List.of(commandRequest))
                                 .build()))

@@ -147,6 +147,9 @@ public class TerraformClientRealTests {
         Command commandRequest = Command.builder()
                 .body(Base64.getEncoder().encodeToString(terraformString.getBytes(UTF_8)))
                 .command(tfVerb)
+                .parameters(Map.of(
+                        "Content-Type", "application/hcl",
+                        "Content-Encoding", "base64"))
                 .build();
         CommandRequest terraformRequest = CommandRequest.builder()
                 .commandBundles(List.of(CommandBundle.builder()
