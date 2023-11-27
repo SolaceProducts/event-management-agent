@@ -49,7 +49,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
         this.entityToEventConverter = entityToEventConverter;
         this.eventToEntityConverter = eventToEntityConverter;
         this.serviceAssociationsRepository = serviceAssociationsRepository;
-        messagingServiceClients = new HashMap<>();
+        this.messagingServiceClients = new HashMap<>();
     }
 
     /**
