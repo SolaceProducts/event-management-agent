@@ -5,16 +5,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.List;
+
 @Data
 @Configuration
 @PropertySource("classpath:application.yml")
 @ConfigurationProperties(prefix = "event-portal")
 public class EventPortalProperties {
-    private String runtimeAgentId;
+    private String runtimeAgentId = "standalone";
 
-    private String organizationId;
+    private String organizationId = "standalone";
 
     private String topicPrefix;
 
-    private GatewayProperties gateway;
+    private GatewayProperties gateway
+            = new GatewayProperties("standalone", "standalone", new GatewayMessagingProperties(true, false, List.of()));
 }

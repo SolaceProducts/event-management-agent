@@ -4,11 +4,11 @@ import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescen
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.AbstractRouteBuilder;
 import com.solace.maas.ep.event.management.agent.processor.ScanDataProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnExpression("${eventPortal.gateway.messaging.standalone} == false")
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanDataPublisherRouteBuilder extends AbstractRouteBuilder {
     private final ScanDataProcessor processor;
 

@@ -12,9 +12,11 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDesti
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanRecipientHierarchyEntity;
+import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanTypeEntity;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRecipientHierarchyRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
+import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanTypeBO;
@@ -50,6 +52,8 @@ public class ScanService {
 
     private final ScanTypeRepository scanTypeRepository;
 
+    private final ScanStatusRepository scanStatusRepository;
+
     private final ScanRouteService scanRouteService;
 
     private final RouteService routeService;
@@ -60,12 +64,13 @@ public class ScanService {
 
     public ScanService(ScanRepository repository,
                        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
-                       ScanTypeRepository scanTypeRepository, ScanRouteService scanRouteService,
+                       ScanTypeRepository scanTypeRepository, ScanStatusRepository scanStatusRepository, ScanRouteService scanRouteService,
                        RouteService routeService, ProducerTemplate producerTemplate,
                        IDGenerator idGenerator) {
         this.repository = repository;
         this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
         this.scanTypeRepository = scanTypeRepository;
+        this.scanStatusRepository = scanStatusRepository;
         this.scanRouteService = scanRouteService;
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
@@ -134,7 +139,7 @@ public class ScanService {
      * @param routeBundles - see description above
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId, String traceId,
+    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId, String traceId, String actorId,
                              MessagingServiceEntity messagingServiceEntity, String runtimeAgentId) {
         log.info("Scan request [{}], trace ID [{}]: Starting a single scan.", scanId, traceId);
 
@@ -148,14 +153,14 @@ public class ScanService {
         log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
                 scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
-        sendScanStatus(groupId, scanId, traceId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+        sendScanStatus(groupId, scanId, traceId, actorId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
                 StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
         String scanEntityId = Objects.requireNonNullElseGet(scanId, () -> UUID.randomUUID().toString());
 
-        ScanEntity returnedScanEntity = setupScan(scanEntityId, traceId, messagingServiceEntity, runtimeAgentId);
+        ScanEntity returnedScanEntity = setupScan(scanEntityId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
 
         for (RouteBundle routeBundle : routeBundles) {
             log.trace("Processing RouteBundles: {}", routeBundle);
@@ -165,15 +170,15 @@ public class ScanService {
 
             updateScan(route, routeBundle, returnedScanEntity);
 
-            scanAsync(groupId, scanEntityId, traceId, route, routeBundle.getMessagingServiceId());
+            scanAsync(groupId, scanEntityId, traceId, actorId, route, routeBundle.getMessagingServiceId());
         }
 
         return scanId;
     }
 
     @Transactional
-    protected ScanEntity setupScan(String scanId, String traceId, MessagingServiceEntity messagingServiceEntity, String emaId) {
-        return saveScanEntity(scanId, traceId, messagingServiceEntity, emaId);
+    protected ScanEntity setupScan(String scanId, String traceId, String actorId, MessagingServiceEntity messagingServiceEntity, String emaId) {
+        return saveScanEntity(scanId, traceId, actorId, messagingServiceEntity, emaId);
     }
 
     @Transactional
@@ -207,10 +212,12 @@ public class ScanService {
         setupRecipientsForScan(scanEntity, routeBundle);
     }
 
-    private ScanEntity saveScanEntity(String scanId, String traceId, MessagingServiceEntity messagingServiceEntity, String emaId) {
+    private ScanEntity saveScanEntity(String scanId, String traceId, String actorId,
+                                      MessagingServiceEntity messagingServiceEntity, String emaId) {
         ScanEntity scan = ScanEntity.builder()
                 .id(scanId)
                 .traceId(traceId)
+                .actorId(actorId)
                 .messagingService(messagingServiceEntity)
                 .emaId(emaId)
                 .build();
@@ -219,6 +226,8 @@ public class ScanService {
     }
 
     private void setScanType(RouteBundle routeBundle, ScanEntity scanEntity) {
+
+
         ScanTypeEntity scanType = ScanTypeEntity.builder()
                 .id(idGenerator.generateRandomUniqueId())
                 .name(routeBundle.getScanType())
@@ -226,6 +235,19 @@ public class ScanService {
                 .build();
 
         scanTypeRepository.save(scanType);
+
+        setScanStatus(scanType);
+    }
+
+    private void setScanStatus(ScanTypeEntity scanType) {
+        ScanStatusEntity scanStatus = ScanStatusEntity.builder()
+                .id(idGenerator.generateRandomUniqueId())
+                .status(ScanStatus.INITIATED.name())
+                .scanType(scanType)
+                .build();
+
+        scanStatusRepository.save(scanStatus);
+
     }
 
     protected void setupRecipientsForScan(ScanEntity scanEntity, RouteBundle routeBundle) {
@@ -250,12 +272,13 @@ public class ScanService {
      * @param scanTypes          The scan types included in the scan request.
      * @param status             The status of scan.
      */
-    public void sendScanStatus(String groupId, String scanId, String traceId, String messagingServiceId, String scanTypes,
+    public void sendScanStatus(String groupId, String scanId, String traceId, String actorId, String messagingServiceId, String scanTypes,
                                ScanStatus status) {
         producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
@@ -263,12 +286,14 @@ public class ScanService {
         });
     }
 
-    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, RouteEntity route, String messagingServiceId) {
+    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, String actorId,
+                                                    RouteEntity route, String messagingServiceId) {
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
 
@@ -282,7 +307,9 @@ public class ScanService {
             MDC.put(RouteConstants.SCHEDULE_ID, groupId);
             MDC.put(RouteConstants.SCAN_ID, scanId);
             MDC.put(RouteConstants.TRACE_ID, traceId);
+            MDC.put(RouteConstants.ACTOR_ID, actorId);
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+
         }).whenComplete((exchange, exception) -> {
             if (exception != null) {
                 log.error("Exception occurred while executing route {} for scan request: {}.", route.getId(), scanId, exception);

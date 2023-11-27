@@ -4,7 +4,8 @@ public enum MOPProtocol {
     scanData(2850),
     scanDataControl(2851),
     EMAHeartbeat(2852),
-    event(1400);
+    commandProtocol(2853);
+
 
     private final int id;
 

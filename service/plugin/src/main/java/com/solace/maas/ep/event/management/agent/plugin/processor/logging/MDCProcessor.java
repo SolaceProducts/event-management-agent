@@ -19,6 +19,9 @@ public class MDCProcessor implements Processor {
         MDC.put(RouteConstants.TRACE_ID,
                 exchange.getIn().getHeader(RouteConstants.TRACE_ID, String.class));
 
+        MDC.put(RouteConstants.ACTOR_ID,
+                exchange.getIn().getHeader(RouteConstants.ACTOR_ID, String.class));
+
         MDC.put(RouteConstants.SCAN_TYPE,
                 exchange.getIn().getHeader(RouteConstants.SCAN_TYPE, String.class));
 

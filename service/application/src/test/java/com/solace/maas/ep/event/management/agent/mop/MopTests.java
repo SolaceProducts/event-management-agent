@@ -52,7 +52,7 @@ public class MopTests {
 
     @Test
     public void testHeartbeatAgentMOPProtocol() {
-        HeartbeatMessage message = new HeartbeatMessage("runtimeId", "timestamp");
+        HeartbeatMessage message = new HeartbeatMessage("runtimeId", "timestamp", "1.1.2");
         assertEquals(message.getMopProtocol(), MOPProtocol.EMAHeartbeat);
     }
 }

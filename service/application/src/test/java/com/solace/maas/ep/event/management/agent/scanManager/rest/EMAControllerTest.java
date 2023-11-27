@@ -5,13 +5,12 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.GatewayMessagingProperties;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.GatewayProperties;
+import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ClientException;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -22,14 +21,14 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class EMAControllerTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Autowired
     private ScanRequestMapper scanRequestMapper;
@@ -46,6 +45,7 @@ public class EMAControllerTest {
                 "id",
                 "scanConnected",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN_TYPE"),
                 List.of());
 
@@ -57,16 +57,12 @@ public class EMAControllerTest {
         when(scanManager.scan(scanRequestBO))
                 .thenReturn("scanId");
 
-        EMAController controller =
-                new EMAControllerImpl(scanRequestMapper, scanManager, idGenerator, eventPortalProperties);
-
-        ResponseEntity<String> reply = controller.scan("id", scanRequestDTO);
+        EMAController controller = new EMAControllerImpl(scanRequestMapper, scanManager, idGenerator, eventPortalProperties);
 
         // Scan requests via REST endpoints are prevented in connected mode, e.g., standalone=false
-        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(reply.getBody()).contains("Scan requests via REST endpoint could not be initiated in connected mode.");
+        ClientException thrown = assertThrows(ClientException.class, () -> controller.scan("id", scanRequestDTO));
 
-        exception.expect(Exception.class);
+        assertTrue(thrown.getMessage().contains("Scan requests via REST endpoint could not be initiated in connected mode."));
     }
 
     @Test
@@ -80,6 +76,7 @@ public class EMAControllerTest {
                 "id",
                 "scanId",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN"),
                 List.of("EVENT_PORTAL"));
 
@@ -93,13 +90,9 @@ public class EMAControllerTest {
 
         EMAController controller = new EMAControllerImpl(scanRequestMapper, scanManager, idGenerator, eventPortalProperties);
 
-        ResponseEntity<String> reply =
-                controller.scan("id", scanRequestDTO);
+        ClientException thrown = assertThrows(ClientException.class, () -> controller.scan("id", scanRequestDTO));
 
-        assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(reply.getBody()).contains("Scan data could not be streamed to EP in standalone mode.");
-
-        exception.expect(Exception.class);
+        assertThat(thrown.getMessage()).contains("Scan data could not be streamed to the Event Portal in standalone mode.");
     }
 
     @Test
@@ -113,6 +106,7 @@ public class EMAControllerTest {
                 "id",
                 "scanId",
                 "traceId",
+                "actorId",
                 List.of("TEST_SCAN"),
                 List.of());
 

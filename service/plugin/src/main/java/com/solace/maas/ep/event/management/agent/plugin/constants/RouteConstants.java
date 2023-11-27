@@ -9,11 +9,15 @@ public class RouteConstants {
 
     public static final String SCAN_ID = "SCAN_ID";
 
-    public static final String TRACE_ID = "TRACE_ID";
+    public static final String TRACE_ID = "traceId";
+
+    public static final String ACTOR_ID = "ACTOR_ID";
 
     public static final String SCAN_TYPE = "SCAN_TYPE";
 
     public static final String SCAN_STATUS = "SCAN_STATUS";
+
+    public static final String COMMAND_CORRELATION_ID = "COMMAND_CORRELATION_ID";
 
     public static final String SCAN_STATUS_DESC = "SCAN_STATUS_DESCRIPTION";
 

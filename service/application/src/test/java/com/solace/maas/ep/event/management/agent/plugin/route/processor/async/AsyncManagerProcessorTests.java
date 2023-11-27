@@ -6,8 +6,8 @@ import com.solace.maas.ep.event.management.agent.plugin.processor.async.AsyncMan
 import com.solace.maas.ep.event.management.agent.plugin.route.manager.AsyncManager;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.builder.ExchangeBuilder;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -40,7 +40,7 @@ public class AsyncManagerProcessorTests {
                 RouteConstants.SCAN_TYPE, "testScan"
         );
 
-        Exchange exchange = ExchangeBuilder.anExchange(mock(ExtendedCamelContext.class))
+        Exchange exchange = ExchangeBuilder.anExchange(mock(CamelContext.class))
                 .withBody(body)
                 .build();
 

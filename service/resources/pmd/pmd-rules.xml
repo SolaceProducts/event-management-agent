@@ -13,12 +13,14 @@
         <exclude name="DoubleBraceInitialization"/>
         <exclude name="GuardLogStatement"/>
         <exclude name="JUnit4TestShouldUseBeforeAnnotation"/>
+        <exclude name="JUnit5TestShouldBePackagePrivate"/>
         <exclude name="JUnitAssertionsShouldIncludeMessage"/>
         <exclude name="JUnitTestContainsTooManyAsserts"/>
         <exclude name="JUnitTestsShouldIncludeAssert"/>
         <exclude name="PreserveStackTrace"/>
         <exclude name="SwitchStmtsShouldHaveDefault"/>
         <exclude name="UseVarargs"/>
+        <exclude name="LiteralsFirstInComparisons"/>
     </rule>
 
     <rule ref="category/java/codestyle.xml">
@@ -90,6 +92,7 @@
         <exclude name="EmptyCatchBlock"/>
         <exclude name="MissingSerialVersionUID"/>
         <exclude name="UseLocaleWithCaseConversions"/>
+        <exclude name="TestClassWithoutTestCases"/>
     </rule>
 
     <rule ref="category/java/multithreading.xml">

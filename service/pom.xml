@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.11</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <version>3.1.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>
@@ -25,14 +26,14 @@
         <module>application</module>
     </modules>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.git.directory>${project.basedir}/../.git</project.git.directory>
         <dockerTimestamp>${maven.build.timestamp}</dockerTimestamp>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <docker.parent.version>1.2.1</docker.parent.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.phase>validate</checkstyle.phase>
-        <pmd.plugin.version>3.13.0</pmd.plugin.version>
+        <pmd.plugin.version>3.21.0</pmd.plugin.version>
         <pmd.phase>validate</pmd.phase>
         <spotbugs.plugin.version>4.7.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
@@ -41,7 +42,8 @@
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
-        <camel.version>3.16.0</camel.version>
+        <camel.version>4.2.0</camel.version>
+        <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
 
     <dependencyManagement>
@@ -239,22 +241,6 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>copy-docker</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>copy-resources</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>${project.build.directory}</outputDirectory>
-                                <resources>
-                                    <resource>
-                                        <directory>docker</directory>
-                                        <filtering>true</filtering>
-                                    </resource>
-                                </resources>
-                            </configuration>
-                        </execution>
-                        <execution>
                             <id>copy-resources</id>
                             <phase>validate</phase>
                             <goals>
@@ -315,7 +301,9 @@
                     <version>3.0.0-M1</version>
                     <configuration>
                         <tagNameFormat>v@{project.version}</tagNameFormat>
-                        <arguments>-Dmaven.test.skip=true -Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip</arguments>
+                        <arguments>-Dmaven.test.skip=true -Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip
+                            -Dspotbugs.skip
+                        </arguments>
                         <scmCommentPrefix>[ci skip]</scmCommentPrefix>
                     </configuration>
                 </plugin>
@@ -344,7 +332,6 @@
                         <artifactId>maven-pmd-plugin</artifactId>
                         <version>${pmd.plugin.version}</version>
                         <configuration>
-                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                             <minimumTokens>100</minimumTokens>
                             <targetJdk>${java.version}</targetJdk>
                             <rulesets>
@@ -402,14 +389,14 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>git@github.com:SolaceLabs/event-management-agent.git</url>
+        <url>git@github.com:SolaceProducts/event-management-agent.git</url>
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/SolaceLabs/event-management-agent</url>
+            <url>https://maven.pkg.github.com/SolaceProducts/event-management-agent</url>
         </repository>
     </distributionManagement>
 </project>

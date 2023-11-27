@@ -74,6 +74,9 @@ public abstract class MOPMessage implements Serializable {
     private String destinationName;
     private DestinationType destinationType;
 
+    private String actorId;
+    private String orgId;
+
     // This field indicates the priority of the message.
     // Default is 4. Valid number is from 0(lowest) to 9(highest)
     // This field can only take effect when the destination queue or topic endpoint has toggled `Respect Message

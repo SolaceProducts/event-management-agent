@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.0.4-SNAPSHOT</version>
+        <version>1.3.2-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-    <groupId>com.solace.maas</groupId>
     <artifactId>event-management-agent</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.3.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
         <springdoc.version>1.6.11</springdoc.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spring-cloud-starter-sleuth.version>3.1.5</spring-cloud-starter-sleuth.version>
         <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
-        <spring-kafka.version>2.9.0</spring-kafka.version>
+        <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
+        <jackson.version>2.16.0</jackson.version>
     </properties>
     <repositories>
         <repository>
@@ -27,7 +27,29 @@
             <url>file:///solclientj/lib/</url>
         </repository>
     </repositories>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>io.projectreactor.netty</groupId>
+            <artifactId>reactor-netty-http</artifactId>
+            <version>1.1.13</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -39,27 +61,21 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>9.0.75</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>2.7.12</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-sleuth</artifactId>
-            <version>${spring-cloud-starter-sleuth.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -79,7 +95,7 @@
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.10.1</version>
+            <version>1.1.10.5</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -89,6 +105,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -98,6 +120,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
+            <version>${mockito-inline.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -116,19 +139,9 @@
             <version>${camel.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.15.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.15.2</version>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-directvm-starter</artifactId>
+            <version>4.0.0-M2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -172,20 +185,11 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-codec-http</artifactId>
-            <version>4.1.94.Final</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
         </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-handler</artifactId>
-            <version>4.1.94.Final</version>
-        </dependency>
+
         <!-- logback/logstash integration -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -204,17 +208,17 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.3.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.3.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.3.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
@@ -229,12 +233,41 @@
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.3.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.3.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.solace.maas.plugin.terraform</groupId>
+            <artifactId>terraform-plugin</artifactId>
+            <version>1.3.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+            <!--version>1.1.1</version-->
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>context-propagation</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- for testing -->
@@ -271,9 +304,8 @@
             <version>${springdoc.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -286,6 +318,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <argLine>${jacocoSurefire}</argLine>
                 </configuration>
             </plugin>
@@ -335,6 +368,17 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -359,7 +403,6 @@
                         <artifactId>maven-pmd-plugin</artifactId>
                         <version>${pmd.plugin.version}</version>
                         <configuration>
-                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                             <minimumTokens>100</minimumTokens>
                             <targetJdk>${java.version}</targetJdk>
                             <rulesets>

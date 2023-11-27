@@ -2,7 +2,7 @@ import requests
 import os
 import textwrap
 
-SONARQUBE_PROJECT_KEY = "SolaceLabs_event-management-agent"
+SONARQUBE_PROJECT_KEY = "SolaceProducts_event-management-agent"
 SONARQUBE_PROJECT_MAIN_BRANCH = "main"
 SONARQUBE_QUERY_TOKEN = os.getenv("SONARQUBE_QUERY_TOKEN")
 SONARQUBE_HOTSPOTS_API_URL = os.getenv("SONARQUBE_HOTSPOTS_API_URL")

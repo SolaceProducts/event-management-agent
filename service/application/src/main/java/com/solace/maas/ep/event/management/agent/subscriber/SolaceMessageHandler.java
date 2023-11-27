@@ -71,15 +71,17 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
 
             String receivedClassName = messageClass.getRawClass().getSimpleName();
 
-            if ("ScanCommandMessage" .equals(receivedClassName) || "ScanDataImportMessage" .equals(receivedClassName)) {
+            if ("ScanCommandMessage".equals(receivedClassName) || "ScanDataImportMessage".equals(receivedClassName)) {
                 Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
                 String scanId = (String) map.get("scanId");
                 String traceId = (String) map.get("traceId");
+                String actorId = (String) map.get("actorId");
                 String messagingServiceId = (String) map.get("messagingServiceId");
 
                 MDC.clear();
                 MDC.put(RouteConstants.SCAN_ID, scanId);
                 MDC.put(RouteConstants.TRACE_ID, traceId);
+                MDC.put(RouteConstants.ACTOR_ID, actorId);
                 MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             }
 

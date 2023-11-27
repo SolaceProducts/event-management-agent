@@ -23,6 +23,8 @@ public class ScanRequestBO extends AbstractBaseBO<String> {
 
     private String traceId;
 
+    private String actorId;
+
     private List<String> scanTypes;
 
     private List<String> destinations;
@@ -32,6 +34,7 @@ public class ScanRequestBO extends AbstractBaseBO<String> {
         return "{ messaging service id:[" + messagingServiceId + ']' +
                 ", scan id: [" + scanId + ']' +
                 ", trace id: " + traceId +
+                ", actor id: " + actorId +
                 ", scan types: " + scanTypes +
                 ", destinations: " + destinations +
                 " }";
