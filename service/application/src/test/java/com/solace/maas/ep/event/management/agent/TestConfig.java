@@ -94,15 +94,6 @@ public class TestConfig {
         return mock(TerraformManager.class);
     }
 
-//    @Bean
-//    @Primary
-//    public EventPortalProperties getEventPortalProperties() {
-//        EventPortalProperties eventPortalProperties = new EventPortalProperties();
-//        eventPortalProperties.setOrganizationId("myOrgId");
-//        eventPortalProperties.setRuntimeAgentId("myRuntimeAgentId");
-//        return eventPortalProperties;
-//    }
-
     @Bean
     @Primary
     public OutboundMessageBuilder outboundMessageBuilder() {
