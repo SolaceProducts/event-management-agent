@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,6 +29,8 @@ public class TerraformLogProcessingService {
     public static final String VALUE_TYPE_APPLY_COMPLETE = "apply_complete";
     public static final String VALUE_TYPE_APPLY_ERRORED = "apply_errored";
     public static final String KEY_MESSAGE = "@message";
+    public static final String KEY_LEVEL = "@level";
+    public static final String KEY_TIMESTAMP = "@timestamp";
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
     private final TerraformProperties terraformProperties;
@@ -76,8 +79,7 @@ public class TerraformLogProcessingService {
                 .toList();
         JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.success : JobStatus.error;
         return CommandResult.builder()
-                .logs(successLogs)
-                .errors(errorLogs)
+                .logs(ListUtils.union(successLogs, errorLogs))
                 .status(status)
                 .build();
 
@@ -105,7 +107,10 @@ public class TerraformLogProcessingService {
 
         return Map.of(
                 "address", extractResourceAddressFromHook(expandedLogMessage.get("hook")),
-                "message", expandedLogMessage.get(KEY_MESSAGE)
+                "message", expandedLogMessage.get(KEY_MESSAGE),
+                "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
+                "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
+
         );
 
     }
@@ -119,7 +124,11 @@ public class TerraformLogProcessingService {
         //return expandedLogMessage;
         return Map.of(
                 "address", extractResourceAddressFromDiagnostic(expandedLogMessage.get(KEY_DIAGNOSTIC)),
-                KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC))
+                KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC)),
+                "message", expandedLogMessage.get(KEY_MESSAGE),
+                "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
+                "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
+
         );
 
     }

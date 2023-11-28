@@ -16,5 +16,4 @@ public class CommandResult {
     private JobStatus status;
     private Map<String, Object> result;
     private List<Map<String, Object>> logs;
-    private List<Map<String, Object>> errors;
 }

@@ -1,5 +1,8 @@
 package com.solace.maas.ep.event.management.agent.command;
 
+import com.solace.maas.ep.common.messages.CommandMessage;
+import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
@@ -7,6 +10,7 @@ import com.solace.maas.ep.event.management.agent.plugin.service.MessagingService
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,28 +21,43 @@ import java.util.Map;
 @Service
 public class CommandManager {
     private final TerraformManager terraformManager;
-
+    private final CommandMapper commandMapper;
+    private final CommandPublisher commandPublisher;
     private final MessagingServiceDelegateService messagingServiceDelegateService;
+    private final EventPortalProperties eventPortalProperties;
 
-    public CommandManager(TerraformManager terraformManager, MessagingServiceDelegateService messagingServiceDelegateService) {
+    public CommandManager(TerraformManager terraformManager, CommandMapper commandMapper,
+                          CommandPublisher commandPublisher, MessagingServiceDelegateService messagingServiceDelegateService,
+                          EventPortalProperties eventPortalProperties) {
         this.terraformManager = terraformManager;
+        this.commandMapper = commandMapper;
+        this.commandPublisher = commandPublisher;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
+        this.eventPortalProperties = eventPortalProperties;
     }
 
-    public void execute(CommandRequest request) {
+    public void execute(CommandMessage request) {
         Map<String, String> envVars = setBrokerSpecificEnvVars(request.getServiceId());
+        CommandRequest commandRequest = commandMapper.map(request);
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
             for (Command command : bundle.getCommands()) {
                 switch (command.getCommandType()) {
                     case terraform:
-                        terraformManager.execute(request, command, envVars);
+                        terraformManager.execute(commandRequest, command, envVars);
                         break;
                     default:
                         throw new IllegalStateException("Unexpected value: " + command.getCommandType());
                 }
             }
         }
+
+        Map<String, String> topicVars = Map.of(
+                "orgId", request.getOrgId(),
+                "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
+                "correlationId", request.getCorrelationId()
+        );
+        commandPublisher.sendCommandResponse(request, topicVars);
     }
 
     private Map<String, String> setBrokerSpecificEnvVars(String messagingServiceId) {

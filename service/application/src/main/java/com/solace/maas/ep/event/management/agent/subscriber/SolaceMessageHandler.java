@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -69,17 +70,32 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
 
             String receivedClassName = messageClass.getSimpleName();
 
-            if ("ScanCommandMessage".equals(receivedClassName) || "ScanDataImportMessage".equals(receivedClassName)) {
-                Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
-                String scanId = (String) map.get("scanId");
+            List<String> scanClassNames = List.of("ScanCommandMessage", "ScanDataImportMessage");
+            List<String> commandClassNames = List.of("CommandMessage");
+            List<String> expectedClassNames = List.of(scanClassNames, commandClassNames).stream().flatMap(List::stream).toList();
+
+            Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
+
+            if (expectedClassNames.contains(receivedClassName)) {
                 String traceId = (String) map.get("traceId");
                 String actorId = (String) map.get("actorId");
-                String messagingServiceId = (String) map.get("messagingServiceId");
 
                 MDC.clear();
-                MDC.put(RouteConstants.SCAN_ID, scanId);
                 MDC.put(RouteConstants.TRACE_ID, traceId);
                 MDC.put(RouteConstants.ACTOR_ID, actorId);
+            }
+
+            if (scanClassNames.contains(receivedClassName)) {
+                String scanId = (String) map.get("scanId");
+                String messagingServiceId = (String) map.get("messagingServiceId");
+                MDC.put(RouteConstants.SCAN_ID, scanId);
+                MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+            }
+
+            if (commandClassNames.contains(receivedClassName)) {
+                String correlationId = (String) map.get("correlationId");
+                String messagingServiceId = (String) map.get("serviceId");
+                MDC.put(RouteConstants.COMMAND_CORRELATION_ID, correlationId);
                 MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             }
 
