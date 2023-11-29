@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
@@ -38,13 +37,12 @@ public class CommandManager {
 
     public void execute(CommandMessage request) {
         Map<String, String> envVars = setBrokerSpecificEnvVars(request.getServiceId());
-        CommandRequest commandRequest = commandMapper.map(request);
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
             for (Command command : bundle.getCommands()) {
                 switch (command.getCommandType()) {
                     case terraform:
-                        terraformManager.execute(commandRequest, command, envVars);
+                        terraformManager.execute(commandMapper.map(request), command, envVars);
                         break;
                     default:
                         throw new IllegalStateException("Unexpected value: " + command.getCommandType());

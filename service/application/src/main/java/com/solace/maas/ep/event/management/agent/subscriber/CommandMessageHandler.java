@@ -7,11 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/**
- * This is here for developers to test that messages are flowing without having to test with ep-core.
- * <p>
- * This should normally be disabled.
- */
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
