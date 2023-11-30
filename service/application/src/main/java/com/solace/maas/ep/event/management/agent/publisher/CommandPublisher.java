@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.publisher;
 
+import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,9 +13,11 @@ import java.util.Map;
 public class CommandPublisher {
 
     private final SolacePublisher solacePublisher;
+    private final SolaceConfiguration solaceConfiguration;
 
-    public CommandPublisher(SolacePublisher solacePublisher) {
+    public CommandPublisher(SolacePublisher solacePublisher, SolaceConfiguration solaceConfiguration) {
         this.solacePublisher = solacePublisher;
+        this.solaceConfiguration = solaceConfiguration;
     }
 
     /**
@@ -27,9 +30,8 @@ public class CommandPublisher {
     public void sendCommandResponse(MOPMessage message, Map<String, String> topicDetails) {
 
         String topicString =
-                String.format("sc/ep/runtime/%s/%s/commandResponse/v1/%s",
-                        topicDetails.get("orgId"),
-                        topicDetails.get("runtimeAgentId"),
+                String.format("%scommandResponse/v1/%s",
+                        solaceConfiguration.getTopicPrefix(),
                         topicDetails.get("correlationId"));
 
         solacePublisher.publish(message, topicString);
