@@ -72,17 +72,22 @@ public class TerraformLogProcessingService {
                 .map(this::simplifyApplyCompleteLog)
                 .toList();
 
-        List<Map<String, Object>> errorLogs = jsonLogs.stream()
-                .map(this::parseTfOutput)
-                .filter(this::isErrorLog)
-                .map(this::simplifyApplyErroredLog)
-                .toList();
+        List<Map<String, Object>> errorLogs = getErrorLogs(jsonLogs);
+        
         JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.success : JobStatus.error;
         return CommandResult.builder()
                 .logs(ListUtils.union(successLogs, errorLogs))
                 .status(status)
                 .build();
 
+    }
+
+    private List<Map<String, Object>> getErrorLogs(List<String> jsonLogs) {
+        return jsonLogs.stream()
+                .map(this::parseTfOutput)
+                .filter(this::isErrorLog)
+                .map(this::simplifyApplyErroredLog)
+                .toList();
     }
 
 
@@ -121,14 +126,12 @@ public class TerraformLogProcessingService {
                     String.format("This method only handles logs of type %s", VALUE_TYPE_APPLY_ERRORED)
             );
         }
-        //return expandedLogMessage;
         return Map.of(
                 "address", extractResourceAddressFromDiagnostic(expandedLogMessage.get(KEY_DIAGNOSTIC)),
                 KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC)),
                 "message", expandedLogMessage.get(KEY_MESSAGE),
                 "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
                 "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
-
         );
 
     }

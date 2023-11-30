@@ -89,8 +89,10 @@ public class TerraformManager {
         switch (commandVerb) {
             case "apply" -> {
                 writeHclToFile(command, configPath);
-                terraformClient.plan(envVars).get();
-                terraformClient.apply(envVars).get();
+                Boolean planSuccessful = terraformClient.plan(envVars).get();
+                if (Boolean.TRUE.equals(planSuccessful)) {
+                    terraformClient.apply(envVars).get();
+                }
             }
             case "write_HCL" -> writeHclToFile(command, configPath);
             default -> throw new IllegalArgumentException("Unsupported command " + commandVerb);
