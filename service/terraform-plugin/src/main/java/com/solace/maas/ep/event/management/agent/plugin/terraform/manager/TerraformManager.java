@@ -120,7 +120,7 @@ public class TerraformManager {
         }
     }
 
-    private void setCommandError(Command command, Exception e) {
+    public static void setCommandError(Command command, Exception e) {
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)
                 .logs(List.of(

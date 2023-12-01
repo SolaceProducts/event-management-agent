@@ -95,7 +95,7 @@ plugins:
               credentials:
                 - properties:
                     - name: username
-                      value: admin
+                      value: ${SOLACE_SEMP_USERNAME}
                     - name: password
                       value: ${SOLACE_SEMP_PASSWORD}
                   source: ENVIRONMENT_VARIABLE
@@ -106,7 +106,7 @@ plugins:
       name: gregSolaceService
       connections:
         - name: gregSolaceService
-          url: ${OLD_SOLACE_SEMP_PASSWORD}
+          url: ${OLD_SOLACE_SEMP_URL}
           properties:
             - name: msgVpn
               value: default
@@ -120,9 +120,11 @@ plugins:
               credentials:
                 - properties:
                     - name: username
-                      value: gregs-ivmr-admin
+                      value: ${OLD_SOLACE_SEMP_USERNAME}
                     - name: password
                       value: ${OLD_SOLACE_SEMP_PASSWORD}
                   source: ENVIRONMENT_VARIABLE
                   operations:
                     - name: ALL
+logging:
+  config: "classpath:logback-spring-negativetests.xml"

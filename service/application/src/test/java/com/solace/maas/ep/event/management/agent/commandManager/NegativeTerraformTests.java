@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.common.messages.CommandMessage;
+import com.solace.maas.ep.event.management.agent.commandManager.badClasses.BadCommand;
+import com.solace.maas.ep.event.management.agent.commandManager.badClasses.CommandTypeBad;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
@@ -178,10 +180,10 @@ public class NegativeTerraformTests {
     }
 
     @Test
-    public void unknownCommandError() {
+    public void unknownTerraformCommandError() {
         String correlationId = "myCorrelationId3";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadCommand);
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadTerraformCommand);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -204,20 +206,28 @@ public class NegativeTerraformTests {
 
     @Test
     public void badMessagingServiceIdTest() {
-        String correlationId = "myCorrelationId3";
+        String correlationId = "myCorrelationId1";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", "imABadServiceId", correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
     @Test
-    public void missingTfEnvVars() {
+    public void badCommandTypeInCommand() {
         String correlationId = "myCorrelationId3";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueue.tf", "imABadServiceId", correlationId, context);
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadCommandType);
         validateErrorCommandResponse(commandResponse);
     }
 
+
+    @Test
+    public void missingParametersInCommand() {
+        String correlationId = "myCorrelationId3";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageMissingParameters);
+        validateErrorCommandResponse(commandResponse);
+    }
 
     @Test
     public void manyRequestsForTheSameContextAtTheSameTime() {
@@ -242,17 +252,10 @@ public class NegativeTerraformTests {
                             correlationId);
         }
 
-        while (keepRunning.get()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        waitForReceivedMessages(keepRunning);
 
         commandResponseList.forEach(this::validateSuccessCommandResponse);
     }
-
 
     private CommandMessage runTest(String hclFileName, String serviceId, String correlationId, String context) {
         return runTest(hclFileName, serviceId, correlationId, context, this::createCommandMessageCommand);
@@ -276,6 +279,12 @@ public class NegativeTerraformTests {
                         eventPortalProperties.getRuntimeAgentId() + "/command/v1/" +
                         correlationId);
 
+        waitForReceivedMessages(keepRunning);
+
+        return commandResponseList.get(0);
+    }
+
+    private static void waitForReceivedMessages(AtomicBoolean keepRunning) {
         while (keepRunning.get()) {
             try {
                 Thread.sleep(1000);
@@ -283,8 +292,6 @@ public class NegativeTerraformTests {
                 throw new RuntimeException(e);
             }
         }
-
-        return commandResponseList.get(0);
     }
 
     private void setupMessageReceiver(List<CommandMessage> commandMessageList, AtomicBoolean keepRunning,
@@ -362,22 +369,40 @@ public class NegativeTerraformTests {
         }
     }
 
-    private CommandMessage createCommandMessageBadCommand(String serviceId, String correlationId, String context,
-                                                          String newQueueTfBase64) {
+    private CommandMessage createCommandMessageMissingParameters(String serviceId, String correlationId, String context,
+                                                                 String newQueueTfBase64) {
+        CommandMessage commandMessage = createCommandMessageCommand(serviceId, correlationId, context, newQueueTfBase64);
+        Command command = commandMessage.getCommandBundles().get(0).getCommands().get(0);
+        command.setParameters(Map.of());
+        return commandMessage;
+    }
+
+    private CommandMessage createCommandMessageBadTerraformCommand(String serviceId, String correlationId, String context,
+                                                                   String newQueueTfBase64) {
+        CommandMessage commandMessage = createCommandMessageCommand(serviceId, correlationId, context, newQueueTfBase64);
+        Command command = commandMessage.getCommandBundles().get(0).getCommands().get(0);
+        command.setCommand("badCommand");
+        return commandMessage;
+    }
+
+    private CommandMessage createCommandMessageBadCommandType(String serviceId, String correlationId, String context,
+                                                              String newQueueTfBase64) {
         CommandMessage message = new CommandMessage();
         setMessageParams(serviceId, correlationId, context, message);
+
+        BadCommand badCommand = new BadCommand();
+        badCommand.setCommandType(CommandTypeBad.badEnum);
+        badCommand.setBody(newQueueTfBase64);
+        badCommand.setParameters(Map.of(
+                "Content-Type", "application/hcl",
+                "Content-Encoding", "base64"));
+        badCommand.setCommand("apply");
+
         message.setCommandBundles(List.of(CommandBundle.builder()
                 .executionType(ExecutionType.serial)
                 .exitOnFailure(true)
                 .commands(
-                        List.of(Command.builder()
-                                .commandType(CommandType.terraform)
-                                .body(newQueueTfBase64)
-                                .parameters(Map.of(
-                                        "Content-Type", "application/hcl",
-                                        "Content-Encoding", "base64"))
-                                .command("blapply")
-                                .build()))
+                        List.of(badCommand))
                 .build()));
         return message;
     }

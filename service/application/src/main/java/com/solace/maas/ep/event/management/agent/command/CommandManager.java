@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager.LOG_LEVEL_ERROR;
+import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager.setCommandError;
 
 @Slf4j
 @Service
@@ -46,15 +47,9 @@ public class CommandManager {
         try {
             envVars = setBrokerSpecificEnvVars(request.getServiceId());
         } catch (Exception e) {
-            log.error("Error executing command", e);
-            request.getCommandBundles().get(0).getCommands().get(0).setResult(CommandResult.builder()
-                    .status(JobStatus.error)
-                    .logs(List.of(
-                            Map.of("message", e.getMessage(),
-                                    "errorType", e.getClass().getName(),
-                                    "level", LOG_LEVEL_ERROR,
-                                    "timestamp", OffsetDateTime.now())))
-                    .build());
+            log.error("Error getting terraform variables", e);
+            Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
+            setCommandError(firstCommand, e);
             sendResponse(request);
             return;
         }
@@ -62,20 +57,25 @@ public class CommandManager {
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
             for (Command command : bundle.getCommands()) {
-                switch (command.getCommandType()) {
-                    case terraform:
-                        terraformManager.execute(commandMapper.map(request), command, envVars);
-                        break;
-                    default:
-                        command.setResult(CommandResult.builder()
-                                .status(JobStatus.error)
-                                .logs(List.of(
-                                        Map.of("message", "unknown command type " + command.getCommandType(),
-                                                "errorType", "UnknownCommandType",
-                                                "level", LOG_LEVEL_ERROR,
-                                                "timestamp", OffsetDateTime.now())))
-                                .build());
-                        break;
+                try {
+                    switch (command.getCommandType()) {
+                        case terraform:
+                            terraformManager.execute(commandMapper.map(request), command, envVars);
+                            break;
+                        default:
+                            command.setResult(CommandResult.builder()
+                                    .status(JobStatus.error)
+                                    .logs(List.of(
+                                            Map.of("message", "unknown command type " + command.getCommandType(),
+                                                    "errorType", "UnknownCommandType",
+                                                    "level", LOG_LEVEL_ERROR,
+                                                    "timestamp", OffsetDateTime.now())))
+                                    .build());
+                            break;
+                    }
+                } catch (Exception e) {
+                    log.error("Error executing command", e);
+                    setCommandError(command, e);
                 }
             }
         }
