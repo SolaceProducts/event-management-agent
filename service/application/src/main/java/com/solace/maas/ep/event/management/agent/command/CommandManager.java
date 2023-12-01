@@ -13,6 +13,7 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.So
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -25,6 +26,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class CommandManager {
     private final TerraformManager terraformManager;
     private final CommandMapper commandMapper;

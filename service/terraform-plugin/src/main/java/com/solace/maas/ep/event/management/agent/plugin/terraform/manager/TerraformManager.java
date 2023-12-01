@@ -34,7 +34,6 @@ public class TerraformManager {
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
-
     private final static String TF_CONFIG_FILENAME = "config.tf";
 
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
@@ -154,7 +153,12 @@ public class TerraformManager {
             // At the moment, we only support base64 decoding
             Map<String, String> parameters = command.getParameters();
             if (parameters != null && parameters.containsKey("Content-Encoding") && "base64".equals(parameters.get("Content-Encoding"))) {
-                byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
+                byte[] decodedBytes;
+                try {
+                    decodedBytes = Base64.getDecoder().decode(command.getBody());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Error decoding base64 content", e);
+                }
                 Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
             } else {
                 if (parameters == null || !parameters.containsKey("Content-Encoding")) {

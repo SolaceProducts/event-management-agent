@@ -19,6 +19,22 @@
             <cleanHistoryOnStart>false</cleanHistoryOnStart>
         </rollingPolicy>
     </appender>
+
+    <appender name="TestOutputFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>TestOutput.log</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>TestOutput-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>1MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
     <appender name="SiftLogger" class="ch.qos.logback.classic.sift.SiftingAppender">
         <discriminator>
             <key>SCAN_ID</key>
@@ -35,7 +51,7 @@
     </appender>
     <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
 
-    <springProfile name="default,mysql,mysql-dev,DEV,TEST,gameday">
+    <springProfile name="offlinetests">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RollingFile"/>
@@ -48,6 +64,11 @@
             <appender-ref ref="SiftLogger"/>
             <appender-ref ref="StreamingAppender"/>
         </logger>
+        <logger name="com.solace.maas.ep.event.management.agent.realTests" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="TestOutputFile"/>
+        </logger>
+
 
     </springProfile>
 

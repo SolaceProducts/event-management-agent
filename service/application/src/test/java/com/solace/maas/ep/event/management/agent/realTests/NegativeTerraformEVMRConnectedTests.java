@@ -21,6 +21,8 @@ import com.solace.messaging.receiver.DirectMessageReceiver;
 import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.resources.TopicSubscription;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,6 +37,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,11 +54,12 @@ import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageTyp
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol.epConfigPush;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@SuppressWarnings({"PMD.GodClass", "PMD.UnusedPrivateMethod"})
 @Slf4j
 @ActiveProfiles("negativetests")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class NegativeTerraformTests {
+public class NegativeTerraformEVMRConnectedTests {
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -69,24 +75,60 @@ public class NegativeTerraformTests {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String mainServiceId = "49a23700m80";
 
+    private long startTime;
+
     static {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
-    private void setMessageParams(String serviceId, String correlationId, String context, CommandMessage message) {
-        message.withMessageType(generic);
-        message.setMopVer("1");
-        message.setMopProtocol(epConfigPush);
-        message.setMopMsgType(generic);
-        message.setMsgPriority(4);
-        message.setMsgUh(MOPUHFlag.ignore);
-        message.setContext(context);
-        message.setActorId("myActorId");
-        message.setOrgId(eventPortalProperties.getOrganizationId());
-        message.setTraceId("myTraceId");
-        message.setServiceId(serviceId);
-        message.setCorrelationId(correlationId);
+    @BeforeAll
+    private static void envVarPrecheck() throws IOException, InterruptedException {
+        // These tests require some setup.
+        //
+        // Make sure the required environment variables are set.
+        // "SOLACE_SEMP_PASSWORD", "SOLACE_SEMP_URL", "SOLACE_SEMP_USERNAME" are for a valid Solace broker (version 10.4+)
+        // "OLD_SOLACE_SEMP_PASSWORD", "OLD_SOLACE_SEMP_URL", "OLD_SOLACE_SEMP_USERNAME" are for an older Solace broker (version 10.3-)
+        // "EP_GATEWAY_MSGVPN", "EP_GATEWAY_PASSWORD", "EP_GATEWAY_URL", "EP_GATEWAY_USERNAME" are for a valid eVMR
+        //
+        // They can be set for all Junit tests by going to the "Run" menu in IntelliJ, then "Edit Configuration templates", then
+        // then "JUnit", and set them in "Environment variables"
+        //
+        List<String> requiredEnvVars = List.of("EP_GATEWAY_MSGVPN", "EP_GATEWAY_PASSWORD", "EP_GATEWAY_URL", "EP_GATEWAY_USERNAME",
+                "EP_ORGANIZATION_ID", "EP_RUNTIME_AGENT_ID", "OLD_SOLACE_SEMP_PASSWORD", "OLD_SOLACE_SEMP_URL", "OLD_SOLACE_SEMP_USERNAME",
+                "SOLACE_SEMP_PASSWORD", "SOLACE_SEMP_URL", "SOLACE_SEMP_USERNAME");
+        List<String> actualEnvVars = List.copyOf(System.getenv().keySet());
+        if (!actualEnvVars.containsAll(requiredEnvVars)) {
+            throw new RuntimeException("Missing required environment variables: " + requiredEnvVars);
+        }
+
+        // On the valid Solace broker, create a read-only user with username "admin2" and password the same as the "SOLACE_SEMP_PASSWORD" environment variable
+        // This is required for the "createQueueReadOnlyUserTest" test
+        log.info("Creating user admin2 with R/O privileges");
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString("{\"globalAccessLevel\":\"read-only\",\"msgVpnDefaultAccessLevel\":\"none\",\"password\":\"" +
+                        System.getenv("SOLACE_SEMP_PASSWORD") + "\",\"userName\":\"admin2\"}"))
+                .setHeader("Accept", "application/json")
+                .setHeader("Content-Type", "application/json")
+                .setHeader("Authorization", getBasicAuthenticationHeader(System.getenv("SOLACE_SEMP_USERNAME"),
+                        System.getenv("SOLACE_SEMP_PASSWORD")))
+                .uri(java.net.URI.create(System.getenv("SOLACE_SEMP_URL") + "/SEMP/v2/__private_config__/usernames"))
+                .build();
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private static String getBasicAuthenticationHeader(String username, String password) {
+        String valueToEncode = username + ":" + password;
+        return "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes());
+    }
+
+
+    @BeforeEach
+    private void beforeEach() {
+        startTime = System.currentTimeMillis();
     }
 
     @Test
@@ -107,6 +149,7 @@ public class NegativeTerraformTests {
 
     @Test
     public void createQueueBadHostTest() {
+        testOutputMdTitle2(getTestMethodName());
         String correlationId = "myCorrelationId2";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueBadHost.tf", mainServiceId, correlationId, context);
@@ -115,6 +158,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void createQueueBadPortTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId2";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueBadPort.tf", mainServiceId, correlationId, context);
@@ -123,6 +168,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void createQueueBadCredentialsTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId2";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueBadCredentials.tf", mainServiceId, correlationId, context);
@@ -132,6 +179,7 @@ public class NegativeTerraformTests {
     // Required to add new user admin2 with R/O privileges
     @Test
     public void createQueueReadOnlyUserTest() {
+        testOutputMdTitle2(getTestMethodName());
         String correlationId = "myCorrelationId1";
         String context = "abc123";
         CommandMessage commandResponse = runTest("AddQueueReadOnlyUser.tf", mainServiceId, correlationId, context);
@@ -140,6 +188,7 @@ public class NegativeTerraformTests {
 
     @Test
     public void createQueueSempFailureTest() {
+        testOutputMdTitle2(getTestMethodName());
 
         // First create the queue
         String correlationId = "myCorrelationId";
@@ -165,6 +214,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void badBlockHclFailureTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         CommandMessage commandResponse = runTest("badBlockHcl.tf", mainServiceId, correlationId, context);
@@ -173,6 +224,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void badFormatHclFailureTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         CommandMessage commandResponse = runTest("badFormatHcl.tf", mainServiceId, correlationId, context);
@@ -181,6 +234,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void unknownTerraformCommandError() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadTerraformCommand);
@@ -189,6 +244,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void sempVersionTooOldTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         String oldServiceId = "v0r806w0bmj";
@@ -198,6 +255,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void badProviderTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         CommandMessage commandResponse = runTest("badProvider.tf", mainServiceId, correlationId, context);
@@ -206,6 +265,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void badMessagingServiceIdTest() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId1";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", "imABadServiceId", correlationId, context);
@@ -214,6 +275,8 @@ public class NegativeTerraformTests {
 
     @Test
     public void badCommandTypeInCommand() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadCommandType);
@@ -223,9 +286,31 @@ public class NegativeTerraformTests {
 
     @Test
     public void missingParametersInCommand() {
+        testOutputMdTitle2(getTestMethodName());
+
         String correlationId = "myCorrelationId3";
         String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageMissingParameters);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    @Test
+    public void hclCommandIsNotBase64Encoded() {
+        testOutputMdTitle2(getTestMethodName());
+
+        String correlationId = "myCorrelationId3";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageHclNotBase64Encoded);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    @Test
+    public void hclHasVariableThatIsNotSetInTerraformPlugin() {
+        testOutputMdTitle2(getTestMethodName());
+
+        String correlationId = "myCorrelationId1";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("addQueueNewVariableNotInPlugin.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -243,7 +328,7 @@ public class NegativeTerraformTests {
         setupMessageReceiver(commandResponseList, keepRunning, this::handleCommandResponseMessage, numberOfMessagesToSend);
 
         for (int i = 0; i < numberOfMessagesToSend; i++) {
-            log.info("Sending command " + i);
+            log.debug("Sending command " + i);
             String correlationId = "myCorrelationId" + i;
             CommandMessage message = createCommandMessageCommand(mainServiceId, correlationId, context, newQueueTfBase64);
             solacePublisher.publish(message,
@@ -273,7 +358,7 @@ public class NegativeTerraformTests {
         List<CommandMessage> commandResponseList = new CopyOnWriteArrayList<>();
         setupMessageReceiver(commandResponseList, keepRunning, this::handleCommandResponseMessage, 1);
 
-        log.info("Sending command");
+        log.debug("Sending command");
         solacePublisher.publish(message,
                 "sc/ep/runtime/" + eventPortalProperties.getOrganizationId() + "/" +
                         eventPortalProperties.getRuntimeAgentId() + "/command/v1/" +
@@ -297,7 +382,7 @@ public class NegativeTerraformTests {
     private void setupMessageReceiver(List<CommandMessage> commandMessageList, AtomicBoolean keepRunning,
                                       Function5ArityVoidReturn<List<CommandMessage>, AtomicBoolean, InboundMessage, Integer, AtomicInteger> messageHandler,
                                       int numberOfExpectedMessages) {
-        log.info("TEST: Starting receiver");
+        log.debug("TEST: Starting receiver");
         AtomicInteger numberOfMessagesReceived = new AtomicInteger(0);
         DirectMessageReceiver directMessageReceiver = messagingService
                 .createDirectMessageReceiverBuilder()
@@ -317,7 +402,7 @@ public class NegativeTerraformTests {
         String messageAsString = inboundMessage.getPayloadAsString();
         try {
             CommandMessage receivedCommandMessage = objectMapper.readValue(messageAsString, CommandMessage.class);
-            log.info("TEST: Received command response");
+            log.debug("TEST: Received command response");
             commandResponseList.add(receivedCommandMessage);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -357,9 +442,32 @@ public class NegativeTerraformTests {
                 throw new RuntimeException("JobStatus was not success");
             }
         });
-        log.info("Received expected error response");
-        commandResponse.getCommandBundles().get(0).getCommands().get(0).getResult().getLogs().forEach(tflog -> log.info("{}", tflog));
+        log.debug("Received expected error response");
+        testOutput("\nTEST OUTPUT:");
+        testOutputMDCodeBlock();
+        commandResponse.getCommandBundles().get(0).getCommands().get(0).getResult().getLogs()
+                .forEach(tflog -> {
+                    testOutput(tflog.toString());
+                });
+        testOutputMDCodeBlock();
+        testOutput("Elapsed time (seconds): " + (System.currentTimeMillis() - startTime) / 1000);
     }
+
+    private void setMessageParams(String serviceId, String correlationId, String context, CommandMessage message) {
+        message.withMessageType(generic);
+        message.setMopVer("1");
+        message.setMopProtocol(epConfigPush);
+        message.setMopMsgType(generic);
+        message.setMsgPriority(4);
+        message.setMsgUh(MOPUHFlag.ignore);
+        message.setContext(context);
+        message.setActorId("myActorId");
+        message.setOrgId(eventPortalProperties.getOrganizationId());
+        message.setTraceId("myTraceId");
+        message.setServiceId(serviceId);
+        message.setCorrelationId(correlationId);
+    }
+
 
     public static String asString(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
@@ -382,6 +490,14 @@ public class NegativeTerraformTests {
         CommandMessage commandMessage = createCommandMessageCommand(serviceId, correlationId, context, newQueueTfBase64);
         Command command = commandMessage.getCommandBundles().get(0).getCommands().get(0);
         command.setCommand("badCommand");
+        return commandMessage;
+    }
+
+    private CommandMessage createCommandMessageHclNotBase64Encoded(String serviceId, String correlationId, String context,
+                                                                   String newQueueTfBase64) {
+        CommandMessage commandMessage = createCommandMessageCommand(serviceId, correlationId, context, newQueueTfBase64);
+        Command command = commandMessage.getCommandBundles().get(0).getCommands().get(0);
+        command.setBody("IHaveABadBody");
         return commandMessage;
     }
 
@@ -437,4 +553,20 @@ public class NegativeTerraformTests {
         R apply(A a, B b, C c, D d);
     }
 
+    private void testOutput(String logMessage) {
+        log.info(logMessage);
+    }
+
+    private void testOutputMdTitle2(String logMessage) {
+        log.info("\n## " + logMessage);
+    }
+
+    private void testOutputMDCodeBlock() {
+        log.info("```");
+    }
+
+    private String getTestMethodName() {
+        final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        return stackTraceElements[2].getMethodName();
+    }
 }
