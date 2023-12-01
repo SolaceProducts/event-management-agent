@@ -73,7 +73,7 @@ public class TerraformLogProcessingService {
                 .toList();
 
         List<Map<String, Object>> errorLogs = getErrorLogs(jsonLogs);
-        
+
         JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.success : JobStatus.error;
         return CommandResult.builder()
                 .logs(ListUtils.union(successLogs, errorLogs))
@@ -133,7 +133,6 @@ public class TerraformLogProcessingService {
                 "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
                 "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
         );
-
     }
 
     private String extractDiagnosticDetailMessage(Object diagnostic) {
