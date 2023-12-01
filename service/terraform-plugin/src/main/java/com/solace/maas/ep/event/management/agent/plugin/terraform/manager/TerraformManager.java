@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -29,6 +30,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 @Service
 @Slf4j
 public class TerraformManager {
+    public static final String LOG_LEVEL_ERROR = "ERROR";
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
@@ -102,7 +104,6 @@ public class TerraformManager {
             command.setResult(CommandResult.builder()
                     .status(JobStatus.success)
                     .logs(List.of())
-                    .errors(List.of())
                     .build());
         } else {
             if (!"write_HCL".equals(commandVerb)) {
@@ -112,7 +113,6 @@ public class TerraformManager {
                 command.setResult(CommandResult.builder()
                         .status(JobStatus.success)
                         .logs(List.of())
-                        .errors(List.of())
                         .build());
             }
         }
@@ -121,10 +121,11 @@ public class TerraformManager {
     private void setCommandError(Command command, Exception e) {
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)
-                .logs(List.of())
-                .errors(List.of(
+                .logs(List.of(
                         Map.of("message", e.getMessage(),
-                                "errorType", e.getClass().getName())))
+                                "errorType", e.getClass().getName(),
+                                "level", LOG_LEVEL_ERROR,
+                                "timestamp", OffsetDateTime.now())))
                 .build());
     }
 

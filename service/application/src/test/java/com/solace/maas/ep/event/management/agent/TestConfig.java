@@ -9,7 +9,10 @@ import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClie
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnection;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnectionConfig;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
+import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
+import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
 import com.solace.maas.ep.event.management.agent.testConfigs.PublisherTestConfig;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
@@ -81,6 +84,18 @@ public class TestConfig {
 
     @Bean
     @Primary
+    public MessagingServiceDelegateService getMessagingServiceDelegateService() {
+        return mock(MessagingServiceDelegateService.class);
+    }
+
+    @Bean
+    @Primary
+    public TerraformManager getTerraformManager() {
+        return mock(TerraformManager.class);
+    }
+
+    @Bean
+    @Primary
     public OutboundMessageBuilder outboundMessageBuilder() {
         return mock(OutboundMessageBuilder.class);
     }
@@ -117,6 +132,12 @@ public class TestConfig {
         IDGenerator idGenerator = new IDGenerator(idGeneratorProperties());
         idGenerator.setRandom(random());
         return idGenerator;
+    }
+
+    @Bean
+    @Primary
+    public CommandPublisher getCommandPublisher() {
+        return mock(CommandPublisher.class);
     }
 
     @Bean

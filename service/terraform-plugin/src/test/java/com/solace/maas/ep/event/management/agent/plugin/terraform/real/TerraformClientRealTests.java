@@ -130,7 +130,6 @@ public class TerraformClientRealTests {
             for (Command command : commandBundle.getCommands()) {
                 CommandResult result = command.getResult();
                 System.out.println("Logs " + result.getLogs());
-                System.out.println("Errors " + result.getErrors());
                 assertNotSame(JobStatus.error, result.getStatus());
             }
         }
@@ -169,7 +168,6 @@ public class TerraformClientRealTests {
             for (Command command : commandBundle.getCommands()) {
                 CommandResult result = command.getResult();
                 System.out.println("Logs " + result.getLogs());
-                System.out.println("Errors " + result.getErrors());
                 assertNotSame(JobStatus.error, result.getStatus());
             }
         }

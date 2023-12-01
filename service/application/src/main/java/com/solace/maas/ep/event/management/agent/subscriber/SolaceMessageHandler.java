@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.MDC;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -69,19 +70,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
 
             String receivedClassName = messageClass.getSimpleName();
 
-            if ("ScanCommandMessage".equals(receivedClassName) || "ScanDataImportMessage".equals(receivedClassName)) {
-                Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
-                String scanId = (String) map.get("scanId");
-                String traceId = (String) map.get("traceId");
-                String actorId = (String) map.get("actorId");
-                String messagingServiceId = (String) map.get("messagingServiceId");
-
-                MDC.clear();
-                MDC.put(RouteConstants.SCAN_ID, scanId);
-                MDC.put(RouteConstants.TRACE_ID, traceId);
-                MDC.put(RouteConstants.ACTOR_ID, actorId);
-                MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
-            }
+            setupMDC(messageAsString, receivedClassName);
 
             message = (T) objectMapper.readValue(messageAsString, messageClass);
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
@@ -89,6 +78,27 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
             receiveMessage(inboundMessage.getDestinationName(), message);
         } catch (ClassNotFoundException | JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void setupMDC(String messageAsString, String receivedClassName) throws JsonProcessingException {
+        List<String> scanClassNames = List.of("ScanCommandMessage", "ScanDataImportMessage");
+        List<String> commandClassNames = List.of("CommandMessage");
+
+        Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
+
+        MDC.clear();
+        MDC.put(RouteConstants.TRACE_ID, map.get("traceId"));
+        MDC.put(RouteConstants.ACTOR_ID, map.get("actorId"));
+
+        if (scanClassNames.contains(receivedClassName)) {
+            MDC.put(RouteConstants.SCAN_ID, map.get("scanId"));
+            MDC.put(RouteConstants.MESSAGING_SERVICE_ID, map.get("messagingServiceId"));
+        }
+
+        if (commandClassNames.contains(receivedClassName)) {
+            MDC.put(RouteConstants.COMMAND_CORRELATION_ID, map.get("correlationId"));
+            MDC.put(RouteConstants.MESSAGING_SERVICE_ID, map.get("serviceId"));
         }
     }
 

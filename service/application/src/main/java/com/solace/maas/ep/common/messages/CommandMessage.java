@@ -27,7 +27,7 @@ public class CommandMessage extends MOPMessage {
                           List<CommandBundle> commandBundles) {
         super();
         withMessageType(MOPMessageType.generic)
-                .withProtocol(MOPProtocol.commandProtocol)
+                .withProtocol(MOPProtocol.epConfigPush)
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
         this.serviceId = serviceId;
