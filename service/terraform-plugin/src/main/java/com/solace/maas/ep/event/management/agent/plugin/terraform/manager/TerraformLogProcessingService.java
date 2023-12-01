@@ -72,7 +72,12 @@ public class TerraformLogProcessingService {
                 .map(this::simplifyApplyCompleteLog)
                 .toList();
 
-        List<Map<String, Object>> errorLogs = getErrorLogs(jsonLogs);
+        List<Map<String, Object>> errorLogs = jsonLogs.stream()
+                .map(this::parseTfOutput)
+                .filter(this::isErrorLog)
+                .map(this::simplifyApplyErroredLog)
+                .toList();
+        ;
 
         JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.success : JobStatus.error;
         return CommandResult.builder()
@@ -81,16 +86,7 @@ public class TerraformLogProcessingService {
                 .build();
 
     }
-
-    private List<Map<String, Object>> getErrorLogs(List<String> jsonLogs) {
-        return jsonLogs.stream()
-                .map(this::parseTfOutput)
-                .filter(this::isErrorLog)
-                .map(this::simplifyApplyErroredLog)
-                .toList();
-    }
-
-
+    
     private Map<String, Object> parseTfOutput(String json) {
         try {
             return objectMapper.readValue(json, Map.class);
