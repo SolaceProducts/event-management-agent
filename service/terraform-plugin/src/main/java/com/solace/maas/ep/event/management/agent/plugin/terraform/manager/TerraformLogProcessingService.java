@@ -77,8 +77,6 @@ public class TerraformLogProcessingService {
                 .filter(this::isErrorLog)
                 .map(this::simplifyApplyErroredLog)
                 .toList();
-        ;
-
         JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.success : JobStatus.error;
         return CommandResult.builder()
                 .logs(ListUtils.union(successLogs, errorLogs))
@@ -86,7 +84,8 @@ public class TerraformLogProcessingService {
                 .build();
 
     }
-    
+
+
     private Map<String, Object> parseTfOutput(String json) {
         try {
             return objectMapper.readValue(json, Map.class);
