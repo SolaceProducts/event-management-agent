@@ -39,15 +39,16 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol.epConfigPush;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
-@ActiveProfiles("gameday")
+@ActiveProfiles("negativetests")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class NegativeTerraformTests {
@@ -64,31 +65,33 @@ public class NegativeTerraformTests {
     private TerraformProperties terraformProperties;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final static String serviceId = "49a23700m80";
-    private final Function3Arity<AtomicReference<CommandMessage>, AtomicBoolean, InboundMessage> handleCommandResponseMessage =
-            (commandResponse, keepRunning, inboundMessage) -> {
-                String messageAsString = inboundMessage.getPayloadAsString();
-                try {
-                    CommandMessage receivedCommandMessage = objectMapper.readValue(messageAsString, CommandMessage.class);
-                    log.info("TEST: Received command response");
-                    commandResponse.set(receivedCommandMessage);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    keepRunning.set(false);
-                }
-            };
+    private static final String mainServiceId = "49a23700m80";
 
     static {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
+    private void setMessageParams(String serviceId, String correlationId, String context, CommandMessage message) {
+        message.withMessageType(generic);
+        message.setMopVer("1");
+        message.setMopProtocol(epConfigPush);
+        message.setMopMsgType(generic);
+        message.setMsgPriority(4);
+        message.setMsgUh(MOPUHFlag.ignore);
+        message.setContext(context);
+        message.setActorId("myActorId");
+        message.setOrgId(eventPortalProperties.getOrganizationId());
+        message.setTraceId("myTraceId");
+        message.setServiceId(serviceId);
+        message.setCorrelationId(correlationId);
+    }
+
     @Test
     public void createQueuePositiveTest() {
         String correlationId = "myCorrelationId";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueue.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context);
         validateSuccessCommandResponse(commandResponse);
     }
 
@@ -96,7 +99,7 @@ public class NegativeTerraformTests {
     public void deleteQueuePositiveTest() {
         String correlationId = "myCorrelationId2";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("deleteQueue.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("deleteQueue.tf", mainServiceId, correlationId, context);
         validateSuccessCommandResponse(commandResponse);
     }
 
@@ -104,7 +107,7 @@ public class NegativeTerraformTests {
     public void createQueueBadHostTest() {
         String correlationId = "myCorrelationId2";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueueBadHost.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("addQueueBadHost.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -112,7 +115,7 @@ public class NegativeTerraformTests {
     public void createQueueBadPortTest() {
         String correlationId = "myCorrelationId2";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueueBadPort.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("addQueueBadPort.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -120,7 +123,16 @@ public class NegativeTerraformTests {
     public void createQueueBadCredentialsTest() {
         String correlationId = "myCorrelationId2";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueueBadCredentials.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("addQueueBadCredentials.tf", mainServiceId, correlationId, context);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    // Required to add new user admin2 with R/O privileges
+    @Test
+    public void createQueueReadOnlyUserTest() {
+        String correlationId = "myCorrelationId1";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("AddQueueReadOnlyUser.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -130,12 +142,12 @@ public class NegativeTerraformTests {
         // First create the queue
         String correlationId = "myCorrelationId";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("addQueue.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context);
         validateSuccessCommandResponse(commandResponse);
 
         // Delete the terraform state file
         Path terraformStatePath = Paths.get(terraformProperties.getWorkingDirectoryRoot(),
-                context + "-" + serviceId, "terraform.tfstate");
+                context + "-" + mainServiceId, "terraform.tfstate");
         try {
             Files.delete(terraformStatePath);
         } catch (IOException e) {
@@ -145,7 +157,7 @@ public class NegativeTerraformTests {
         // Now try to create the queue again
         correlationId = "myCorrelationId2";
         context = "abc123";
-        commandResponse = runTest("addQueue.tf", serviceId, correlationId, context);
+        commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -153,7 +165,7 @@ public class NegativeTerraformTests {
     public void badBlockHclFailureTest() {
         String correlationId = "myCorrelationId3";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("badBlockHcl.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("badBlockHcl.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -161,7 +173,7 @@ public class NegativeTerraformTests {
     public void badFormatHclFailureTest() {
         String correlationId = "myCorrelationId3";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("badFormatHcl.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("badFormatHcl.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
@@ -169,25 +181,94 @@ public class NegativeTerraformTests {
     public void unknownCommandError() {
         String correlationId = "myCorrelationId3";
         String context = "abc123";
-        CommandMessage commandResponse = runTest("badFormatHcl.tf", serviceId, correlationId, context);
+        CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadCommand);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    @Test
+    public void sempVersionTooOldTest() {
+        String correlationId = "myCorrelationId3";
+        String context = "abc123";
+        String oldServiceId = "v0r806w0bmj";
+        CommandMessage commandResponse = runTest("addQueue.tf", oldServiceId, correlationId, context);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    @Test
+    public void badProviderTest() {
+        String correlationId = "myCorrelationId3";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("badProvider.tf", mainServiceId, correlationId, context);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    @Test
+    public void badMessagingServiceIdTest() {
+        String correlationId = "myCorrelationId3";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("addQueue.tf", "imABadServiceId", correlationId, context);
+        validateErrorCommandResponse(commandResponse);
+    }
+
+    @Test
+    public void missingTfEnvVars() {
+        String correlationId = "myCorrelationId3";
+        String context = "abc123";
+        CommandMessage commandResponse = runTest("addQueue.tf", "imABadServiceId", correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
 
-    private CommandMessage runTest(String hclFileName, String serviceId, String correlationId) {
-        return runTest(hclFileName, serviceId, correlationId, null);
+    @Test
+    public void manyRequestsForTheSameContextAtTheSameTime() {
+        String context = "abc123";
+
+        String newQueueTf = asString(resourceLoader.getResource("classpath:hcl" + File.separator + "addQueue.tf"));
+        String newQueueTfBase64 = Base64.getEncoder().encodeToString(newQueueTf.getBytes(UTF_8));
+
+        int numberOfMessagesToSend = 10;
+
+        AtomicBoolean keepRunning = new AtomicBoolean(true);
+        List<CommandMessage> commandResponseList = new CopyOnWriteArrayList<>();
+        setupMessageReceiver(commandResponseList, keepRunning, this::handleCommandResponseMessage, numberOfMessagesToSend);
+
+        for (int i = 0; i < numberOfMessagesToSend; i++) {
+            log.info("Sending command " + i);
+            String correlationId = "myCorrelationId" + i;
+            CommandMessage message = createCommandMessageCommand(mainServiceId, correlationId, context, newQueueTfBase64);
+            solacePublisher.publish(message,
+                    "sc/ep/runtime/" + eventPortalProperties.getOrganizationId() + "/" +
+                            eventPortalProperties.getRuntimeAgentId() + "/command/v1/" +
+                            correlationId);
+        }
+
+        while (keepRunning.get()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        commandResponseList.forEach(this::validateSuccessCommandResponse);
     }
 
+
     private CommandMessage runTest(String hclFileName, String serviceId, String correlationId, String context) {
+        return runTest(hclFileName, serviceId, correlationId, context, this::createCommandMessageCommand);
+    }
+
+    private CommandMessage runTest(String hclFileName, String serviceId, String correlationId, String context,
+                                   Function4ArityWithReturn<String, String, String, String, CommandMessage> createCommandMessage) {
 
         String newQueueTf = asString(resourceLoader.getResource("classpath:hcl" + File.separator + hclFileName));
         String newQueueTfBase64 = Base64.getEncoder().encodeToString(newQueueTf.getBytes(UTF_8));
 
-        CommandMessage message = createCommandMessage(serviceId, correlationId, context, newQueueTfBase64);
+        CommandMessage message = createCommandMessage.apply(serviceId, correlationId, context, newQueueTfBase64);
 
         AtomicBoolean keepRunning = new AtomicBoolean(true);
-        AtomicReference<CommandMessage> commandResponse = new AtomicReference<>();
-        setupMessageReceiver(commandResponse, keepRunning, handleCommandResponseMessage);
+        List<CommandMessage> commandResponseList = new CopyOnWriteArrayList<>();
+        setupMessageReceiver(commandResponseList, keepRunning, this::handleCommandResponseMessage, 1);
 
         log.info("Sending command");
         solacePublisher.publish(message,
@@ -203,12 +284,14 @@ public class NegativeTerraformTests {
             }
         }
 
-        return commandResponse.get();
+        return commandResponseList.get(0);
     }
 
-    private void setupMessageReceiver(AtomicReference<CommandMessage> commandMessageRef, AtomicBoolean keepRunning,
-                                      Function3Arity<AtomicReference<CommandMessage>, AtomicBoolean, InboundMessage> function3Arity) {
+    private void setupMessageReceiver(List<CommandMessage> commandMessageList, AtomicBoolean keepRunning,
+                                      Function5ArityVoidReturn<List<CommandMessage>, AtomicBoolean, InboundMessage, Integer, AtomicInteger> messageHandler,
+                                      int numberOfExpectedMessages) {
         log.info("TEST: Starting receiver");
+        AtomicInteger numberOfMessagesReceived = new AtomicInteger(0);
         DirectMessageReceiver directMessageReceiver = messagingService
                 .createDirectMessageReceiverBuilder()
                 .withSubscriptions(TopicSubscription.of("sc/ep/runtime/" +
@@ -218,7 +301,25 @@ public class NegativeTerraformTests {
                 .build()
                 .start();
 
-        directMessageReceiver.receiveAsync(inboundMessage -> function3Arity.apply(commandMessageRef, keepRunning, inboundMessage));
+        directMessageReceiver.receiveAsync(inboundMessage ->
+                messageHandler.apply(commandMessageList, keepRunning, inboundMessage, numberOfExpectedMessages, numberOfMessagesReceived));
+    }
+
+    private void handleCommandResponseMessage(List<CommandMessage> commandResponseList, AtomicBoolean keepRunning,
+                                              InboundMessage inboundMessage, int numberOfExpectedMessages, AtomicInteger numberOfMessagesReceived) {
+        String messageAsString = inboundMessage.getPayloadAsString();
+        try {
+            CommandMessage receivedCommandMessage = objectMapper.readValue(messageAsString, CommandMessage.class);
+            log.info("TEST: Received command response");
+            commandResponseList.add(receivedCommandMessage);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            numberOfMessagesReceived.getAndIncrement();
+            if (numberOfMessagesReceived.get() >= numberOfExpectedMessages) {
+                keepRunning.set(false);
+            }
+        }
     }
 
     private void validateSuccessCommandResponse(CommandMessage commandResponse) {
@@ -253,20 +354,38 @@ public class NegativeTerraformTests {
         commandResponse.getCommandBundles().get(0).getCommands().get(0).getResult().getLogs().forEach(tflog -> log.info("{}", tflog));
     }
 
-    private CommandMessage createCommandMessage(String serviceId, String correlationId, String context, String newQueueTfBase64) {
+    public static String asString(Resource resource) {
+        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
+            return FileCopyUtils.copyToString(reader);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private CommandMessage createCommandMessageBadCommand(String serviceId, String correlationId, String context,
+                                                          String newQueueTfBase64) {
         CommandMessage message = new CommandMessage();
-        message.withMessageType(generic);
-        message.setMopVer("1");
-        message.setMopProtocol(epConfigPush);
-        message.setMopMsgType(generic);
-        message.setMsgPriority(4);
-        message.setMsgUh(MOPUHFlag.ignore);
-        message.setContext(context);
-        message.setActorId("myActorId");
-        message.setOrgId(eventPortalProperties.getOrganizationId());
-        message.setTraceId("myTraceId");
-        message.setServiceId(serviceId);
-        message.setCorrelationId(correlationId);
+        setMessageParams(serviceId, correlationId, context, message);
+        message.setCommandBundles(List.of(CommandBundle.builder()
+                .executionType(ExecutionType.serial)
+                .exitOnFailure(true)
+                .commands(
+                        List.of(Command.builder()
+                                .commandType(CommandType.terraform)
+                                .body(newQueueTfBase64)
+                                .parameters(Map.of(
+                                        "Content-Type", "application/hcl",
+                                        "Content-Encoding", "base64"))
+                                .command("blapply")
+                                .build()))
+                .build()));
+        return message;
+    }
+
+    private CommandMessage createCommandMessageCommand(String serviceId, String correlationId, String context,
+                                                       String newQueueTfBase64) {
+        CommandMessage message = new CommandMessage();
+        setMessageParams(serviceId, correlationId, context, message);
         message.setCommandBundles(List.of(CommandBundle.builder()
                 .executionType(ExecutionType.serial)
                 .exitOnFailure(true)
@@ -283,16 +402,14 @@ public class NegativeTerraformTests {
         return message;
     }
 
-    public static String asString(Resource resource) {
-        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
-            return FileCopyUtils.copyToString(reader);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    @FunctionalInterface
+    public interface Function5ArityVoidReturn<A, B, C, D, E> {
+        void apply(A a, B b, C c, D d, E e);
     }
 
     @FunctionalInterface
-    public interface Function3Arity<A, B, C> {
-        void apply(A a, B b, C c);
+    public interface Function4ArityWithReturn<A, B, C, D, R> {
+        R apply(A a, B b, C c, D d);
     }
+
 }
