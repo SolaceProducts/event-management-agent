@@ -305,6 +305,9 @@
                 <configuration>
                     <!--suppress UnresolvedMavenProperty -->
                     <argLine>${jacocoSurefire}</argLine>
+                    <excludes>
+                        <exclude>**/realTests/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

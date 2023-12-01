@@ -1,12 +1,10 @@
-package com.solace.maas.ep.event.management.agent.commandManager;
+package com.solace.maas.ep.event.management.agent.realTests;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.common.messages.CommandMessage;
-import com.solace.maas.ep.event.management.agent.commandManager.badClasses.BadCommand;
-import com.solace.maas.ep.event.management.agent.commandManager.badClasses.CommandTypeBad;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
@@ -16,6 +14,8 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
+import com.solace.maas.ep.event.management.agent.realTests.badClasses.BadCommand;
+import com.solace.maas.ep.event.management.agent.realTests.badClasses.CommandTypeBad;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.receiver.DirectMessageReceiver;
 import com.solace.messaging.receiver.InboundMessage;

@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.commandManager.badClasses;
+package com.solace.maas.ep.event.management.agent.realTests.badClasses;
 
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 
