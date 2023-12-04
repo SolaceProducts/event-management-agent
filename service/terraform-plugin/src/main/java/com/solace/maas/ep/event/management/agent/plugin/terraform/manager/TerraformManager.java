@@ -34,7 +34,6 @@ public class TerraformManager {
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
-
     private final static String TF_CONFIG_FILENAME = "config.tf";
 
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
@@ -89,8 +88,10 @@ public class TerraformManager {
         switch (commandVerb) {
             case "apply" -> {
                 writeHclToFile(command, configPath);
-                terraformClient.plan(envVars).get();
-                terraformClient.apply(envVars).get();
+                Boolean planSuccessful = terraformClient.plan(envVars).get();
+                if (Boolean.TRUE.equals(planSuccessful)) {
+                    terraformClient.apply(envVars).get();
+                }
             }
             case "write_HCL" -> writeHclToFile(command, configPath);
             default -> throw new IllegalArgumentException("Unsupported command " + commandVerb);
@@ -118,7 +119,7 @@ public class TerraformManager {
         }
     }
 
-    private void setCommandError(Command command, Exception e) {
+    public static void setCommandError(Command command, Exception e) {
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)
                 .logs(List.of(
@@ -152,7 +153,12 @@ public class TerraformManager {
             // At the moment, we only support base64 decoding
             Map<String, String> parameters = command.getParameters();
             if (parameters != null && parameters.containsKey("Content-Encoding") && "base64".equals(parameters.get("Content-Encoding"))) {
-                byte[] decodedBytes = Base64.getDecoder().decode(command.getBody());
+                byte[] decodedBytes;
+                try {
+                    decodedBytes = Base64.getDecoder().decode(command.getBody());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Error decoding base64 content", e);
+                }
                 Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
             } else {
                 if (parameters == null || !parameters.containsKey("Content-Encoding")) {

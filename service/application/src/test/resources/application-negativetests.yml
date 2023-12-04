@@ -1,0 +1,130 @@
+springdoc:
+  packages-to-scan: com.solace.maas.ep.event.management.agent.scanManager.rest
+  api-docs:
+    path: /docs/event-management-agent
+  swagger-ui:
+    path: /event-management-agent/swagger-ui.html
+server:
+  port: 8180
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-request-size: ${MAX_REQUEST_SIZE:5MB}
+      max-file-size: ${MAX_FILE_SIZE:5MB}
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  datasource:
+    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    driver-class-name: org.h2.Driver
+    password: password
+  h2:
+    console:
+      settings:
+        web-allow-others: true
+      enabled: true
+      path: /h2
+camel:
+  springboot:
+    use-mdc-logging: true
+kafka:
+  client:
+    config:
+      reconnections:
+        max-backoff:
+          unit: milliseconds
+          value: 1000
+        backoff:
+          unit: milliseconds
+          value: 50
+      connections:
+        max-idle:
+          unit: milliseconds
+          value: 10000
+        request-timeout:
+          unit: milliseconds
+          value: 5000
+        timeout:
+          unit: milliseconds
+          value: 60000
+eventPortal:
+  topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
+  runtimeAgentId: ${EP_RUNTIME_AGENT_ID}
+  organizationId: ${EP_ORGANIZATION_ID}
+  gateway:
+    id: 1n257sln2bl
+    name: the ep vmr
+    messaging:
+      standalone: false
+      rtoSession: false
+      enableHeartbeats: true
+      testHeartbeats: true
+      connections:
+        - name: eventPortalGateway
+          authenticationType: ${EP_GATEWAY_AUTH:basicAuthentication}
+          msgVpn: ${EP_GATEWAY_MSGVPN}
+          url: ${EP_GATEWAY_URL}
+          users:
+            - clientName: client_7zu3ng4ed37
+              username: ${EP_GATEWAY_USERNAME}
+              password: ${EP_GATEWAY_PASSWORD}
+              name: messaging1
+plugins:
+  resources:
+    - id: 49a23700m80
+      type: solace
+      name: demo2
+      connections:
+        - name: demo2
+          url: ${SOLACE_SEMP_URL}
+          properties:
+            - name: msgVpn
+              value: default
+            - name: sempPageSize
+              value: 100
+          authentication:
+            - properties:
+                - name: type
+                  value: basicAuthentication
+              protocol: semp
+              credentials:
+                - properties:
+                    - name: username
+                      value: ${SOLACE_SEMP_USERNAME}
+                    - name: password
+                      value: ${SOLACE_SEMP_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+    - id: v0r806w0bmj
+      type: solace
+      name: gregSolaceService
+      connections:
+        - name: gregSolaceService
+          url: ${OLD_SOLACE_SEMP_URL}
+          properties:
+            - name: msgVpn
+              value: default
+            - name: sempPageSize
+              value: 100
+          authentication:
+            - properties:
+                - name: type
+                  value: basicAuthentication
+              protocol: semp
+              credentials:
+                - properties:
+                    - name: username
+                      value: ${OLD_SOLACE_SEMP_USERNAME}
+                    - name: password
+                      value: ${OLD_SOLACE_SEMP_PASSWORD}
+                  source: ENVIRONMENT_VARIABLE
+                  operations:
+                    - name: ALL
+logging:
+  config: "classpath:logback-spring-negativetests.xml"

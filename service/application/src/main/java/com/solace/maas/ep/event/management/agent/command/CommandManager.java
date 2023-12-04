@@ -5,19 +5,28 @@ import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager.LOG_LEVEL_ERROR;
+import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager.setCommandError;
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class CommandManager {
     private final TerraformManager terraformManager;
     private final CommandMapper commandMapper;
@@ -36,20 +45,46 @@ public class CommandManager {
     }
 
     public void execute(CommandMessage request) {
-        Map<String, String> envVars = setBrokerSpecificEnvVars(request.getServiceId());
+        Map<String, String> envVars;
+        try {
+            envVars = setBrokerSpecificEnvVars(request.getServiceId());
+        } catch (Exception e) {
+            log.error("Error getting terraform variables", e);
+            Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
+            setCommandError(firstCommand, e);
+            sendResponse(request);
+            return;
+        }
+
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
             for (Command command : bundle.getCommands()) {
-                switch (command.getCommandType()) {
-                    case terraform:
-                        terraformManager.execute(commandMapper.map(request), command, envVars);
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + command.getCommandType());
+                try {
+                    switch (command.getCommandType()) {
+                        case terraform:
+                            terraformManager.execute(commandMapper.map(request), command, envVars);
+                            break;
+                        default:
+                            command.setResult(CommandResult.builder()
+                                    .status(JobStatus.error)
+                                    .logs(List.of(
+                                            Map.of("message", "unknown command type " + command.getCommandType(),
+                                                    "errorType", "UnknownCommandType",
+                                                    "level", LOG_LEVEL_ERROR,
+                                                    "timestamp", OffsetDateTime.now())))
+                                    .build());
+                            break;
+                    }
+                } catch (Exception e) {
+                    log.error("Error executing command", e);
+                    setCommandError(command, e);
                 }
             }
         }
+        sendResponse(request);
+    }
 
+    private void sendResponse(CommandMessage request) {
         Map<String, String> topicVars = Map.of(
                 "orgId", request.getOrgId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),

@@ -1,5 +1,8 @@
 package com.solace.maas.ep.event.management.agent;
 
+import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
@@ -138,6 +141,15 @@ public class TestConfig {
     @Primary
     public CommandPublisher getCommandPublisher() {
         return mock(CommandPublisher.class);
+    }
+
+    @Bean
+    @Primary
+    public CommandManager getCommandManager(TerraformManager terraformManager, CommandMapper commandMapper,
+                                            CommandPublisher commandPublisher, MessagingServiceDelegateService messagingServiceDelegateService,
+                                            EventPortalProperties eventPortalProperties) {
+        return new CommandManager(terraformManager, commandMapper, commandPublisher,
+                messagingServiceDelegateService, eventPortalProperties);
     }
 
     @Bean

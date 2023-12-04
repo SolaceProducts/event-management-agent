@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOG_LEVEL_PATTERN" value="%clr(%5p) %clr([%X{traceId:-}]){yellow}"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>EMA.log</file>
+        <encoder>
+            <pattern>%d [%thread] %-5level %-50logger{40} : %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>EMA-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>1MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="TestOutputFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>TestOutput.log</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>TestOutput-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>1MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SiftLogger" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <key>SCAN_ID</key>
+            <defaultValue>general-logs</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="Logger" class="ch.qos.logback.core.FileAppender">
+                <file>data_collection/logs/${SCAN_ID}.log</file>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>[%X{SCAN_ID}] ------ %date [%level] [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                </layout>
+            </appender>
+        </sift>
+    </appender>
+    <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
+
+    <springProfile name="offlinetests">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="RollingFile"/>
+            <appender-ref ref="SiftLogger"/>
+            <appender-ref ref="StreamingAppender"/>
+        </root>
+        <logger name="com.solace.maas" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="RollingFile"/>
+            <appender-ref ref="SiftLogger"/>
+            <appender-ref ref="StreamingAppender"/>
+        </logger>
+        <logger name="com.solace.maas.ep.event.management.agent.realTests" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="TestOutputFile"/>
+        </logger>
+
+
+    </springProfile>
+
+</configuration>

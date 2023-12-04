@@ -121,16 +121,13 @@ public class TerraformLogProcessingService {
                     String.format("This method only handles logs of type %s", VALUE_TYPE_APPLY_ERRORED)
             );
         }
-        //return expandedLogMessage;
         return Map.of(
                 "address", extractResourceAddressFromDiagnostic(expandedLogMessage.get(KEY_DIAGNOSTIC)),
                 KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC)),
                 "message", expandedLogMessage.get(KEY_MESSAGE),
                 "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
                 "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
-
         );
-
     }
 
     private String extractDiagnosticDetailMessage(Object diagnostic) {

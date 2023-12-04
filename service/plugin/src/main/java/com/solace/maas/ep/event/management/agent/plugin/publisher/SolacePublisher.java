@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.solace.maas.ep.event.management.agent.plugin.config.EnableRtoCondition;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
@@ -26,6 +27,10 @@ public class SolacePublisher {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final OutboundMessageBuilder outboundMessageBuilder;
     private final DirectMessagePublisher directMessagePublisher;
+
+    static {
+        mapper.registerModule(new JavaTimeModule());
+    }
 
     public SolacePublisher(OutboundMessageBuilder outboundMessageBuilder,
                            DirectMessagePublisher directMessagePublisher) {
