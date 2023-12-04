@@ -74,7 +74,7 @@ public class NegativeTerraformEVMRConnectedTests {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String mainServiceId = "49a23700m80";
-
+    private static String context = "abc123";
     private long startTime;
 
     static {
@@ -134,7 +134,6 @@ public class NegativeTerraformEVMRConnectedTests {
     @Test
     public void createQueuePositiveTest() {
         String correlationId = "myCorrelationId";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context);
         validateSuccessCommandResponse(commandResponse);
     }
@@ -142,7 +141,6 @@ public class NegativeTerraformEVMRConnectedTests {
     @Test
     public void deleteQueuePositiveTest() {
         String correlationId = "myCorrelationId2";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("deleteQueue.tf", mainServiceId, correlationId, context);
         validateSuccessCommandResponse(commandResponse);
     }
@@ -151,7 +149,6 @@ public class NegativeTerraformEVMRConnectedTests {
     public void createQueueBadHostTest() {
         testOutputMdTitle2(getTestMethodName());
         String correlationId = "myCorrelationId2";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueBadHost.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -161,7 +158,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId2";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueBadPort.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -171,7 +167,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId2";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueBadCredentials.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -181,7 +176,6 @@ public class NegativeTerraformEVMRConnectedTests {
     public void createQueueReadOnlyUserTest() {
         testOutputMdTitle2(getTestMethodName());
         String correlationId = "myCorrelationId1";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("AddQueueReadOnlyUser.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -192,7 +186,6 @@ public class NegativeTerraformEVMRConnectedTests {
 
         // First create the queue
         String correlationId = "myCorrelationId";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context);
         validateSuccessCommandResponse(commandResponse);
 
@@ -207,7 +200,6 @@ public class NegativeTerraformEVMRConnectedTests {
 
         // Now try to create the queue again
         correlationId = "myCorrelationId2";
-        context = "abc123";
         commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -217,7 +209,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("badBlockHcl.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -227,7 +218,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("badFormatHcl.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -237,7 +227,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadTerraformCommand);
         validateErrorCommandResponse(commandResponse);
     }
@@ -247,7 +236,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         String oldServiceId = "v0r806w0bmj";
         CommandMessage commandResponse = runTest("addQueue.tf", oldServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
@@ -258,7 +246,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("badProvider.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -268,7 +255,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId1";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", "imABadServiceId", correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
@@ -278,7 +264,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageBadCommandType);
         validateErrorCommandResponse(commandResponse);
     }
@@ -289,7 +274,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageMissingParameters);
         validateErrorCommandResponse(commandResponse);
     }
@@ -299,7 +283,6 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId3";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueue.tf", mainServiceId, correlationId, context, this::createCommandMessageHclNotBase64Encoded);
         validateErrorCommandResponse(commandResponse);
     }
@@ -309,14 +292,12 @@ public class NegativeTerraformEVMRConnectedTests {
         testOutputMdTitle2(getTestMethodName());
 
         String correlationId = "myCorrelationId1";
-        String context = "abc123";
         CommandMessage commandResponse = runTest("addQueueNewVariableNotInPlugin.tf", mainServiceId, correlationId, context);
         validateErrorCommandResponse(commandResponse);
     }
 
     @Test
     public void manyRequestsForTheSameContextAtTheSameTime() {
-        String context = "abc123";
 
         String newQueueTf = asString(resourceLoader.getResource("classpath:hcl" + File.separator + "addQueue.tf"));
         String newQueueTfBase64 = Base64.getEncoder().encodeToString(newQueueTf.getBytes(UTF_8));
