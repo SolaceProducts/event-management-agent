@@ -446,7 +446,7 @@ public class NegativeTerraformEVMRConnectedTests {
         message.setOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
         message.setServiceId(serviceId);
-        message.setCorrelationId(correlationId);
+        message.setCommandCorrelationId(correlationId);
     }
 
 

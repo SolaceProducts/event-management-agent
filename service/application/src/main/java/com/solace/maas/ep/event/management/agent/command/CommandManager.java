@@ -88,7 +88,7 @@ public class CommandManager {
         Map<String, String> topicVars = Map.of(
                 "orgId", request.getOrgId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
-                "correlationId", request.getCorrelationId()
+                "correlationId", request.getCommandCorrelationId()
         );
         commandPublisher.sendCommandResponse(request, topicVars);
     }
