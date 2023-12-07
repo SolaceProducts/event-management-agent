@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class CommandMessage extends MOPMessage {
 
-    private String correlationId;
+    private String commandCorrelationId;
     private String context;
     private String serviceId;
     private List<CommandBundle> commandBundles;
@@ -22,7 +22,7 @@ public class CommandMessage extends MOPMessage {
     }
 
     public CommandMessage(String serviceId,
-                          String correlationId,
+                          String commandCorrelationId,
                           String context,
                           List<CommandBundle> commandBundles) {
         super();
@@ -31,7 +31,7 @@ public class CommandMessage extends MOPMessage {
                 .withVersion("1")
                 .withUhFlag(MOPUHFlag.ignore);
         this.serviceId = serviceId;
-        this.correlationId = correlationId;
+        this.commandCorrelationId = commandCorrelationId;
         this.context = context;
         this.commandBundles = commandBundles;
     }
