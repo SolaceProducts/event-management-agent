@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClientFactory;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
@@ -24,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.COMMAND_CORRELATION_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.MESSAGING_SERVICE_ID;
-
 @Service
 @Slf4j
 public class TerraformManager {
@@ -45,10 +43,14 @@ public class TerraformManager {
 
     public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
 
-        MDC.put(COMMAND_CORRELATION_ID, request.getCorrelationId());
-        MDC.put(MESSAGING_SERVICE_ID, request.getServiceId());
-        String traceId = MDC.get("traceId");
+        MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCorrelationId());
+        MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());
+        String traceId = MDC.get(RouteConstants.TRACE_ID);
         String spanId = MDC.get("spanId");
+        String commandCorrelationId = MDC.get(RouteConstants.COMMAND_CORRELATION_ID);
+        String actorId = MDC.get(RouteConstants.ACTOR_ID);
+        String scheduleId = MDC.get(RouteConstants.SCHEDULE_ID);
+        String messagingServiceId = MDC.get(RouteConstants.MESSAGING_SERVICE_ID);
 
         log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                 request.getCorrelationId(), request.getContext());
@@ -56,7 +58,8 @@ public class TerraformManager {
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
 
             Path configPath = createConfigPath(request);
-            List<String> logOutput = setupTerraformClient(terraformClient, configPath, traceId, spanId);
+            List<String> logOutput = setupTerraformClient(terraformClient, configPath, traceId, spanId, commandCorrelationId,
+                    actorId, scheduleId, messagingServiceId);
             String commandVerb = executeTerraformCommand(command, envVars, configPath, terraformClient);
             processTerraformResponse(request, command, commandVerb, logOutput);
         } catch (InterruptedException e) {
@@ -68,15 +71,21 @@ public class TerraformManager {
         }
     }
 
-    private static List<String> setupTerraformClient(TerraformClient terraformClient, Path configPath, String traceId, String spanId) {
+    private static List<String> setupTerraformClient(TerraformClient terraformClient, Path configPath,
+                                                     String traceId, String spanId, String commandCorrelationId, String actorId,
+                                                     String scheduleId, String messagingServiceId) {
         terraformClient.setWorkingDirectory(configPath.toFile());
         List<String> output = new ArrayList<>();
 
         // Write each terraform to the output list so that it can be processed later
         // Also write the output to the main log to be streamed back to EP
         terraformClient.setOutputListener(tfLog -> {
-            MDC.put("traceId", traceId);
+            MDC.put(RouteConstants.TRACE_ID, traceId);
             MDC.put("spanId", spanId);
+            MDC.put(RouteConstants.COMMAND_CORRELATION_ID, commandCorrelationId);
+            MDC.put(RouteConstants.ACTOR_ID, actorId);
+            MDC.put(RouteConstants.SCHEDULE_ID, scheduleId);
+            MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             output.add(tfLog);
             log.debug("Terraform output: {}", tfLog);
         });
