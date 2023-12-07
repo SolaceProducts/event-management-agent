@@ -33,6 +33,7 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform.client;
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -64,13 +65,21 @@ final class ProcessLauncher {
     }
 
     void setOutputListener(Consumer<String> listener) {
+        Map<String, String> mdcContext = MDC.getCopyOfContextMap();
         assert process == null;
-        outputListener = listener;
+        outputListener = (log) -> {
+            MDC.setContextMap(mdcContext);
+            listener.accept(log);
+        };
     }
 
     void setErrorListener(Consumer<String> listener) {
+        Map<String, String> mdcContext = MDC.getCopyOfContextMap();
         assert process == null;
-        errorListener = listener;
+        errorListener = (error) -> {
+            MDC.setContextMap(mdcContext);
+            listener.accept(error);
+        };
     }
 
     void setInheritIO(boolean inheritIO) {
