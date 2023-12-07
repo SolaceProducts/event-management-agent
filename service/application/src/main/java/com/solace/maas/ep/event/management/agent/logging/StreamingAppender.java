@@ -40,14 +40,13 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
                         event.getMDCPropertyMap().get(RouteConstants.COMMAND_CORRELATION_ID),
                         event.getMDCPropertyMap().get(RouteConstants.TRACE_ID),
                         event.getMDCPropertyMap().get(RouteConstants.ACTOR_ID),
-                        event.getMDCPropertyMap().get(RouteConstants.SCHEDULE_ID),
                         event.getMDCPropertyMap().get(RouteConstants.MESSAGING_SERVICE_ID));
             }
         }
     }
 
     private void sendCommandLogsAsync(ILoggingEvent event, String commandCorrelationId, String traceId,
-                                      String actorId, String groupId, String messagingServiceId) {
+                                      String actorId, String messagingServiceId) {
 
 
         RouteEntity route = RouteEntity.builder()
@@ -60,7 +59,6 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
             exchange.getIn().setHeader(RouteConstants.COMMAND_CORRELATION_ID, commandCorrelationId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
-            exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
             exchange.getIn().setBody(event);
