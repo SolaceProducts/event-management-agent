@@ -61,7 +61,7 @@ public class CommandManagerTests {
         message.setActorId("myActorId");
         message.setOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
-        message.setCorrelationId("myCorrelationId");
+        message.setCommandCorrelationId("myCorrelationId");
         message.setCommandBundles(List.of(
                 CommandBundle.builder()
                         .executionType(ExecutionType.serial)
@@ -101,6 +101,6 @@ public class CommandManagerTests {
         Map<String, String> topicVars = topicArgCaptor.getValue();
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
-        assert topicVars.get("correlationId").equals(message.getCorrelationId());
+        assert topicVars.get("correlationId").equals(message.getCommandCorrelationId());
     }
 }
