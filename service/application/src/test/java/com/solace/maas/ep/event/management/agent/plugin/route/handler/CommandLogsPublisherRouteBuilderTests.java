@@ -92,7 +92,7 @@ class CommandLogsPublisherRouteBuilderTests {
                 "level",
                 "log", Instant.now().toEpochMilli());
 
-        assertThat(commandLogMessage.getMopProtocol()).isEqualTo(MOPProtocol.scanDataControl);
+        assertThat(commandLogMessage.getMopProtocol()).isEqualTo(MOPProtocol.epConfigPush);
     }
 
 
