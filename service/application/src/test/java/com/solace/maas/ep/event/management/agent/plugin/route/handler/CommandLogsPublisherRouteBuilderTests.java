@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.solace.maas.ep.common.messages.CommandLogMessage;
+import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
@@ -103,8 +104,9 @@ class CommandLogsPublisherRouteBuilderTests {
         public static RoutesBuilder createRouteBuilder() {
             SolacePublisher solacePublisher = mock(SolacePublisher.class);
             EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
+            SolaceConfiguration solaceConfiguration = mock(SolaceConfiguration.class);
 
-            CommandLogsPublisher commandLogsPublisher = new CommandLogsPublisher(solacePublisher);
+            CommandLogsPublisher commandLogsPublisher = new CommandLogsPublisher(solacePublisher, solaceConfiguration);
             CommandLogsProcessor commandLogsProcessor = new CommandLogsProcessor(commandLogsPublisher, eventPortalProperties);
             return new CommandLogsPublisherRouteBuilder(commandLogsProcessor);
         }
