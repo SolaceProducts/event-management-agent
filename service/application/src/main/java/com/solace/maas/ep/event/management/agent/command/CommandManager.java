@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager.LOG_LEVEL_ERROR;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager.setCommandError;
 
@@ -88,7 +89,7 @@ public class CommandManager {
         Map<String, String> topicVars = Map.of(
                 "orgId", request.getOrgId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
-                "correlationId", request.getCommandCorrelationId()
+                COMMAND_CORRELATION_ID, request.getCommandCorrelationId()
         );
         commandPublisher.sendCommandResponse(request, topicVars);
     }

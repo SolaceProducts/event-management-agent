@@ -112,7 +112,7 @@ public class TerraformClientRealTests {
                 .build();
 
         CommandRequest terraformRequest = CommandRequest.builder()
-                .correlationId("abc123")
+                .commandCorrelationId("abc123")
                 .context("app123-consumer")
                 .commandBundles(List.of(
                         CommandBundle.builder()
@@ -156,7 +156,7 @@ public class TerraformClientRealTests {
                         .build()))
                 .context(context)
                 .serviceId("abc123")
-                .correlationId("myCorrelationId")
+                .commandCorrelationId("myCorrelationId")
                 .build();
 
         for (Command command : terraformRequest.getCommandBundles().get(0).getCommands()) {

@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.publisher;
 
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
+import com.solace.maas.ep.event.management.agent.constants.Command;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,7 +25,7 @@ public class CommandPublisher {
      * Sends the command response to EP.
      * <p>
      * The topic for command response:
-     * sc/ep/runtime/{orgId}/{runtimeAgentId}/commandResponse/v1/{correlationId}
+     * sc/ep/runtime/{orgId}/{runtimeAgentId}/commandResponse/v1/{commandCorrelationId}
      */
 
     public void sendCommandResponse(MOPMessage message, Map<String, String> topicDetails) {
@@ -32,7 +33,7 @@ public class CommandPublisher {
         String topicString =
                 String.format("%scommandResponse/v1/%s",
                         solaceConfiguration.getTopicPrefix(),
-                        topicDetails.get("correlationId"));
+                        topicDetails.get(Command.COMMAND_CORRELATION_ID));
 
         solacePublisher.publish(message, topicString);
     }
