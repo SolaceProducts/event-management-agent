@@ -1,0 +1,6 @@
+springdoc:
+  api-docs:
+    enabled: false
+spring:
+  main:
+    web-application-type: none

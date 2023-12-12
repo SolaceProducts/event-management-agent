@@ -180,6 +180,18 @@ curl -X 'GET' \
   --output ih9z9lwwv5r.zip
 ```
 
+# Running the Event Management Agent in CLI mode
+Set the following Spring profiles: `-Dspring.profiles.active=default,cli `
+
+CLI mode will run actions based on the arguments provided and immediately exit.
+CLI mode will not run a web server so the specified `server.port` is ignored and REST API docs will not be available.
+
+## Running Discovery Scans
+Use the arguments: `scan <messaging service ID>`
+
+## Exporting Discovery Scans
+Use the arguments: `import /path/to/scan.zip`
+
 # Manually uploading scans to Event Portal
 
 You can manually upload Discovery scan zip files to Event Portal. To do so:

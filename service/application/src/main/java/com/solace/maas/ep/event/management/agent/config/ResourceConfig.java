@@ -12,6 +12,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "plugins")
 @Slf4j
 @Profile("!TEST")
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class ResourceConfig implements ApplicationRunner {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private List<MessagingServicePluginProperties> resources;
