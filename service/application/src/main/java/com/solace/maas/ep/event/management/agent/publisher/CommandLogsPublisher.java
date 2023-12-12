@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.publisher;
 
 import com.solace.maas.ep.common.messages.CommandLogMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
+import com.solace.maas.ep.event.management.agent.constants.Command;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,7 +27,7 @@ public class CommandLogsPublisher {
 
     public void sendCommandLogData(CommandLogMessage message, Map<String, String> topicDetails) {
         String topicString = solaceConfiguration.getTopicPrefix() +
-                String.format("commandLogs/v1/%s", topicDetails.get("commandCorrelationId"));
+                String.format("commandLogs/v1/%s", topicDetails.get(Command.COMMAND_CORRELATION_ID));
 
         solacePublisher.publish(message, topicString);
     }

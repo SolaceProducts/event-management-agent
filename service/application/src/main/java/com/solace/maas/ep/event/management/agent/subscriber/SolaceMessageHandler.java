@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.solace.maas.ep.event.management.agent.constants.Command;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.EnumDeserializer;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
@@ -97,7 +98,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
         }
 
         if (commandClassNames.contains(receivedClassName)) {
-            MDC.put(RouteConstants.COMMAND_CORRELATION_ID, map.get("correlationId"));
+            MDC.put(RouteConstants.COMMAND_CORRELATION_ID, map.get(Command.COMMAND_CORRELATION_ID));
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, map.get("serviceId"));
         }
     }

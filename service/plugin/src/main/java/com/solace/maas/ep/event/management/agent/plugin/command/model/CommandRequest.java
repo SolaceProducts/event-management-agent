@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommandRequest {
-    private String correlationId;
+    private String commandCorrelationId;
     private String context;
     private String serviceId;
     private List<CommandBundle> commandBundles;

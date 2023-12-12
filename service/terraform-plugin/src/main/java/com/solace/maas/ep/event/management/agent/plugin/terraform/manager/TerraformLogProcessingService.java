@@ -56,7 +56,7 @@ public class TerraformLogProcessingService {
         }
 
         Path out = Files.createTempFile(logPath, System.currentTimeMillis() + "-"
-                + request.getCorrelationId() + "-job", ".log");
+                + request.getCommandCorrelationId() + "-job", ".log");
 
         Files.write(out, logs, Charset.defaultCharset());
     }

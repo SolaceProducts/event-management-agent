@@ -24,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.Map;
 
+import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -101,6 +102,6 @@ public class CommandManagerTests {
         Map<String, String> topicVars = topicArgCaptor.getValue();
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
-        assert topicVars.get("correlationId").equals(message.getCommandCorrelationId());
+        assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
     }
 }

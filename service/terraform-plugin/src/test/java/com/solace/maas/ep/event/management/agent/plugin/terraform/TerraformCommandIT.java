@@ -329,7 +329,7 @@ public class TerraformCommandIT {
                                 .exitOnFailure(false)
                                 .commands(List.of(commandRequest))
                                 .build()))
-                .correlationId("234")
+                .commandCorrelationId("234")
                 .context("app123")
                 .serviceId("ms1234")
                 .build();

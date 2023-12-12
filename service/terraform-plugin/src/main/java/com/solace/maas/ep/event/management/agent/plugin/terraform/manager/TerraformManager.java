@@ -43,11 +43,11 @@ public class TerraformManager {
 
     public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
 
-        MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCorrelationId());
+        MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCommandCorrelationId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());
 
         log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
-                request.getCorrelationId(), request.getContext());
+                request.getCommandCorrelationId(), request.getContext());
 
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
 
