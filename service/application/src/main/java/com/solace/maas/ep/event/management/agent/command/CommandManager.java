@@ -60,7 +60,7 @@ public class CommandManager {
 
         CompletableFuture.runAsync(() -> configPush(request), configPushPool)
                 .exceptionally(e -> {
-                    log.error("Error getting terraform variables", e);
+                    log.error("Error running command", e);
                     Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
                     setCommandError(firstCommand, (Exception) e);
                     sendResponse(request);
