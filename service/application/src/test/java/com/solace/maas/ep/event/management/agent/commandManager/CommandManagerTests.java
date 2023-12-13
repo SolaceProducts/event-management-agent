@@ -8,6 +8,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
@@ -39,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -140,6 +142,28 @@ public class CommandManagerTests {
     }
 
     @Test
+    void failSendingResponseBackToEp() {
+        // Create a command request message
+        CommandMessage message = getCommandMessage("1");
+
+        doNothing().when(terraformManager).execute(any(), any(), any());
+        doThrow(new RuntimeException("Error sending response back to EP")).when(commandPublisher).sendCommandResponse(any(), any());
+        commandManager.execute(message);
+        // Wait for all the threads to complete (add a timeout just in case)
+        long timeout = System.currentTimeMillis() + 10_000;
+        waitForCommandRequestToComplete(timeout);
+
+        ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(2)).sendCommandResponse(messageArgCaptor.capture(), any());
+
+        // Check that we attempted to set Error in the response message
+        messageArgCaptor.getAllValues().forEach(commandMessage -> {
+            assert commandMessage.getCommandCorrelationId().equals(message.getCommandCorrelationId());
+            assert commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus().equals(JobStatus.error);
+        });
+    }
+
+    @Test
     public void testCommandManager() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
@@ -156,17 +180,10 @@ public class CommandManagerTests {
                         .build()));
 
         commandManager.execute(message);
+
         // Wait for all the threads to complete (add a timeout just in case)
-        Collection<Invocation> invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
         long timeout = System.currentTimeMillis() + 10_000;
-        while (invocations.isEmpty() && System.currentTimeMillis() < timeout) {
-            try {
-                TimeUnit.MILLISECONDS.sleep(500);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
-        }
+        waitForCommandRequestToComplete(timeout);
 
 
         // Verify terraform manager is called
@@ -208,5 +225,18 @@ public class CommandManagerTests {
                                         .build()))
                         .build()));
         return message;
+    }
+
+    private void waitForCommandRequestToComplete(long timeout) {
+        Collection<Invocation> invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
+
+        while (invocations.isEmpty() && System.currentTimeMillis() < timeout) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
+        }
     }
 }
