@@ -24,6 +24,9 @@ eventPortal:
   runtimeAgentId: ${EP_RUNTIME_AGENT_ID:1234567}
   organizationId: ${EP_ORGANIZATION_ID:myOrg123}
   topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
+  commandThreadPoolMinSize: 5
+  commandThreadPoolMaxSize: 5
+  commandThreadPoolQueueSize: 10
   gateway:
     id: decal5
     name: evmr1
