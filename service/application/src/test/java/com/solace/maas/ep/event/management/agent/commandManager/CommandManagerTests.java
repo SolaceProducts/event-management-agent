@@ -15,12 +15,10 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.Se
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
-import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.invocation.Invocation;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,7 +27,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -115,12 +112,7 @@ public class CommandManagerTests {
                 CompletableFuture.runAsync(() -> commandManager.execute(messageList.get(i - 1)), testThreadPool));
 
         // Wait for all the threads to complete (add a timeout just in case)
-        Collection<Invocation> invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
-        long timeout = System.currentTimeMillis() + 10_000;
-        while (invocations.size() < commandThreadPoolQueueSize && System.currentTimeMillis() < timeout) {
-            TimeUnit.MILLISECONDS.sleep(500);
-            invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
-        }
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(commandThreadPoolQueueSize));
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
@@ -156,7 +148,7 @@ public class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(this::commandPublisherIsInvoked);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(2));
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(2)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -187,7 +179,7 @@ public class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(this::commandPublisherIsInvoked);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
@@ -236,7 +228,7 @@ public class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(this::commandPublisherIsInvoked);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
 
         assertTrue(mdcIsSet.get());
     }
@@ -264,7 +256,7 @@ public class CommandManagerTests {
         return message;
     }
 
-    private Boolean commandPublisherIsInvoked() {
-        return CollectionUtils.isNotEmpty(Mockito.mockingDetails(commandPublisher).getInvocations());
+    private Boolean commandPublisherIsInvoked(int numberOfExpectedInvocations) {
+        return Mockito.mockingDetails(commandPublisher).getInvocations().size() == numberOfExpectedInvocations;
     }
 }
