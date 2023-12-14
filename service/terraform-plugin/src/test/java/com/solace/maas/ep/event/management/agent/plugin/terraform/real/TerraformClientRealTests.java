@@ -50,7 +50,7 @@ public class TerraformClientRealTests {
 
     @Test
     void planCreateNewQueue() {
-        executeTerraformCommand("addQueue.tf", "plan ");
+        executeTerraformCommand("addQueue.tf", "plan");
     }
 
     @Test
