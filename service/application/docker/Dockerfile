@@ -8,13 +8,16 @@ WORKDIR /opt/ema
 
 ARG PLATFORM=linux_amd64
 
-# Do not update, this is the latest MPL-licensed Terraform version
-ADD terraform_1.5.5_${PLATFORM}.tar.gz /opt/ema/terraform
+# This is a pre-release version of opentofu. Update to the GA version when it's available.
+RUN apk add opentofu=1.6.0_beta3-r0 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 ARG SOLACE_PROVIDER_VERSION=0.9.0
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.tar.gz /opt/ema/terraform
 
 COPY .terraformrc /root/.terraformrc
+
+RUN printf '#!/bin/bash\ntofu $*' > /opt/ema/terraform/terraform
+RUN chmod +x /opt/ema/terraform/terraform
 
 ENV PATH $PATH:/opt/ema/terraform
 
