@@ -18,6 +18,10 @@ public class EventPortalProperties {
 
     private String topicPrefix;
 
+    private int commandThreadPoolMinSize = 5;
+    private int commandThreadPoolMaxSize = 10;
+    private int commandThreadPoolQueueSize = 1_000;
+
     private GatewayProperties gateway
             = new GatewayProperties("standalone", "standalone", new GatewayMessagingProperties(true, false, List.of()));
 }
