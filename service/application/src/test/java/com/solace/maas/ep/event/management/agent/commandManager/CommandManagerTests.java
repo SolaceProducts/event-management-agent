@@ -15,6 +15,7 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.Se
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,6 +40,7 @@ import java.util.stream.IntStream;
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -78,7 +80,7 @@ public class CommandManagerTests {
     }
 
     @Test
-    public void testMultiThreadedCommandManager() throws InterruptedException {
+    void testMultiThreadedCommandManager() throws InterruptedException {
 
         // Set up the thread pool
         int commandThreadPoolQueueSize = eventPortalProperties.getCommandThreadPoolQueueSize();
@@ -152,9 +154,9 @@ public class CommandManagerTests {
         doNothing().when(terraformManager).execute(any(), any(), any());
         doThrow(new RuntimeException("Error sending response back to EP")).when(commandPublisher).sendCommandResponse(any(), any());
         commandManager.execute(message);
-        // Wait for all the threads to complete (add a timeout just in case)
-        long timeout = System.currentTimeMillis() + 10_000;
-        waitForCommandRequestToComplete(timeout);
+
+        // Wait for the command thread to complete
+        await().atMost(10, TimeUnit.SECONDS).until(this::commandPublisherIsInvoked);
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(2)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -167,7 +169,7 @@ public class CommandManagerTests {
     }
 
     @Test
-    public void testCommandManager() {
+    void testCommandManager() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
 
@@ -184,10 +186,8 @@ public class CommandManagerTests {
 
         commandManager.execute(message);
 
-        // Wait for all the threads to complete (add a timeout just in case)
-        long timeout = System.currentTimeMillis() + 10_000;
-        waitForCommandRequestToComplete(timeout);
-
+        // Wait for the command thread to complete
+        await().atMost(10, TimeUnit.SECONDS).until(this::commandPublisherIsInvoked);
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
@@ -208,7 +208,7 @@ public class CommandManagerTests {
     }
 
     @Test
-    public void verifyMDCIsSetInCommandManagerThread() {
+    void verifyMDCIsSetInCommandManagerThread() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
         AtomicBoolean mdcIsSet = new AtomicBoolean(false);
@@ -235,9 +235,8 @@ public class CommandManagerTests {
         MDC.put(TRACE_ID, message.getTraceId());
         commandManager.execute(message);
 
-        // Wait for all the threads to complete (add a timeout just in case)
-        long timeout = System.currentTimeMillis() + 10_000;
-        waitForCommandRequestToComplete(timeout);
+        // Wait for the command thread to complete
+        await().atMost(10, TimeUnit.SECONDS).until(this::commandPublisherIsInvoked);
 
         assertTrue(mdcIsSet.get());
     }
@@ -265,16 +264,7 @@ public class CommandManagerTests {
         return message;
     }
 
-    private void waitForCommandRequestToComplete(long timeout) {
-        Collection<Invocation> invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
-
-        while (invocations.isEmpty() && System.currentTimeMillis() < timeout) {
-            try {
-                TimeUnit.MILLISECONDS.sleep(500);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            invocations = Mockito.mockingDetails(commandPublisher).getInvocations();
-        }
+    private Boolean commandPublisherIsInvoked() {
+        return CollectionUtils.isNotEmpty(Mockito.mockingDetails(commandPublisher).getInvocations());
     }
 }

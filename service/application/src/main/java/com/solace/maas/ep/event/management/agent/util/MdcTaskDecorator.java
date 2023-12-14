@@ -11,7 +11,7 @@ public class MdcTaskDecorator implements TaskDecorator {
 
     @Override
     public Runnable decorate(Runnable runnable) {
-        Map<String, String> contextMap = (Map) Optional.ofNullable(MDC.getCopyOfContextMap()).orElse(new HashMap());
+        Map<String, String> contextMap = Optional.ofNullable(MDC.getCopyOfContextMap()).orElse(new HashMap<>());
         return () -> {
             try {
                 MDC.setContextMap(contextMap);

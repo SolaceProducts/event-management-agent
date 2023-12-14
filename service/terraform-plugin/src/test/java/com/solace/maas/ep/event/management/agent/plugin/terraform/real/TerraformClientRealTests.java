@@ -49,17 +49,17 @@ public class TerraformClientRealTests {
     );
 
     @Test
-    public void planCreateNewQueue() {
+    void planCreateNewQueue() {
         executeTerraformCommand("addQueue.tf", "plan ");
     }
 
     @Test
-    public void createNewQueue() {
+    void createNewQueue() {
         executeTerraformCommand("addQueue.tf", "apply");
     }
 
     @Test
-    public void create2DifferentQueues() {
+    void create2DifferentQueues() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Future<List<CommandBundle>> future1 = executorService.submit(() ->
                 executeTerraformCommand("addQueue.tf", "apply"));
@@ -75,7 +75,7 @@ public class TerraformClientRealTests {
     }
 
     @Test
-    public void create2OfTheSameQueue() {
+    void create2OfTheSameQueue() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Future<List<CommandBundle>> future1 = executorService.submit(() ->
                 executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.success));
@@ -95,24 +95,24 @@ public class TerraformClientRealTests {
     }
 
     @Test
-    public void delete2Queues() {
+    void delete2Queues() {
         executeTerraformCommand("deleteQueue.tf", "apply");
         executeTerraformCommand("deleteQueue2.tf", "apply", "app123-consumer2");
 
     }
 
     @Test
-    public void deleteNewQueue() {
+    void deleteNewQueue() {
         executeTerraformCommand("deleteQueue.tf", "apply");
     }
 
     @Test
-    public void updateNewQueue() {
+    void updateNewQueue() {
         executeTerraformCommand("updateQueue.tf", "apply");
     }
 
     @Test
-    public void importResource() {
+    void importResource() {
         String newQueueTf = asString(resourceLoader.getResource("classpath:realTfFiles" + File.separator + "addQueue.tf"));
 
         Command commandRequest1 = Command.builder()
