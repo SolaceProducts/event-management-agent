@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.Invocation;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,9 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -202,6 +205,41 @@ public class CommandManagerTests {
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
         assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
+    }
+
+    @Test
+    public void verifyMDCIsSetInCommandManagerThread() {
+        // Create a command request message
+        CommandMessage message = getCommandMessage("1");
+        AtomicBoolean mdcIsSet = new AtomicBoolean(false);
+        doAnswer(invocation -> {
+            Map<String, String> mdcContextMap = MDC.getCopyOfContextMap();
+            String commandCorrelationId = mdcContextMap.get(COMMAND_CORRELATION_ID);
+            String traceId = mdcContextMap.get(TRACE_ID);
+            if (commandCorrelationId.equals(message.getCommandCorrelationId()) &&
+                    traceId.equals(message.getTraceId())) {
+                mdcIsSet.set(true);
+            }
+            return null;
+        }).when(terraformManager).execute(any(), any(), any());
+
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        MDC.put(COMMAND_CORRELATION_ID, message.getCommandCorrelationId());
+        MDC.put(TRACE_ID, message.getTraceId());
+        commandManager.execute(message);
+
+        // Wait for all the threads to complete (add a timeout just in case)
+        long timeout = System.currentTimeMillis() + 10_000;
+        waitForCommandRequestToComplete(timeout);
+
+        assertTrue(mdcIsSet.get());
     }
 
     private CommandMessage getCommandMessage(String suffix) {
