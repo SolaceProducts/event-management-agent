@@ -1,6 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
@@ -9,6 +9,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClientFactory;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.MDC;
@@ -30,10 +31,11 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class TerraformManager {
     public static final String LOG_LEVEL_ERROR = "ERROR";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
-    private final static String TF_CONFIG_FILENAME = "config.tf";
+    private static final String TF_CONFIG_FILENAME = "config.tf";
 
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
                             TerraformProperties terraformProperties, TerraformClientFactory terraformClientFactory) {
@@ -55,7 +57,7 @@ public class TerraformManager {
             Path configPath = createConfigPath(request);
             List<String> logOutput = setupTerraformClient(terraformClient, configPath);
             String commandVerb = executeTerraformCommand(command, envVars, configPath, terraformClient);
-            processTerraformResponse(request, command, commandVerb, logOutput);
+            processTerraformResponse(command, commandVerb, logOutput);
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
             Thread.currentThread().interrupt();
@@ -78,12 +80,12 @@ public class TerraformManager {
         return output;
     }
 
+    @SneakyThrows
     private static void logToConsole(String tfLog) {
 
         String logMessage = String.format("Terraform output: %s", tfLog);
 
-        Gson gson = new Gson();
-        Map logMop = gson.fromJson(tfLog, Map.class);
+        Map<String, Object> logMop = objectMapper.readValue(tfLog, Map.class);
         String logLevel = (String) logMop.get("@level");
         switch (logLevel) {
             case "trace" -> log.trace(logMessage);
@@ -111,7 +113,7 @@ public class TerraformManager {
         return commandVerb;
     }
 
-    private void processTerraformResponse(CommandRequest request, Command command, String commandVerb, List<String> output) throws IOException {
+    private void processTerraformResponse(Command command, String commandVerb, List<String> output) {
         // Process logs and create the result
         if (Boolean.TRUE.equals(command.getIgnoreResult())) {
             command.setResult(CommandResult.builder()
