@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
+import com.google.gson.Gson;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
@@ -72,9 +73,26 @@ public class TerraformManager {
         // Also write the output to the main log to be streamed back to EP
         terraformClient.setOutputListener(tfLog -> {
             output.add(tfLog);
-            log.debug("Terraform output: {}", tfLog);
+            logToConsole(tfLog);
         });
         return output;
+    }
+
+    private static void logToConsole(String tfLog) {
+
+        String logMessage = String.format("Terraform output: %s", tfLog);
+
+        Gson gson = new Gson();
+        Map logMop = gson.fromJson(tfLog, Map.class);
+        String logLevel = (String) logMop.get("@level");
+        switch (logLevel) {
+            case "trace" -> log.trace(logMessage);
+            case "debug" -> log.debug(logMessage);
+            case "info" -> log.info(logMessage);
+            case "warn" -> log.warn(logMessage);
+            case "error" -> log.error(logMessage);
+            default -> log.error("cannot map the logLevel properly for tfLog {}", tfLog);
+        }
     }
 
     private static String executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath, TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
@@ -102,7 +120,6 @@ public class TerraformManager {
                     .build());
         } else {
             if (!"write_HCL".equals(commandVerb)) {
-                terraformLogProcessingService.saveLogToFile(request, output);
                 command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
             } else {
                 command.setResult(CommandResult.builder()

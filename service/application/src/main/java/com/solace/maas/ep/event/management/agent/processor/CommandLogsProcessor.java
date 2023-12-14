@@ -47,7 +47,7 @@ public class CommandLogsProcessor implements Processor {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
         CommandLogMessage logDataMessage = new CommandLogMessage(orgId, commandCorrelationId, traceId, actorId, event.getLevel().toString(),
-                String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
+                String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp(), runtimeAgentId);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);

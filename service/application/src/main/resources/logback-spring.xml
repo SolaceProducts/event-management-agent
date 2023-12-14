@@ -2,6 +2,7 @@
 <configuration>
 
     <property name="LOG_LEVEL_PATTERN" value="%clr(%5p) %clr([%X{traceId:-}]){yellow}"/>
+    <property resource="command-configs.properties"/>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
@@ -35,17 +36,39 @@
     </appender>
     <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
 
+
+    <appender name="RollingCommandsFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <filter class="com.solace.maas.ep.event.management.agent.logging.CommandFilter"/>
+
+        <file>${COMMAND_PATH}/logs/command-logs.log</file>
+
+        <encoder>
+            <pattern>[%X{COMMAND_CORRELATION_ID}] ------ %date [%level] [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${COMMAND_PATH}/logs/command-logs-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>1MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
     <springProfile name="default,mysql,mysql-dev,DEV,TEST">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RollingFile"/>
             <appender-ref ref="SiftLogger"/>
+            <appender-ref ref="RollingCommandsFile"/>
             <appender-ref ref="StreamingAppender"/>
         </root>
         <logger name="com.solace.maas" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RollingFile"/>
             <appender-ref ref="SiftLogger"/>
+            <appender-ref ref="RollingCommandsFile"/>
             <appender-ref ref="StreamingAppender"/>
         </logger>
 
