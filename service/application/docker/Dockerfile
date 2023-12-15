@@ -9,7 +9,7 @@ WORKDIR /opt/ema
 ARG PLATFORM=linux_amd64
 
 # This is a pre-release version of opentofu. Update to the GA version when it's available.
-RUN apk add opentofu=1.6.0_beta3-r0 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing
+RUN apk add opentofu=1.6.0_beta4-r0 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 ARG SOLACE_PROVIDER_VERSION=0.9.1
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.tar.gz /opt/ema/terraform
