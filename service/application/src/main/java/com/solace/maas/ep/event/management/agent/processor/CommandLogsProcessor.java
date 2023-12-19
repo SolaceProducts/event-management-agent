@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.processor;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.solace.maas.ep.common.messages.CommandLogMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.constants.Command;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import lombok.extern.slf4j.Slf4j;
@@ -46,12 +47,12 @@ public class CommandLogsProcessor implements Processor {
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
         CommandLogMessage logDataMessage = new CommandLogMessage(orgId, commandCorrelationId, traceId, actorId, event.getLevel().toString(),
-                String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
+                String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp(), runtimeAgentId);
 
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", runtimeAgentId);
         topicDetails.put("messagingServiceId", messagingServiceId);
-        topicDetails.put("commandCorrelationId", commandCorrelationId);
+        topicDetails.put(Command.COMMAND_CORRELATION_ID, commandCorrelationId);
 
         logDataPublisher.sendCommandLogData(logDataMessage, topicDetails);
     }

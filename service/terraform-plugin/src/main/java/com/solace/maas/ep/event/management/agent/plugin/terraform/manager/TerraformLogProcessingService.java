@@ -1,22 +1,14 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -33,32 +25,10 @@ public class TerraformLogProcessingService {
     public static final String KEY_TIMESTAMP = "@timestamp";
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
-    private final TerraformProperties terraformProperties;
     private final ObjectMapper objectMapper;
 
-    public TerraformLogProcessingService(ObjectMapper objectMapper, TerraformProperties terraformProperties) {
+    public TerraformLogProcessingService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.terraformProperties = terraformProperties;
-    }
-
-    public void saveLogToFile(CommandRequest request, List<String> logs) throws IOException {
-        Path logPath = Paths.get(terraformProperties.getWorkingDirectoryRoot()
-                + File.separator
-                + request.getContext()
-                + "-"
-                + request.getServiceId()
-                + File.separator
-                + "logs"
-        );
-
-        if (Files.notExists(logPath)) {
-            Files.createDirectories(logPath);
-        }
-
-        Path out = Files.createTempFile(logPath, System.currentTimeMillis() + "-"
-                + request.getCorrelationId() + "-job", ".log");
-
-        Files.write(out, logs, Charset.defaultCharset());
     }
 
     public CommandResult buildTfCommandResult(List<String> jsonLogs) {

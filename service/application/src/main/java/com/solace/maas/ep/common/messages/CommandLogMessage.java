@@ -12,13 +12,16 @@ public class CommandLogMessage extends MOPMessage {
 
     String commandCorrelationId;
 
+    String eventManagementAgentId;
+
     String level;
 
     String log;
 
     Long timestamp;
 
-    public CommandLogMessage(String orgId, String commandCorrelationId, String traceId, String actorId, String level, String log, Long timestamp) {
+    public CommandLogMessage(String orgId, String commandCorrelationId, String traceId, String actorId,
+                             String level, String log, Long timestamp, String runtimeAgentId) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.epConfigPush)
@@ -27,6 +30,7 @@ public class CommandLogMessage extends MOPMessage {
 
         this.orgId = orgId;
         this.commandCorrelationId = commandCorrelationId;
+        eventManagementAgentId = runtimeAgentId;
         this.level = level;
         this.log = log;
         this.timestamp = timestamp;

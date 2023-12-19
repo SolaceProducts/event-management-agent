@@ -28,7 +28,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
 @ActiveProfiles("TEST")
@@ -47,17 +49,17 @@ public class TerraformClientRealTests {
     );
 
     @Test
-    public void planCreateNewQueue() {
+    void planCreateNewQueue() {
         executeTerraformCommand("addQueue.tf", "plan");
     }
 
     @Test
-    public void createNewQueue() {
+    void createNewQueue() {
         executeTerraformCommand("addQueue.tf", "apply");
     }
 
     @Test
-    public void create2Queues() {
+    void create2DifferentQueues() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Future<List<CommandBundle>> future1 = executorService.submit(() ->
                 executeTerraformCommand("addQueue.tf", "apply"));
@@ -73,24 +75,44 @@ public class TerraformClientRealTests {
     }
 
     @Test
-    public void delete2Queues() {
+    void create2OfTheSameQueue() {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        Future<List<CommandBundle>> future1 = executorService.submit(() ->
+                executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.success));
+        Future<List<CommandBundle>> future2 = executorService.submit(() ->
+                executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.error));
+        // wait for the futures to complete
+        try {
+            List<CommandBundle> command1Bundles = future1.get();
+            List<CommandBundle> command2Bundles = future2.get();
+            // We expect the first one to succeed and the second one to fail
+            assertEquals(JobStatus.success, command1Bundles.get(0).getCommands().get(0).getResult().getStatus());
+            assertEquals(JobStatus.error, command2Bundles.get(0).getCommands().get(0).getResult().getStatus());
+        } catch (Exception e) {
+            log.error("Error waiting for futures to complete", e);
+            fail();
+        }
+    }
+
+    @Test
+    void delete2Queues() {
         executeTerraformCommand("deleteQueue.tf", "apply");
         executeTerraformCommand("deleteQueue2.tf", "apply", "app123-consumer2");
 
     }
 
     @Test
-    public void deleteNewQueue() {
+    void deleteNewQueue() {
         executeTerraformCommand("deleteQueue.tf", "apply");
     }
 
     @Test
-    public void updateNewQueue() {
+    void updateNewQueue() {
         executeTerraformCommand("updateQueue.tf", "apply");
     }
 
     @Test
-    public void importResource() {
+    void importResource() {
         String newQueueTf = asString(resourceLoader.getResource("classpath:realTfFiles" + File.separator + "addQueue.tf"));
 
         Command commandRequest1 = Command.builder()
@@ -112,7 +134,7 @@ public class TerraformClientRealTests {
                 .build();
 
         CommandRequest terraformRequest = CommandRequest.builder()
-                .correlationId("abc123")
+                .commandCorrelationId("abc123")
                 .context("app123-consumer")
                 .commandBundles(List.of(
                         CommandBundle.builder()
@@ -141,6 +163,10 @@ public class TerraformClientRealTests {
     }
 
     private List<CommandBundle> executeTerraformCommand(String hclFileName, String tfVerb, String context) {
+        return executeTerraformCommand(hclFileName, tfVerb, context, JobStatus.success);
+    }
+
+    private List<CommandBundle> executeTerraformCommand(String hclFileName, String tfVerb, String context, JobStatus expectedJobStatus) {
         String terraformString = asString(resourceLoader.getResource("classpath:realTfFiles" + File.separator + hclFileName));
 
         Command commandRequest = Command.builder()
@@ -156,7 +182,7 @@ public class TerraformClientRealTests {
                         .build()))
                 .context(context)
                 .serviceId("abc123")
-                .correlationId("myCorrelationId")
+                .commandCorrelationId("myCorrelationId")
                 .build();
 
         for (Command command : terraformRequest.getCommandBundles().get(0).getCommands()) {
@@ -168,7 +194,7 @@ public class TerraformClientRealTests {
             for (Command command : commandBundle.getCommands()) {
                 CommandResult result = command.getResult();
                 System.out.println("Logs " + result.getLogs());
-                assertNotSame(JobStatus.error, result.getStatus());
+                assertEquals(expectedJobStatus, result.getStatus());
             }
         }
 

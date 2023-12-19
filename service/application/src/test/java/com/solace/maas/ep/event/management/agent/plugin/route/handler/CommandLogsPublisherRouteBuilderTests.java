@@ -91,7 +91,8 @@ class CommandLogsPublisherRouteBuilderTests {
                 "traceId",
                 "actorId",
                 "level",
-                "log", Instant.now().toEpochMilli());
+                "log", Instant.now().toEpochMilli(),
+                "runtimeAgentId");
 
         assertThat(commandLogMessage.getMopProtocol()).isEqualTo(MOPProtocol.epConfigPush);
     }

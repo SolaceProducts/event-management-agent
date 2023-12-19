@@ -32,8 +32,8 @@ public class TerraformTestConfig {
 
     @Bean
     @Primary
-    public TerraformLogProcessingService getTfLogProcessingService(ObjectMapper objectMapper, TerraformProperties terraformProperties) {
-        return new TerraformLogProcessingService(objectMapper, terraformProperties);
+    public TerraformLogProcessingService getTfLogProcessingService(ObjectMapper objectMapper) {
+        return new TerraformLogProcessingService(objectMapper);
     }
 
     @Bean
