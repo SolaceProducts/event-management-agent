@@ -59,6 +59,7 @@ public abstract class AbstractRouteBuilder extends RouteBuilder {
                         RouteConstants.TRACE_ID + "}]: The status of [${header." +
                         RouteConstants.SCAN_TYPE + "}]" + " is: [${header." + RouteConstants.SCAN_STATUS + "}].")
                 .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false")
+                .to("direct:processScanStatusAsFailed?block=false")
                 .end()
                 .setHeader(RouteConstants.SCAN_TYPE, simple("${header." + RouteConstants.SCAN_TYPE + "}", String.class))
                 .to("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false");
