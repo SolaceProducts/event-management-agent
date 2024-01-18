@@ -152,7 +152,6 @@ public class EmaCommandLine implements CommandLineRunner {
         log.info("Received zip request for scan id: {}", zipRequestBO.getScanId());
         try (InputStream fileStream = importService.zip(zipRequestBO)) {
 
-            // Write the input stream to a file in the /tmp directory
             File file = new File(filePathAndName);
             writeInputStreamToFile(fileStream, file);
         }
