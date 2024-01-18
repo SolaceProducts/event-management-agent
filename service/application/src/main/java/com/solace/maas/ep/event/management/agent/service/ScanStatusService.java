@@ -29,11 +29,6 @@ public class ScanStatusService {
     }
 
     @Transactional
-    public ScanStatusEntity save(String name, String scanId) {
-        return save(name, scanId, ScanStatus.COMPLETE);
-    }
-
-    @Transactional
     public ScanStatusEntity save(String name, String scanId, ScanStatus scanStatus) {
         ScanTypeEntity scanType = scanTypeService.findByNameAndScanId(name, scanId)
                 .orElseThrow(() -> new RuntimeException("Can't apply Scan Status to Scan that doesn't exist!"));

@@ -198,7 +198,6 @@ public class SolaceHttpSemp {
 
     private SempListResponse<Map<String, Object>> getSempListResponse(Function<UriBuilder, URI> uriMethod) throws
             com.fasterxml.jackson.core.JsonProcessingException {
-
         String rawResponse = sempClient.getWebClient()
                 .get()
                 .uri(uriMethod)
