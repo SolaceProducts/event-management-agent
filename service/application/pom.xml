@@ -8,7 +8,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>event-management-agent</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
@@ -18,7 +18,7 @@
         <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <jackson.version>2.16.0</jackson.version>
+        <jackson.version>2.16.1</jackson.version>
     </properties>
     <repositories>
         <repository>
