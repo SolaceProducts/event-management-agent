@@ -66,7 +66,7 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
         } catch (KafkaException e) {
             log.error("Could not create Kafka admin client for messaging service {}. Error: {}, cause: {}",
                     connectionDetailsEvent.getMessagingServiceId(), e.getMessage(), String.valueOf(e.getCause()));
-            throw new PluginClientException(e.getMessage(), e);
+            throw new PluginClientException(e);
         }
     }
 

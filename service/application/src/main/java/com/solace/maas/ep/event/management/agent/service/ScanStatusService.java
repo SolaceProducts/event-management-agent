@@ -56,7 +56,7 @@ public class ScanStatusService {
     @Transactional
     public List<ScanStatusEntity> getScanStatuses(String scanId) {
         ScanEntity scanEntity = scanService.findById(scanId)
-                .orElseThrow(() -> new RuntimeException("Scan not found!"));
+                .orElseThrow(() -> new RuntimeException("ScanId " + scanId + " not found!"));
         List<ScanStatusEntity> scanStatuses = scanEntity.getScanTypes().stream()
                 .map(ScanTypeEntity::getStatus)
                 .toList();
