@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.route.handler.base;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.processor.ScanTypeDescendentsProcessor;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.GeneralExceptionHandler;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptionhandlers.ScanDataExceptionHandler;
@@ -40,7 +41,8 @@ public abstract class AbstractRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         // NetworkClient Selectable network i/o exception + Kafka Future exceptions
-        onException(IOException.class, InterruptedException.class, ExecutionException.class, TimeoutException.class)
+        onException(IOException.class, InterruptedException.class, ExecutionException.class, TimeoutException.class,
+                PluginClientException.class)
                 .maximumRedeliveries(maximumRedeliveries)
                 .redeliveryDelay(redeliveryDelay)
                 .maximumRedeliveryDelay(maximumRedeliveryDelay)

@@ -3,8 +3,8 @@ package com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.exception.ClientException;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.processor.event.ConfluentSchemaRegistrySchemaEvent;
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.util.UriUtil;
 import lombok.Getter;
@@ -54,7 +54,7 @@ public class ConfluentSchemaRegistryHttp {
                         httpClient.getConnectionUrl() + uri.getPath(),
                         response.getStatusLine().getStatusCode(),
                         response.getStatusLine().getReasonPhrase());
-                throw new ClientException(String.format("Could not fulfill API call for path %s",
+                throw new PluginClientException(String.format("Could not fulfill API call for path %s",
                         httpClient.getConnectionUrl() + uri.getPath()));
             }
             HttpEntity entity = response.getEntity();
