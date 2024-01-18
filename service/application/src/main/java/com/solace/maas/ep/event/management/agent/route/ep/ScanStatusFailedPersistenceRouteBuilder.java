@@ -21,6 +21,5 @@ public class ScanStatusFailedPersistenceRouteBuilder extends AbstractRouteBuilde
 
         from("direct:processScanStatusAsFailed")
                 .process(routeFailedProcessor);
-        //             .to("direct:perRouteScanStatusPublisher?block=false&failIfNoConsumers=false");
     }
 }
