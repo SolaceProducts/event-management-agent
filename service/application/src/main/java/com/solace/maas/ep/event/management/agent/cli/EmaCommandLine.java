@@ -63,7 +63,7 @@ public class EmaCommandLine implements CommandLineRunner {
                 log.error("Unknown command: {}", type);
             }
         } else {
-            log.info(" arguments passed to the application.");
+            log.error("Not enough arguments passed to the application.");
         }
     }
 
