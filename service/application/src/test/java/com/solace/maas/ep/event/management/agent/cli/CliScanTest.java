@@ -32,7 +32,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles({"SCANTEST", "TEST"})
-@SpringBootTest(classes = TestConfig.class)
+@SpringBootTest(classes = TestConfig.class, properties = {"spring.main.web-application-type=none",
+        "springdoc.api-docs.enabled=false"})
 public class CliScanTest {
 
     @Autowired

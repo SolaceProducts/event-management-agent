@@ -12,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.service.ScanStatusService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Order(1)
+@ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "none")
 @Slf4j
 public class EmaCommandLine implements CommandLineRunner {
     private final ScanManager scanManager;
