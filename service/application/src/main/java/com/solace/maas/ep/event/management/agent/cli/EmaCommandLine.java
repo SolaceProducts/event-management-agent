@@ -72,11 +72,12 @@ public class EmaCommandLine implements CommandLineRunner {
     private void runScan(String messagingServiceId, String filePathAndName) throws InterruptedException, IOException {
         MessagingServiceEntity messagingServiceEntity = messagingServiceDelegateService.getMessagingServiceById(messagingServiceId);
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO();
-        scanRequestBO.setMessagingServiceId(messagingServiceId);
-        scanRequestBO.setScanId(idGenerator.generateRandomUniqueId());
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .messagingServiceId(messagingServiceId)
+                .scanId(idGenerator.generateRandomUniqueId())
+                .destinations(List.of("FILE_WRITER"))
+                .build();
         setScanType(messagingServiceEntity, scanRequestBO, messagingServiceId);
-        scanRequestBO.setDestinations(List.of("FILE_WRITER"));
 
         log.info("Scan request [{}]: Received, request details: {}", scanRequestBO.getScanId(), scanRequestBO);
         String scanId = scanManager.scan(scanRequestBO);
