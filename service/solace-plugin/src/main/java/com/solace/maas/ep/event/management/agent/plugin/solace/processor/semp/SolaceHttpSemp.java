@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.util.UriUtil;
 import lombok.Getter;
@@ -80,7 +81,7 @@ public class SolaceHttpSemp {
             return getSempFlatRequest(createFlatUriBuilderFunction(uriPath, Collections.emptyMap()));
         } catch (IOException ioException) {
             log.error("Error during SEMP Data Collection", ioException);
-            throw new SempException(ioException);
+            throw new PluginClientException(ioException);
         }
 
     }
@@ -101,25 +102,25 @@ public class SolaceHttpSemp {
             if (ex.getStatusCode() == BAD_REQUEST) {
                 log.error("Error during SEMP Data Collection. Invalid path to data." +
                         " Check that the SEMP URL and protocol are correct.", ex);
-                throw new SempException(ex);
+                throw new PluginClientException(ex);
             } else if (ex.getStatusCode() == UNAUTHORIZED) {
                 log.error("Error during SEMP Data Collection. Could not authenticate with the server." +
                         "Check that the SEMP username and password are correct.", ex);
-                throw new SempException(ex);
+                throw new PluginClientException(ex);
             } else {
                 log.error("Error during SEMP Data Collection.", ex);
-                throw new SempException(ex);
+                throw new PluginClientException(ex);
             }
         } catch (IOException ioException) {
             log.error("Error during SEMP Data Collection. The format of the collected data is unexpected.", ioException);
-            throw new SempException(ioException);
+            throw new PluginClientException(ioException);
         } catch (WebClientRequestException requestException) {
             if (requestException.getMessage().startsWith("Failed to resolve")) {
                 log.error("Error connecting to messaging service. Check that the hostname is correct.", requestException);
-                throw new SempException(requestException);
+                throw new PluginClientException(requestException);
             }
             log.error("Error connecting to messaging service. Check that the port is correct", requestException);
-            throw new SempException(requestException);
+            throw new PluginClientException(requestException);
         }
         return sempObject;
     }

@@ -1,8 +1,8 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.processor;
 
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
-import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempException;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -153,7 +153,7 @@ public class SolaceSempClientTests {
                 .msgVpn("xyz")
                 .build();
         SolaceHttpSemp semp = new SolaceHttpSemp(mockSempClient);
-        SempException ex = Assertions.assertThrows(SempException.class, () -> {
+        PluginClientException ex = Assertions.assertThrows(PluginClientException.class, () -> {
             semp.getQueues();
         });
         assertEquals(400, ((WebClientResponseException) ex.getCause()).getStatusCode().value());
@@ -173,7 +173,7 @@ public class SolaceSempClientTests {
                 .msgVpn("xyz")
                 .build();
         SolaceHttpSemp semp = new SolaceHttpSemp(mockSempClient);
-        SempException ex = Assertions.assertThrows(SempException.class, () -> {
+        PluginClientException ex = Assertions.assertThrows(PluginClientException.class, () -> {
             semp.getQueues();
         });
         assertEquals(401, ((WebClientResponseException) ex.getCause()).getStatusCode().value());

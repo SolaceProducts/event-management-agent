@@ -1,9 +1,9 @@
 package com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.manager.processor;
 
-import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.exception.ClientException;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.processor.event.ConfluentSchemaRegistrySchemaEvent;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.processor.schema.ConfluentSchemaRegistryHttp;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.processor.schema.HttpClient;
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockResponse;
@@ -100,6 +100,6 @@ class ConfluentSchemaRegistryClientTests {
         mockWebServer.enqueue(new MockResponse()
                 .setBody("service unavailable")
                 .setResponseCode(503));
-        assertThrows(ClientException.class, () -> confluentSchemaRegistryHttp.getSchemas());
+        assertThrows(PluginClientException.class, () -> confluentSchemaRegistryHttp.getSchemas());
     }
 }

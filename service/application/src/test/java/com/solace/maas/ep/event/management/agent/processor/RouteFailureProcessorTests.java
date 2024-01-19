@@ -8,7 +8,6 @@ import com.solace.maas.ep.event.management.agent.service.ScanStatusService;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @SuppressWarnings("CPD-START")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class RouteCompleteProcessorTests {
+public class RouteFailureProcessorTests {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -37,11 +36,8 @@ public class RouteCompleteProcessorTests {
     @Mock
     ScanStatusService scanStatusService;
 
-    @Mock
-    ProducerTemplate producerTemplate;
-
     @InjectMocks
-    RouteCompleteProcessorImpl routeCompleteProcessor;
+    RouteFailedProcessorImpl routeFailedProcessor;
 
     @SneakyThrows
     @Test
@@ -57,12 +53,12 @@ public class RouteCompleteProcessorTests {
         when(scanStatusService.save(any(String.class), any(String.class), any(ScanStatus.class)))
                 .thenReturn(ScanStatusEntity.builder().build());
 
-        routeCompleteProcessor.process(exchange);
+        routeFailedProcessor.process(exchange);
 
         assertThatNoException();
 
         exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new Exception());
-        routeCompleteProcessor.process(exchange);
+        routeFailedProcessor.process(exchange);
 
         exception.expect(Exception.class);
     }
