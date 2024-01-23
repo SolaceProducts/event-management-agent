@@ -11,7 +11,7 @@ ARG PLATFORM=linux_amd64
 COPY tofu_1.6.0-rc1_amd64.apk /opt/ema/terraform
 RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.6.0-rc1_amd64.apk
 
-ARG SOLACE_PROVIDER_VERSION=0.9.1
+ARG SOLACE_PROVIDER_VERSION=0.9.1_custom1
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.tar.gz /opt/ema/terraform
 
 COPY .terraformrc /root/.terraformrc
@@ -32,4 +32,4 @@ ENV GITHASH="${GITHASH}" \
 ARG JAR_FILE
 ADD ${JAR_FILE} app.jar
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /opt/ema/app.jar --spring.config.location=file:/config/ema.yml"]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /opt/ema/app.jar $CMD_LINE_ARGS --spring.config.location=file:/config/ema.yml"]
