@@ -23,14 +23,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class CommandLineImport {
 
     private final ImportService importService;
-    private final MultipartFileFactory multipartFileFactory;
     private final CommandLineCommon commandLineCommon;
 
     public CommandLineImport(ImportService importService,
-                             MultipartFileFactory multipartFileFactory,
                              CommandLineCommon commandLineCommon) {
         this.importService = importService;
-        this.multipartFileFactory = multipartFileFactory;
         this.commandLineCommon = commandLineCommon;
     }
 
@@ -38,7 +35,7 @@ public class CommandLineImport {
         try {
             String scanId = getScanIdFromScanZip(filePathAndName);
 
-            MultipartFile multipartFile = multipartFileFactory.create(filePathAndName);
+            MultipartFile multipartFile = MultipartFileWrapper.builder().absolutePath(filePathAndName).build();
             ImportRequestBO importRequestBO = ImportRequestBO.builder()
                     .dataFile(multipartFile)
                     .traceId(UUID.randomUUID().toString())
