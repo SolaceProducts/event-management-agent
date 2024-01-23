@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles({"SCANTEST", "TEST"})
+@ActiveProfiles({"CLITEST", "TEST"})
 @SpringBootTest(classes = TestConfig.class, properties = {"spring.main.web-application-type=none",
         "springdoc.api-docs.enabled=false"})
 public class CliScanTest {
@@ -53,14 +53,16 @@ public class CliScanTest {
     @BeforeEach
 
     public void setUp() {
-        Logger logger = (Logger) LoggerFactory.getLogger(EmaCommandLine.class);
+        Logger scanLogger = (Logger) LoggerFactory.getLogger(CommandLineScan.class);
+        Logger cliLogger = (Logger) LoggerFactory.getLogger(EmaCommandLine.class);
         listAppender = new ListAppender<>();
         listAppender.start();
-        logger.addAppender(listAppender);
+        scanLogger.addAppender(listAppender);
+        cliLogger.addAppender(listAppender);
     }
 
     @Test
-    public void testCLICommand() throws Exception {
+    public void testScanCLICommand() throws Exception {
         when(scanService.singleScan(any(), any(), any(), any(), any(), any(MessagingServiceEntity.class), anyString())).thenReturn("xyz");
         when(scanService.findById(anyString())).thenReturn(Optional.of(ScanEntity.builder()
                 .id("abcdef")
@@ -88,7 +90,7 @@ public class CliScanTest {
     }
 
     @Test
-    public void testCLICommandMissingParams() throws Exception {
+    public void testScanCLICommandMissingArgs() throws Exception {
         when(scanService.findById(any())).thenReturn(Optional.empty());
         emaCommandLine.run("scan", "abcdef");
 

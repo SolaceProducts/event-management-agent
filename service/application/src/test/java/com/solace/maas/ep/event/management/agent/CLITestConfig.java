@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Profile;
 import static org.mockito.Mockito.mock;
 
 @TestConfiguration
-@Profile("SCANTEST")
-public class ScanTestConfig {
+@Profile("CLITEST")
+public class CLITestConfig {
 
     @Primary
     @Bean
