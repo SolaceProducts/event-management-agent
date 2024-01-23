@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatu
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
-import com.solace.maas.ep.event.management.agent.service.DataCollectionFileService;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanStatusService;
@@ -29,20 +28,18 @@ public class CommandLineScan {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanStatusService scanStatusService;
     private final ImportService importService;
-    private final DataCollectionFileService dataCollectionFileService;
     private final CommandLineCommon commandLineCommon;
 
     public CommandLineScan(ScanManager scanManager, IDGenerator idGenerator,
                            MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
                            ScanStatusService scanStatusService,
-                           ImportService importService, DataCollectionFileService dataCollectionFileService,
+                           ImportService importService,
                            CommandLineCommon commandLineCommon) {
         this.scanManager = scanManager;
         this.idGenerator = idGenerator;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanStatusService = scanStatusService;
         this.importService = importService;
-        this.dataCollectionFileService = dataCollectionFileService;
         this.commandLineCommon = commandLineCommon;
     }
 
