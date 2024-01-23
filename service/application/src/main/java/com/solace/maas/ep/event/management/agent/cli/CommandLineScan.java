@@ -1,13 +1,11 @@
 package com.solace.maas.ep.event.management.agent.cli;
 
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
-import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
-import com.solace.maas.ep.event.management.agent.service.ScanStatusService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,19 +24,16 @@ public class CommandLineScan {
     private final ScanManager scanManager;
     private final IDGenerator idGenerator;
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
-    private final ScanStatusService scanStatusService;
     private final ImportService importService;
     private final CommandLineCommon commandLineCommon;
 
     public CommandLineScan(ScanManager scanManager, IDGenerator idGenerator,
                            MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                           ScanStatusService scanStatusService,
                            ImportService importService,
                            CommandLineCommon commandLineCommon) {
         this.scanManager = scanManager;
         this.idGenerator = idGenerator;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
-        this.scanStatusService = scanStatusService;
         this.importService = importService;
         this.commandLineCommon = commandLineCommon;
     }
@@ -59,17 +54,12 @@ public class CommandLineScan {
         log.info("Scan request [{}]: Scan started.", scanId);
         commandLineCommon.waitForOperationToComplete(scanId);
 
-        if (isCompletedSuccessfully(scanId)) {
+        if (commandLineCommon.operationSuccesful(scanId)) {
             log.info("Scan request [{}]: Scan completed successfully.", scanId);
             writeScanToZipFile(filePathAndName, scanId);
         } else {
             log.error("Scan request [{}]: Scan did not complete successfully.", scanId);
         }
-    }
-
-    private boolean isCompletedSuccessfully(String scanId) {
-        List<ScanStatusEntity> statuses = scanStatusService.getScanStatuses(scanId);
-        return commandLineCommon.scanSucceeded(statuses);
     }
 
     private void setScanType(MessagingServiceEntity messagingServiceEntity, ScanRequestBO scanRequestBO, String messagingServiceId) {

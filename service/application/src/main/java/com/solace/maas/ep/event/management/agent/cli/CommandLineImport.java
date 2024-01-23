@@ -44,7 +44,15 @@ public class CommandLineImport {
             importService.importData(importRequestBO);
             log.info("Import request [{}]: Import started.", importRequestBO.getTraceId());
             commandLineCommon.waitForOperationToComplete(scanId);
-        } catch (IOException | InterruptedException e) {
+            if (commandLineCommon.operationSuccesful(scanId)) {
+                log.info("Import request [{}]: Import completed successfully.", importRequestBO.getTraceId());
+            } else {
+                log.error("Import request [{}]: Import failed.", importRequestBO.getTraceId());
+            }
+        } catch (InterruptedException e) {
+            log.error("Received a thread interrupt while executing the import command", e);
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

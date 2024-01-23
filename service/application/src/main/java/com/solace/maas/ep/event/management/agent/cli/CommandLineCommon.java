@@ -47,6 +47,10 @@ public class CommandLineCommon {
         return scanSucceeded(statuses) || scanFailed(statuses);
     }
 
+    public boolean operationSuccesful(String scanId) {
+        return scanSucceeded(scanStatusService.getScanStatuses(scanId));
+    }
+
     public boolean scanSucceeded(List<ScanStatusEntity> statuses) {
         return allScanStatusesInDesiredState("COMPLETE", statuses);
     }

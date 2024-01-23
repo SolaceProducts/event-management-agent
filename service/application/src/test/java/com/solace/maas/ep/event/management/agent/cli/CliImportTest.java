@@ -59,6 +59,7 @@ public class CliImportTest {
 
         List<ILoggingEvent> logsList = listAppender.list;
         assertTrue(logsList.get(0).getFormattedMessage().contains("Import started."));
+        assertTrue(logsList.get(1).getFormattedMessage().contains("Import completed successfully."));
     }
 
     @Test
