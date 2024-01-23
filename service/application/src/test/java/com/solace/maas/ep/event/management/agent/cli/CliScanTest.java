@@ -79,7 +79,7 @@ public class CliScanTest {
         String fileContent = "test";
         when(importService.zip(any(ZipRequestBO.class))).thenReturn(new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8)));
 
-        String scanOutputFile = Paths.get(File.separator, "tmp", "scan.zip").toString();
+        String scanOutputFile = Paths.get(File.separator, "tmp", "test_scan.zip").toString();
         emaCommandLine.run("scan", "abcdef", scanOutputFile);
 
         List<ILoggingEvent> logsList = listAppender.list;
@@ -87,8 +87,10 @@ public class CliScanTest {
         assertTrue(logsList.get(2).getFormattedMessage().contains("Scan request [xyz]: Scan completed successfully."));
         assertTrue(logsList.get(3).getFormattedMessage().contains("Received zip request for scan id: xyz"));
 
-        String content = Files.readString(Path.of(scanOutputFile), StandardCharsets.UTF_8);
+        Path scanFilePath = Path.of(scanOutputFile);
+        String content = Files.readString(scanFilePath, StandardCharsets.UTF_8);
         assertEquals(fileContent, content);
+        Files.deleteIfExists(scanFilePath);
     }
 
     @Test
