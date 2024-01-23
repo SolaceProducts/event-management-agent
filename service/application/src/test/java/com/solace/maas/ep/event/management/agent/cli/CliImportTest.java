@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.assertThrows;
@@ -51,8 +52,7 @@ public class CliImportTest {
         doNothing().when(importService).importData(any(ImportRequestBO.class));
 
         // Read the "scanFile/scan.zip" file from the test resources directory
-        String scanFilesPath = StringUtils.join(List.of("src", "test", "resources", "scanFiles"), File.separator);
-        File resourcesDirectory = new File(scanFilesPath);
+        File resourcesDirectory = Paths.get("src", "test", "resources", "scanFiles").toFile();
         File stringFile = new File(resourcesDirectory.getAbsolutePath() + File.separator + "scan.zip");
 
         emaCommandLine.run("upload", stringFile.getAbsolutePath());

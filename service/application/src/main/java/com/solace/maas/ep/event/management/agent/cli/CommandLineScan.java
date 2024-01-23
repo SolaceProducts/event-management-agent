@@ -60,6 +60,7 @@ public class CommandLineScan {
         commandLineCommon.waitForOperationToComplete(scanId);
 
         if (isCompletedSuccessfully(scanId)) {
+            log.info("Scan request [{}]: Scan completed successfully.", scanId);
             writeScanToZipFile(filePathAndName, scanId);
         } else {
             log.error("Scan request [{}]: Scan did not complete successfully.", scanId);

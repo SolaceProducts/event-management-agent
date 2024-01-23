@@ -19,9 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,7 +79,7 @@ public class CliScanTest {
         String fileContent = "test";
         when(importService.zip(any(ZipRequestBO.class))).thenReturn(new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8)));
 
-        String scanOutputFile = "/tmp/scan.txt";
+        String scanOutputFile = Paths.get(File.separator, "tmp", "scan.zip").toString();
         emaCommandLine.run("scan", "abcdef", scanOutputFile);
 
         List<ILoggingEvent> logsList = listAppender.list;
