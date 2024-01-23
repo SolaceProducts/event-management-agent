@@ -47,7 +47,7 @@ public class CommandLineCommon {
         return scanSucceeded(statuses) || scanFailed(statuses);
     }
 
-    private boolean scanSucceeded(List<ScanStatusEntity> statuses) {
+    public boolean scanSucceeded(List<ScanStatusEntity> statuses) {
         return allScanStatusesInDesiredState("COMPLETE", statuses);
     }
 

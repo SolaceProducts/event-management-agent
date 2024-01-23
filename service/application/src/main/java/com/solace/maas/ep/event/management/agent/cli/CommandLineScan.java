@@ -71,13 +71,7 @@ public class CommandLineScan {
 
     private boolean isCompletedSuccessfully(String scanId) {
         List<ScanStatusEntity> statuses = scanStatusService.getScanStatuses(scanId);
-        boolean completedSuccessfully = false;
-        if (dataCollectionFileService.findAllByScanId(scanId).size() >=
-                statuses.size() && !commandLineCommon.anyScanStatusesInDesiredState("FAILED", statuses)) {
-            log.info("Scan request [{}]: Scan completed successfully.", scanId);
-            completedSuccessfully = true;
-        }
-        return completedSuccessfully;
+        return commandLineCommon.scanSucceeded(statuses);
     }
 
     private void setScanType(MessagingServiceEntity messagingServiceEntity, ScanRequestBO scanRequestBO, String messagingServiceId) {
