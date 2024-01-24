@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.terraform</groupId>
     <artifactId>terraform-plugin</artifactId>
@@ -10,8 +11,8 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot-starter-web.version>3.1.7</spring-boot-starter-web.version>
-        <spring-boot-starter-test.version>3.1.7</spring-boot-starter-test.version>
+        <spring-boot-starter-web.version>3.1.8</spring-boot-starter-web.version>
+        <spring-boot-starter-test.version>3.1.8</spring-boot-starter-test.version>
         <jupiter.version>5.3.1</jupiter.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>

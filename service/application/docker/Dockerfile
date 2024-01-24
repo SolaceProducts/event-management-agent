@@ -11,7 +11,7 @@ ARG PLATFORM=linux_amd64
 COPY tofu_1.6.0-rc1_amd64.apk /opt/ema/terraform
 RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.6.0-rc1_amd64.apk
 
-ARG SOLACE_PROVIDER_VERSION=0.9.1
+ARG SOLACE_PROVIDER_VERSION=0.9.2-rc.2
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.tar.gz /opt/ema/terraform
 
 COPY .terraformrc /root/.terraformrc
