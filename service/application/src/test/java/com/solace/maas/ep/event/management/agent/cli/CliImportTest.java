@@ -64,21 +64,24 @@ public class CliImportTest {
 
     @Test
     public void testImportCLICommandMissingArgs() throws Exception {
-        //when(scanService.findById(any())).thenReturn(Optional.empty());
         emaCommandLine.run("upload");
         assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Not enough arguments passed to the application."));
     }
 
     @Test
+    public void testImportCLICommandTooManyArgs() throws Exception {
+        emaCommandLine.run("upload", "/tmp/scan.zip", "/tmp/scan.zip");
+        assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Too many arguments passed to the application."));
+    }
+
+    @Test
     public void testCLIBadCommand() throws Exception {
-        //when(scanService.findById(any())).thenReturn(Optional.empty());
         emaCommandLine.run("flamingo");
         assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Unknown command: flamingo"));
     }
 
     @Test
     public void testImportCLIMissingFile() {
-        //when(scanService.findById(any())).thenReturn(Optional.empty());
         Exception exception = assertThrows(RuntimeException.class, () ->
                 emaCommandLine.run("upload", "/tmp/missingFile.zip"));
         assertTrue(exception.getMessage().contains("java.nio.file.NoSuchFileException: /tmp/missingFile.zip"));
@@ -86,7 +89,6 @@ public class CliImportTest {
 
     @Test
     public void testImportCLINotZipFile() {
-        //when(scanService.findById(any())).thenReturn(Optional.empty());
         String scanFilesPath = StringUtils.join(List.of("src", "test", "resources", "scanFiles"), File.separator);
         File resourcesDirectory = new File(scanFilesPath);
         File stringFile = new File(resourcesDirectory.getAbsolutePath() + File.separator + "notAScanZip.zip");

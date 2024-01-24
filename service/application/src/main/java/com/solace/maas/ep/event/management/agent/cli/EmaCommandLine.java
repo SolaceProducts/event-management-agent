@@ -42,20 +42,24 @@ public class EmaCommandLine implements CommandLineRunner {
                 String type = args[0];
 
                 if ("scan".equals(type)) {
-                    if (args.length > 2) {
+                    if (args.length > 3) {
+                        tooManyArguments();
+                    } else if (args.length < 3) {
+                        notEnoughArguments();
+                    } else {
                         String messagingServiceId = args[1];
                         String filePathAndName = args[2];
 
                         commandLineScan.runScan(messagingServiceId, filePathAndName);
-                    } else {
-                        notEnoughArguments();
                     }
                 } else if ("upload".equals(type)) {
-                    if (args.length > 1) {
+                    if (args.length > 2) {
+                        tooManyArguments();
+                    } else if (args.length < 2) {
+                        notEnoughArguments();
+                    } else {
                         String fileNameAndPath = args[1];
                         commandLineImport.runUpload(fileNameAndPath);
-                    } else {
-                        notEnoughArguments();
                     }
                 } else {
                     log.error("Unknown command: {}", type);
@@ -70,6 +74,10 @@ public class EmaCommandLine implements CommandLineRunner {
 
     private void notEnoughArguments() {
         log.error("Not enough arguments passed to the application.");
+    }
+
+    private void tooManyArguments() {
+        log.error("Too many arguments passed to the application.");
     }
 
     public void shutdownSpringBootApplication() {

@@ -100,4 +100,11 @@ public class CliScanTest {
 
         assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Not enough arguments passed to the application."));
     }
+
+    @Test
+    public void testScanCLICommandTooManyArgs() throws Exception {
+        emaCommandLine.run("scan", "abcdef", "/tmp/scan.zip", "flamingos");
+        assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Too many arguments passed to the application."));
+    }
+
 }
