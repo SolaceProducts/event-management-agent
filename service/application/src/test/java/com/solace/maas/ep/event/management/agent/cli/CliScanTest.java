@@ -19,9 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles({"SCANTEST", "TEST"})
+@ActiveProfiles({"CLITEST", "TEST"})
 @SpringBootTest(classes = TestConfig.class, properties = {"spring.main.web-application-type=none",
         "springdoc.api-docs.enabled=false"})
 public class CliScanTest {
@@ -53,14 +55,16 @@ public class CliScanTest {
     @BeforeEach
 
     public void setUp() {
-        Logger logger = (Logger) LoggerFactory.getLogger(EmaCommandLine.class);
+        Logger scanLogger = (Logger) LoggerFactory.getLogger(CommandLineScan.class);
+        Logger cliLogger = (Logger) LoggerFactory.getLogger(EmaCommandLine.class);
         listAppender = new ListAppender<>();
         listAppender.start();
-        logger.addAppender(listAppender);
+        scanLogger.addAppender(listAppender);
+        cliLogger.addAppender(listAppender);
     }
 
     @Test
-    public void testCLICommand() throws Exception {
+    public void testScanCLICommand() throws Exception {
         when(scanService.singleScan(any(), any(), any(), any(), any(), any(MessagingServiceEntity.class), anyString())).thenReturn("xyz");
         when(scanService.findById(anyString())).thenReturn(Optional.of(ScanEntity.builder()
                 .id("abcdef")
@@ -75,7 +79,7 @@ public class CliScanTest {
         String fileContent = "test";
         when(importService.zip(any(ZipRequestBO.class))).thenReturn(new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8)));
 
-        String scanOutputFile = "/tmp/scan.txt";
+        String scanOutputFile = Paths.get(File.separator, "tmp", "test_scan.zip").toString();
         emaCommandLine.run("scan", "abcdef", scanOutputFile);
 
         List<ILoggingEvent> logsList = listAppender.list;
@@ -83,15 +87,24 @@ public class CliScanTest {
         assertTrue(logsList.get(2).getFormattedMessage().contains("Scan request [xyz]: Scan completed successfully."));
         assertTrue(logsList.get(3).getFormattedMessage().contains("Received zip request for scan id: xyz"));
 
-        String content = Files.readString(Path.of(scanOutputFile), StandardCharsets.UTF_8);
+        Path scanFilePath = Path.of(scanOutputFile);
+        String content = Files.readString(scanFilePath, StandardCharsets.UTF_8);
         assertEquals(fileContent, content);
+        Files.deleteIfExists(scanFilePath);
     }
 
     @Test
-    public void testCLICommandMissingParams() throws Exception {
+    public void testScanCLICommandMissingArgs() throws Exception {
         when(scanService.findById(any())).thenReturn(Optional.empty());
         emaCommandLine.run("scan", "abcdef");
 
         assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Not enough arguments passed to the application."));
     }
+
+    @Test
+    public void testScanCLICommandTooManyArgs() throws Exception {
+        emaCommandLine.run("scan", "abcdef", "/tmp/scan.zip", "flamingos");
+        assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Too many arguments passed to the application."));
+    }
+
 }
