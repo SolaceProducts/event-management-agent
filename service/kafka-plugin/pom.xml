@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.kafka</groupId>
     <artifactId>kafka-plugin</artifactId>
@@ -12,11 +13,11 @@
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <spring-boot-version>3.1.7</spring-boot-version>
+        <spring-boot-version>3.1.8</spring-boot-version>
         <commons-collections4.vresion>4.4</commons-collections4.vresion>
         <jupiter.version>5.3.1</jupiter.version>
         <camel.version>4.2.0</camel.version>
-        <aws-msk-iam-auth.version>1.1.9</aws-msk-iam-auth.version>
+        <aws-msk-iam-auth.version>2.0.3</aws-msk-iam-auth.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
