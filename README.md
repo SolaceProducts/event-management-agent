@@ -182,7 +182,7 @@ curl -X 'GET' \
 
 ## Running a Discovery scan and file export using the CLI
 
-A discovery scan and file export can be run in a single command from a terminal using either the Event Management Agent jar file or a docker container. Use the `Upload Scan File` mode when [creating the Event Management agent in Event Portal](https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file) and download the standalone connection file. Set the resource passwords as environment variables that match the variables set in the connection file.
+A discovery scan and file export can be run as a single command from a terminal using either the Event Management Agent jar file or a docker container. Use the `Upload Scan File` mode when [creating the Event Management agent in Event Portal](https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file) to create and download the standalone connection file. Set the resource passwords as environment variables that match the variables set in the connection file.
 
 ### Discovery scan and file export from CLI using jar
 
@@ -204,14 +204,14 @@ The command is as follows:
 To run a scan and export operation using the CLI from docker:
 * provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
 * provide the path and filename for the resulting scan data zip file. (e.g. /tmp/scan.zip)
-* provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
+* provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
 * provide the name of the Event Management Agent container (e.g. event-managenement-agent)
 * provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
-* add all password environment variables to the environment of the docker container
+* add all password environment variables to the environment of the docker container (example BROKER_PASSWORD)
 
 The commands are as follows:
 `CMD_LINE_ARGS="scan abcdefg123 /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"`
-`run -d -v /path/to/file/AcmeRetail.yml:/config/ema.yml -v /path/to/scandir:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --env BROKERPASSWORD=${BROKERPASSWORD} --name event-management-agent event-management-agent:latest`
+`run -d -v /path/to/file/AcmeRetailStandalone.yml:/config/ema.yml -v /path/to/scandir:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --env BROKER_PASSWORD=${BROKER_PASSWORD} --name event-management-agent event-management-agent:latest`
 
 ## Running a Discovery file upload using the CLI
 
@@ -236,13 +236,13 @@ The command is as follows:
 
 To run a scan file upload using the CLI from docker:
 * provide the path and filename of the scan data zip file. (e.g. /tmp/scan.zip)
-* provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
+* provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
 * provide the name of the Event Management Agent container (e.g. event-managenement-agent)
 * provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 The commands are as follows:
 `CMD_LINE_ARGS="upload /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"`
-`run -d -v /path/to/file/AcmeRetailStandalone.yml:/config/ema.yml -v /path/to/scan.zip:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --name event-management-agent event-management-agent:latest`
+`run -d -v /path/to/file/AcmeRetail.yml:/config/ema.yml -v /path/to/scan.zip:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --name event-management-agent event-management-agent:latest`
 
 # Manually uploading scans to Event Portal
 
