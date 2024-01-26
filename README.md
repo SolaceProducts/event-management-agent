@@ -48,7 +48,7 @@ The Event Management Agent was tested to run with
 
 ## Prerequisites:
 
-* Docker
+* Docker or a working JRE 17 environment.
 
 ## Downloading the Event Management Agent
 
@@ -119,7 +119,7 @@ service/application/src/main/resources/application.yml
 * uncomment the sections relevant to your event brokers and schema registries
 * provide the authentication details required to connect to your event brokers and schema registries
 
-## Running the Event Management Agent
+## Running the Event Management Agent in a Docker Container
 
 Specify:
 * the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
@@ -138,7 +138,7 @@ The Event Management Agent takes a couple of minutes to start. The Event Managem
 docker logs -f event-management-agent
 ```
 
-## Running Discovery scans
+## Running Discovery scans using REST
 
 ### REST interface
 
@@ -166,7 +166,7 @@ curl -X 'POST' \
 
 The agent will return a scan id.
 
-## Exporting Discovery scans:
+## Exporting Discovery scans
 
 The Event Management Agent can export Discovery scans as zip files containing the entity type JSON files.
 
@@ -179,6 +179,37 @@ curl -X 'GET' \
   -H 'accept: */*' \
   --output ih9z9lwwv5r.zip
 ```
+
+## Running a Discovery scan and file export using the CLI
+
+A discovery scan and file export can be run in a single command from a terminal using either the Event Management Agent jar file or a docker container.
+See [Generating the Event Management Agent connection file](#generating-the-event-management-agent-connection-file) for instructions on how to generate a connection file and set up password environment variables.
+
+### Discovery scan and file export from CLI using jar
+
+The Event Management Agent jar file can be obtained by:
+* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.0` or greater is required.
+* running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
+
+To run a scan:
+* provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
+* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.0-SNAPSHOT.jar)
+* provide the path and filename for the resulting scan data zip file. (e.g. /tmp/scan.zip)
+* the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
+
+The command is as follows:
+
+`java -jar event-management-agent-1.5.0-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml`
+
+### Discovery scan and file export from CLI using docker
+
+In order to run a scan and export operation using the CLI from docker:
+* provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
+* provide the path and filename for the resulting scan data zip file. (e.g. /tmp/scan.zip)
+* the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
+* the name of the Event Management Agent container (e.g. event-managenement-agent)
+* the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
+
 
 # Manually uploading scans to Event Portal
 
