@@ -61,11 +61,11 @@ docker pull solace/event-management-agent
 
 ## Generating the Event Management Agent Connection File
 
-* Log in the Solace Cloud Console: https://console.solace.cloud/login/
-* Follow the steps for generating the connection file described in the Solace documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
+1. Log in the Solace Cloud Console: https://console.solace.cloud/login/
+2. Follow the steps for generating the connection file described in the Solace documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
     - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variable names that will contain the passwords when generating the connection file.
-* Download the connection file next to the Event Management Agent
-* Create the environment variables containing the actual passwords you provided in place of the passwords when generating the connection file
+3. Download the connection file next to the Event Management Agent
+4. Create the environment variables containing the actual passwords you provided in place of the passwords when generating the connection file
 
 ## Running the Event Management Agent
 
@@ -112,12 +112,12 @@ cd event-management-agent
 
 ## Generating the Connection File
 
-* duplicate the connect file found in:
+1. duplicate the connect file found in:
 ```
 service/application/src/main/resources/application.yml
 ```
-* uncomment the sections relevant to your event brokers and schema registries
-* provide the authentication details required to connect to your event brokers and schema registries
+2. uncomment the sections relevant to your event brokers and schema registries
+3. provide the authentication details required to connect to your event brokers and schema registries
 
 ## Running the Event Management Agent in a Docker Container
 
@@ -247,9 +247,9 @@ The commands are as follows:
 # Manually Uploading Scans to Event Portal
 
 You can manually upload discovery scan zip files to Event Portal. To do so:
-* Scan and export discovery scans following with a first Event Management Agent running in standalone mode: [Running the Event Management Agent in standalone mode](#running-the-event-management-agent-in-standalone-mode)
-* Set up a second agent in connected mode following: [Running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode)
-* Upload your Discovery zip file with the following curl command, providing the name of the zip file, e.g. scan.zip:
+1. Scan and export discovery scans following with a first Event Management Agent running in standalone mode: [Running the Event Management Agent in standalone mode](#running-the-event-management-agent-in-standalone-mode)
+2. Set up a second agent in connected mode following: [Running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode)
+3. Upload your Discovery zip file with the following curl command, providing the name of the zip file, e.g. scan.zip:
 ```
 curl -X 'POST' \
   'http://localhost:8180/api/v2/ema/resources/import' \
