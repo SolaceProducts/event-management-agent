@@ -1,6 +1,6 @@
 # Event Management Agent
 
-The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
+The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related event broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
 
 * As the Event Management Agent component of Solace PubSub+ Cloud Event Portal to:
     - discover runtime event data from event brokers and schema registries
@@ -10,11 +10,11 @@ The Event Management Agent is a tool for architects and developers working with 
 
 Our plan is to open source the Event Management Agent to enable architects and developers to contribute to it as well as to build new plugins so that:
 
-* the agent can discover data from different broker types
+* the agent can discover data from different event broker types
 * existing plugins can be extended to discover additional data
 * EDA data can be discovered from other systems, e.g. schemas from schema registries
 
-## Available today:
+## Available today
 
 * Users can discover Solace PubSub+ and Apache and Confluent Kafka brokers event flow data:
     - Users can discover Solace PubSub+ queues and subscriptions
@@ -23,7 +23,7 @@ Our plan is to open source the Event Management Agent to enable architects and d
 * Users get discovered data in the form of JSON files separated by entity types
 * The Event Management Agent architecture is currently in the form of Java packages
 
-## On the roadmap:
+## On the roadmap
 
 * The Event Management Agent has an open source plugin framework
 * Support additional Solace PubSub+ and Apache Kafka event broker authentication types in the form of plugins such as Kerberos, etc.
@@ -32,7 +32,7 @@ Our plan is to open source the Event Management Agent to enable architects and d
 * Addition of the infrastructure needed for the Event Management Agent to be a true open source project
 * Discovery of Apache Kafka connectors
 * Introduction of a UI for the Event Management Agent
-* Additional support to more broker types
+* Additional support to more event broker types
 * Event Management Agent executables
 
 # Running the Event Management Agent in connected mode
@@ -46,9 +46,9 @@ The Event Management Agent was tested to run with
 * 1 CPU
 * 1 GB RAM
 
-## Prerequisites:
+## Prerequisites
 
-* Docker or a working JRE 17 environment.
+Docker is required for any of the steps below that use the event-management-agent DockerHub image. A working JRE 17 environment is required for any of the steps below that use the event-management-agent jar file.
 
 ## Downloading the Event Management Agent
 
@@ -59,7 +59,7 @@ Pull the Event Management Agent Docker image from Docker Hub:
 docker pull solace/event-management-agent
 ```
 
-## Generating the Event Management Agent connection file
+## Generating the Event Management Agent Connection File
 
 * Log in the Solace Cloud Console: https://console.solace.cloud/login/
 * Follow the steps for generating the connection file described in the Solace documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
@@ -87,13 +87,13 @@ The Event Management Agent takes a couple of minutes to start. The Event Managem
 docker logs -f event-management-agent
 ```
 
-## Running a Discovery scan
+## Running a Discovery Scan
 
 The Event Management Agent is now connected to the Solace Cloud Console.
-Follow the steps in the documentation to run a Discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
+Follow the steps in the documentation to run a discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
 
 
-# Running the Event Management Agent in standalone mode
+# Running the Event Management Agent in Standalone Mode
 
 ## Getting the Event Management Agent
 
@@ -110,7 +110,7 @@ git clone https://github.com/SolaceProducts/event-management-agent.git
 cd event-management-agent
 ```
 
-## Generating the connection file
+## Generating the Connection File
 
 * duplicate the connect file found in:
 ```
@@ -138,9 +138,9 @@ The Event Management Agent takes a couple of minutes to start. The Event Managem
 docker logs -f event-management-agent
 ```
 
-## Running Discovery scans using REST
+## Running Discovery Scans using REST
 
-### REST interface
+### REST Interface
 
 The Event Management Agent includes REST APIs that allow users to interact with the agent. See [REST Documentation](docs/rest.md) for additional information.
 
@@ -166,9 +166,9 @@ curl -X 'POST' \
 
 The agent will return a scan id.
 
-## Exporting Discovery scans
+## Exporting Discovery Scans
 
-The Event Management Agent can export Discovery scans as zip files containing the entity type JSON files.
+The Event Management Agent can export discovery scans as zip files containing the entity type JSON files.
 
 * provide the scan id, e.g. ih9z9lwwv5r
 * provide the name of the zip file, e.g. ih9z9lwwv5r.zip 
@@ -180,13 +180,13 @@ curl -X 'GET' \
   --output ih9z9lwwv5r.zip
 ```
 
-## Running a Discovery scan and file export using the CLI
+## Running a Discovery Scan and File Export Using the CLI
 
-A discovery scan and file export can be run as a single command from a terminal using either the Event Management Agent jar file or a docker container. Use the `Upload Scan File` mode when [creating the Event Management agent in Event Portal](https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file) to create and download the standalone connection file. Set the resource passwords as environment variables that match the variables set in the connection file.
+A discovery scan and file export can be run as a single command from a terminal using the event-management-agent CLI. The CLI can be accessed using the following instructions via either the Event Management Agent jar file or a docker container. Use the `Upload Scan File` mode when [creating the Event Management agent in Event Portal](https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file) to create and download the standalone connection file. Set the resource passwords as environment variables that match the variables set in the connection file.
 
-### Discovery scan and file export from CLI using jar
+### Discovery Scan and File Export from CLI Using the Jar File
 
-The Event Management Agent jar file can be obtained by:
+The Event Management Agent jar file can be obtained by either:
 * downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.0` or greater is required.
 * running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
 
@@ -199,7 +199,7 @@ To run a scan:
 The command is as follows:
 `java -jar event-management-agent-1.5.0-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml`
 
-### Discovery scan and file export from CLI using docker
+### Discovery Scan and File Export From CLI Using Docker
 
 To run a scan and export operation using the CLI from docker:
 * provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
@@ -213,14 +213,14 @@ The commands are as follows:
 `CMD_LINE_ARGS="scan abcdefg123 /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"`
 `run -d -v /path/to/file/AcmeRetailStandalone.yml:/config/ema.yml -v /path/to/scandir:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --env BROKER_PASSWORD=${BROKER_PASSWORD} --name event-management-agent event-management-agent:latest`
 
-## Running a Discovery file upload using the CLI
+## Running a Discovery File Upload Using the CLI
 
-A discovery scan zip file can be run as a single command from the terminal using either the Event Management Agent jar file or a docker container.
+A discovery scan zip file upload can be run as a single command from the terminal using either the Event Management Agent jar file or a docker container.
 See [Generating the Event Management Agent connection file](#generating-the-event-management-agent-connection-file) for instructions on how to generate a connection file and set up password environment variables.
 
-### Discovery file upload from CLI using jar
+### Discovery File Upload From CLI Using the Jar File
 
-The Event Management Agent jar file can be obtained by:
+The Event Management Agent jar file can be obtained by either:
 * downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.0` or greater is required.
 * running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
 
@@ -232,7 +232,7 @@ To run a scan file upload:
 The command is as follows:
 `java -jar event-management-agent-1.5.0-SNAPSHOT.jar upload /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetail.yml`
 
-### Discovery scan and file export from CLI using docker
+### Discovery Scan and File Export From CLI Using Docker
 
 To run a scan file upload using the CLI from docker:
 * provide the path and filename of the scan data zip file. (e.g. /tmp/scan.zip)
@@ -244,10 +244,10 @@ The commands are as follows:
 `CMD_LINE_ARGS="upload /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"`
 `run -d -v /path/to/file/AcmeRetail.yml:/config/ema.yml -v /path/to/scan.zip:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --name event-management-agent event-management-agent:latest`
 
-# Manually uploading scans to Event Portal
+# Manually Uploading Scans to Event Portal
 
-You can manually upload Discovery scan zip files to Event Portal. To do so:
-* Scan and export Discovery scans following with a first Event Management Agent running in standalone mode: [Running the Event Management Agent in standalone mode](#running-the-event-management-agent-in-standalone-mode)
+You can manually upload discovery scan zip files to Event Portal. To do so:
+* Scan and export discovery scans following with a first Event Management Agent running in standalone mode: [Running the Event Management Agent in standalone mode](#running-the-event-management-agent-in-standalone-mode)
 * Set up a second agent in connected mode following: [Running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode)
 * Upload your Discovery zip file with the following curl command, providing the name of the zip file, e.g. scan.zip:
 ```
@@ -265,13 +265,13 @@ curl -X 'POST' \
 * Java 17 (JDK 17.0.9_9+)
 * Maven
 
-## Cloning the GitHub Event Management Agent repository
+## Cloning the GitHub Event Management Agent Repository
 
 ```
 git@github.com:SolaceProducts/event-management-agent.git
 ```
 
-### Installing Maven dependencies and building the Event Management Agent jar file
+### Installing Maven Dependencies and Building the Event Management Agent Jar File
 
 ```
 cd event-management-agent/service
@@ -284,7 +284,7 @@ The generated Event Management Agent jar file is found in:
 application/target/event-management-agent-1.0.0-SNAPSHOT.jar
 ```
 
-### Running the Event Management Agent as a process
+### Running the Event Management Agent As a Process
 
 You can run the Event Management Agent as a process in both connected and standalone modes.
 
@@ -298,7 +298,7 @@ java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.
 
 The Event Management Agent is ready.
 
-# Deploying the Event Management Agent in a Kubernetes cluster
+# Deploying the Event Management Agent in a Kubernetes Cluster
 
 ## ConfigMap example
 
@@ -413,7 +413,7 @@ data:
             url: ${CONFLUENT_SCHEMA_REGISTRY_URL:http://TOFILL}
 ```
 
-## Secret example
+## Secret Example
 
 ```yaml
 apiVersion: v1
@@ -426,7 +426,7 @@ data:
   MY_KAFKA_PASSWORD: bXlTdXBlclNlY3JldFBhc3N3b3JkCg==
 ```
 
-## Deployment example
+## Deployment Example
 
 ```yaml
 apiVersion: apps/v1
@@ -474,11 +474,11 @@ spec:
         name: ema-example1
 ```
 
-## Service example
+## Service Example
 
 If users wish to run the EMA in offline mode, they will need to create a service in order to make the pod reachable for REST commands outside of the cluster.
 
-# Broker Plugins
+# Event Broker Plugins
 
 The Event Management Agent comes with the following event or message broker plugins included:
 
@@ -519,7 +519,7 @@ categories according to the deployment mode.
 * Testing the end-to-end flow in Solace PubSub+ Console connected mode (From the frontend to the Event Portal, then to
   the Event Management Agent)
 
-### Testing the Event Management Agent in standalone mode
+### Testing the Event Management Agent in Standalone Mode
 
 The most important test in standalone mode is to ensure that the Event Management Agent runs and collects data properly.
 To that end, the test includes the steps below:
