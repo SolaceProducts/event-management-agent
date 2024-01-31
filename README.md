@@ -182,7 +182,7 @@ curl -X 'GET' \
 
 ## Running a Discovery Scan and File Export Using the CLI
 
-A discovery scan and file export can be run as a single command from a terminal using the event-management-agent CLI. The CLI can be accessed using the following instructions via either the Event Management Agent jar file or a docker container. Use the `Upload Scan File` mode when [creating the Event Management agent in Event Portal](https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file) to create and download the standalone connection file. Set the resource passwords as environment variables that match the variables set in the connection file.
+A discovery scan and file export can be run as a single command from a terminal using the event-management-agent CLI. The CLI can be accessed via either the Event Management Agent jar file or a docker container using the instructions below. Use the `Upload Scan File` mode when [creating the Event Management agent in Event Portal](https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file) to create and download the standalone connection file. Set the resource passwords as environment variables that match the variables set in the connection file.
 
 ### Discovery Scan and File Export from CLI Using the Jar File
 
