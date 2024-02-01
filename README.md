@@ -198,7 +198,9 @@ To run a scan:
 
 The command is as follows:
 
-`java -jar event-management-agent-1.5.0-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml`
+```
+java -jar event-management-agent-1.5.0-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml
+```
 
 ### Discovery Scan and File Export From CLI Using Docker
 
@@ -238,7 +240,9 @@ To run a scan file upload:
 
 The command is as follows:
 
-`java -jar event-management-agent-1.5.0-SNAPSHOT.jar upload /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetail.yml`
+```
+java -jar event-management-agent-1.5.0-SNAPSHOT.jar upload /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetail.yml
+```
 
 ### Discovery Scan and File Export From CLI Using Docker
 
