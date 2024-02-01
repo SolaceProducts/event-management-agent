@@ -187,19 +187,19 @@ A discovery scan and file export can be run as a single command from a terminal 
 ### Discovery Scan and File Export from CLI Using the Jar File
 
 The Event Management Agent jar file can be obtained by either:
-* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.0` or greater is required.
+* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.1` or greater is required.
 * running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
 
 To run a scan:
 * provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
-* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.0-SNAPSHOT.jar)
+* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.1-SNAPSHOT.jar)
 * provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
 
 The command is as follows:
 
 ```
-java -jar event-management-agent-1.5.0-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml
+java -jar event-management-agent-1.5.1-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml
 ```
 
 ### Discovery Scan and File Export From CLI Using Docker
@@ -230,18 +230,18 @@ See [Generating the Event Management Agent connection file](#generating-the-even
 ### Discovery File Upload From CLI Using the Jar File
 
 The Event Management Agent jar file can be obtained by either:
-* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.0` or greater is required.
+* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.1` or greater is required.
 * running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
 
 To run a scan file upload:
-* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.0-SNAPSHOT.jar)
+* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.1-SNAPSHOT.jar)
 * provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
 
 The command is as follows:
 
 ```
-java -jar event-management-agent-1.5.0-SNAPSHOT.jar upload /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetail.yml
+java -jar event-management-agent-1.5.1-SNAPSHOT.jar upload /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetail.yml
 ```
 
 ### Discovery Scan and File Export From CLI Using Docker

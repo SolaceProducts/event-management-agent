@@ -69,12 +69,6 @@ public class CliImportTest {
     }
 
     @Test
-    public void testImportCLICommandTooManyArgs() throws Exception {
-        emaCommandLine.run("upload", "/tmp/scan.zip", "/tmp/scan.zip");
-        assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Too many arguments passed to the application."));
-    }
-
-    @Test
     public void testCLIBadCommand() throws Exception {
         emaCommandLine.run("flamingo");
         assertTrue(listAppender.list.get(0).getFormattedMessage().contains("Unknown command: flamingo"));
