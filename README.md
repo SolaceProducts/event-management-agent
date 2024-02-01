@@ -211,7 +211,7 @@ To run a scan and export operation using the CLI from docker:
 
 The commands are as follows:
 ```
-CMD_LINE_ARGS="scan abcdefg123 /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
+CMD_LINE_ARGS="scan mysolacebroker /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
 docker run -d -v /path/to/file/AcmeRetailStandalone.yml:/config/ema.yml -v /path/to/scandir:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --env BROKER_PASSWORD=${BROKER_PASSWORD} --name event-management-agent event-management-agent:latest
 ```
 
