@@ -193,25 +193,27 @@ The Event Management Agent jar file can be obtained by either:
 To run a scan:
 * provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
 * provide the event-management-agent jar file. (e.g. event-management-agent-1.5.0-SNAPSHOT.jar)
-* provide the path and filename for the resulting scan data zip file. (e.g. /tmp/scan.zip)
+* provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
 
 The command is as follows:
+
 `java -jar event-management-agent-1.5.0-SNAPSHOT.jar scan mysolacebroker /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetailStandalone.yml`
 
 ### Discovery Scan and File Export From CLI Using Docker
 
 To run a scan and export operation using the CLI from docker:
 * provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
-* provide the path and filename for the resulting scan data zip file. (e.g. /tmp/scan.zip)
+* provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
 * provide the name of the Event Management Agent container (e.g. event-managenement-agent)
 * provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 * add all password environment variables to the environment of the docker container (example BROKER_PASSWORD)
 
 The commands are as follows:
+
 ```
-CMD_LINE_ARGS="scan mysolacebroker /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
+CMD_LINE_ARGS="scan mysolacebroker /path/to/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
 docker run -d -v /path/to/file/AcmeRetailStandalone.yml:/config/ema.yml -v /path/to/scandir:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --env BROKER_PASSWORD=${BROKER_PASSWORD} --name event-management-agent event-management-agent:latest
 ```
 
@@ -228,23 +230,25 @@ The Event Management Agent jar file can be obtained by either:
 
 To run a scan file upload:
 * provide the event-management-agent jar file. (e.g. event-management-agent-1.5.0-SNAPSHOT.jar)
-* provide the path and filename of the scan data zip file. (e.g. /tmp/scan.zip)
+* provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
 
 The command is as follows:
+
 `java -jar event-management-agent-1.5.0-SNAPSHOT.jar upload /path/to/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none --spring.config.location=/path/to/file/AcmeRetail.yml`
 
 ### Discovery Scan and File Export From CLI Using Docker
 
 To run a scan file upload using the CLI from docker:
-* provide the path and filename of the scan data zip file. (e.g. /tmp/scan.zip)
+* provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
 * provide the name of the Event Management Agent container (e.g. event-managenement-agent)
 * provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 The commands are as follows:
+
 ```
-CMD_LINE_ARGS="upload /tmp/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
+CMD_LINE_ARGS="upload /path/to/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
 docker run -d -v /path/to/file/AcmeRetail.yml:/config/ema.yml -v /path/to/scan.zip:/tmp  --env CMD_LINE_ARGS=${CMD_LINE_ARGS} --name event-management-agent event-management-agent:latest
 ```
 
