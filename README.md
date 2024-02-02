@@ -72,7 +72,7 @@ docker pull solace/event-management-agent
 Specify:
 * the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
 * the environment variables containing the authentication details of your event brokers and schema registries (e.g. KAFKA_PASSWORD)
-* the name of the Event Management Agent container (e.g. event-managenement-agent)
+* the name of the Event Management Agent container (e.g. event-management-agent)
 * the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 ```
@@ -123,7 +123,7 @@ service/application/src/main/resources/application.yml
 
 Specify:
 * the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
-* the name of the Event Management Agent container (e.g. event-managenement-agent)
+* the name of the Event Management Agent container (e.g. event-management-agent)
 * the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 ```
@@ -208,7 +208,7 @@ To run a scan and export operation using the CLI from docker:
 * provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
 * provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
-* provide the name of the Event Management Agent container (e.g. event-managenement-agent)
+* provide the name of the Event Management Agent container (e.g. event-management-agent)
 * provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 * add all password environment variables to the environment of the docker container (example BROKER_PASSWORD)
 
@@ -249,7 +249,7 @@ java -jar event-management-agent-1.5.1-SNAPSHOT.jar upload /path/to/scan.zip --s
 To run a scan file upload using the CLI from docker:
 * provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
 * provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
-* provide the name of the Event Management Agent container (e.g. event-managenement-agent)
+* provide the name of the Event Management Agent container (e.g. event-management-agent)
 * provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 The commands are as follows:
