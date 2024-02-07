@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,8 +50,8 @@ public class TerraformManager {
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
 
             Path configPath = TerraformUtils.createConfigPath(request, terraformProperties.getWorkingDirectoryRoot());
-            List<String> logOutput = TerraformUtils.setupTerraformClient(terraformClient, configPath, TerraformManager::logToConsole);
-            String commandVerb = executeTerraformCommand(command, envVars, configPath, terraformClient, logOutput);
+            String commandVerb = command.getCommand();
+            List<String> logOutput = executeTerraformCommand(command, envVars, configPath, terraformClient);
             processTerraformResponse(command, commandVerb, logOutput);
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
@@ -61,11 +62,19 @@ public class TerraformManager {
         }
     }
 
-    private static String executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath,
-                                                  TerraformClient terraformClient, List<String> output) throws IOException, InterruptedException, ExecutionException {
+    private static List<String> executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath,
+                                                        TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
         String commandVerb = command.getCommand();
+
+        Consumer<String> logToConsole = TerraformManager::logToConsole;
+        if ("import".equals(commandVerb)) {
+            logToConsole = (log) -> {
+            };
+        }
+        List<String> logOutput = TerraformUtils.setupTerraformClient(terraformClient, configPath, logToConsole);
+
         switch (commandVerb) {
-            case "import" -> importCommand(envVars, configPath, terraformClient, output);
+            case "import" -> importCommand(envVars, configPath, terraformClient, logOutput);
             case "apply" -> {
                 TerraformUtils.writeHclToFile(command, configPath);
                 terraformClient.apply(envVars).get();
@@ -73,7 +82,7 @@ public class TerraformManager {
             case "write_HCL" -> TerraformUtils.writeHclToFile(command, configPath);
             default -> throw new IllegalArgumentException("Unsupported command " + commandVerb);
         }
-        return commandVerb;
+        return logOutput;
     }
 
     private static void importCommand(Map<String, String> envVars, Path configPath, TerraformClient terraformClient, List<String> output) throws InterruptedException, ExecutionException, IOException {

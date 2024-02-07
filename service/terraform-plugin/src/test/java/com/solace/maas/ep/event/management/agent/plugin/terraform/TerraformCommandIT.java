@@ -139,7 +139,7 @@ public class TerraformCommandIT {
     public void testImportResourceWithSomeResourcesExistingAndSomeNot() throws IOException {
 
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
-        List<String> partialImportTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfPartiialImport.txt"));
+        List<String> partialImportTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfPartialImport.txt"));
 
         Command command = generateCommand("import", newQueueTf, true);
         CommandRequest terraformRequest = generateCommandRequest(command);
@@ -167,6 +167,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
                 CommandResult result = tfCommand.getResult();
                 assertEquals(JobStatus.success, result.getStatus());
+                assertEquals(0, result.getLogs().size());
             }
         }
     }
