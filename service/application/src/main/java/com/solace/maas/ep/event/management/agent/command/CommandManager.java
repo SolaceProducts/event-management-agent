@@ -11,7 +11,6 @@ import com.solace.maas.ep.event.management.agent.plugin.service.MessagingService
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
-import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +25,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.LOG_LEVEL_ERROR;
+import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.setCommandError;
 
 @Slf4j
 @Service
@@ -61,7 +62,7 @@ public class CommandManager {
                 .exceptionally(e -> {
                     log.error("Error running command", e);
                     Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
-                    TerraformUtils.setCommandError(firstCommand, (Exception) e);
+                    setCommandError(firstCommand, (Exception) e);
                     sendResponse(request);
                     return null;
                 });
@@ -74,7 +75,7 @@ public class CommandManager {
         } catch (Exception e) {
             log.error("Error getting terraform variables", e);
             Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
-            TerraformUtils.setCommandError(firstCommand, e);
+            setCommandError(firstCommand, e);
             sendResponse(request);
             return;
         }
@@ -93,14 +94,14 @@ public class CommandManager {
                                     .logs(List.of(
                                             Map.of("message", "unknown command type " + command.getCommandType(),
                                                     "errorType", "UnknownCommandType",
-                                                    "level", TerraformUtils.LOG_LEVEL_ERROR,
+                                                    "level", LOG_LEVEL_ERROR,
                                                     "timestamp", OffsetDateTime.now())))
                                     .build());
                             break;
                     }
                 } catch (Exception e) {
                     log.error("Error executing command", e);
-                    TerraformUtils.setCommandError(command, e);
+                    setCommandError(command, e);
                 }
             }
         }
