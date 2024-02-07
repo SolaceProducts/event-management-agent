@@ -67,7 +67,7 @@ public class TerraformCommandIT {
     }
 
     @Test
-    public void testWriteHCL() throws IOException {
+    public void testWriteHCLWithDefaultFile() throws IOException {
 
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
 
@@ -78,6 +78,25 @@ public class TerraformCommandIT {
 
         // Validate that the file was written
         String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/config.tf"));
+        assertEquals(content, newQueueTf);
+    }
+
+    @Test
+    public void testWriteHCLWithSpecifiedFile() throws IOException {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        Command command = generateCommand("write_HCL", newQueueTf, false,
+                Map.of("Content-Type", "application/hcl",
+                        "Content-Encoding", "base64",
+                        "Output-File-Name", "strangeFileName.tf"));
+
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the file was written
+        String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/strangeFileName.tf"));
 
         assertEquals(content, newQueueTf);
     }
@@ -112,6 +131,42 @@ public class TerraformCommandIT {
                 assertTrue(result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
                 assertTrue(result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
                 assertAllLogsContainExpectedFields(result.getLogs());
+            }
+        }
+    }
+
+    @Test
+    public void testImportResourceWithSomeResourcesExistingAndSomeNot() throws IOException {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        List<String> partialImportTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfPartiialImport.txt"));
+
+        Command command = generateCommand("import", newQueueTf, true);
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> false));
+
+        // Setup the output
+        setupLogMock(partialImportTfLogs);
+
+        terraformManager.execute(terraformRequest, command, Map.of());
+
+        // Validate that the plan and apply apis are called
+        verify(terraformClient, times(1)).plan(any());
+
+        String expectedImportTf = "import {\n" +
+                "\tto = solacebroker_msg_vpn_queue_subscription.sub_66e36954c9ee1b2012bb57c8d6f6a2429e8b5aa81d48055767ef9c10ab2b074a\n" +
+                "\tid = \"default/MyConsumer1/a%2Fb%2Fc\"\n" +
+                "}";
+
+        String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/import.tf"));
+        assertEquals(content, expectedImportTf);
+
+        // Check the responses
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.success, result.getStatus());
             }
         }
     }

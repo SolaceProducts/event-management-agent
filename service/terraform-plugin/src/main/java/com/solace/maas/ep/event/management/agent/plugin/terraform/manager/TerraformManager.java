@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
@@ -26,6 +27,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,7 +37,7 @@ public class TerraformManager {
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
-    private static final String TF_CONFIG_FILENAME = "config.tf";
+    private static final String DEFAULT_TF_CONFIG_FILENAME = "config.tf";
 
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
                             TerraformProperties terraformProperties, TerraformClientFactory terraformClientFactory) {
@@ -56,7 +58,7 @@ public class TerraformManager {
 
             Path configPath = createConfigPath(request);
             List<String> logOutput = setupTerraformClient(terraformClient, configPath);
-            String commandVerb = executeTerraformCommand(command, envVars, configPath, terraformClient);
+            String commandVerb = executeTerraformCommand(command, envVars, configPath, terraformClient, logOutput);
             processTerraformResponse(command, commandVerb, logOutput);
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
@@ -97,15 +99,39 @@ public class TerraformManager {
         }
     }
 
-    private static String executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath, TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
+    private static String executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath,
+                                                  TerraformClient terraformClient, List<String> output) throws IOException, InterruptedException, ExecutionException {
         String commandVerb = command.getCommand();
         switch (commandVerb) {
+            case "import" -> {
+                boolean importPlanSuccessful = terraformClient.plan(envVars).get();
+
+                if (!importPlanSuccessful) {
+                    // Re-write the import file to only include the successful imports
+                    String successfulImports = output.stream()
+                            .map(json -> {
+                                try {
+                                    return objectMapper.readValue(json, Map.class);
+                                } catch (JsonProcessingException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
+                            .filter(log -> "planned_change".equals(log.get("type")))
+                            .map(log -> (Map<String, Object>) log.get("change"))
+                            .filter(log -> "import".equals(log.get("action")))
+                            .map(log -> new TfImport(
+                                    ((Map<String, Object>) log.get("importing")).get("id").toString(),
+                                    ((Map<String, Object>) log.get("resource")).get("resource").toString()))
+                            .map(TfImport::toString)
+                            .collect(Collectors.joining("\n"));
+
+                    Files.writeString(configPath.resolve("import.tf"), successfulImports);
+                }
+            }
+
             case "apply" -> {
                 writeHclToFile(command, configPath);
-                Boolean planSuccessful = terraformClient.plan(envVars).get();
-                if (Boolean.TRUE.equals(planSuccessful)) {
-                    terraformClient.apply(envVars).get();
-                }
+                terraformClient.apply(envVars).get();
             }
             case "write_HCL" -> writeHclToFile(command, configPath);
             default -> throw new IllegalArgumentException("Unsupported command " + commandVerb);
@@ -172,7 +198,11 @@ public class TerraformManager {
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException("Error decoding base64 content", e);
                 }
-                Files.write(configPath.resolve(TF_CONFIG_FILENAME), decodedBytes);
+                String filename = DEFAULT_TF_CONFIG_FILENAME;
+                if (parameters.containsKey("Output-File-Name")) {
+                    filename = parameters.get("Output-File-Name");
+                }
+                Files.write(configPath.resolve(filename), decodedBytes);
             } else {
                 if (parameters == null || !parameters.containsKey("Content-Encoding")) {
                     throw new IllegalArgumentException("Missing Content-Encoding property in command parameters.");
@@ -182,4 +212,23 @@ public class TerraformManager {
             }
         }
     }
+
+    private static class TfImport {
+        public TfImport(String id, String to) {
+            this.id = id;
+            this.to = to;
+        }
+
+        public String id;
+        public String to;
+
+        @Override
+        public String toString() {
+            return "import {\n" +
+                    "\tto = " + to + '\n' +
+                    "\tid = \"" + id + "\"\n" +
+                    '}';
+        }
+    }
+
 }
