@@ -15,6 +15,6 @@ public class CommandRequest {
     private String commandCorrelationId;
     private String context;
     private String serviceId;
-    private String status;
+    private JobStatus status;
     private List<CommandBundle> commandBundles;
 }

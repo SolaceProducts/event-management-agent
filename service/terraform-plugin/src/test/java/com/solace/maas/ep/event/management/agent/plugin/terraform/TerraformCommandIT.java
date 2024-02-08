@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -79,6 +80,10 @@ public class TerraformCommandIT {
         // Validate that the file was written
         String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/config.tf"));
         assertEquals(content, newQueueTf);
+
+        // The top level status should be success
+        assertEquals(JobStatus.success, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -99,6 +104,10 @@ public class TerraformCommandIT {
         String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/strangeFileName.tf"));
 
         assertEquals(content, newQueueTf);
+
+        // The top level status should be success
+        assertEquals(JobStatus.success, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -132,6 +141,10 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
+        // The top level status should be success
+        assertEquals(JobStatus.success, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -169,10 +182,14 @@ public class TerraformCommandIT {
                 assertEquals(0, result.getLogs().size());
             }
         }
+
+        // The top level status should be success
+        assertEquals(JobStatus.success, terraformRequest.getStatus());
+
     }
 
     @Test
-    public void testExitOnFailureWhenFailingToWriteHCL() {
+    public void testExitOnFailureWhenFailingToWriteHCL() throws IOException {
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
 
         Command command = generateCommand("write_HCL", newQueueTf);
@@ -185,15 +202,19 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
         terraformProperties.setWorkingDirectoryRoot(originalPath);
 
-        // Check the responses
-        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
-            for (Command tfCommand : commandBundle.getCommands()) {
-                CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.success, result.getStatus());
-                assertEquals(0, result.getLogs().size());
-            }
-        }
+        // The first command should be failed, the second should not be executed
+        // so the result is not set
+        CommandResult result = terraformRequest.getCommandBundles().get(0).getCommands().get(0).getResult();
+        assertEquals(JobStatus.error, result.getStatus());
+        assertAllLogsContainExpectedFields(result.getLogs());
+        verify(terraformClient, times(0)).apply(any());
 
+        // The second command should not be executed
+        CommandResult result2 = terraformRequest.getCommandBundles().get(0).getCommands().get(1).getResult();
+        assertNull(result2);
+
+        // The top level status should be error
+        assertEquals(JobStatus.error, terraformRequest.getStatus());
     }
 
     @Test
@@ -229,6 +250,10 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
+        // The top level status should be error
+        assertEquals(JobStatus.error, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -253,6 +278,10 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
+        // The top level status should be error
+        assertEquals(JobStatus.error, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -285,6 +314,10 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
+        // The top level status should be error
+        assertEquals(JobStatus.error, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -308,6 +341,10 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
+        // The top level status should be error
+        assertEquals(JobStatus.error, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -339,6 +376,10 @@ public class TerraformCommandIT {
                 assertTrue(result.getLogs().isEmpty());
             }
         }
+
+        // The top level status should be success
+        assertEquals(JobStatus.success, terraformRequest.getStatus());
+
     }
 
     @Test
@@ -372,6 +413,9 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
+        // The top level status should be success
+        assertEquals(JobStatus.success, terraformRequest.getStatus());
     }
 
     private static Command generateCommand(String tfCommand, String body) {
