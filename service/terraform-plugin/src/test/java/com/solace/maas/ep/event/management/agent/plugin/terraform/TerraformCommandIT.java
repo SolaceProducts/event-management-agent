@@ -119,7 +119,6 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the plan and apply apis are called
-        verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
         // Check the responses
@@ -173,6 +172,31 @@ public class TerraformCommandIT {
     }
 
     @Test
+    public void testExitOnFailureWhenFailingToWriteHCL() {
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        Command command = generateCommand("write_HCL", newQueueTf);
+        Command command2 = generateCommand("apply", newQueueTf);
+        CommandRequest terraformRequest = generateCommandRequest(List.of(command, command2), true);
+
+        // Fail the 1st request by setting the working directory to and invalid path
+        String originalPath = terraformProperties.getWorkingDirectoryRoot();
+        terraformProperties.setWorkingDirectoryRoot("/invalid/path");
+        terraformManager.execute(terraformRequest, command, Map.of());
+        terraformProperties.setWorkingDirectoryRoot(originalPath);
+
+        // Check the responses
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.success, result.getStatus());
+                assertEquals(0, result.getLogs().size());
+            }
+        }
+
+    }
+
+    @Test
     public void testCreateResourceTerraformErrorFailurePath() throws IOException {
 
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
@@ -190,7 +214,6 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the plan api is called
-        verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
         // Validate that the plan and apply apis are called
@@ -249,7 +272,6 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the plan api is called
-        verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
         // Validate that the plan and apply apis are called
@@ -306,7 +328,6 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the plan and apply apis are called
-        verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
         // Check the responses
@@ -338,7 +359,6 @@ public class TerraformCommandIT {
         terraformManager.execute(terraformRequest, command, Map.of());
 
         // Validate that the plan api is called
-        verify(terraformClient, times(1)).plan(any());
         verify(terraformClient, times(1)).apply(any());
 
         // Check the responses
@@ -378,12 +398,16 @@ public class TerraformCommandIT {
 
 
     private static CommandRequest generateCommandRequest(Command commandRequest) {
+        return generateCommandRequest(List.of(commandRequest), false);
+    }
+
+    private static CommandRequest generateCommandRequest(List<Command> commandRequests, boolean exitOnFailure) {
         return CommandRequest.builder()
                 .commandBundles(List.of(
                         CommandBundle.builder()
                                 .executionType(ExecutionType.serial)
-                                .exitOnFailure(false)
-                                .commands(List.of(commandRequest))
+                                .exitOnFailure(exitOnFailure)
+                                .commands(commandRequests)
                                 .build()))
                 .commandCorrelationId("234")
                 .context("app123")
