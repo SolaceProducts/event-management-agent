@@ -135,6 +135,7 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
+
     }
 
     @Test

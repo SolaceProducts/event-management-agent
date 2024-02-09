@@ -109,6 +109,7 @@ public class CommandManager {
                 }
             }
         }
+
         finalizeAndSendResponse(request);
     }
 
