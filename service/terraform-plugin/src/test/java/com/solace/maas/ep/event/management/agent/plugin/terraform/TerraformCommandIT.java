@@ -80,10 +80,6 @@ public class TerraformCommandIT {
         // Validate that the file was written
         String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/config.tf"));
         assertEquals(content, newQueueTf);
-
-        // The top level status should be success
-        assertEquals(JobStatus.success, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -104,10 +100,6 @@ public class TerraformCommandIT {
         String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/strangeFileName.tf"));
 
         assertEquals(content, newQueueTf);
-
-        // The top level status should be success
-        assertEquals(JobStatus.success, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -141,10 +133,6 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
-
-        // The top level status should be success
-        assertEquals(JobStatus.success, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -182,10 +170,6 @@ public class TerraformCommandIT {
                 assertEquals(0, result.getLogs().size());
             }
         }
-
-        // The top level status should be success
-        assertEquals(JobStatus.success, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -212,9 +196,6 @@ public class TerraformCommandIT {
         // The second command should not be executed
         CommandResult result2 = terraformRequest.getCommandBundles().get(0).getCommands().get(1).getResult();
         assertNull(result2);
-
-        // The top level status should be error
-        assertEquals(JobStatus.error, terraformRequest.getStatus());
     }
 
     @Test
@@ -250,10 +231,6 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
-
-        // The top level status should be error
-        assertEquals(JobStatus.error, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -278,10 +255,6 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
-
-        // The top level status should be error
-        assertEquals(JobStatus.error, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -314,10 +287,6 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
-
-        // The top level status should be error
-        assertEquals(JobStatus.error, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -341,10 +310,6 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
-
-        // The top level status should be error
-        assertEquals(JobStatus.error, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -376,10 +341,6 @@ public class TerraformCommandIT {
                 assertTrue(result.getLogs().isEmpty());
             }
         }
-
-        // The top level status should be success
-        assertEquals(JobStatus.success, terraformRequest.getStatus());
-
     }
 
     @Test
@@ -413,9 +374,6 @@ public class TerraformCommandIT {
                 assertAllLogsContainExpectedFields(result.getLogs());
             }
         }
-
-        // The top level status should be success
-        assertEquals(JobStatus.success, terraformRequest.getStatus());
     }
 
     private static Command generateCommand(String tfCommand, String body) {
