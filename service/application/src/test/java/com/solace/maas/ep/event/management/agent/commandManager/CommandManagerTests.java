@@ -4,11 +4,7 @@ import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.*;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
@@ -23,6 +19,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -41,20 +38,14 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("TEST")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class CommandManagerTests {
+class CommandManagerTests {
 
-    @Autowired
+    @SpyBean
     private CommandManager commandManager;
 
     @Autowired
@@ -69,12 +60,15 @@ public class CommandManagerTests {
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
+    private static final String MESSAGING_SERVICE_ID = "myMessagingServiceId";
     private final static ThreadPoolTaskExecutor testThreadPool = new ThreadPoolTaskExecutor();
 
     @BeforeEach
     public void cleanup() {
         reset(terraformManager);
         reset(commandPublisher);
+        reset(commandManager);
+        reset(messagingServiceDelegateService);
     }
 
     @Test
@@ -165,6 +159,36 @@ public class CommandManagerTests {
     }
 
     @Test
+    void failSettingBrokerSpecificEnvironmentVariables() {
+        // Create a command request message
+        CommandMessage message = getCommandMessage("1");
+
+        doNothing().when(terraformManager).execute(any(), any(), any());
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        doThrow(new RuntimeException("Could not retrieve or create the messaging service client for [" + MESSAGING_SERVICE_ID + "]."))
+                .when(messagingServiceDelegateService).getMessagingServiceClient(MESSAGING_SERVICE_ID);
+
+        commandManager.execute(message);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+        assertEquals(JobStatus.error, message.getStatus());
+    }
+
+    @Test
+    void failConfigPushCommand() {
+        // Create a command request message
+        CommandMessage message = getCommandMessage("1");
+
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(message);
+
+        commandManager.execute(message);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+        assertEquals(JobStatus.error, message.getStatus());
+    }
+
+    @Test
     void testCommandManager() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
@@ -201,6 +225,8 @@ public class CommandManagerTests {
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
         assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
+
+        assertEquals(JobStatus.success, message.getStatus());
     }
 
     @Test
@@ -242,6 +268,7 @@ public class CommandManagerTests {
         message.setOrigType(MOPSvcType.maasEventMgmt);
         message.withMessageType(generic);
         message.setContext("abc");
+        message.setServiceId(MESSAGING_SERVICE_ID);
         message.setActorId("myActorId");
         message.setOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
