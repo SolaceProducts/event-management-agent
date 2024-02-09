@@ -242,9 +242,8 @@ class CommandManagerTests {
     }
 
     @Test
-    void verifyExitOnFailureIsRespectedWhenTrue() {
-        CommandMessage message = getCommandMessage("1", 4);
-        message.getCommandBundles().get(0).setExitOnFailure(true);
+    void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsFalse() {
+        CommandMessage message = getCommandMessage("1", 4, true, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -254,18 +253,37 @@ class CommandManagerTests {
 
         // Check top level status
         assertEquals(JobStatus.error, commandMessage.getStatus());
+        CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
         // The first command in the bundle should be marked with error
-        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
         // The rest of the commands should not be executed and have null results
-        assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(1).getResult());
-        assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(2).getResult());
-        assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(3).getResult());
+        assertNull(commandBundle.getCommands().get(1).getResult());
+        assertNull(commandBundle.getCommands().get(2).getResult());
+        assertNull(commandBundle.getCommands().get(3).getResult());
+    }
+
+    @Test
+    void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsTrue() {
+        CommandMessage message = getCommandMessage("1", 4, true, true);
+
+        doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = executeCommandAndGetResponseMessage(message);
+
+        CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
+
+        // top level status should be success since we are ignoring the result of each command
+        assertEquals(JobStatus.success, commandMessage.getStatus());
+        CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(1).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(2).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(3).getResult().getStatus());
     }
 
     @Test
     void verifyExitOnFailureIsRespectedWhenFalse() {
-        CommandMessage message = getCommandMessage("1", 4);
-        message.getCommandBundles().get(0).setExitOnFailure(false);
+        CommandMessage message = getCommandMessage("1", 4, false, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -275,11 +293,12 @@ class CommandManagerTests {
 
         // Check top level status
         assertEquals(JobStatus.error, commandMessage.getStatus());
+        CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
         // The first command in the bundle should be marked with error
-        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus());
-        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(1).getResult().getStatus());
-        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(2).getResult().getStatus());
-        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(3).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(1).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(2).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(3).getResult().getStatus());
     }
 
 
@@ -318,10 +337,11 @@ class CommandManagerTests {
     }
 
     private CommandMessage getCommandMessage(String correlationIdSuffix) {
-        return getCommandMessage(correlationIdSuffix, 1);
+        return getCommandMessage(correlationIdSuffix, 1, false, false);
     }
 
-    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfCommands) {
+    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfCommands,
+                                             boolean exitOnFailure, boolean ignoreResult) {
         CommandMessage message = new CommandMessage();
         message.setOrigType(MOPSvcType.maasEventMgmt);
         message.withMessageType(generic);
@@ -334,15 +354,16 @@ class CommandManagerTests {
         message.setCommandBundles(List.of(
                 CommandBundle.builder()
                         .executionType(ExecutionType.serial)
-                        .exitOnFailure(false)
-                        .commands(IntStream.range(0, numberOfCommands).mapToObj(i -> buildCommand()).toList())
+                        .exitOnFailure(exitOnFailure)
+                        .commands(IntStream.range(0, numberOfCommands).mapToObj(i -> buildCommand(ignoreResult)).toList())
                         .build()));
         return message;
     }
 
-    private static Command buildCommand() {
+    private static Command buildCommand(boolean ignoreResult) {
         return Command.builder()
                 .commandType(CommandType.terraform)
+                .ignoreResult(ignoreResult)
                 .body("asdfasdfadsf")
                 .command("apply")
                 .build();
