@@ -206,26 +206,13 @@ public class CommandManagerTests {
     }
 
     @Test
-    void verifyExitOnFailureIsRespected() {
+    void verifyExitOnFailureIsRespectedWhenTrue() {
         CommandMessage message = getCommandMessage("1", 4);
         message.getCommandBundles().get(0).setExitOnFailure(true);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
-        ArgumentCaptor<MOPMessage> mopMessageCaptor = ArgumentCaptor.forClass(MOPMessage.class);
-
-        doNothing().when(commandPublisher).sendCommandResponse(mopMessageCaptor.capture(), any());
-        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
-                new SolaceHttpSemp(SempClient.builder()
-                        .username("myUsername")
-                        .password("myPassword")
-                        .connectionUrl("myConnectionUrl")
-                        .build()));
-
-        commandManager.execute(message);
-
-        // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = executeCommandAndGetResponseMessage(message);
 
         CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
 
@@ -238,6 +225,27 @@ public class CommandManagerTests {
         assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(2).getResult());
         assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(3).getResult());
     }
+
+    @Test
+    void verifyExitOnFailureIsRespectedWhenFalse() {
+        CommandMessage message = getCommandMessage("1", 4);
+        message.getCommandBundles().get(0).setExitOnFailure(false);
+
+        doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = executeCommandAndGetResponseMessage(message);
+
+        CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
+
+        // Check top level status
+        assertEquals(JobStatus.error, commandMessage.getStatus());
+        // The first command in the bundle should be marked with error
+        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus());
+        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(1).getResult().getStatus());
+        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(2).getResult().getStatus());
+        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(3).getResult().getStatus());
+    }
+
 
     @Test
     void verifyMDCIsSetInCommandManagerThread() {
@@ -305,5 +313,23 @@ public class CommandManagerTests {
 
     private Boolean commandPublisherIsInvoked(int numberOfExpectedInvocations) {
         return Mockito.mockingDetails(commandPublisher).getInvocations().size() == numberOfExpectedInvocations;
+    }
+
+    private ArgumentCaptor<MOPMessage> executeCommandAndGetResponseMessage(CommandMessage message) {
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = ArgumentCaptor.forClass(MOPMessage.class);
+
+        doNothing().when(commandPublisher).sendCommandResponse(mopMessageCaptor.capture(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        commandManager.execute(message);
+
+        // Wait for the command thread to complete
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        return mopMessageCaptor;
     }
 }
