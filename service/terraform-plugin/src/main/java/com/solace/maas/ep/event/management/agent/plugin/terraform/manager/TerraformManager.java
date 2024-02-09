@@ -47,6 +47,8 @@ public class TerraformManager {
         log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                 request.getCommandCorrelationId(), request.getContext());
 
+        setEnvVarsFromParameters(command, envVars);
+
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
 
             Path configPath = TerraformUtils.createConfigPath(request, terraformProperties.getWorkingDirectoryRoot());
@@ -59,6 +61,14 @@ public class TerraformManager {
         } catch (Exception e) {
             log.error("An error was encountered while executing the terraform command", e);
             TerraformUtils.setCommandError(command, e);
+        }
+    }
+
+    private static void setEnvVarsFromParameters(Command command, Map<String, String> envVars) {
+        if (command.getParameters() != null && command.getParameters().containsKey("environment") &&
+                command.getParameters().get("environment") instanceof Map) {
+            Map<String, String> environmentMap = (Map<String, String>) command.getParameters().get("environment");
+            environmentMap.keySet().forEach(key -> envVars.put("TF_VAR_" + key, environmentMap.get(key)));
         }
     }
 

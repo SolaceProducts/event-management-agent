@@ -13,6 +13,7 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.Terraf
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -121,6 +123,51 @@ public class TerraformCommandIT {
 
         // Validate that the plan and apply apis are called
         verify(terraformClient, times(1)).apply(any());
+
+        // Check the responses
+        for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
+            for (Command tfCommand : commandBundle.getCommands()) {
+
+                CommandResult result = tfCommand.getResult();
+                assertEquals(JobStatus.success, result.getStatus());
+                assertTrue(result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
+                assertTrue(result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
+                assertAllLogsContainExpectedFields(result.getLogs());
+            }
+        }
+
+    }
+
+    @Test
+    public void testApplyWithEnvVarsInParameters() throws IOException {
+
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+        List<String> newQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfAddHappyPath.txt"));
+
+        Command command = generateCommand("apply", newQueueTf, false,
+                Map.of("Content-Type", "application/hcl",
+                        "Content-Encoding", "base64",
+                        "environment", Map.of(
+                                "orgId", "org123",
+                                "runtimeAgentId", "ra123")));
+        CommandRequest terraformRequest = generateCommandRequest(command);
+
+        when(terraformClient.apply(any())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+
+        // Setup the output
+        setupLogMock(newQueueTfLogs);
+
+        terraformManager.execute(terraformRequest, command, new HashMap<>());
+
+        ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
+
+        // Validate that the plan and apply apis are called
+        verify(terraformClient, times(1)).apply(envArgCaptor.capture());
+
+        assert (envArgCaptor.getValue().containsKey("TF_VAR_orgId"));
+        assertEquals("org123", envArgCaptor.getValue().get("TF_VAR_orgId"));
+        assert (envArgCaptor.getValue().containsKey("TF_VAR_runtimeAgentId"));
+        assertEquals("ra123", envArgCaptor.getValue().get("TF_VAR_runtimeAgentId"));
 
         // Check the responses
         for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
@@ -386,7 +433,7 @@ public class TerraformCommandIT {
                         "Content-Encoding", "base64"));
     }
 
-    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult, Map<String, String> parameters) {
+    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult, Map<String, Object> parameters) {
         return Command.builder()
                 .body(Optional.ofNullable(body)
                         .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
