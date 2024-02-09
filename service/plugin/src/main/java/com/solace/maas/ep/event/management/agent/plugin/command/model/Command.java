@@ -19,4 +19,11 @@ public class Command {
     private Map<String, String> parameters;
     private Boolean ignoreResult;
     private CommandResult result;
+
+    public boolean hasSignificantErrorResult() {
+        if (!Boolean.TRUE.equals(ignoreResult) && result != null) {
+            return JobStatus.error.equals(result.getStatus());
+        }
+        return false;
+    }
 }

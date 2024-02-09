@@ -38,6 +38,7 @@ import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAN
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -158,6 +159,9 @@ public class CommandManagerTests {
             assert commandMessage.getCommandCorrelationId().equals(message.getCommandCorrelationId());
             assert commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus().equals(JobStatus.error);
         });
+
+        // Overall status of the request is set to error
+        assertEquals(JobStatus.error, message.getStatus());
     }
 
     @Test

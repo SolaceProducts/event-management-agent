@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -15,6 +17,5 @@ public class CommandRequest {
     private String commandCorrelationId;
     private String context;
     private String serviceId;
-    private JobStatus status;
     private List<CommandBundle> commandBundles;
 }

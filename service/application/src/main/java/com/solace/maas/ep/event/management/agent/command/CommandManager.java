@@ -63,7 +63,7 @@ public class CommandManager {
                     log.error("Error running command", e);
                     Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
                     setCommandError(firstCommand, (Exception) e);
-                    sendResponse(request);
+                    finalizeAndSendResponse(request);
                     return null;
                 });
     }
@@ -76,7 +76,7 @@ public class CommandManager {
             log.error("Error getting terraform variables", e);
             Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
             setCommandError(firstCommand, e);
-            sendResponse(request);
+            finalizeAndSendResponse(request);
             return;
         }
 
@@ -105,10 +105,11 @@ public class CommandManager {
                 }
             }
         }
-        sendResponse(request);
+        finalizeAndSendResponse(request);
     }
 
-    private void sendResponse(CommandMessage request) {
+    private void finalizeAndSendResponse(CommandMessage request) {
+        request.determineStatus();
         Map<String, String> topicVars = Map.of(
                 "orgId", request.getOrgId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
