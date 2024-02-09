@@ -25,7 +25,6 @@ public class CommandMessageHandler extends SolaceMessageHandler<CommandMessage> 
     @Override
     public void receiveMessage(String destinationName, CommandMessage message) {
         log.debug("receiveMessage {}\n{}", destinationName, message);
-        CommandRequest req = .map(message);
         commandManager.execute(message);
     }
 }
