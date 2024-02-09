@@ -9,6 +9,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBun
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
@@ -39,6 +40,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -204,6 +206,40 @@ public class CommandManagerTests {
     }
 
     @Test
+    void verifyExitOnFailureIsRespected() {
+        CommandMessage message = getCommandMessage("1", 4);
+        message.getCommandBundles().get(0).setExitOnFailure(true);
+
+        doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = ArgumentCaptor.forClass(MOPMessage.class);
+
+        doNothing().when(commandPublisher).sendCommandResponse(mopMessageCaptor.capture(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        commandManager.execute(message);
+
+        // Wait for the command thread to complete
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+        CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
+
+        // Check top level status
+        assertEquals(JobStatus.error, commandMessage.getStatus());
+        // The first command in the bundle should be marked with error
+        assertEquals(JobStatus.error, commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus());
+        // The rest of the commands should not be executed and have null results
+        assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(1).getResult());
+        assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(2).getResult());
+        assertNull(commandMessage.getCommandBundles().get(0).getCommands().get(3).getResult());
+    }
+
+    @Test
     void verifyMDCIsSetInCommandManagerThread() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
@@ -237,7 +273,11 @@ public class CommandManagerTests {
         assertTrue(mdcIsSet.get());
     }
 
-    private CommandMessage getCommandMessage(String suffix) {
+    private CommandMessage getCommandMessage(String correlationIdSuffix) {
+        return getCommandMessage(correlationIdSuffix, 1);
+    }
+
+    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfCommands) {
         CommandMessage message = new CommandMessage();
         message.setOrigType(MOPSvcType.maasEventMgmt);
         message.withMessageType(generic);
@@ -245,19 +285,22 @@ public class CommandManagerTests {
         message.setActorId("myActorId");
         message.setOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
-        message.setCommandCorrelationId("myCorrelationId" + suffix);
+        message.setCommandCorrelationId("myCorrelationId" + correlationIdSuffix);
         message.setCommandBundles(List.of(
                 CommandBundle.builder()
                         .executionType(ExecutionType.serial)
                         .exitOnFailure(false)
-                        .commands(List.of(
-                                Command.builder()
-                                        .commandType(CommandType.terraform)
-                                        .body("asdfasdfadsf")
-                                        .command("apply")
-                                        .build()))
+                        .commands(IntStream.range(0, numberOfCommands).mapToObj(i -> buildCommand()).toList())
                         .build()));
         return message;
+    }
+
+    private static Command buildCommand() {
+        return Command.builder()
+                .commandType(CommandType.terraform)
+                .body("asdfasdfadsf")
+                .command("apply")
+                .build();
     }
 
     private Boolean commandPublisherIsInvoked(int numberOfExpectedInvocations) {
