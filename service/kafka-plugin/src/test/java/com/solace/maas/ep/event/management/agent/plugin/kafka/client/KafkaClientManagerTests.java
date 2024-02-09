@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.kafka.client;
 
 import com.solace.maas.ep.event.management.agent.plugin.KafkaTestConfig;
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.KafkaClientManagerImpl;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConnection;
@@ -16,7 +17,6 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.config.SslConfigs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,7 +102,7 @@ class KafkaClientManagerTests {
                 .build();
 
         Properties properties = kafkaClientManager.buildProperties(connectionDetailsEvent);
-        
+
         assertThat(properties)
                 .containsEntry(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "connection_url")
                 .containsEntry(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 10000)
@@ -170,10 +170,10 @@ class KafkaClientManagerTests {
                         .build()))
                 .build();
 
-        Exception exception = assertThrows(KafkaException.class, () -> {
+        Exception exception = assertThrows(PluginClientException.class, () -> {
             kafkaClientManager.getClient(connectionDetailsEvent);
         });
-        assertTrue(exception.getCause().getMessage().contains("Invalid url"));
+        assertTrue(exception.getCause().getMessage().contains("Failed to create new KafkaAdminClient"));
     }
 
     private EventProperty buildProperty(String name, String value) {

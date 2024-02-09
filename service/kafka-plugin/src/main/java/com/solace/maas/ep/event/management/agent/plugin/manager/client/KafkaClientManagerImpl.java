@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.manager.client;
 
+import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientConfig;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
@@ -39,17 +40,17 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
     private final TimeUnit maxReconnectBackoffTimeUnit;
 
     public KafkaClientManagerImpl(KafkaClientConfig kafkaClientConfig) {
-        this.maxIdle = kafkaClientConfig.getConnections().getMaxIdle().getValue();
-        this.maxIdleTimeUnit = kafkaClientConfig.getConnections().getMaxIdle().getUnit();
+        maxIdle = kafkaClientConfig.getConnections().getMaxIdle().getValue();
+        maxIdleTimeUnit = kafkaClientConfig.getConnections().getMaxIdle().getUnit();
 
-        this.requestTimeout = kafkaClientConfig.getConnections().getRequestTimeout().getValue();
-        this.requestTimeoutTimeUnit = kafkaClientConfig.getConnections().getRequestTimeout().getUnit();
+        requestTimeout = kafkaClientConfig.getConnections().getRequestTimeout().getValue();
+        requestTimeoutTimeUnit = kafkaClientConfig.getConnections().getRequestTimeout().getUnit();
 
-        this.reconnectBackoff = kafkaClientConfig.getReconnections().getBackoff().getValue();
-        this.reconnectBackoffTimeUnit = kafkaClientConfig.getReconnections().getBackoff().getUnit();
+        reconnectBackoff = kafkaClientConfig.getReconnections().getBackoff().getValue();
+        reconnectBackoffTimeUnit = kafkaClientConfig.getReconnections().getBackoff().getUnit();
 
-        this.maxReconnectBackoff = kafkaClientConfig.getReconnections().getMaxBackoff().getValue();
-        this.maxReconnectBackoffTimeUnit = kafkaClientConfig.getReconnections().getMaxBackoff().getUnit();
+        maxReconnectBackoff = kafkaClientConfig.getReconnections().getMaxBackoff().getValue();
+        maxReconnectBackoffTimeUnit = kafkaClientConfig.getReconnections().getMaxBackoff().getUnit();
     }
 
     @Override
@@ -65,7 +66,7 @@ public class KafkaClientManagerImpl implements MessagingServiceClientManager<Adm
         } catch (KafkaException e) {
             log.error("Could not create Kafka admin client for messaging service {}. Error: {}, cause: {}",
                     connectionDetailsEvent.getMessagingServiceId(), e.getMessage(), String.valueOf(e.getCause()));
-            throw e;
+            throw new PluginClientException(e);
         }
     }
 

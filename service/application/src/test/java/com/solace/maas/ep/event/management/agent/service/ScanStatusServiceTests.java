@@ -52,7 +52,7 @@ public class ScanStatusServiceTests {
         when(scanStatusRepository.save(any(ScanStatusEntity.class)))
                 .thenReturn(ScanStatusEntity.builder().build());
 
-        scanStatusService.save("name", "scanId");
+        scanStatusService.save("name", "scanId", ScanStatus.COMPLETE);
 
         assertThatNoException();
     }
@@ -73,7 +73,7 @@ public class ScanStatusServiceTests {
         when(scanStatusRepository.save(any(ScanStatusEntity.class)))
                 .thenReturn(ScanStatusEntity.builder().build());
 
-        scanStatusService.save("name", "scanId");
+        scanStatusService.save("name", "scanId", ScanStatus.COMPLETE);
 
         assertThatNoException();
     }

@@ -3,21 +3,22 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.terraform</groupId>
     <artifactId>terraform-plugin</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Terraform Plugin</name>
     <description>Solace Event Management Agent - Terraform Plugin</description>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot-starter-web.version>3.1.6</spring-boot-starter-web.version>
-        <spring-boot-starter-test.version>3.1.5</spring-boot-starter-test.version>
+        <spring-boot-starter-web.version>3.1.8</spring-boot-starter-web.version>
+        <spring-boot-starter-test.version>3.1.8</spring-boot-starter-test.version>
         <jupiter.version>5.3.1</jupiter.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <maas.jobs.version>2.0.11</maas.jobs.version>
+        <jackson.version>2.16.1</jackson.version>
     </properties>
     <dependencies>
         <dependency>
@@ -50,12 +51,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.15.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -65,7 +66,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>1.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>

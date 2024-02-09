@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.6</version>
+        <version>3.1.8</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.5.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>

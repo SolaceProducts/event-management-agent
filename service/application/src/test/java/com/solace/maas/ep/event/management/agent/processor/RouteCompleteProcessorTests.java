@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
 import com.solace.maas.ep.event.management.agent.service.ScanStatusService;
 import lombok.SneakyThrows;
@@ -23,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
+@SuppressWarnings("CPD-START")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class RouteCompleteProcessorTests {
 
@@ -52,7 +54,7 @@ public class RouteCompleteProcessorTests {
 
         exchange.getIn().setBody("test exchange");
 
-        when(scanStatusService.save(any(String.class), any(String.class)))
+        when(scanStatusService.save(any(String.class), any(String.class), any(ScanStatus.class)))
                 .thenReturn(ScanStatusEntity.builder().build());
 
         routeCompleteProcessor.process(exchange);
