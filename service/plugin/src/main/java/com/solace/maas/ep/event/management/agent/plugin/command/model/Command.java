@@ -16,7 +16,7 @@ public class Command {
     private CommandType commandType; // "terraform", "bash", SEMP, etc...
     private String command; // A tf command like `apply` or `state rm`
     private String body; // The body of the .tf file
-    private Map<String, String> parameters;
+    private Map<String, Object> parameters;
     private Boolean ignoreResult;
     private CommandResult result;
 

@@ -69,7 +69,7 @@ public class TerraformUtils {
     public static void writeHclToFile(Command command, Path configPath) throws IOException {
         if (StringUtils.isNotEmpty(command.getBody())) {
             // At the moment, we only support base64 decoding
-            Map<String, String> parameters = command.getParameters();
+            Map<String, Object> parameters = command.getParameters();
             if (parameters != null && parameters.containsKey("Content-Encoding") && "base64".equals(parameters.get("Content-Encoding"))) {
                 byte[] decodedBytes;
                 try {
@@ -79,7 +79,7 @@ public class TerraformUtils {
                 }
                 String filename = DEFAULT_TF_CONFIG_FILENAME;
                 if (parameters.containsKey("Output-File-Name")) {
-                    filename = parameters.get("Output-File-Name");
+                    filename = (String) parameters.get("Output-File-Name");
                 }
                 Files.write(configPath.resolve(filename), decodedBytes);
             } else {
