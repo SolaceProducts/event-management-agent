@@ -274,11 +274,14 @@ class CommandManagerTests {
 
         // top level status should be success since we are ignoring the result of each command
         assertEquals(JobStatus.success, commandMessage.getStatus());
+        verifyAllCommandsHaveErrorState(commandMessage);
+    }
+
+    private static void verifyAllCommandsHaveErrorState(CommandMessage commandMessage) {
         CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(1).getResult().getStatus());
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(2).getResult().getStatus());
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(3).getResult().getStatus());
+        commandBundle.getCommands().forEach(command -> {
+            assertEquals(JobStatus.error, command.getResult().getStatus());
+        });
     }
 
     @Test
@@ -293,12 +296,7 @@ class CommandManagerTests {
 
         // Check top level status
         assertEquals(JobStatus.error, commandMessage.getStatus());
-        CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
-        // The first command in the bundle should be marked with error
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(1).getResult().getStatus());
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(2).getResult().getStatus());
-        assertEquals(JobStatus.error, commandBundle.getCommands().get(3).getResult().getStatus());
+        verifyAllCommandsHaveErrorState(commandMessage);
     }
 
 
