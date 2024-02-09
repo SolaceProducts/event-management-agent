@@ -103,6 +103,9 @@ public class CommandManager {
                     log.error("Error executing command", e);
                     setCommandError(command, e);
                 }
+                if (bundle.getExitOnFailure() && command.getResult().getStatus() == JobStatus.error) {
+                    break;
+                }
             }
         }
         finalizeAndSendResponse(request);
