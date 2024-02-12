@@ -72,11 +72,11 @@ public class TerraformManager {
         }
     }
 
-    private static List<String> executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath,
-                                                        TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
+    private List<String> executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath,
+                                                 TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
         String commandVerb = command.getCommand();
 
-        Consumer<String> logToConsole = TerraformManager::logToConsole;
+        Consumer<String> logToConsole = (tfLog) -> logToConsole(tfLog);
         if ("import".equals(commandVerb)) {
             logToConsole = (log) -> {
             };
@@ -141,7 +141,7 @@ public class TerraformManager {
     }
 
     @SneakyThrows
-    private static void logToConsole(String tfLog) {
+    public void logToConsole(String tfLog) {
 
         String logMessage = String.format("Terraform output: %s", tfLog);
 

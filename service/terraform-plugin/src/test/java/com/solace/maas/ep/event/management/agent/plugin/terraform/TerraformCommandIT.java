@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ActiveProfiles;
@@ -52,7 +53,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TerraformTestConfig.class)
 
 public class TerraformCommandIT {
-    @Autowired
+    @SpyBean
     private TerraformManager terraformManager;
 
     @Autowired
@@ -123,6 +124,7 @@ public class TerraformCommandIT {
 
         // Validate that the plan and apply apis are called
         verify(terraformClient, times(1)).apply(any());
+        verify(terraformManager, times(20)).logToConsole(any());
 
         // Check the responses
         for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
@@ -200,6 +202,7 @@ public class TerraformCommandIT {
 
         // Validate that the plan and apply apis are called
         verify(terraformClient, times(1)).plan(any());
+        verify(terraformManager, times(0)).logToConsole(any());
 
         String expectedImportTf = "import {\n" +
                 "\tto = solacebroker_msg_vpn_queue_subscription.sub_66e36954c9ee1b2012bb57c8d6f6a2429e8b5aa81d48055767ef9c10ab2b074a\n" +
