@@ -111,10 +111,10 @@ public class TerraformManager {
                     .filter(log -> "planned_change".equals(log.get("type")))
                     .map(log -> (Map<String, Object>) log.get("change"))
                     .filter(log -> "import".equals(log.get("action")))
-                    .map(log -> new TfImport(
+                    .map(log -> new TerraformImport(
                             ((Map<String, Object>) log.get("importing")).get("id").toString(),
                             ((Map<String, Object>) log.get("resource")).get("resource").toString()))
-                    .map(TfImport::toString)
+                    .map(TerraformImport::toString)
                     .collect(Collectors.joining("\n"));
 
             Files.writeString(configPath.resolve("import.tf"), successfulImports);

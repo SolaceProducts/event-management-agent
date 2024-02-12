@@ -1,7 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
-public class TfImport {
-    public TfImport(String id, String to) {
+public class TerraformImport {
+    public TerraformImport(String id, String to) {
         this.id = id;
         this.to = to;
     }

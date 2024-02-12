@@ -285,7 +285,7 @@ class CommandManagerTests {
     }
 
     @Test
-    void verifyExitOnFailureIsRespectedWhenFalse() {
+    void verifyExitOnFailureIsRespectedWhenFalseAndIgnoreResultIsSetToFalse() {
         CommandMessage message = getCommandMessage("1", 4, false, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
