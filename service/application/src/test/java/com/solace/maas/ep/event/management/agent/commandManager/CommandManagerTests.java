@@ -3,12 +3,14 @@ package com.solace.maas.ep.event.management.agent.commandManager;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
@@ -23,6 +25,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -38,6 +41,8 @@ import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAN
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -51,10 +56,13 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class CommandManagerTests {
+class CommandManagerTests {
+
+    @SpyBean
+    private CommandManager commandManager;
 
     @Autowired
-    private CommandManager commandManager;
+    private CommandMapper commandMapper;
 
     @Autowired
     private TerraformManager terraformManager;
@@ -68,12 +76,15 @@ public class CommandManagerTests {
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
+    private static final String MESSAGING_SERVICE_ID = "myMessagingServiceId";
     private final static ThreadPoolTaskExecutor testThreadPool = new ThreadPoolTaskExecutor();
 
     @BeforeEach
     public void cleanup() {
         reset(terraformManager);
         reset(commandPublisher);
+        reset(commandManager);
+        reset(messagingServiceDelegateService);
     }
 
     @Test
@@ -158,6 +169,45 @@ public class CommandManagerTests {
             assert commandMessage.getCommandCorrelationId().equals(message.getCommandCorrelationId());
             assert commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus().equals(JobStatus.error);
         });
+
+        // Overall status of the request is set to error
+        assertEquals(JobStatus.error, messageArgCaptor.getAllValues().get(1).getStatus());
+    }
+
+    @Test
+    void failSettingBrokerSpecificEnvironmentVariables() {
+        // Create a command request message
+        CommandMessage message = getCommandMessage("1");
+
+        doNothing().when(terraformManager).execute(any(), any(), any());
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        doThrow(new RuntimeException("Could not retrieve or create the messaging service client for [" + MESSAGING_SERVICE_ID + "]."))
+                .when(messagingServiceDelegateService).getMessagingServiceClient(MESSAGING_SERVICE_ID);
+
+        commandManager.execute(message);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+        ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
+
+        assertEquals(JobStatus.error, messageArgCaptor.getValue().getStatus());
+    }
+
+    @Test
+    void failConfigPushCommand() {
+        // Create a command request message
+        CommandMessage message = getCommandMessage("1");
+
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(commandMapper.map(message));
+
+        commandManager.execute(message);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+        ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
+
+        assertEquals(JobStatus.error, messageArgCaptor.getValue().getStatus());
     }
 
     @Test
@@ -191,13 +241,75 @@ public class CommandManagerTests {
         assert envVars.get("TF_VAR_username").equals("myUsername");
         assert envVars.get("TF_VAR_url").equals("myConnectionUrl");
 
-        verify(commandPublisher, times(1)).sendCommandResponse(any(), topicArgCaptor.capture());
+        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
 
         Map<String, String> topicVars = topicArgCaptor.getValue();
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
         assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
+
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
     }
+
+    @Test
+    void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsFalse() {
+        CommandMessage message = getCommandMessage("1", 4, true, false);
+
+        doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = executeCommandAndGetResponseMessage(message);
+
+        CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
+
+        // Check top level status
+        assertEquals(JobStatus.error, commandMessage.getStatus());
+        CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
+        // The first command in the bundle should be marked with error
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
+        // The rest of the commands should not be executed and have null results
+        assertNull(commandBundle.getCommands().get(1).getResult());
+        assertNull(commandBundle.getCommands().get(2).getResult());
+        assertNull(commandBundle.getCommands().get(3).getResult());
+    }
+
+    @Test
+    void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsTrue() {
+        CommandMessage message = getCommandMessage("1", 4, true, true);
+
+        doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = executeCommandAndGetResponseMessage(message);
+
+        CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
+
+        // top level status should be success since we are ignoring the result of each command
+        assertEquals(JobStatus.success, commandMessage.getStatus());
+        verifyAllCommandsHaveErrorState(commandMessage);
+    }
+
+    private static void verifyAllCommandsHaveErrorState(CommandMessage commandMessage) {
+        CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
+        commandBundle.getCommands().forEach(command -> {
+            assertEquals(JobStatus.error, command.getResult().getStatus());
+        });
+    }
+
+    @Test
+    void verifyExitOnFailureIsRespectedWhenFalseAndIgnoreResultIsSetToFalse() {
+        CommandMessage message = getCommandMessage("1", 4, false, false);
+
+        doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = executeCommandAndGetResponseMessage(message);
+
+        CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
+
+        // Check top level status
+        assertEquals(JobStatus.error, commandMessage.getStatus());
+        verifyAllCommandsHaveErrorState(commandMessage);
+    }
+
 
     @Test
     void verifyMDCIsSetInCommandManagerThread() {
@@ -233,30 +345,58 @@ public class CommandManagerTests {
         assertTrue(mdcIsSet.get());
     }
 
-    private CommandMessage getCommandMessage(String suffix) {
+    private CommandMessage getCommandMessage(String correlationIdSuffix) {
+        return getCommandMessage(correlationIdSuffix, 1, false, false);
+    }
+
+    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfCommands,
+                                             boolean exitOnFailure, boolean ignoreResult) {
         CommandMessage message = new CommandMessage();
         message.setOrigType(MOPSvcType.maasEventMgmt);
         message.withMessageType(generic);
         message.setContext("abc");
+        message.setServiceId(MESSAGING_SERVICE_ID);
         message.setActorId("myActorId");
         message.setOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
-        message.setCommandCorrelationId("myCorrelationId" + suffix);
+        message.setCommandCorrelationId("myCorrelationId" + correlationIdSuffix);
         message.setCommandBundles(List.of(
                 CommandBundle.builder()
                         .executionType(ExecutionType.serial)
-                        .exitOnFailure(false)
-                        .commands(List.of(
-                                Command.builder()
-                                        .commandType(CommandType.terraform)
-                                        .body("asdfasdfadsf")
-                                        .command("apply")
-                                        .build()))
+                        .exitOnFailure(exitOnFailure)
+                        .commands(IntStream.range(0, numberOfCommands).mapToObj(i -> buildCommand(ignoreResult)).toList())
                         .build()));
         return message;
     }
 
+    private static Command buildCommand(boolean ignoreResult) {
+        return Command.builder()
+                .commandType(CommandType.terraform)
+                .ignoreResult(ignoreResult)
+                .body("asdfasdfadsf")
+                .command("apply")
+                .build();
+    }
+
     private Boolean commandPublisherIsInvoked(int numberOfExpectedInvocations) {
         return Mockito.mockingDetails(commandPublisher).getInvocations().size() == numberOfExpectedInvocations;
+    }
+
+    private ArgumentCaptor<MOPMessage> executeCommandAndGetResponseMessage(CommandMessage message) {
+        ArgumentCaptor<MOPMessage> mopMessageCaptor = ArgumentCaptor.forClass(MOPMessage.class);
+
+        doNothing().when(commandPublisher).sendCommandResponse(mopMessageCaptor.capture(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        commandManager.execute(message);
+
+        // Wait for the command thread to complete
+        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        return mopMessageCaptor;
     }
 }
