@@ -77,7 +77,7 @@ public class TerraformManager {
                                                  TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
         String commandVerb = command.getCommand();
 
-        Consumer<String> logToConsole = (tfLog) -> logToConsole(tfLog);
+        Consumer<String> logToConsole = this::logToConsole;
         if ("sync".equals(commandVerb)) {
             logToConsole = (log) -> {
             };
@@ -124,12 +124,7 @@ public class TerraformManager {
 
     private void processTerraformResponse(Command command, String commandVerb, List<String> output) {
         // Process logs and create the result
-        if (Boolean.TRUE.equals(command.getIgnoreResult())) {
-            command.setResult(CommandResult.builder()
-                    .status(JobStatus.success)
-                    .logs(List.of())
-                    .build());
-        } else {
+        if (Boolean.FALSE.equals(command.getIgnoreResult())) {
             if (!"write_HCL".equals(commandVerb)) {
                 command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
             } else {

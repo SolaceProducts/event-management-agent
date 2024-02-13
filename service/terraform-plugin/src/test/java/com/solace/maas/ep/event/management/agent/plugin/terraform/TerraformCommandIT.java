@@ -216,8 +216,7 @@ public class TerraformCommandIT {
         for (CommandBundle commandBundle : terraformRequest.getCommandBundles()) {
             for (Command tfCommand : commandBundle.getCommands()) {
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.success, result.getStatus());
-                assertEquals(0, result.getLogs().size());
+                assertNull(result);
             }
         }
     }
@@ -387,8 +386,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.success, result.getStatus());
-                assertTrue(result.getLogs().isEmpty());
+                assertNull(result);
             }
         }
     }

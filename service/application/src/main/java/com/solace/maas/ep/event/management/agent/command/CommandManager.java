@@ -103,14 +103,19 @@ public class CommandManager {
                     log.error("Error executing command", e);
                     setCommandError(command, e);
                 }
-                if (bundle.getExitOnFailure() && command.getResult().getStatus() == JobStatus.error
-                        && !Boolean.TRUE.equals(command.getIgnoreResult())) {
+                if (exitEarlyOnFailedCommand(bundle, command)) {
                     break;
                 }
             }
         }
 
         finalizeAndSendResponse(request);
+    }
+
+    private static boolean exitEarlyOnFailedCommand(CommandBundle bundle, Command command) {
+        return Boolean.TRUE.equals(bundle.getExitOnFailure())
+                && Boolean.FALSE.equals(command.getIgnoreResult())
+                && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
     }
 
     private void finalizeAndSendResponse(CommandMessage request) {
