@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.commandManager;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
@@ -59,6 +60,9 @@ class CommandManagerTests {
 
     @SpyBean
     private CommandManager commandManager;
+
+    @Autowired
+    private CommandMapper commandMapper;
 
     @Autowired
     private TerraformManager terraformManager;
@@ -167,7 +171,7 @@ class CommandManagerTests {
         });
 
         // Overall status of the request is set to error
-        assertEquals(JobStatus.error, message.getStatus());
+        assertEquals(JobStatus.error, messageArgCaptor.getAllValues().get(1).getStatus());
     }
 
     @Test
@@ -183,7 +187,10 @@ class CommandManagerTests {
         commandManager.execute(message);
         await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
 
-        assertEquals(JobStatus.error, message.getStatus());
+        ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
+
+        assertEquals(JobStatus.error, messageArgCaptor.getValue().getStatus());
     }
 
     @Test
@@ -192,12 +199,15 @@ class CommandManagerTests {
         CommandMessage message = getCommandMessage("1");
 
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
-        doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(message);
+        doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(commandMapper.map(message));
 
         commandManager.execute(message);
         await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
 
-        assertEquals(JobStatus.error, message.getStatus());
+        ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
+
+        assertEquals(JobStatus.error, messageArgCaptor.getValue().getStatus());
     }
 
     @Test
@@ -231,14 +241,15 @@ class CommandManagerTests {
         assert envVars.get("TF_VAR_username").equals("myUsername");
         assert envVars.get("TF_VAR_url").equals("myConnectionUrl");
 
-        verify(commandPublisher, times(1)).sendCommandResponse(any(), topicArgCaptor.capture());
+        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
 
         Map<String, String> topicVars = topicArgCaptor.getValue();
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
         assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
 
-        assertEquals(JobStatus.success, message.getStatus());
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
     }
 
     @Test

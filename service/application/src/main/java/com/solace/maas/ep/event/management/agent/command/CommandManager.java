@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -14,6 +15,7 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.Terraf
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.LOG_LEVEL_ERROR;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.setCommandError;
 
@@ -57,18 +61,18 @@ public class CommandManager {
     }
 
     public void execute(CommandMessage request) {
-
-        CompletableFuture.runAsync(() -> configPush(request), configPushPool)
+        CommandRequest requestBO = commandMapper.map(request);
+        CompletableFuture.runAsync(() -> configPush(requestBO), configPushPool)
                 .exceptionally(e -> {
                     log.error("Error running command", e);
-                    Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
+                    Command firstCommand = requestBO.getCommandBundles().get(0).getCommands().get(0);
                     setCommandError(firstCommand, (Exception) e);
-                    finalizeAndSendResponse(request);
+                    finalizeAndSendResponse(requestBO);
                     return null;
                 });
     }
 
-    public void configPush(CommandMessage request) {
+    public void configPush(CommandRequest request) {
         Map<String, String> envVars;
         try {
             envVars = setBrokerSpecificEnvVars(request.getServiceId());
@@ -86,7 +90,7 @@ public class CommandManager {
                 try {
                     switch (command.getCommandType()) {
                         case terraform:
-                            terraformManager.execute(commandMapper.map(request), command, envVars);
+                            terraformManager.execute(request, command, envVars);
                             break;
                         default:
                             command.setResult(CommandResult.builder()
@@ -118,14 +122,22 @@ public class CommandManager {
                 && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
     }
 
-    private void finalizeAndSendResponse(CommandMessage request) {
+    private void finalizeAndSendResponse(CommandRequest request) {
         request.determineStatus();
         Map<String, String> topicVars = Map.of(
-                "orgId", request.getOrgId(),
+                "orgId", eventPortalProperties.getOrganizationId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
                 COMMAND_CORRELATION_ID, request.getCommandCorrelationId()
         );
-        commandPublisher.sendCommandResponse(request, topicVars);
+        CommandMessage response = new CommandMessage(request.getServiceId(),
+                request.getCommandCorrelationId(),
+                request.getContext(),
+                request.getStatus(),
+                request.getCommandBundles());
+        response.setOrgId(eventPortalProperties.getOrganizationId());
+        response.setTraceId(MDC.get(TRACE_ID));
+        response.setActorId(MDC.get(ACTOR_ID));
+        commandPublisher.sendCommandResponse(response, topicVars);
     }
 
     private Map<String, String> setBrokerSpecificEnvVars(String messagingServiceId) {
