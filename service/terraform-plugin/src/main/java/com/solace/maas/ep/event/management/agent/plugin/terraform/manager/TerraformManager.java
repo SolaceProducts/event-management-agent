@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TerraformManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final String SYNC_HCL_FILENAME = "sync.tf";
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
@@ -77,14 +78,14 @@ public class TerraformManager {
         String commandVerb = command.getCommand();
 
         Consumer<String> logToConsole = (tfLog) -> logToConsole(tfLog);
-        if ("import".equals(commandVerb)) {
+        if ("sync".equals(commandVerb)) {
             logToConsole = (log) -> {
             };
         }
         List<String> logOutput = TerraformUtils.setupTerraformClient(terraformClient, configPath, logToConsole);
 
         switch (commandVerb) {
-            case "import" -> importCommand(envVars, configPath, terraformClient, logOutput);
+            case "sync" -> syncCommand(envVars, configPath, terraformClient, logOutput);
             case "apply" -> {
                 TerraformUtils.writeHclToFile(command, configPath);
                 terraformClient.apply(envVars).get();
@@ -95,11 +96,11 @@ public class TerraformManager {
         return logOutput;
     }
 
-    private static void importCommand(Map<String, String> envVars, Path configPath, TerraformClient terraformClient, List<String> output) throws InterruptedException, ExecutionException, IOException {
-        boolean importPlanSuccessful = terraformClient.plan(envVars).get();
+    private static void syncCommand(Map<String, String> envVars, Path configPath, TerraformClient terraformClient, List<String> output) throws InterruptedException, ExecutionException, IOException {
+        boolean syncPlanSuccessful = terraformClient.plan(envVars).get();
 
-        if (!importPlanSuccessful) {
-            // Re-write the import file to only include the successful imports
+        if (!syncPlanSuccessful) {
+            // Re-write the sync file to only include the successful imports
             String successfulImports = output.stream()
                     .map(json -> {
                         try {
@@ -117,7 +118,7 @@ public class TerraformManager {
                     .map(TerraformImport::toString)
                     .collect(Collectors.joining("\n"));
 
-            Files.writeString(configPath.resolve("import.tf"), successfulImports);
+            Files.writeString(configPath.resolve(SYNC_HCL_FILENAME), successfulImports);
         }
     }
 

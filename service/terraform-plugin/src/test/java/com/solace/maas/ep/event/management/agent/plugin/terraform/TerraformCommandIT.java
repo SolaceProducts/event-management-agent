@@ -190,7 +190,7 @@ public class TerraformCommandIT {
         String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
         List<String> partialImportTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfPartialImport.txt"));
 
-        Command command = generateCommand("import", newQueueTf, true);
+        Command command = generateCommand("sync", newQueueTf, true);
         CommandRequest terraformRequest = generateCommandRequest(command);
 
         when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> false));
