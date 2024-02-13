@@ -1,6 +1,7 @@
 package com.solace.maas.ep.common.messages;
 
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
@@ -15,6 +16,7 @@ public class CommandMessage extends MOPMessage {
     private String commandCorrelationId;
     private String context;
     private String serviceId;
+    private JobStatus status;
     private List<CommandBundle> commandBundles;
 
     public CommandMessage() {
@@ -24,6 +26,7 @@ public class CommandMessage extends MOPMessage {
     public CommandMessage(String serviceId,
                           String commandCorrelationId,
                           String context,
+                          JobStatus status,
                           List<CommandBundle> commandBundles) {
         super();
         withMessageType(MOPMessageType.generic)
@@ -33,6 +36,7 @@ public class CommandMessage extends MOPMessage {
         this.serviceId = serviceId;
         this.commandCorrelationId = commandCorrelationId;
         this.context = context;
+        this.status = status;
         this.commandBundles = commandBundles;
     }
 
