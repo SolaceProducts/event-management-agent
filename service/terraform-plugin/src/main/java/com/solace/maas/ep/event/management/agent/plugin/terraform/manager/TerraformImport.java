@@ -6,8 +6,8 @@ public class TerraformImport {
         this.to = to;
     }
 
-    public String id;
-    public String to;
+    public final String id;
+    public final String to;
 
     @Override
     public String toString() {

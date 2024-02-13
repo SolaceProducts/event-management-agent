@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 public class TerraformManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     public static final String SYNC_HCL_FILENAME = "sync.tf";
+    public static final String ENVIRONMENT_KEY = "environment";
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
@@ -66,9 +67,9 @@ public class TerraformManager {
     }
 
     private static void setEnvVarsFromParameters(Command command, Map<String, String> envVars) {
-        if (command.getParameters() != null && command.getParameters().containsKey("environment") &&
-                command.getParameters().get("environment") instanceof Map) {
-            Map<String, String> environmentMap = (Map<String, String>) command.getParameters().get("environment");
+        if (command.getParameters() != null && command.getParameters().containsKey(ENVIRONMENT_KEY) &&
+                command.getParameters().get(ENVIRONMENT_KEY) instanceof Map) {
+            Map<String, String> environmentMap = (Map<String, String>) command.getParameters().get(ENVIRONMENT_KEY);
             environmentMap.keySet().forEach(key -> envVars.put("TF_VAR_" + key, environmentMap.get(key)));
         }
     }
@@ -79,7 +80,7 @@ public class TerraformManager {
 
         Consumer<String> logToConsole = this::logToConsole;
         if ("sync".equals(commandVerb)) {
-            logToConsole = (log) -> {
+            logToConsole = log -> {
             };
         }
         List<String> logOutput = TerraformUtils.setupTerraformClient(terraformClient, configPath, logToConsole);

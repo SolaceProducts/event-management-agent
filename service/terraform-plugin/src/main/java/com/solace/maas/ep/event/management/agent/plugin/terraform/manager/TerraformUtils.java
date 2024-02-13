@@ -22,6 +22,10 @@ import java.util.function.Consumer;
 public class TerraformUtils {
     public static final String LOG_LEVEL_ERROR = "ERROR";
     private static final String DEFAULT_TF_CONFIG_FILENAME = "config.tf";
+    public static final String CONTENT_ENCODING = "Content-Encoding";
+
+    private TerraformUtils() {
+    }
 
     public static List<String> setupTerraformClient(TerraformClient terraformClient, Path configPath,
                                                     Consumer<String> logToConsole) {
@@ -70,7 +74,7 @@ public class TerraformUtils {
         if (StringUtils.isNotEmpty(command.getBody())) {
             // At the moment, we only support base64 decoding
             Map<String, Object> parameters = command.getParameters();
-            if (parameters != null && parameters.containsKey("Content-Encoding") && "base64".equals(parameters.get("Content-Encoding"))) {
+            if (parameters != null && parameters.containsKey(CONTENT_ENCODING) && "base64".equals(parameters.get(CONTENT_ENCODING))) {
                 byte[] decodedBytes;
                 try {
                     decodedBytes = Base64.getDecoder().decode(command.getBody());
@@ -83,11 +87,11 @@ public class TerraformUtils {
                 }
                 Files.write(configPath.resolve(filename), decodedBytes);
             } else {
-                if (parameters == null || !parameters.containsKey("Content-Encoding")) {
+                if (parameters == null || !parameters.containsKey(CONTENT_ENCODING)) {
                     throw new IllegalArgumentException("Missing Content-Encoding property in command parameters.");
                 }
 
-                throw new IllegalArgumentException("Unsupported encoding type " + parameters.get("Content-Encoding"));
+                throw new IllegalArgumentException("Unsupported encoding type " + parameters.get(CONTENT_ENCODING));
             }
         }
     }
