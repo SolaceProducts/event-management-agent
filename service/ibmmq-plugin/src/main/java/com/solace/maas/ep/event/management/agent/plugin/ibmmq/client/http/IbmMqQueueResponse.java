@@ -5,6 +5,10 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * Represents the response JSON from the IBM MQ Admin client
+ * when querying for Queue information.
+ */
 @Getter
 public class IbmMqQueueResponse {
 

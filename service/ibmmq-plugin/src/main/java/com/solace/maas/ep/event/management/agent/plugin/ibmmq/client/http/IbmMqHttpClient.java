@@ -4,7 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Uses OpenFeign to create the MQ REST API Admin Client.
+ * Interface for OpenFeign to create the IBM MQ REST API Admin Client.
  */
 @FeignClient(name = "ibmmq-http-client")
 public interface IbmMqHttpClient {

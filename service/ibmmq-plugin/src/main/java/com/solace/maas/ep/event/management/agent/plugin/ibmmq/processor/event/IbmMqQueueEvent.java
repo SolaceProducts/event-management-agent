@@ -4,6 +4,10 @@ import lombok.Getter;
 
 import java.io.Serializable;
 
+/**
+ * Attributes parsed from the response JSON.
+ * Note: Other attributes may be returned in the raw JSON.
+ */
 @Getter
 public class IbmMqQueueEvent implements Serializable {
 

@@ -22,7 +22,6 @@ public class IbmMqQueueProcessor extends ResultProcessorImpl<List<IbmMqQueueEven
     public IbmMqQueueProcessor(MessagingServiceDelegateService messagingServiceDelegateService) {
         super();
         this.messagingServiceDelegateService = messagingServiceDelegateService;
-        log.debug("### In Queue Processor ###");
     }
 
     @Override
@@ -31,7 +30,7 @@ public class IbmMqQueueProcessor extends ResultProcessorImpl<List<IbmMqQueueEven
 
         IbmMqHttpClient client = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
 
-        log.info("### Invoking Queue endpoint for messaging service with ID {}", messagingServiceId);
+        log.info("### Invoking Queue endpoint for broker with ID {}", messagingServiceId);
         IbmMqQueueResponse queueList = client.getQueues();
 
         return queueList.getQueue();

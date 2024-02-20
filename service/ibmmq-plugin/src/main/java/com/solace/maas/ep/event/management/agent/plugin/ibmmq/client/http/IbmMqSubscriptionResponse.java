@@ -5,6 +5,10 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * Represents the response JSON from the IBM MQ Admin client
+ * when querying for Subscription (topic) information.
+ */
 @Data
 public class IbmMqSubscriptionResponse {
 
