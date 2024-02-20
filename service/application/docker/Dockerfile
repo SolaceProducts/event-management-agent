@@ -16,7 +16,7 @@ ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.tar.g
 
 COPY .terraformrc /root/.terraformrc
 
-RUN printf '#!/bin/bash\ntofu $*' > /opt/ema/terraform/terraform
+RUN printf '#!/bin/ash\ntofu $*' > /opt/ema/terraform/terraform
 RUN chmod +x /opt/ema/terraform/terraform
 
 ENV PATH $PATH:/opt/ema/terraform
