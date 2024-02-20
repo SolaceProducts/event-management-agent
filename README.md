@@ -215,7 +215,7 @@ To run a scan and export operation using the CLI from docker:
 The commands are as follows:
 
 ```
-CMD_LINE_ARGS="scan mysolacebroker /path/to/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
+export CMD_LINE_ARGS="scan mysolacebroker /path/to/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
 ```
 
 ```
@@ -255,7 +255,7 @@ To run a scan file upload using the CLI from docker:
 The commands are as follows:
 
 ```
-CMD_LINE_ARGS="upload /path/to/scan.zip  --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
+export CMD_LINE_ARGS="upload /tmp/scan.zip --springdoc.api-docs.enabled=false --spring.main.web-application-type=none"
 ```
 
 ```
@@ -275,6 +275,52 @@ curl -X 'POST' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@scan.zip;type=application/zip'
 ```
+
+# Solace Event Broker Configuration Push
+
+The Event Management Agent enables the Solace PubSub+ Cloud Event Portal to directly deploy configuration to Solace PubSub+ Event Brokers. This functionality is available when the Event Management Agent is deployed as a Docker container or (for development purposes) executed from the jar file. Configuration push utilizes [OpenTofu](https://opentofu.org/) (a fork of the [Terraform](https://developer.hashicorp.com/terraform/) infrastructure management tool) along with the [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker).
+
+## Configuration Push With Docker (Recommended)
+
+The Docker image of the Event Management Agent includes all necessary library dependencies for deploying configurations to Solace PubSub+ Event Brokers and is the recommended option. Setup the agents by following the instructions for [running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode).
+
+## Configuration Push With The Jar File (Development)
+
+The Event Management Agent configuration push functionality is dependent on the [OpenTofu](https://github.com/opentofu/opentofu) and [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker) libraries. These dependencies must be installed before [running the Event Management Agent as a process](#running-the-event-management-agent-as-a-process).
+
+### OpenTofu
+
+OpenTofu can be installed on Linux or MacOS by following these [installation instructions](https://opentofu.org/docs/intro/install/).
+
+The Event Management Agent requires the `terraform` executable to be available and aliased to `tofu`. To achieve this, create an executable script as described below:
+```
+printf '#!/bin/bash\ntofu $*' > terraform
+chmod +x
+```
+The `terraform` script created above must be placed in the operating systems path.
+
+### Solace Terraform Provider
+
+The [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker) can be installed on a variety of operating systems and machine architectures.
+
+1. Visit the [latest software release](https://github.com/SolaceProducts/terraform-provider-solacebroker/releases) page to select and download the asset that fits your installation needs. For example, if you are setting up on MacOS with Apple silicon, choose the terraform-provider-solacebroker_0.9.2_darwin_arm64.zip file, assuming version 0.9.2 is the most recent.
+
+2. Unzip the file. This will yield a LICENSE file, a README.md file, and the provider plugin file (terraform-provider-solacebroker_0.9.2 in this case).
+
+3. Create or update your `${HOME}/.tofurc` (MacOS and Linux) configuration file with a `provider_installation` section that contains the following `dev_overrides`.
+
+ create a file in your home directory called `.tofurc` with the following content:
+```
+provider_installation {
+  dev_overrides {
+    "registry.terraform.io/solaceproducts/solacebroker" = "/path/containing/terraform-provider-solacebroker"
+  }
+
+  direct {}
+}
+```
+where "/path/containing/terraform-provider-solacebroker" is replaced with the directory location of the `terraform-provider-solacebroker_0.9.2` file.
+
 
 # Building the Event Management Agent
 
