@@ -290,12 +290,12 @@ The Event Management Agent configuration push functionality is dependent on the 
 
 ### OpenTofu
 
-OpenTofu can be installed on Linux or MacOS by following these [installation instructions](https://opentofu.org/docs/intro/install/).
+Follow [these installation instructions](https://opentofu.org/docs/intro/install/) to install OpenTofu on Linux or MacOS.
 
 The Event Management Agent requires the `terraform` executable to be available and aliased to `tofu`. To accomplish this, follow the instructions below to create an executable script:
 ```
 printf '#!/bin/bash\ntofu $*' > terraform
-chmod +x
+chmod +x terraform
 ```
 The `terraform` script mentioned above needs to be added to the system's PATH.
 
