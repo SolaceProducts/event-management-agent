@@ -3,6 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.solace.maas.plugin.ibmmq</groupId>
     <artifactId>ibmmq-plugin</artifactId>
     <version>1.6.1-SNAPSHOT</version>
     <name>Solace Event Management Agent - IBM MQ Plugin</name>
@@ -12,9 +13,11 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <solace.maas.ema.version>1.6.1-SNAPSHOT</solace.maas.ema.version>
+        <spring.boot.version>3.1.7</spring.boot.version>
         <spring.cloud.openfeign.version>4.1.0</spring.cloud.openfeign.version>
         <openfeign.jackson.version>13.0</openfeign.jackson.version>
         <okhttp.version>4.0.1</okhttp.version>
+        <camel.version>4.2.0</camel.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -22,6 +25,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -48,6 +52,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

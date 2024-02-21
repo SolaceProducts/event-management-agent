@@ -248,9 +248,9 @@
             <version>1.6.1-SNAPSHOT</version>
         </dependency>
        <dependency>
-            <groupId>com.solace.maas</groupId>
+            <groupId>com.solace.maas.plugin.ibmmq</groupId>
             <artifactId>ibmmq-plugin</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>1.6.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>

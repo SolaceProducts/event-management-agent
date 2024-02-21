@@ -21,8 +21,8 @@
         <module>terraform-plugin</module>
         <module>local-storage-plugin</module>
         <module>confluent-schema-registry-plugin</module>
-        <module>application</module>
         <module>ibmmq-plugin</module>
+        <module>application</module>
     </modules>
     <properties>
         <java.version>17</java.version>
