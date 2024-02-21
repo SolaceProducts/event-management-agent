@@ -282,7 +282,7 @@ The Event Management Agent enables the Solace PubSub+ Cloud Event Portal to dire
 
 ## Configuration Push With Docker (Recommended)
 
-The Docker image of the Event Management Agent includes all necessary library dependencies for deploying configurations to Solace PubSub+ Event Brokers and is the recommended option for running configuration push. Set up the agents by following the instructions for [running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode).
+The Docker image of the Event Management Agent includes all necessary library dependencies for deploying configurations to Solace PubSub+ Event Brokers and is the recommended option for performing configuration push. Set up the agent by following the instructions for [running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode).
 
 ## Configuration Push With The Jar File (Development)
 
@@ -303,7 +303,7 @@ The `terraform` script mentioned above needs to be added to the system's PATH.
 
 The [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker) can be installed on a variety of operating systems and machine architectures.
 
-1. Visit the [latest software release](https://github.com/SolaceProducts/terraform-provider-solacebroker/releases) page to select and download the asset that fits your installation needs. For example, if you are installing on MacOS with Apple silicon, choose the terraform-provider-solacebroker_0.9.2_darwin_arm64.zip file (assuming 0.9.2 is the most recent version).
+1. Visit the [latest software release](https://github.com/SolaceProducts/terraform-provider-solacebroker/releases) page to select and download the asset that fits your installation requirements. For example, if you are installing on MacOS with Apple silicon, choose the terraform-provider-solacebroker_0.9.2_darwin_arm64.zip file (assuming 0.9.2 is the most recent version).
 
 2. Unzip the file. This will yield a LICENSE file, a README.md file, and the provider plugin file (`terraform-provider-solacebroker_0.9.2` in the example case).
 
@@ -317,7 +317,7 @@ provider_installation {
   direct {}
 }
 ```
-where "/path/containing/terraform-provider-solacebroker" is replaced with the directory location of the `terraform-provider-solacebroker_0.9.2` file.
+where "/path/containing/terraform-provider-solacebroker" is replaced with the directory location of the `terraform-provider-solacebroker_0.9.2` file (not including the filename).
 
 
 # Building the Event Management Agent
