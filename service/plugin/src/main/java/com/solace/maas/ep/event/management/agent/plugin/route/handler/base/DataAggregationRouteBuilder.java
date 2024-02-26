@@ -14,6 +14,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 
 import java.util.Objects;
 
+import static org.apache.camel.support.builder.PredicateBuilder.and;
 import static org.apache.camel.support.builder.PredicateBuilder.or;
 
 @ExcludeFromJacocoGeneratedReport
@@ -86,7 +87,8 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .log(LoggingLevel.TRACE, "agg complete ${body}")
                 .process(processor)
                 // Checking for empty scan types.
-                .choice().when(simple("${body.size} == 0"))
+                .choice().when(and(simple("${body.size} == 0"),
+                        header("DATA_PROCESSING_COMPLETE").isEqualTo(true)))
                 .setHeader(RouteConstants.IS_EMPTY_SCAN_TYPES, constant(true))
                 .process(scanTypeDescendentsProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
