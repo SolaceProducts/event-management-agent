@@ -38,4 +38,10 @@ public class RouteConstants {
     public static final String TOPIC_DETAILS = "TOPIC_DETAILS";
 
     public static final String IS_EMPTY_SCAN_TYPES = "IS_EMPTY_SCAN_TYPES";
+
+    public static final String DATA_PROCESSING_COMPLETE = "DATA_PROCESSING_COMPLETE";
+
+    public static final String RECIPIENTS = "RECIPIENTS";
+
+    public static final String DESTINATIONS = "DESTINATIONS";
 }

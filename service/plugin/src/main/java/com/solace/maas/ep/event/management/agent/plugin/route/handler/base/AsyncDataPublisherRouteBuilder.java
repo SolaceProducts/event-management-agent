@@ -68,16 +68,16 @@ public class AsyncDataPublisherRouteBuilder extends DataPublisherRouteBuilder {
 
             from("seda:asyncEvent_" + routeId + "?blockWhenFull=true&size=1000000")
                     .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
-                    .setHeader("RECIPIENTS", method(this, "getRecipients(${header."
+                    .setHeader(RouteConstants.RECIPIENTS, method(this, "getRecipients(${header."
                             + RouteConstants.SCAN_ID + "})"))
-                    .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
+                    .setHeader(RouteConstants.DESTINATIONS, method(this, "getDestinations(${header."
                             + RouteConstants.SCAN_ID + "})"))
                     .process(processor)
-                    .recipientList().header("RECIPIENTS").delimiter(";")
+                    .recipientList().header(RouteConstants.RECIPIENTS).delimiter(";")
                     .shareUnitOfWork()
                     .split(body()).streaming().shareUnitOfWork()
                     .marshal().json(JsonLibrary.Jackson)
-                    .recipientList().header("DESTINATIONS").delimiter(";")
+                    .recipientList().header(RouteConstants.DESTINATIONS).delimiter(";")
                     .shareUnitOfWork();
 
             Publisher<Exchange> exchanges = camel.fromStream("asyncProcessing_" + routeId);
