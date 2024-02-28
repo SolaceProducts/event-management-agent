@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.DATA_PROCESSING_COMPLETE;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.DESTINATIONS;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.RECIPIENTS;
+
 /**
  * DataPublisherRouteBuilder creates Camel Routes intended to handle Messaging Service scans.
  */
@@ -71,9 +75,9 @@ public class DataPublisherRouteBuilder extends AbstractRouteBuilder {
                 .process(exchange -> MDC.put("scanId", exchange.getIn().getHeader(RouteConstants.SCAN_ID, String.class)))
                 .routeId(routeId)
                 .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
-                .setHeader("RECIPIENTS", method(this, "getRecipients(${header."
+                .setHeader(RECIPIENTS, method(this, "getRecipients(${header."
                         + RouteConstants.SCAN_ID + "})"))
-                .setHeader("DESTINATIONS", method(this, "getDestinations(${header."
+                .setHeader(DESTINATIONS, method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
                 .to("direct:markRouteScanStatusInProgress?block=false&failIfNoConsumers=false")
@@ -93,18 +97,18 @@ public class DataPublisherRouteBuilder extends AbstractRouteBuilder {
                 .otherwise()
                 // The Route Interceptors are injected here. They are called Asynchronously and don't return a response
                 // to this Route.
-                .recipientList().header("RECIPIENTS").delimiter(";")
+                .recipientList().header(RECIPIENTS).delimiter(";")
                 .split(body()).streaming().shareUnitOfWork()
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
                 .marshal().json(JsonLibrary.Jackson)
                 .choice().when(header(Exchange.SPLIT_COMPLETE).isEqualTo(true))
-                .setHeader("DATA_PROCESSING_COMPLETE", constant(true))
+                .setHeader(DATA_PROCESSING_COMPLETE, constant(true))
                 .endChoice()
                 .end()
                 // The Destinations receiving the Data Collection events get called here.
-                .recipientList().header("DESTINATIONS").delimiter(";")
-                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .recipientList().header(DESTINATIONS).delimiter(";")
+                .choice().when(header(DATA_PROCESSING_COMPLETE).isEqualTo(true))
                 .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
                 .endChoice()
                 .end()

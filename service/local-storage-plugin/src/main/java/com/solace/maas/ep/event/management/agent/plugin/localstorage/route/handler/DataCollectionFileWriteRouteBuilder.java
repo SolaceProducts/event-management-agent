@@ -7,6 +7,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.DATA_PROCESSING_COMPLETE;
+
 @Component
 public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
     private final DataCollectionFileWriteProcessor processor;
@@ -32,7 +34,7 @@ public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
                         "${header." + RouteConstants.SCHEDULE_ID +
                         "}/${header." + RouteConstants.SCAN_ID +
                         "}/${header." + RouteConstants.SCAN_TYPE + "}.json")
-                .choice().when(header("DATA_PROCESSING_COMPLETE").isEqualTo(true))
+                .choice().when(header(DATA_PROCESSING_COMPLETE).isEqualTo(true))
                 .to("seda:dataCollectionDBWriter")
                 .endChoice()
                 .end();
