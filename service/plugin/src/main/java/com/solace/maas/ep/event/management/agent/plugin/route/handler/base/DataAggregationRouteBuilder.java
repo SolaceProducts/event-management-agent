@@ -14,9 +14,6 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 
 import java.util.Objects;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.DATA_PROCESSING_COMPLETE;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.DESTINATIONS;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.RECIPIENTS;
 import static org.apache.camel.support.builder.PredicateBuilder.and;
 import static org.apache.camel.support.builder.PredicateBuilder.or;
 
@@ -64,9 +61,9 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // Define a Route ID so we can kill this Route if needed.
                 .routeId(routeId)
                 .setHeader(RouteConstants.SCAN_TYPE, constant(routeType))
-                .setHeader(RECIPIENTS, method(this, "getRecipients(${header."
+                .setHeader(RouteConstants.RECIPIENTS, method(this, "getRecipients(${header."
                         + RouteConstants.SCAN_ID + "})"))
-                .setHeader(DESTINATIONS, method(this, "getDestinations(${header."
+                .setHeader(RouteConstants.DESTINATIONS, method(this, "getDestinations(${header."
                         + RouteConstants.SCAN_ID + "})"))
                 .setHeader(RouteConstants.SCAN_STATUS, constant(ScanStatus.IN_PROGRESS))
                 .to("direct:markRouteScanStatusInProgress?block=false&failIfNoConsumers=false")
@@ -76,7 +73,7 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // aggregate this data together if they need it all at once.
                 .split(body()).shareUnitOfWork().streaming().shareUnitOfWork()
                 .choice().when(header(Exchange.SPLIT_COMPLETE).isEqualTo(true))
-                .setHeader(DATA_PROCESSING_COMPLETE, constant(true))
+                .setHeader(RouteConstants.DATA_PROCESSING_COMPLETE, constant(true))
                 .endChoice()
                 .end()
                 .log(LoggingLevel.TRACE, "agg element ${body}")
@@ -91,7 +88,7 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 .process(processor)
                 // Checking for empty scan types.
                 .choice().when(and(simple("${body.size} == 0"),
-                        header(DATA_PROCESSING_COMPLETE).isEqualTo(true)))
+                        header(RouteConstants.DATA_PROCESSING_COMPLETE).isEqualTo(true)))
                 .setHeader(RouteConstants.IS_EMPTY_SCAN_TYPES, constant(true))
                 .process(scanTypeDescendentsProcessor)
                 .split(simple("${header." + RouteConstants.SCAN_TYPE + "}"))
@@ -110,22 +107,22 @@ public class DataAggregationRouteBuilder extends DataPublisherRouteBuilder {
                 // We want to set the "DATA_PROCESSING_COMPLETE" to false, except for the last message in the
                 // aggregation bundle.
                 .choice().when(or(header(Exchange.SPLIT_COMPLETE).isEqualTo(false),
-                        header(DATA_PROCESSING_COMPLETE).isEqualTo(false)))
-                .setHeader(DATA_PROCESSING_COMPLETE, constant(false))
+                        header(RouteConstants.DATA_PROCESSING_COMPLETE).isEqualTo(false)))
+                .setHeader(RouteConstants.DATA_PROCESSING_COMPLETE, constant(false))
                 .endChoice()
                 .end()
                 // The Route Interceptors are injected here. They are called Asynchronously and don't return a response
                 // to this Route.
-                .recipientList().header(RECIPIENTS).delimiter(";")
+                .recipientList().header(RouteConstants.RECIPIENTS).delimiter(";")
                 .shareUnitOfWork()
                 // Transforming the Events to JSON. Do we need to do this here? Maybe we should delegate this to the
                 // destinations instead?
                 .marshal().json(JsonLibrary.Jackson)
                 .log(LoggingLevel.TRACE, "destinations ${body}")
                 // The Destinations receiving the Data Collection events get called here.
-                .recipientList().header(DESTINATIONS).delimiter(";")
+                .recipientList().header(RouteConstants.DESTINATIONS).delimiter(";")
                 .shareUnitOfWork()
-                .choice().when(header(DATA_PROCESSING_COMPLETE).isEqualTo(true))
+                .choice().when(header(RouteConstants.DATA_PROCESSING_COMPLETE).isEqualTo(true))
                 .to("direct:markRouteScanStatusComplete?block=false&failIfNoConsumers=false")
                 .endChoice()
                 .end()

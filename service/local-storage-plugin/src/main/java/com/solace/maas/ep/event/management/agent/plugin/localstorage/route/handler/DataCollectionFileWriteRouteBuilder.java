@@ -7,7 +7,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.HeaderConstants.DATA_PROCESSING_COMPLETE;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.DATA_PROCESSING_COMPLETE;
 
 @Component
 public class DataCollectionFileWriteRouteBuilder extends RouteBuilder {
