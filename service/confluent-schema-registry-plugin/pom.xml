@@ -10,7 +10,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot-starter-test.version>3.1.8</spring-boot-starter-test.version>
+        <spring-boot-starter-test.version>3.1.9</spring-boot-starter-test.version>
         <httpclient.version>4.5.14</httpclient.version>
         <mockwebserver.version>4.9.0</mockwebserver.version>
         <jupiter.version>5.3.1</jupiter.version>
