@@ -64,7 +64,7 @@ def find_all_high_critical_vulnerabilities_to_resolve(excluded_libraries):
     vulnerabilities_to_resolve = dict()
     for vulnerability in prisma_project_vulnerabilities:
         if vulnerability['severity'] in PRISMA_BLOCKING_VULNERABILITIES:
-            package_full_name = f"{vulnerability['packageName']}-{vulnerability['packageVersion']}"
+            package_full_name = f"{vulnerability['packageName']}:{vulnerability['packageVersion']}"
             current_vulnerability_description = vulnerability['description']
             if package_full_name in excluded_libraries:
                 print(f"ⓘ Package {package_full_name} has vulnerabilities but is in exclusion list.")

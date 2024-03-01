@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.kafka</groupId>
     <artifactId>kafka-plugin</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Kafka Plugin</name>
     <description>Solace Event Management Agent - Kafka Plugin</description>
@@ -12,7 +12,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <spring-boot-version>3.1.8</spring-boot-version>
+        <spring-boot-version>3.1.9</spring-boot-version>
         <commons-collections4.vresion>4.4</commons-collections4.vresion>
         <jupiter.version>5.3.1</jupiter.version>
         <camel.version>4.2.0</camel.version>
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.1-SNAPSHOT</version>
+            <version>1.6.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
