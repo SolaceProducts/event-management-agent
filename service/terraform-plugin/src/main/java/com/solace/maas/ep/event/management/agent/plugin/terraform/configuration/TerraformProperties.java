@@ -7,6 +7,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Data
 public class TerraformProperties {
-    @Value("${COMMAND_PATH:${HOME}/tfconfig}")
+    @Value("${COMMAND_PATH:${user.home}${file.separator}tfcommands}")
     private String workingDirectoryRoot;
 }
