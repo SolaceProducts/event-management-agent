@@ -12,7 +12,9 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TerraformTestConfig.class)
 
 public class TerraformCommandIT {
@@ -64,6 +67,11 @@ public class TerraformCommandIT {
 
     @Autowired
     private ResourceLoader resourceLoader;
+
+    @BeforeAll
+    public void setup() {
+        terraformProperties.setWorkingDirectoryRoot(System.getProperty("java.io.tmpdir"));
+    }
 
     @AfterEach
     public void reset_mocks() {
@@ -209,7 +217,7 @@ public class TerraformCommandIT {
                 "\tid = \"default/MyConsumer1/a%2Fb%2Fc\"\n" +
                 "}";
 
-        String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/import.tf"));
+        String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/sync.tf"));
         assertEquals(content, expectedImportTf);
 
         // Check the responses
