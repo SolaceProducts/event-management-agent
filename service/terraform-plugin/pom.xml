@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.terraform</groupId>
     <artifactId>terraform-plugin</artifactId>
-    <version>1.6.3</version>
+    <version>1.6.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Terraform Plugin</name>
     <description>Solace Event Management Agent - Terraform Plugin</description>
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.3</version>
+            <version>1.6.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
