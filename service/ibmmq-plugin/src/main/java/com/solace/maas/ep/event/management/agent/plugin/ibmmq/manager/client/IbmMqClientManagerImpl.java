@@ -1,20 +1,17 @@
 package com.solace.maas.ep.event.management.agent.plugin.ibmmq.manager.client;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.solace.maas.ep.event.management.agent.plugin.ibmmq.client.http.IbmMqHttpClient;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
-import feign.Feign;
-import feign.auth.BasicAuthRequestInterceptor;
-import feign.jackson.JacksonDecoder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 import java.util.NoSuchElementException;
 
@@ -47,23 +44,22 @@ public class IbmMqClientManagerImpl implements MessagingServiceClientManager<Ibm
                     return new NoSuchElementException(message);
                 });
 
+        //grab authentication details
         String username = MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent);
         String password = MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent);
         String url = connectionDetailsEvent.getUrl();
 
-        /*so that we can configure Jackson to ignore unknown properties in the
-          response json.
-         */
-        ObjectMapper mapper = JsonMapper
-                .builder()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        //setup a basic webclient that will be used in generating
+        //the actual IBM HTTP Client
+        WebClient client = WebClient.builder()
+                .filter(ExchangeFilterFunctions.basicAuthentication(username, password))
+                .baseUrl(url)
                 .build();
 
-        return Feign.builder()
-                .requestInterceptor(new BasicAuthRequestInterceptor(username, password))
-                .contract(new SpringMvcContract())
-                .decoder(new JacksonDecoder(mapper))
-                .target(IbmMqHttpClient.class, url);
+        HttpServiceProxyFactory proxyFactory = HttpServiceProxyFactory
+                .builder(WebClientAdapter.forClient(client)).build();
+
+        return proxyFactory.createClient(IbmMqHttpClient.class);
     }
 
 }

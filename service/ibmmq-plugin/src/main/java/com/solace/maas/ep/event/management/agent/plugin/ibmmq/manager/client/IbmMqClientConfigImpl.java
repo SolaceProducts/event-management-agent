@@ -6,10 +6,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class IbmMqClientConfigImpl extends MessagingServiceClientConfig {
 
-    private static final String SERVICE_NAME = "IBMMQ";
-
     protected IbmMqClientConfigImpl() {
-        super(SERVICE_NAME, new IbmMqClientManagerImpl());
+        super("IBMMQ", new IbmMqClientManagerImpl());
     }
 
 }
