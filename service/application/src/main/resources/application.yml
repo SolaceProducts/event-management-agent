@@ -355,3 +355,21 @@ eventPortal:
 #                        value: software.amazon.msk.auth.iam.IAMLoginModule required;
 #                      - name: sasl.client.callback.handler.class
 #                        value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+#      # IBM MQ Example
+#      - id: ibmmqDefaultService
+#        type: IBMMQ
+#        name: IBM MQ Test Service
+#        connections:
+#          - name: IBMMQBroker
+#            url: ${ADMINISTRATOR_REST_ENDPOINT_URL}
+#            authentication:
+#              - protocol: BASIC
+#                credentials:
+#                  - source: ENVIRONMENT_VARIABLE
+#                    properties:
+#                      - name: username
+#                        value: ${IBMMQ_ADMINISTRATOR_USERNAME}
+#                      - name: password
+#                        value: ${IBMMQ_ADMINISTRATOR_PASSWORD}
+#                   operations:
+#                     - name: IBMMQ_ALL
