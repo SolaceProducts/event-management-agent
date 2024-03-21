@@ -19,6 +19,7 @@
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <maas.jobs.version>2.0.11</maas.jobs.version>
         <jackson.version>2.16.1</jackson.version>
+        <spring-web.version>6.0.18</spring-web.version>
     </properties>
     <dependencies>
         <dependency>
@@ -87,6 +88,13 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
+         v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-web.version}</version>
         </dependency>
     </dependencies>
     <build>

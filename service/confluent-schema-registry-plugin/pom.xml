@@ -17,6 +17,7 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
+        <spring-web.version>6.0.18</spring-web.version>
     </properties>
     <dependencies>
         <dependency>
@@ -59,6 +60,13 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${jupiter.version}</version>
             <scope>test</scope>
+        </dependency>
+        <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
+         v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-web.version}</version>
         </dependency>
     </dependencies>
     <build>
