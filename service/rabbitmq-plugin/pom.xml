@@ -10,6 +10,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <spring-web.version>6.0.18</spring-web.version>
     </properties>
     <dependencies>
         <dependency>
@@ -26,6 +27,13 @@
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
             <version>1.6.3-SNAPSHOT</version>
+        </dependency>
+        <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
+         v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-web.version}</version>
         </dependency>
     </dependencies>
     <build>
