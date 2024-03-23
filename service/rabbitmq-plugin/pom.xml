@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.rabbitmq</groupId>
     <artifactId>rabbitmq-plugin</artifactId>
-    <version>1.6.4</version>
+    <version>1.6.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - RabbitMQ Plugin</name>
     <description>Solace Event Management Agent - RabbitMQ Plugin</description>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.4</version>
+            <version>1.6.4-SNAPSHOT</version>
         </dependency>
         <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
          v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
