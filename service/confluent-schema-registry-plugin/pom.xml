@@ -3,27 +3,26 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
     <artifactId>confluent-schema-registry-plugin</artifactId>
-    <version>1.6.4-SNAPSHOT</version>
+    <version>1.6.5-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Confluent Schema Registry Plugin</name>
     <description>Solace Event Management Agent - Confluent Schema Registry Plugin</description>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot-starter-test.version>3.1.9</spring-boot-starter-test.version>
+        <spring-boot-starter-test.version>3.1.11</spring-boot-starter-test.version>
         <httpclient.version>4.5.14</httpclient.version>
         <mockwebserver.version>4.9.0</mockwebserver.version>
         <jupiter.version>5.3.1</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <spring-web.version>6.0.18</spring-web.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.4-SNAPSHOT</version>
+            <version>1.6.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -60,13 +59,6 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${jupiter.version}</version>
             <scope>test</scope>
-        </dependency>
-        <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
-         v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring-web.version}</version>
         </dependency>
     </dependencies>
     <build>
