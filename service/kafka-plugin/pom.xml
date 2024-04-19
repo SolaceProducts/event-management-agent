@@ -12,7 +12,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <spring-boot-version>3.1.9</spring-boot-version>
+        <spring-boot-version>3.1.11</spring-boot-version>
         <commons-collections4.vresion>4.4</commons-collections4.vresion>
         <jupiter.version>5.3.1</jupiter.version>
         <camel.version>4.2.0</camel.version>
@@ -22,7 +22,6 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <jackson.version>2.16.1</jackson.version>
-        <spring-web.version>6.0.18</spring-web.version>
     </properties>
 
     <dependencyManagement>
@@ -33,13 +32,6 @@
                 <version>${jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
-         v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
-                <version>${spring-web.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
