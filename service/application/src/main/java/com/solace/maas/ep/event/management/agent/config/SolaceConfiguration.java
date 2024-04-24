@@ -2,12 +2,13 @@ package com.solace.maas.ep.event.management.agent.config;
 
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
+import com.solace.maas.ep.event.management.agent.plugin.config.EnableRtoCondition;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.subscriber.SolaceSubscriber;
-import com.solace.maas.ep.event.management.agent.plugin.config.EnableRtoCondition;
-import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.messaging.MessagingService;
+import com.solace.messaging.config.RetryStrategy;
 import com.solace.messaging.config.SolaceProperties;
 import com.solace.messaging.config.profile.ConfigurationProfile;
 import com.solace.messaging.publisher.DirectMessagePublisher;
@@ -40,8 +41,8 @@ public class SolaceConfiguration {
     @SuppressWarnings("PMD.LooseCoupling")
     public SolaceConfiguration(Properties vmrConfig, ArrayList<String> sessionConfig,
                                EventPortalProperties eventPortalProperties) {
-        this.vmrConfiguration = vmrConfig;
-        this.sessionConfiguration = sessionConfig;
+        vmrConfiguration = vmrConfig;
+        sessionConfiguration = sessionConfig;
         this.eventPortalProperties = eventPortalProperties;
     }
 
@@ -65,6 +66,7 @@ public class SolaceConfiguration {
         log.info("Connecting to event portal using EMA client {}.", clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
+                .withReconnectionRetryStrategy(RetryStrategy.foreverRetry(15000))
                 .build()
                 .connect();
     }
