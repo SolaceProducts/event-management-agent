@@ -56,7 +56,13 @@ public class TerraformManager {
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
             Path configPath = TerraformUtils.createConfigPath(request, terraformProperties.getWorkingDirectoryRoot());
             Path executionLogPath = TerraformUtils.createCommandExecutionLogDir(configPath);
-            executionLogFilePath = executionLogPath.resolve(command.getCommand() + "-" + EXECUTION_LOG_FILE);
+            executionLogFilePath = executionLogPath.resolve(
+                    command.getCommand()
+                            + "-"
+                            + System.currentTimeMillis()
+                            + "-"
+                            + EXECUTION_LOG_FILE
+            );
             executionLogWriter = new PrintWriter(new FileOutputStream(executionLogFilePath.toString(), false), true);
             String commandVerb = command.getCommand();
             List<String> logOutput = executeTerraformCommand(

@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -16,6 +15,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMess
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
+import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
@@ -154,21 +154,25 @@ public class TestConfig {
 
     @Bean
     @Primary
+    public CommandLogStreamingProcessor getCommandLogStreamingProcessor() {
+        return mock(CommandLogStreamingProcessor.class);
+    }
+
+    @Bean
+    @Primary
     public CommandManager getCommandManager(TerraformManager terraformManager,
                                             CommandMapper commandMapper,
                                             CommandPublisher commandPublisher,
                                             MessagingServiceDelegateService messagingServiceDelegateService,
                                             EventPortalProperties eventPortalProperties,
-                                            CommandLogsPublisher commandLogsPublisher,
-                                            ObjectMapper objectMapper) {
+                                            CommandLogStreamingProcessor commandLogStreamingProcessor) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
                 commandPublisher,
                 messagingServiceDelegateService,
                 eventPortalProperties,
-                commandLogsPublisher,
-                objectMapper
+                commandLogStreamingProcessor
         );
     }
 
