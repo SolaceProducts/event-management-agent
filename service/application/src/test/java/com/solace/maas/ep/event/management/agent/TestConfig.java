@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 @TestConfiguration
 @Profile("TEST")
 @Import({PublisherTestConfig.class, MessagingServiceTestConfig.class})
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class TestConfig {
 
     @Autowired
