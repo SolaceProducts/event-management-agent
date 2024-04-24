@@ -29,6 +29,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -154,7 +156,7 @@ class CommandManagerTests {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
 
-        doNothing().when(terraformManager).execute(any(), any(), any());
+        doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
         doThrow(new RuntimeException("Error sending response back to EP")).when(commandPublisher).sendCommandResponse(any(), any());
         commandManager.execute(message);
 
@@ -179,7 +181,7 @@ class CommandManagerTests {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
 
-        doNothing().when(terraformManager).execute(any(), any(), any());
+        doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
         doThrow(new RuntimeException("Could not retrieve or create the messaging service client for [" + MESSAGING_SERVICE_ID + "]."))
                 .when(messagingServiceDelegateService).getMessagingServiceClient(MESSAGING_SERVICE_ID);
@@ -215,7 +217,7 @@ class CommandManagerTests {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
 
-        doNothing().when(terraformManager).execute(any(), any(), any());
+        doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
 
         ArgumentCaptor<Map<String, String>> topicArgCaptor = ArgumentCaptor.forClass(Map.class);
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
