@@ -66,7 +66,7 @@ public class SolaceConfiguration {
         log.info("Connecting to event portal using EMA client {}.", clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
-                .withReconnectionRetryStrategy(RetryStrategy.foreverRetry(15000))
+                .withReconnectionRetryStrategy(RetryStrategy.foreverRetry(15_000))
                 .build()
                 .connect();
     }
