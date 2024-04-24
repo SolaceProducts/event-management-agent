@@ -147,6 +147,12 @@ public class TestConfig {
 
     @Bean
     @Primary
+    public CommandLogsPublisher getComaCommandLogsPublisher() {
+        return mock(CommandLogsPublisher.class);
+    }
+
+    @Bean
+    @Primary
     public CommandManager getCommandManager(TerraformManager terraformManager,
                                             CommandMapper commandMapper,
                                             CommandPublisher commandPublisher,
