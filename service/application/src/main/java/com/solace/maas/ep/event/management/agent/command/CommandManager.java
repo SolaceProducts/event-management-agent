@@ -1,5 +1,7 @@
 package com.solace.maas.ep.event.management.agent.command;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solace.maas.ep.common.messages.CommandLogMessage;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -12,6 +14,7 @@ import com.solace.maas.ep.event.management.agent.plugin.service.MessagingService
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +23,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -39,13 +45,19 @@ public class CommandManager {
     private final TerraformManager terraformManager;
     private final CommandMapper commandMapper;
     private final CommandPublisher commandPublisher;
+    private final CommandLogsPublisher commandLogsPublisher;
     private final MessagingServiceDelegateService messagingServiceDelegateService;
     private final EventPortalProperties eventPortalProperties;
     private final ThreadPoolTaskExecutor configPushPool;
+    private final ObjectMapper objectMapper;
 
-    public CommandManager(TerraformManager terraformManager, CommandMapper commandMapper,
-                          CommandPublisher commandPublisher, MessagingServiceDelegateService messagingServiceDelegateService,
-                          EventPortalProperties eventPortalProperties) {
+    public CommandManager(TerraformManager terraformManager,
+                          CommandMapper commandMapper,
+                          CommandPublisher commandPublisher,
+                          MessagingServiceDelegateService messagingServiceDelegateService,
+                          EventPortalProperties eventPortalProperties,
+                          CommandLogsPublisher commandLogsPublisher,
+                          ObjectMapper objectMapper) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
@@ -57,7 +69,9 @@ public class CommandManager {
         configPushPool.setQueueCapacity(eventPortalProperties.getCommandThreadPoolQueueSize());
         configPushPool.setThreadNamePrefix("config-push-pool-");
         configPushPool.setTaskDecorator(new MdcTaskDecorator());
+        this.commandLogsPublisher = commandLogsPublisher;
         configPushPool.initialize();
+        this.objectMapper = objectMapper;
     }
 
     public void execute(CommandMessage request) {
@@ -87,10 +101,11 @@ public class CommandManager {
         for (CommandBundle bundle : request.getCommandBundles()) {
             // For now everything is run serially
             for (Command command : bundle.getCommands()) {
+                Path executionLog = null;
                 try {
                     switch (command.getCommandType()) {
                         case terraform:
-                            terraformManager.execute(request, command, envVars);
+                            executionLog = terraformManager.execute(request, command, envVars);
                             break;
                         default:
                             command.setResult(CommandResult.builder()
@@ -107,9 +122,18 @@ public class CommandManager {
                     log.error("Error executing command", e);
                     setCommandError(command, e);
                 }
+
                 if (exitEarlyOnFailedCommand(bundle, command)) {
+                    readAllExecutionLogs(executionLog).forEach(
+                            log -> sendLogToEpCore(
+                                    log,
+                                    request.getCommandCorrelationId(),
+                                    request.getServiceId()
+                            )
+                    );
                     break;
                 }
+
             }
         }
 
@@ -140,6 +164,18 @@ public class CommandManager {
         commandPublisher.sendCommandResponse(response, topicVars);
     }
 
+    private List<String> readAllExecutionLogs(Path path) {
+        if (path == null) {
+            return List.of();
+        }
+        try {
+            return Files.readAllLines(path);
+        } catch (Exception e) {
+            log.error("Error reading execution log from path {}", path);
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     private Map<String, String> setBrokerSpecificEnvVars(String messagingServiceId) {
         Map<String, String> envVars = new HashMap<>();
         Object client = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
@@ -151,5 +187,36 @@ public class CommandManager {
             envVars.put("TF_VAR_url", sempClient.getConnectionUrl());
         }
         return envVars;
+    }
+
+    private void sendLogToEpCore(String message,
+                                 String commandCorrelationId,
+                                 String messagingServiceId) {
+        try {
+            Map<String, String> topicDetails = new HashMap<>();
+            String runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+            String orgId = eventPortalProperties.getOrganizationId();
+
+            Map<String, Object> log = objectMapper.readValue(message, Map.class);
+            CommandLogMessage logDataMessage = new CommandLogMessage(
+                    orgId,
+                    commandCorrelationId,
+                    MDC.get(TRACE_ID),
+                    MDC.get(ACTOR_ID),
+                    log.get("@level").toString(),
+                    message,
+                    Instant.now().toEpochMilli(),
+                    runtimeAgentId
+            );
+            topicDetails.put("orgId", eventPortalProperties.getOrganizationId());
+            topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
+            topicDetails.put("messagingServiceId", messagingServiceId);
+            topicDetails.put(COMMAND_CORRELATION_ID, commandCorrelationId);
+            commandLogsPublisher.sendCommandLogData(logDataMessage, topicDetails);
+        } catch (Exception e) {
+            log.error("Error sending logs to ep-core", e);
+            throw new IllegalArgumentException(e);
+        }
+
     }
 }

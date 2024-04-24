@@ -15,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -30,32 +32,40 @@ public class TerraformManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     public static final String SYNC_HCL_FILENAME = "sync.tf";
     public static final String ENVIRONMENT_KEY = "environment";
+    public static final String EXECUTION_LOG_FILE = "commandExecution.log";
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
 
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
-                            TerraformProperties terraformProperties, TerraformClientFactory terraformClientFactory) {
+                            TerraformProperties terraformProperties,
+                            TerraformClientFactory terraformClientFactory) {
         this.terraformLogProcessingService = terraformLogProcessingService;
         this.terraformProperties = terraformProperties;
         this.terraformClientFactory = terraformClientFactory;
     }
 
-    public void execute(CommandRequest request, Command command, Map<String, String> envVars) {
-
+    public Path execute(CommandRequest request, Command command, Map<String, String> envVars) {
         MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCommandCorrelationId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());
-
         log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                 request.getCommandCorrelationId(), request.getContext());
-
         setEnvVarsFromParameters(command, envVars);
-
+        PrintWriter executionLogWriter = null;
+        Path executionLogFilePath = null;
         try (TerraformClient terraformClient = terraformClientFactory.createClient()) {
-
             Path configPath = TerraformUtils.createConfigPath(request, terraformProperties.getWorkingDirectoryRoot());
+            Path executionLogPath = TerraformUtils.createCommandExecutionLogDir(configPath);
+            executionLogFilePath = executionLogPath.resolve(command.getCommand() + "-" + EXECUTION_LOG_FILE);
+            executionLogWriter = new PrintWriter(new FileOutputStream(executionLogFilePath.toString(), false), true);
             String commandVerb = command.getCommand();
-            List<String> logOutput = executeTerraformCommand(command, envVars, configPath, terraformClient);
+            List<String> logOutput = executeTerraformCommand(
+                    command,
+                    envVars,
+                    configPath,
+                    terraformClient,
+                    executionLogWriter
+            );
             processTerraformResponse(command, commandVerb, logOutput);
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
@@ -63,7 +73,12 @@ public class TerraformManager {
         } catch (Exception e) {
             log.error("An error was encountered while executing the terraform command", e);
             TerraformUtils.setCommandError(command, e);
+        } finally {
+            if (executionLogWriter != null) {
+                executionLogWriter.close();
+            }
         }
+        return executionLogFilePath;
     }
 
     private static void setEnvVarsFromParameters(Command command, Map<String, String> envVars) {
@@ -74,24 +89,35 @@ public class TerraformManager {
         }
     }
 
-    private List<String> executeTerraformCommand(Command command, Map<String, String> envVars, Path configPath,
-                                                 TerraformClient terraformClient) throws IOException, InterruptedException, ExecutionException {
+    private List<String> executeTerraformCommand(Command command,
+                                                 Map<String, String> envVars,
+                                                 Path configPath,
+                                                 TerraformClient terraformClient,
+                                                 PrintWriter writer) throws IOException, InterruptedException, ExecutionException {
         String commandVerb = command.getCommand();
 
         Consumer<String> logToConsole = this::logToConsole;
+        Consumer<String> logToFile = s -> writeToExecutionLogFile(s, writer);
         if ("sync".equals(commandVerb)) {
             logToConsole = log -> {
             };
+            logToFile = log -> {
+            };
         }
-        List<String> logOutput = TerraformUtils.setupTerraformClient(terraformClient, configPath, logToConsole);
+        List<String> logOutput = TerraformUtils.setupTerraformClient(
+                terraformClient,
+                configPath,
+                logToConsole,
+                logToFile
+        );
 
         switch (commandVerb) {
             case "sync" -> syncCommand(envVars, configPath, terraformClient, logOutput);
             case "apply" -> {
-                TerraformUtils.writeHclToFile(command, configPath);
+                TerraformUtils.writeHclToFile(command, configPath, writer, objectMapper);
                 terraformClient.apply(envVars).get();
             }
-            case "write_HCL" -> TerraformUtils.writeHclToFile(command, configPath);
+            case "write_HCL" -> TerraformUtils.writeHclToFile(command, configPath, writer, objectMapper);
             default -> throw new IllegalArgumentException("Unsupported command " + commandVerb);
         }
         return logOutput;
@@ -152,6 +178,11 @@ public class TerraformManager {
             case "error" -> log.error(logMessage);
             default -> log.error("cannot map the logLevel properly for tfLog {}", tfLog);
         }
+    }
+
+    @SneakyThrows
+    public void writeToExecutionLogFile(String tfLog, PrintWriter writer) {
+        writer.println(tfLog);
     }
 
 }

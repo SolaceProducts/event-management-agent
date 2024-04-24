@@ -1,23 +1,30 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.logging.LogLevel;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 public class TerraformUtils {
     public static final String LOG_LEVEL_ERROR = "ERROR";
@@ -27,8 +34,10 @@ public class TerraformUtils {
     private TerraformUtils() {
     }
 
-    public static List<String> setupTerraformClient(TerraformClient terraformClient, Path configPath,
-                                                    Consumer<String> logToConsole) {
+    public static List<String> setupTerraformClient(TerraformClient terraformClient,
+                                                    Path configPath,
+                                                    Consumer<String> logToConsole,
+                                                    Consumer<String> logToFile) {
         terraformClient.setWorkingDirectory(configPath.toFile());
         List<String> output = new ArrayList<>();
 
@@ -37,6 +46,7 @@ public class TerraformUtils {
         terraformClient.setOutputListener(tfLog -> {
             output.add(tfLog);
             logToConsole.accept(tfLog);
+            logToFile.accept(tfLog);
         });
         return output;
     }
@@ -70,30 +80,71 @@ public class TerraformUtils {
         return configPath;
     }
 
-    public static void writeHclToFile(Command command, Path configPath) throws IOException {
-        if (StringUtils.isNotEmpty(command.getBody())) {
-            // At the moment, we only support base64 decoding
-            Map<String, Object> parameters = command.getParameters();
-            if (parameters != null && parameters.containsKey(CONTENT_ENCODING) && "base64".equals(parameters.get(CONTENT_ENCODING))) {
-                byte[] decodedBytes;
-                try {
-                    decodedBytes = Base64.getDecoder().decode(command.getBody());
-                } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException("Error decoding base64 content", e);
-                }
-                String filename = DEFAULT_TF_CONFIG_FILENAME;
-                if (parameters.containsKey("Output-File-Name")) {
-                    filename = (String) parameters.get("Output-File-Name");
-                }
-                Files.write(configPath.resolve(filename), decodedBytes);
-            } else {
-                if (parameters == null || !parameters.containsKey(CONTENT_ENCODING)) {
-                    throw new IllegalArgumentException("Missing Content-Encoding property in command parameters.");
-                }
-
-                throw new IllegalArgumentException("Unsupported encoding type " + parameters.get(CONTENT_ENCODING));
+    public static Path createCommandExecutionLogDir(Path root) {
+        Path configPath = root.resolve("executionLogs");
+        if (Files.notExists(configPath)) {
+            try {
+                Files.createDirectories(configPath);
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
             }
+        }
+
+        return configPath;
+    }
+
+    public static void writeHclToFile(Command command,
+                                      Path configPath,
+                                      PrintWriter writer,
+                                      ObjectMapper objectMapper) {
+        try {
+            if (StringUtils.isNotEmpty(command.getBody())) {
+                // At the moment, we only support base64 decoding
+                Map<String, Object> parameters = command.getParameters();
+                if (parameters != null && parameters.containsKey(CONTENT_ENCODING) && "base64".equals(parameters.get(CONTENT_ENCODING))) {
+                    byte[] decodedBytes;
+                    try {
+                        decodedBytes = Base64.getDecoder().decode(command.getBody());
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Error decoding base64 content", e);
+                    }
+                    String filename = DEFAULT_TF_CONFIG_FILENAME;
+                    if (parameters.containsKey("Output-File-Name")) {
+                        filename = (String) parameters.get("Output-File-Name");
+                    }
+                    Files.write(configPath.resolve(filename), decodedBytes);
+                } else {
+                    if (parameters == null || !parameters.containsKey(CONTENT_ENCODING)) {
+                        throw new IllegalArgumentException("Missing Content-Encoding property in command parameters.");
+                    }
+
+                    throw new IllegalArgumentException("Unsupported encoding type " + parameters.get(CONTENT_ENCODING));
+                }
+            }
+        } catch (Exception e) {
+            writer.println(
+                    convertGenericLogMessageToTFStyleMessage(
+                            String.format(
+                                    "Error while writing HCL file to disk. Error message: %s",
+                                    e.getMessage()
+                            ), TerraformLogProcessingService.VALUE_LOG_LEVEL_ERROR, objectMapper)
+            );
+            throw new IllegalArgumentException(e);
         }
     }
 
+    private static String convertGenericLogMessageToTFStyleMessage(String genericMessage,
+                                                                   String logLevel,
+                                                                   ObjectMapper objectMapper) {
+
+        try {
+            return objectMapper.writeValueAsString(Map.of(
+                    TerraformLogProcessingService.KEY_LOG_LEVEL, logLevel,
+                    TerraformLogProcessingService.KEY_MESSAGE, genericMessage,
+                    TerraformLogProcessingService.KEY_TIMESTAMP, Instant.now().toString()
+            ));
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 }
