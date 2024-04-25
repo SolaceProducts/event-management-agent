@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.9</version>
+        <version>3.1.11</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.6.4-SNAPSHOT</version>
+    <version>1.6.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>
@@ -42,7 +42,6 @@
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>4.2.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
-        <spring-web.version>6.0.18</spring-web.version>
     </properties>
 
     <dependencyManagement>
@@ -70,13 +69,6 @@
                         <artifactId>jackson-databind</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <!-- Override version 6.0.17 from spring-boot-starter-web 3.1.9 that has a vulnerability without moving to
-         v3.2.3 which uses 6.1.4 (we would require 6.1.5) -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
-                <version>${spring-web.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
