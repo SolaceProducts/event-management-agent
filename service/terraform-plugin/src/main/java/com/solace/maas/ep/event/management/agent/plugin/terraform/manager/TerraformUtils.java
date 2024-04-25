@@ -133,7 +133,7 @@ public class TerraformUtils {
         }
     }
 
-    private static String convertGenericLogMessageToTFStyleMessage(String genericMessage,
+    public static String convertGenericLogMessageToTFStyleMessage(String genericMessage,
                                                                    String logLevel,
                                                                    ObjectMapper objectMapper) {
 

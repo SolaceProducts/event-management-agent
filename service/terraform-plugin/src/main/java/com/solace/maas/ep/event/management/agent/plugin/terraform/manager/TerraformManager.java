@@ -48,8 +48,6 @@ public class TerraformManager {
     public Path execute(CommandRequest request, Command command, Map<String, String> envVars) {
         MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCommandCorrelationId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());
-        log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
-                request.getCommandCorrelationId(), request.getContext());
         setEnvVarsFromParameters(command, envVars);
         PrintWriter executionLogWriter = null;
         Path executionLogFilePath = null;
@@ -64,6 +62,18 @@ public class TerraformManager {
                             + EXECUTION_LOG_FILE
             );
             executionLogWriter = new PrintWriter(new FileOutputStream(executionLogFilePath.toString(), false), true);
+            log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
+                    request.getCommandCorrelationId(), request.getContext());
+            //Whatever we are writing using executionLogWriter will be sent to ep-core
+            executionLogWriter.println(
+                    TerraformUtils.convertGenericLogMessageToTFStyleMessage(
+                            String.format("Executing command %s for serviceId %s correlationId %s context %s", command.getCommand(), request.getServiceId(),
+                                    request.getCommandCorrelationId(), request.getContext()),
+                            "debug",
+                            objectMapper
+
+                    );
+            );
             String commandVerb = command.getCommand();
             List<String> logOutput = executeTerraformCommand(
                     command,
