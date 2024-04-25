@@ -72,8 +72,7 @@ public class TerraformManager {
                             "debug",
                             objectMapper
 
-                    );
-            );
+                    ));
             String commandVerb = command.getCommand();
             List<String> logOutput = executeTerraformCommand(
                     command,
