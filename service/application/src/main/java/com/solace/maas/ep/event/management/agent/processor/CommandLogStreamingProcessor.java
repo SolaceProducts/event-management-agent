@@ -49,16 +49,26 @@ public class CommandLogStreamingProcessor {
 
 
     public void deleteExecutionLogFiles(List<Path> listOfExecutionLogFiles) {
-        listOfExecutionLogFiles.forEach(path -> {
-            try {
-                if (Files.exists(path)) {
-                    Files.delete(path);
-                }
-            } catch (IOException e) {
-               throw new IllegalArgumentException(e);
-            }
-        });
+        boolean allFilesDeleted = listOfExecutionLogFiles
+                .stream()
+                .allMatch(this::deleteExecutionLogFile);
+        if (!allFilesDeleted) {
+            throw new IllegalArgumentException("Some of the execution log files were not deleted. Please check the logs");
+        }
     }
+
+    private boolean deleteExecutionLogFile(Path path) {
+        try {
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
+        } catch (IOException e) {
+            log.warn("Error while deleting execution log at {}", path, e);
+            return false;
+        }
+        return true;
+    }
+
 
     public void streamLogsToEP(CommandRequest request, Command executedCommand, Path commandExecutionLog) {
 
@@ -69,12 +79,12 @@ public class CommandLogStreamingProcessor {
         }
 
         if (commandExecutionLog == null) {
-           throw new IllegalArgumentException(
-                   String.format(
-                           "Execution log was not found for command %s with commandCorrelationId %s", executedCommand.getCommand(),
-                           request.getCommandCorrelationId()
-                   )
-           );
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Execution log was not found for command %s with commandCorrelationId %s", executedCommand.getCommand(),
+                            request.getCommandCorrelationId()
+                    )
+            );
         }
         LogStreamingConfiguration config = LogStreamingConfiguration.CONFIG_BY_JOB_STATUS.get(
                 executedCommand.getResult().getStatus()
@@ -131,7 +141,7 @@ public class CommandLogStreamingProcessor {
             topicDetails.put(COMMAND_CORRELATION_ID, commandCorrelationId);
             commandLogsPublisher.sendCommandLogData(logDataMessage, topicDetails);
         } catch (Exception e) {
-             throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(e);
         }
 
     }

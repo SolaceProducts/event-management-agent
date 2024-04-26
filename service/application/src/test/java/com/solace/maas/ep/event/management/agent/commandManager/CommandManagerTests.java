@@ -94,6 +94,7 @@ class CommandManagerTests {
         reset(commandPublisher);
         reset(commandManager);
         reset(messagingServiceDelegateService);
+        reset(commandLogStreamingProcessor);
     }
 
     @Test
@@ -266,7 +267,6 @@ class CommandManagerTests {
     void testLogStreamingToEP() {
         // Create a command request message
         CommandMessage message = buildCommandMessageForConfigPush();
-
         doAnswer((Answer<Path>) invocation -> {
             Command command = (Command) invocation.getArgument(1);
             command.setResult(CommandResult.builder()

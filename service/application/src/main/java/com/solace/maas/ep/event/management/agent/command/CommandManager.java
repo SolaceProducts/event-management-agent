@@ -94,46 +94,49 @@ public class CommandManager {
         }
         List<Path> listOfExecutionLogFiles = new ArrayList<>();
 
-        for (CommandBundle bundle : request.getCommandBundles()) {
-            // For now everything is run serially
-            for (Command command : bundle.getCommands()) {
-                Path executionLog = null;
-                try {
-                    switch (command.getCommandType()) {
-                        case terraform:
-                            executionLog = terraformManager.execute(request, command, envVars);
-                            if (listOfExecutionLogFiles != null) {
-                                listOfExecutionLogFiles.add(executionLog);
-                            }
-                            break;
-                        default:
-                            command.setResult(CommandResult.builder()
-                                    .status(JobStatus.error)
-                                    .logs(List.of(
-                                            Map.of("message", "unknown command type " + command.getCommandType(),
-                                                    "errorType", "UnknownCommandType",
-                                                    "level", LOG_LEVEL_ERROR,
-                                                    "timestamp", OffsetDateTime.now())))
-                                    .build());
-                            break;
+        try {
+            for (CommandBundle bundle : request.getCommandBundles()) {
+                // For now everything is run serially
+                for (Command command : bundle.getCommands()) {
+                    Path executionLog = null;
+                    try {
+                        switch (command.getCommandType()) {
+                            case terraform:
+                                executionLog = terraformManager.execute(request, command, envVars);
+                                if (listOfExecutionLogFiles != null) {
+                                    listOfExecutionLogFiles.add(executionLog);
+                                }
+                                break;
+                            default:
+                                command.setResult(CommandResult.builder()
+                                        .status(JobStatus.error)
+                                        .logs(List.of(
+                                                Map.of("message", "unknown command type " + command.getCommandType(),
+                                                        "errorType", "UnknownCommandType",
+                                                        "level", LOG_LEVEL_ERROR,
+                                                        "timestamp", OffsetDateTime.now())))
+                                        .build());
+                                break;
+                        }
+                    } catch (Exception e) {
+                        log.error("Error executing command", e);
+                        setCommandError(command, e);
                     }
-                } catch (Exception e) {
-                    log.error("Error executing command", e);
-                    setCommandError(command, e);
-                }
-                streamCommandExecutionLogToEpCore(request, command, executionLog);
+                    streamCommandExecutionLogToEpCore(request, command, executionLog);
 
-                if (exitEarlyOnFailedCommand(bundle, command)) {
-                    break;
-                }
+                    if (exitEarlyOnFailedCommand(bundle, command)) {
+                        break;
+                    }
 
+                }
             }
+
+            finalizeAndSendResponse(request);
+        } finally {
+            // Clean up activity : delete all the execution log files
+            cleanup(listOfExecutionLogFiles);
         }
 
-        finalizeAndSendResponse(request);
-
-        // Clean up activity : delete all the execution log files
-        cleanup(listOfExecutionLogFiles);
     }
 
     private void cleanup(List<Path> listOfExecutionLogFiles) {
