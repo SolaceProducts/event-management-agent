@@ -92,51 +92,57 @@ public class CommandManager {
             finalizeAndSendResponse(request);
             return;
         }
-        List<Path> listOfExecutionLogFiles = new ArrayList<>();
+        List<Path> executionLogFilesToClean = new ArrayList<>();
 
         try {
             for (CommandBundle bundle : request.getCommandBundles()) {
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
-                    Path executionLog = null;
-                    try {
-                        switch (command.getCommandType()) {
-                            case terraform:
-                                executionLog = terraformManager.execute(request, command, envVars);
-                                if (listOfExecutionLogFiles != null) {
-                                    listOfExecutionLogFiles.add(executionLog);
-                                }
-                                break;
-                            default:
-                                command.setResult(CommandResult.builder()
-                                        .status(JobStatus.error)
-                                        .logs(List.of(
-                                                Map.of("message", "unknown command type " + command.getCommandType(),
-                                                        "errorType", "UnknownCommandType",
-                                                        "level", LOG_LEVEL_ERROR,
-                                                        "timestamp", OffsetDateTime.now())))
-                                        .build());
-                                break;
-                        }
-                    } catch (Exception e) {
-                        log.error("Error executing command", e);
-                        setCommandError(command, e);
+                    Path executionLog = executeCommand(request, command, envVars);
+                    if (executionLog != null) {
+                        streamCommandExecutionLogToEpCore(request, command, executionLog);
+                        executionLogFilesToClean.add(executionLog);
                     }
-                    streamCommandExecutionLogToEpCore(request, command, executionLog);
-
                     if (exitEarlyOnFailedCommand(bundle, command)) {
                         break;
                     }
 
                 }
             }
-
             finalizeAndSendResponse(request);
         } finally {
             // Clean up activity : delete all the execution log files
-            cleanup(listOfExecutionLogFiles);
+            cleanup(executionLogFilesToClean);
         }
 
+    }
+
+    private Path executeCommand(CommandRequest request,
+                                Command command,
+                                Map<String, String> envVars) {
+        Path executionLog = null;
+        try {
+            switch (command.getCommandType()) {
+                case terraform:
+                    executionLog = terraformManager.execute(request, command, envVars);
+                    break;
+                default:
+                    command.setResult(CommandResult.builder()
+                            .status(JobStatus.error)
+                            .logs(List.of(
+                                    Map.of("message", "unknown command type " + command.getCommandType(),
+                                            "errorType", "UnknownCommandType",
+                                            "level", LOG_LEVEL_ERROR,
+                                            "timestamp", OffsetDateTime.now())))
+                            .build());
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("Error executing command", e);
+            setCommandError(command, e);
+        }
+
+        return executionLog;
     }
 
     private void cleanup(List<Path> listOfExecutionLogFiles) {

@@ -19,8 +19,10 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.So
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -262,55 +264,6 @@ class CommandManagerTests {
         assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
     }
 
-
-    @Test
-    void testLogStreamingToEP() {
-        // Create a command request message
-        CommandMessage message = buildCommandMessageForConfigPush();
-        doAnswer((Answer<Path>) invocation -> {
-            Command command = (Command) invocation.getArgument(1);
-            command.setResult(CommandResult.builder()
-                    .status(JobStatus.success)
-                    .result(Map.of()).build());
-            return Path.of("/some/path/on/disk/for/command-" + command.getCommand());
-        }).when(terraformManager).execute(any(), any(), any());
-
-        ArgumentCaptor<List<Path>> executionLogFileCaptor = ArgumentCaptor.forClass(List.class);
-        ArgumentCaptor<Map<String, String>> topicArgCaptor = ArgumentCaptor.forClass(Map.class);
-        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
-        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
-                new SolaceHttpSemp(SempClient.builder()
-                        .username("myUsername")
-                        .password("myPassword")
-                        .connectionUrl("myConnectionUrl")
-                        .build()));
-
-        commandManager.execute(message);
-
-        // Wait for the command thread to complete
-        await().atMost(5, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
-
-        // Verify terraform manager is called
-        ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(terraformManager, times(4)).execute(any(), any(), envArgCaptor.capture());
-
-        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
-        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
-
-        //verify all 4 execution log files are streamed to ep-core
-        verify(commandLogStreamingProcessor, times(4)).streamLogsToEP(any(), any(), any());
-
-        //verify all 4 files are then deleted
-        verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
-        Assertions.assertThat(executionLogFileCaptor.getValue())
-                .containsExactlyInAnyOrder(
-                        Path.of("/some/path/on/disk/for/command-apply"),
-                        Path.of("/some/path/on/disk/for/command-write_HCL"),
-                        Path.of("/some/path/on/disk/for/command-write_HCL"),
-                        Path.of("/some/path/on/disk/for/command-sync"));
-        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
-    }
-
     @Test
     void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsFalse() {
         CommandMessage message = getCommandMessage("1", 4, true, false);
@@ -505,5 +458,145 @@ class CommandManagerTests {
         // Wait for the command thread to complete
         await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
         return mopMessageCaptor;
+    }
+
+    @Nested
+    class LogStreamingToEpTest {
+        private ArgumentCaptor<List<Path>> executionLogFileCaptor;
+        private ArgumentCaptor<Map<String, String>> topicArgCaptor;
+        private ArgumentCaptor<Map<String, String>> envArgCaptor;
+        private ArgumentCaptor<CommandMessage> responseCaptor;
+        private CommandMessage message;
+
+        @BeforeEach
+        void setUp() {
+            message = buildCommandMessageForConfigPush();
+            executionLogFileCaptor = ArgumentCaptor.forClass(List.class);
+            topicArgCaptor = ArgumentCaptor.forClass(Map.class);
+            doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+            when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                    new SolaceHttpSemp(SempClient.builder()
+                            .username("myUsername")
+                            .password("myPassword")
+                            .connectionUrl("myConnectionUrl")
+                            .build()));
+            envArgCaptor = ArgumentCaptor.forClass(Map.class);
+            responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        }
+
+        @Test
+        void testLogStreamingToEP() {
+            doAnswer((Answer<Path>) invocation -> {
+                Command command = (Command) invocation.getArgument(1);
+                return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true);
+            }).when(terraformManager).execute(any(), any(), any());
+
+            /*
+              all 4 commands are executed successfully and all 4 logs are streamed + cleaned
+             */
+            executeCommandsAndVerify(4, 4);
+            verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            Assertions.assertThat(executionLogFileCaptor.getValue())
+                    .containsExactlyInAnyOrder(
+                            Path.of("/some/path/on/disk/for/command-apply"),
+                            Path.of("/some/path/on/disk/for/command-write_HCL"),
+                            Path.of("/some/path/on/disk/for/command-write_HCL"),
+                            Path.of("/some/path/on/disk/for/command-sync"));
+            assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+        }
+
+        @Test
+        void testExecutionLogCleanupWhenOneOfTheExecutionLogPathIsNull() {
+            doAnswer((Answer<Path>) invocation -> {
+                Command command = (Command) invocation.getArgument(1);
+                // intentionally making the sync command return null path to test graceful cleanup
+                if (StringUtils.equals(command.getCommand(), "sync")) {
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, true);
+
+                } else {
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true);
+                }
+            }).when(terraformManager).execute(any(), any(), any());
+
+            /*
+              We want all 4 commands to be executed.
+              Although, all 4 commands are executed, the sync command will return a null path.
+              As the `ignoreResult` is set to true, we will continue execution
+              however only 3 log files will be streamed + cleaned
+             */
+            executeCommandsAndVerify(4, 3);
+            verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            Assertions.assertThat(executionLogFileCaptor.getValue())
+                    .containsExactlyInAnyOrder(
+                            Path.of("/some/path/on/disk/for/command-apply"),
+                            Path.of("/some/path/on/disk/for/command-write_HCL"),
+                            Path.of("/some/path/on/disk/for/command-write_HCL"));
+            assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+        }
+
+
+        @Test
+        void testExecutionLogCleanupWhenExitEarlyOnFailedCommand() {
+            //exit early in case of failure
+            message.getCommandBundles().get(0).setExitOnFailure(true);
+
+            doAnswer((Answer<Path>) invocation -> {
+                Command command = (Command) invocation.getArgument(1);
+                // intentionally making the sync command return null path to test graceful cleanup
+                if (StringUtils.equals(command.getCommand(), "sync")) {
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, false);
+                } else {
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true);
+                }
+            }).when(terraformManager).execute(any(), any(), any());
+
+            /*
+              Commands are executed in sequence
+               1. write_HCL
+               2. write_HCL
+               3. sync
+               4. apply
+
+               We are failing fast when sync command fails,
+               so we expect 3 commands to be executed and 2 log files to be streamed + cleaned
+             */
+            executeCommandsAndVerify(3, 2);
+            verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            Assertions.assertThat(executionLogFileCaptor.getValue())
+                    .containsExactlyInAnyOrder(
+                            Path.of("/some/path/on/disk/for/command-write_HCL"),
+                            Path.of("/some/path/on/disk/for/command-write_HCL"));
+            assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+        }
+
+        private void executeCommandsAndVerify(int expectedNumberOfCommandExecutions,
+                                              int expectedNumberOfLogFilesStreamed) {
+            commandManager.execute(message);
+
+            // Wait for the command thread to complete
+            await().atMost(5, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+            verify(terraformManager, times(expectedNumberOfCommandExecutions)).execute(any(), any(), envArgCaptor.capture());
+            verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
+            verify(commandLogStreamingProcessor, times(expectedNumberOfLogFilesStreamed)).streamLogsToEP(any(), any(), any());
+        }
+
+        private Path setCommandStatusAndReturnExecutionLog(Command targetCommand,
+                                                           JobStatus targetStatus,
+                                                           boolean ignoreResult) {
+
+            if (targetStatus == JobStatus.success) {
+                targetCommand.setResult(CommandResult.builder()
+                        .status(JobStatus.success)
+                        .result(Map.of()).build());
+                return Path.of("/some/path/on/disk/for/command-" + targetCommand.getCommand());
+            } else {
+                //simulating a failed command
+                targetCommand.setResult(null);
+                targetCommand.setIgnoreResult(ignoreResult);
+                return null;
+            }
+
+        }
     }
 }
