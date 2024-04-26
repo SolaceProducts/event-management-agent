@@ -80,6 +80,7 @@ public class CommandManager {
                 });
     }
 
+    @SuppressWarnings("PMD")
     public void configPush(CommandRequest request) {
         Map<String, String> envVars;
         try {
@@ -101,7 +102,9 @@ public class CommandManager {
                     switch (command.getCommandType()) {
                         case terraform:
                             executionLog = terraformManager.execute(request, command, envVars);
-                            listOfExecutionLogFiles.add(executionLog);
+                            if (listOfExecutionLogFiles != null) {
+                                listOfExecutionLogFiles.add(executionLog);
+                            }
                             break;
                         default:
                             command.setResult(CommandResult.builder()

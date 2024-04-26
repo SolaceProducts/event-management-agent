@@ -63,9 +63,16 @@ public class CommandLogStreamingProcessor {
     public void streamLogsToEP(CommandRequest request, Command executedCommand, Path commandExecutionLog) {
 
         if (executedCommand.getIgnoreResult()) {
+            log.debug("Skipping log streaming to ep for command {} with commandCorrelationId {} as ignoreResult is set to true",
+                    executedCommand.getCommand(), request.getCommandCorrelationId());
             return;
         }
 
+        if (commandExecutionLog == null) {
+            log.warn("Execution log was not generated for command {} with commandCorrelationId {}", executedCommand.getCommand(),
+                    request.getCommandCorrelationId());
+            return;
+        }
         LogStreamingConfiguration config = LogStreamingConfiguration.CONFIG_BY_JOB_STATUS.get(
                 executedCommand.getResult().getStatus()
         );

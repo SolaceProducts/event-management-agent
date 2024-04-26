@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
@@ -16,11 +17,14 @@ import com.solace.maas.ep.event.management.agent.plugin.service.MessagingService
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -71,6 +75,9 @@ class CommandManagerTests {
 
     @Autowired
     private CommandPublisher commandPublisher;
+
+    @Autowired
+    private CommandLogStreamingProcessor commandLogStreamingProcessor;
 
     @Autowired
     private MessagingServiceDelegateService messagingServiceDelegateService;
@@ -254,6 +261,56 @@ class CommandManagerTests {
         assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
     }
 
+
+    @Test
+    void testLogStreamingToEP() {
+        // Create a command request message
+        CommandMessage message = buildCommandMessageForConfigPush();
+
+        doAnswer((Answer<Path>) invocation -> {
+            Command command = (Command) invocation.getArgument(1);
+            command.setResult(CommandResult.builder()
+                    .status(JobStatus.success)
+                    .result(Map.of()).build());
+            return Path.of("/some/path/on/disk/for/command-" + command.getCommand());
+        }).when(terraformManager).execute(any(), any(), any());
+
+        ArgumentCaptor<List<Path>> executionLogFileCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Map<String, String>> topicArgCaptor = ArgumentCaptor.forClass(Map.class);
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        commandManager.execute(message);
+
+        // Wait for the command thread to complete
+        await().atMost(5, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+        // Verify terraform manager is called
+        ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(terraformManager, times(4)).execute(any(), any(), envArgCaptor.capture());
+
+        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
+
+        //verify all 4 execution log files are streamed to ep-core
+        verify(commandLogStreamingProcessor, times(4)).streamLogsToEP(any(), any(), any());
+
+        //verify all 4 files are then deleted
+        verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+        Assertions.assertThat(executionLogFileCaptor.getValue())
+                .containsExactlyInAnyOrder(
+                        Path.of("/some/path/on/disk/for/command-apply"),
+                        Path.of("/some/path/on/disk/for/command-write_HCL"),
+                        Path.of("/some/path/on/disk/for/command-write_HCL"),
+                        Path.of("/some/path/on/disk/for/command-sync"));
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+    }
+
     @Test
     void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsFalse() {
         CommandMessage message = getCommandMessage("1", 4, true, false);
@@ -378,6 +435,54 @@ class CommandManagerTests {
                 .body("asdfasdfadsf")
                 .command("apply")
                 .build();
+    }
+
+
+    private CommandMessage buildCommandMessageForConfigPush() {
+
+        List<Command> commands = List.of(
+                Command.builder()
+                        .commandType(CommandType.terraform)
+                        .ignoreResult(false)
+                        .body("asdfasdfadsf")
+                        .command("write_HCL")
+                        .build(),
+                Command.builder()
+                        .commandType(CommandType.terraform)
+                        .ignoreResult(false)
+                        .body("asdfasdfadsf")
+                        .command("write_HCL")
+                        .build(),
+                Command.builder()
+                        .commandType(CommandType.terraform)
+                        .ignoreResult(true)
+                        .body("asdfasdfadsf")
+                        .command("sync")
+                        .build(),
+
+                Command.builder()
+                        .commandType(CommandType.terraform)
+                        .ignoreResult(false)
+                        .body("asdfasdfadsf")
+                        .command("apply")
+                        .build());
+
+        CommandMessage message = new CommandMessage();
+        message.setOrigType(MOPSvcType.maasEventMgmt);
+        message.withMessageType(generic);
+        message.setContext("abc");
+        message.setServiceId(MESSAGING_SERVICE_ID);
+        message.setActorId("myActorId");
+        message.setOrgId(eventPortalProperties.getOrganizationId());
+        message.setTraceId("myTraceId");
+        message.setCommandCorrelationId("myCorrelationIdabc");
+        message.setCommandBundles(List.of(
+                CommandBundle.builder()
+                        .executionType(ExecutionType.serial)
+                        .exitOnFailure(true)
+                        .commands(commands)
+                        .build()));
+        return message;
     }
 
     private Boolean commandPublisherIsInvoked(int numberOfExpectedInvocations) {
