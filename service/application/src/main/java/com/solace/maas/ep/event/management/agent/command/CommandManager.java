@@ -121,7 +121,8 @@ public class CommandManager {
                     log.error("Error executing command", e);
                     setCommandError(command, e);
                 }
-                commandLogStreamingProcessor.streamLogsToEP(request, command, executionLog);
+                streamCommandExecutionLogToEpCore(request, command, executionLog);
+
                 if (exitEarlyOnFailedCommand(bundle, command)) {
                     break;
                 }
@@ -132,7 +133,24 @@ public class CommandManager {
         finalizeAndSendResponse(request);
 
         // Clean up activity : delete all the execution log files
-        commandLogStreamingProcessor.deleteExecutionLogFiles(listOfExecutionLogFiles);
+        cleanup(listOfExecutionLogFiles);
+    }
+
+    private void cleanup(List<Path> listOfExecutionLogFiles) {
+        try {
+            commandLogStreamingProcessor.deleteExecutionLogFiles(listOfExecutionLogFiles);
+        } catch (Exception e) {
+            log.error("Error while deleting execution log.", e);
+        }
+    }
+
+    private void streamCommandExecutionLogToEpCore(CommandRequest request, Command command, Path executionLog) {
+        try {
+            commandLogStreamingProcessor.streamLogsToEP(request, command, executionLog);
+        } catch (Exception e) {
+            log.error("Error sending logs to ep-core for command with commandCorrelationId",
+                    request.getCommandCorrelationId(), e);
+        }
     }
 
 

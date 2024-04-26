@@ -55,7 +55,7 @@ public class CommandLogStreamingProcessor {
                     Files.delete(path);
                 }
             } catch (IOException e) {
-                log.error("Error while deleting execution log file from path {}", path);
+               throw new IllegalArgumentException(e);
             }
         });
     }
@@ -69,9 +69,12 @@ public class CommandLogStreamingProcessor {
         }
 
         if (commandExecutionLog == null) {
-            log.warn("Execution log was not generated for command {} with commandCorrelationId {}", executedCommand.getCommand(),
-                    request.getCommandCorrelationId());
-            return;
+           throw new IllegalArgumentException(
+                   String.format(
+                           "Execution log was not found for command %s with commandCorrelationId %s", executedCommand.getCommand(),
+                           request.getCommandCorrelationId()
+                   )
+           );
         }
         LogStreamingConfiguration config = LogStreamingConfiguration.CONFIG_BY_JOB_STATUS.get(
                 executedCommand.getResult().getStatus()
@@ -128,8 +131,7 @@ public class CommandLogStreamingProcessor {
             topicDetails.put(COMMAND_CORRELATION_ID, commandCorrelationId);
             commandLogsPublisher.sendCommandLogData(logDataMessage, topicDetails);
         } catch (Exception e) {
-            log.error("Error sending logs to ep-core", e);
-            throw new IllegalArgumentException(e);
+             throw new IllegalArgumentException(e);
         }
 
     }
