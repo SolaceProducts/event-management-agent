@@ -29,6 +29,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -153,8 +154,16 @@ public class TestConfig {
     }
 
     @Bean
+    @Qualifier("realCommandLogStreamingProcessor")
+    public CommandLogStreamingProcessor realCommandLogStreamingProcessor(CommandLogsPublisher commandLogsPublisher,
+                                                                        EventPortalProperties eventPortalProperties) {
+        return new CommandLogStreamingProcessor(commandLogsPublisher, eventPortalProperties);
+    }
+
+    @Bean
+    @Qualifier("mockedCommandLogStreamingProcessor")
     @Primary
-    public CommandLogStreamingProcessor getCommandLogStreamingProcessor() {
+    public CommandLogStreamingProcessor mockedCommandLogStreamingProcessor() {
         return mock(CommandLogStreamingProcessor.class);
     }
 

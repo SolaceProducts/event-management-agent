@@ -24,17 +24,20 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +82,8 @@ class CommandManagerTests {
     private CommandPublisher commandPublisher;
 
     @Autowired
-    private CommandLogStreamingProcessor commandLogStreamingProcessor;
+    @Qualifier("mockedCommandLogStreamingProcessor")
+    private CommandLogStreamingProcessor mockedCommandLogStreamingProcessor;
 
     @Autowired
     private MessagingServiceDelegateService messagingServiceDelegateService;
@@ -96,7 +100,7 @@ class CommandManagerTests {
         reset(commandPublisher);
         reset(commandManager);
         reset(messagingServiceDelegateService);
-        reset(commandLogStreamingProcessor);
+        reset(mockedCommandLogStreamingProcessor);
     }
 
     @Test
@@ -466,6 +470,7 @@ class CommandManagerTests {
         private ArgumentCaptor<Map<String, String>> topicArgCaptor;
         private ArgumentCaptor<Map<String, String>> envArgCaptor;
         private ArgumentCaptor<CommandMessage> responseCaptor;
+
         private CommandMessage message;
 
         @BeforeEach
@@ -485,36 +490,38 @@ class CommandManagerTests {
         }
 
         @Test
-        void testLogStreamingToEP() {
+        void testLogStreamingToEP(@TempDir Path basePath) throws IOException {
+
             doAnswer((Answer<Path>) invocation -> {
                 Command command = (Command) invocation.getArgument(1);
-                return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true);
+                return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
             }).when(terraformManager).execute(any(), any(), any());
+
 
             /*
               all 4 commands are executed successfully and all 4 logs are streamed + cleaned
              */
+
             executeCommandsAndVerify(4, 4);
-            verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
-                            Path.of("/some/path/on/disk/for/command-apply"),
-                            Path.of("/some/path/on/disk/for/command-write_HCL"),
-                            Path.of("/some/path/on/disk/for/command-write_HCL"),
-                            Path.of("/some/path/on/disk/for/command-sync"));
-            assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+                            basePath.resolve("apply"),
+                            basePath.resolve("write_HCL"),
+                            basePath.resolve("write_HCL"),
+                            basePath.resolve("sync"));
         }
 
         @Test
-        void testExecutionLogCleanupWhenOneOfTheExecutionLogPathIsNull() {
+        void testExecutionLogCleanupWhenOneOfTheExecutionLogPathIsNull(@TempDir Path basePath) {
             doAnswer((Answer<Path>) invocation -> {
                 Command command = (Command) invocation.getArgument(1);
                 // intentionally making the sync command return null path to test graceful cleanup
                 if (StringUtils.equals(command.getCommand(), "sync")) {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, true);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, true, basePath);
 
                 } else {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
                 }
             }).when(terraformManager).execute(any(), any(), any());
 
@@ -525,18 +532,17 @@ class CommandManagerTests {
               however only 3 log files will be streamed + cleaned
              */
             executeCommandsAndVerify(4, 3);
-            verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
-                            Path.of("/some/path/on/disk/for/command-apply"),
-                            Path.of("/some/path/on/disk/for/command-write_HCL"),
-                            Path.of("/some/path/on/disk/for/command-write_HCL"));
-            assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+                            basePath.resolve("apply"),
+                            basePath.resolve("write_HCL"),
+                            basePath.resolve("write_HCL"));
         }
 
 
         @Test
-        void testExecutionLogCleanupWhenExitEarlyOnFailedCommand() {
+        void testExecutionLogCleanupWhenExitEarlyOnFailedCommand(@TempDir Path basePath) {
             //exit early in case of failure
             message.getCommandBundles().get(0).setExitOnFailure(true);
 
@@ -544,9 +550,9 @@ class CommandManagerTests {
                 Command command = (Command) invocation.getArgument(1);
                 // intentionally making the sync command return null path to test graceful cleanup
                 if (StringUtils.equals(command.getCommand(), "sync")) {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, false);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, false, basePath);
                 } else {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
                 }
             }).when(terraformManager).execute(any(), any(), any());
 
@@ -561,12 +567,37 @@ class CommandManagerTests {
                so we expect 3 commands to be executed and 2 log files to be streamed + cleaned
              */
             executeCommandsAndVerify(3, 2);
-            verify(commandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
-                            Path.of("/some/path/on/disk/for/command-write_HCL"),
-                            Path.of("/some/path/on/disk/for/command-write_HCL"));
-            assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+                            basePath.resolve("write_HCL"),
+                            basePath.resolve("write_HCL")
+                    );
+        }
+
+        @Test
+        void testExecutionLogCleanupWhenLogStreamingToEpFails(@TempDir Path basePath) {
+            doAnswer((Answer<Path>) invocation -> {
+                Command command = invocation.getArgument(1);
+                return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
+            }).when(terraformManager).execute(any(), any(), any());
+
+            doThrow(new IllegalArgumentException("fake")).when(mockedCommandLogStreamingProcessor).streamLogsToEP(any(), any(), any());
+            commandManager.execute(message);
+            // Wait for the command thread to complete
+            await().atMost(5, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+
+
+            verify(mockedCommandLogStreamingProcessor, times(4)).streamLogsToEP(any(), any(), any());
+
+            //we still expect cleanup to occur even though log streaming to ep fails
+            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            Assertions.assertThat(executionLogFileCaptor.getValue())
+                    .containsExactlyInAnyOrder(
+                            basePath.resolve("apply"),
+                            basePath.resolve("write_HCL"),
+                            basePath.resolve("write_HCL"),
+                            basePath.resolve("sync"));
         }
 
         private void executeCommandsAndVerify(int expectedNumberOfCommandExecutions,
@@ -578,18 +609,19 @@ class CommandManagerTests {
 
             verify(terraformManager, times(expectedNumberOfCommandExecutions)).execute(any(), any(), envArgCaptor.capture());
             verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
-            verify(commandLogStreamingProcessor, times(expectedNumberOfLogFilesStreamed)).streamLogsToEP(any(), any(), any());
+            verify(mockedCommandLogStreamingProcessor, times(expectedNumberOfLogFilesStreamed)).streamLogsToEP(any(), any(), any());
         }
 
         private Path setCommandStatusAndReturnExecutionLog(Command targetCommand,
                                                            JobStatus targetStatus,
-                                                           boolean ignoreResult) {
+                                                           boolean ignoreResult,
+                                                           Path basePath) {
 
             if (targetStatus == JobStatus.success) {
                 targetCommand.setResult(CommandResult.builder()
                         .status(JobStatus.success)
                         .result(Map.of()).build());
-                return Path.of("/some/path/on/disk/for/command-" + targetCommand.getCommand());
+                return basePath.resolve(targetCommand.getCommand());
             } else {
                 //simulating a failed command
                 targetCommand.setResult(null);
