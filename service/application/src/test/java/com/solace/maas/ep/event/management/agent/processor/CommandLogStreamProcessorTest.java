@@ -13,7 +13,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionT
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -124,20 +125,30 @@ public class CommandLogStreamProcessorTest {
         );
         // Only change_summary type logs will be sent if  command is successful
         verify(commandLogsPublisher, times(2)).sendCommandLogData(logMopCaptor.capture(), any());
-
-
     }
 
     @Test
     void testStreamLogsToEPErrorCase() throws IOException {
-        Path applyCommandLog = Path.of(
-                ResourceUtils.getFile("classpath:commandLogs" + File.separator + "applyCommandExecutionLog.log").toURI()
-        );
-
 
         CommandMessage msg = buildCommandMessageForConfigPush(
                 List.of(writeHclForImport, writeHclForConfig, syncCommand, applyCommand)
         );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () ->
+
+                realCommandLogStreamingProcessor.streamLogsToEP(
+                        commandMapper.map(msg),
+                        applyCommand,
+                        null)
+        );
+
+        Assertions.assertThat(thrown.getMessage()).isEqualTo(
+                String.format("Execution log was not found for command %s with commandCorrelationId %s", applyCommand.getCommand(), CMD_CRRLTN_ID)
+        );
+
+        Path applyCommandLog = Path.of(
+                ResourceUtils.getFile("classpath:commandLogs" + File.separator + "applyCommandExecutionLog.log").toURI()
+        );
+
 
         ArgumentCaptor<CommandLogMessage> logMopCaptor = ArgumentCaptor.forClass(CommandLogMessage.class);
         applyCommand.setResult(
@@ -168,16 +179,16 @@ public class CommandLogStreamProcessorTest {
         Files.writeString(commandLog4, "log 4");
         List<Path> allLogs = List.of(commandLog1, commandLog2, commandLog3, commandLog4);
 
-        Assertions.assertTrue(
+        Assertions.assertThat(
                 allLogs.stream().allMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        );
+        ).isTrue();
         realCommandLogStreamingProcessor.deleteExecutionLogFiles(
                 List.of(commandLog1, commandLog2, commandLog3, commandLog4)
         );
 
-        Assertions.assertTrue(
+        Assertions.assertThat(
                 allLogs.stream().noneMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        );
+        ).isTrue();
     }
 
     @Test
@@ -193,9 +204,9 @@ public class CommandLogStreamProcessorTest {
         List<Path> allLogs = List.of(commandLog1, commandLog2, commandLog3, commandLog4);
 
         // Only 2 of the log files exist
-        Assertions.assertTrue(
+        Assertions.assertThat(
                 Stream.of(commandLog1, commandLog2).allMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        );
+        ).isTrue();
         /* Although only 2 out of 4 log files exist, the 2 log files will be deleted anyway
          and the errors will be handled gracefully
          */
@@ -203,9 +214,9 @@ public class CommandLogStreamProcessorTest {
                 List.of(commandLog1, commandLog2, commandLog3, commandLog4)
         );
 
-        Assertions.assertTrue(
+        Assertions.assertThat(
                 allLogs.stream().noneMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        );
+        ).isTrue();
 
     }
 
