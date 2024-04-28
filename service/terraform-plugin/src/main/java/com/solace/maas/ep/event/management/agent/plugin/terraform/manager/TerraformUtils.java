@@ -81,16 +81,16 @@ public class TerraformUtils {
     }
 
     public static Path createCommandExecutionLogDir(Path root) {
-        Path configPath = root.resolve("executionLogs");
-        if (Files.notExists(configPath)) {
+        Path ececutionLogPath = root.resolve("executionLogs");
+        if (Files.notExists(ececutionLogPath)) {
             try {
-                Files.createDirectories(configPath);
+                Files.createDirectories(ececutionLogPath);
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
         }
 
-        return configPath;
+        return ececutionLogPath;
     }
 
     public static void writeHclToFile(Command command,
@@ -134,12 +134,16 @@ public class TerraformUtils {
     }
 
     public static String convertGenericLogMessageToTFStyleMessage(String genericMessage,
-                                                                   String logLevel,
-                                                                   ObjectMapper objectMapper) {
+                                                                  String logLevel,
+                                                                  ObjectMapper objectMapper) {
+
+        if (StringUtils.isEmpty(logLevel)) {
+            throw new UnsupportedOperationException("Unsupported log level " + logLevel);
+        }
 
         try {
             return objectMapper.writeValueAsString(Map.of(
-                    TerraformLogProcessingService.KEY_LOG_LEVEL, logLevel,
+                    TerraformLogProcessingService.KEY_LOG_LEVEL, logLevel.toLowerCase(),
                     TerraformLogProcessingService.KEY_MESSAGE, genericMessage,
                     TerraformLogProcessingService.KEY_TIMESTAMP, Instant.now().toString()
             ));
