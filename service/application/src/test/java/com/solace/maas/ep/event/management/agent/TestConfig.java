@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -156,8 +157,9 @@ public class TestConfig {
     @Bean
     @Qualifier("realCommandLogStreamingProcessor")
     public CommandLogStreamingProcessor realCommandLogStreamingProcessor(CommandLogsPublisher commandLogsPublisher,
-                                                                        EventPortalProperties eventPortalProperties) {
-        return new CommandLogStreamingProcessor(commandLogsPublisher, eventPortalProperties);
+                                                                         EventPortalProperties eventPortalProperties,
+                                                                         ObjectMapper objectMapper) {
+        return new CommandLogStreamingProcessor(commandLogsPublisher, eventPortalProperties, objectMapper);
     }
 
     @Bean
