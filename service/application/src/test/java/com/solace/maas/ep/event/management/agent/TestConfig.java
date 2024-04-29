@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -15,6 +16,8 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMess
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
+import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
+import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
 import com.solace.maas.ep.event.management.agent.testConfigs.PublisherTestConfig;
@@ -27,6 +30,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -44,6 +48,7 @@ import static org.mockito.Mockito.when;
 @TestConfiguration
 @Profile("TEST")
 @Import({PublisherTestConfig.class, MessagingServiceTestConfig.class})
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class TestConfig {
 
     @Autowired
@@ -145,11 +150,41 @@ public class TestConfig {
 
     @Bean
     @Primary
-    public CommandManager getCommandManager(TerraformManager terraformManager, CommandMapper commandMapper,
-                                            CommandPublisher commandPublisher, MessagingServiceDelegateService messagingServiceDelegateService,
-                                            EventPortalProperties eventPortalProperties) {
-        return new CommandManager(terraformManager, commandMapper, commandPublisher,
-                messagingServiceDelegateService, eventPortalProperties);
+    public CommandLogsPublisher getComaCommandLogsPublisher() {
+        return mock(CommandLogsPublisher.class);
+    }
+
+    @Bean
+    @Qualifier("realCommandLogStreamingProcessor")
+    public CommandLogStreamingProcessor realCommandLogStreamingProcessor(CommandLogsPublisher commandLogsPublisher,
+                                                                         EventPortalProperties eventPortalProperties,
+                                                                         ObjectMapper objectMapper) {
+        return new CommandLogStreamingProcessor(commandLogsPublisher, eventPortalProperties, objectMapper);
+    }
+
+    @Bean
+    @Qualifier("mockedCommandLogStreamingProcessor")
+    @Primary
+    public CommandLogStreamingProcessor mockedCommandLogStreamingProcessor() {
+        return mock(CommandLogStreamingProcessor.class);
+    }
+
+    @Bean
+    @Primary
+    public CommandManager getCommandManager(TerraformManager terraformManager,
+                                            CommandMapper commandMapper,
+                                            CommandPublisher commandPublisher,
+                                            MessagingServiceDelegateService messagingServiceDelegateService,
+                                            EventPortalProperties eventPortalProperties,
+                                            CommandLogStreamingProcessor commandLogStreamingProcessor) {
+        return new CommandManager(
+                terraformManager,
+                commandMapper,
+                commandPublisher,
+                messagingServiceDelegateService,
+                eventPortalProperties,
+                commandLogStreamingProcessor
+        );
     }
 
     @Bean
