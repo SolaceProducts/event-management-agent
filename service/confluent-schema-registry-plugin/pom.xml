@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
     <artifactId>confluent-schema-registry-plugin</artifactId>
@@ -13,7 +14,7 @@
         <spring-boot-starter-test.version>3.2.5</spring-boot-starter-test.version>
         <httpclient.version>4.5.14</httpclient.version>
         <mockwebserver.version>4.9.0</mockwebserver.version>
-        <jupiter.version>5.3.1</jupiter.version>
+        <jupiter.version>5.10.2</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
