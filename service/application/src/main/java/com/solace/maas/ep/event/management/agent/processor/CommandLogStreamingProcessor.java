@@ -12,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.Terraf
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 
 @Component
 @Slf4j
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class CommandLogStreamingProcessor {
 
     public static final String ANY = "*";
