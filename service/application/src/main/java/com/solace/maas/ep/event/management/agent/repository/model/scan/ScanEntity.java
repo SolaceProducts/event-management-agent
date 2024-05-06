@@ -53,8 +53,7 @@ public class ScanEntity implements Serializable {
     private List<ScanTypeEntity> scanTypes;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @CollectionTable(name = "SCAN_ROUTE", joinColumns = @JoinColumn(name = "ROUTE_ID", referencedColumnName = "ROUTE_ID"))
-    @JoinColumn(name = "ROUTE_ID", referencedColumnName = "ROUTE_ID")
+    @CollectionTable(name = "SCAN_ROUTE", joinColumns = @JoinColumn(name = "ROUTE_ID"))
     private List<RouteEntity> route;
 
     @CreationTimestamp
