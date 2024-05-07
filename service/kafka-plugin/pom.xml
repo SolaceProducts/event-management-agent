@@ -11,12 +11,12 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-kafka.version>3.0.10</spring-kafka.version>
+        <spring-kafka.version>3.1.4</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
-        <spring-boot-version>3.2.5</spring-boot-version>
-        <commons-collections4.vresion>4.4</commons-collections4.vresion>
+        <spring-boot.version>3.2.5</spring-boot.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
         <jupiter.version>5.10.2</jupiter.version>
-        <camel.version>4.2.0</camel.version>
+        <camel.version>4.5.0</camel.version>
         <aws-msk-iam-auth.version>2.0.3</aws-msk-iam-auth.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-version}</version>
+            <version>${spring-boot.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>${commons-collections4.vresion}</version>
+            <version>${commons-collections4.version}</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas</groupId>
@@ -128,6 +128,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.solace.maas.ep.event.management.agent.plugin.kafka.KafkaApplication</mainClass>
                 </configuration>
