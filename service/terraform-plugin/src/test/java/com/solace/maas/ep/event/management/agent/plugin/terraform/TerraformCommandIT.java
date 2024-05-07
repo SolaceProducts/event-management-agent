@@ -11,6 +11,8 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.client.Terrafo
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,7 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -40,6 +43,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -91,6 +95,43 @@ public class TerraformCommandIT {
         // Validate that the file was written
         String content = Files.readString(Path.of(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/config.tf"));
         assertEquals(content, newQueueTf);
+    }
+
+    @Test
+    void testExecutionLogsAreGenerated() throws IOException {
+        List<String> newQueueTfLogs = getResourceAsStringArray(resourceLoader.getResource("classpath:tfLogs/tfAddHappyPath.txt"));
+        Path executionLogPath = Paths.get(terraformProperties.getWorkingDirectoryRoot() + "/app123-ms1234/executionLogs/");
+        FileUtils.deleteDirectory(executionLogPath.toFile());
+        String newQueueTf = getResourceAsString(resourceLoader.getResource("classpath:tfFiles/newQueue.tf"));
+
+        Command writeHclCommand = generateCommand("write_HCL", newQueueTf);
+        Path writeHclExecutionLogFilePath = terraformManager.execute(generateCommandRequest(writeHclCommand), writeHclCommand, Map.of());
+        Assertions.assertThat(writeHclExecutionLogFilePath.toFile().getName()).startsWith("write_HCL");
+
+
+        Command applyCommand = generateCommand("apply", newQueueTf);
+
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+        when(terraformClient.apply(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> true));
+        // Setup the output
+        setupLogMock(newQueueTfLogs);
+
+        Path applyExecutionLogFilePath = terraformManager.execute(generateCommandRequest(applyCommand), applyCommand, Map.of());
+        Assertions.assertThat(applyExecutionLogFilePath.toFile().getName()).startsWith("apply");
+
+        Command syncCommand = generateCommand("sync", newQueueTf, true);
+        // Setup the output
+        setupLogMock(newQueueTfLogs);
+        when(terraformClient.plan(Map.of())).thenReturn(CompletableFuture.supplyAsync(() -> false));
+
+        Path syncExecutionLogFilePath = terraformManager.execute(generateCommandRequest(syncCommand), syncCommand, Map.of());
+        Assertions.assertThat(syncExecutionLogFilePath.toFile().getName()).startsWith("sync");
+
+        Assertions.assertThat(Files.readAllLines(writeHclExecutionLogFilePath)).hasSize(1);
+        Assertions.assertThat(Files.readAllLines(applyExecutionLogFilePath)).hasSizeGreaterThan(1);
+        Assertions.assertThat(Files.readAllLines(syncExecutionLogFilePath)).hasSize(1);
+
+
     }
 
     @Test

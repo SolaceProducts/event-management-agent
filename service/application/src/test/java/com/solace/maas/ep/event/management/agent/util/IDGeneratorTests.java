@@ -68,4 +68,76 @@ public class IDGeneratorTests {
 
         assertThatNoException();
     }
+
+    /**
+     * Test the uniqueness of the generated random unique id with originId set to null.
+     * The test is run multiple times to ensure the uniqueness of the generated id.
+     */
+    @SneakyThrows
+    @Test
+    public void testUniquenessOfGeneratedRandomUniqueIdOfDistinctIDGeneratorWithoutOriginId() {
+        IDGeneratorProperties props = new IDGeneratorProperties();
+        props.setOriginId(null);
+        IDGenerator idGenerator = new IDGenerator(props);
+        idGenerator.init();
+        String id1 = idGenerator.generateRandomUniqueId();
+        String id2 = idGenerator.generateRandomUniqueId();
+        assertThat(id1).isNotEqualTo(id2);
+    }
+
+    /**
+     * Test the uniqueness of the generated random unique id with originId set to a specific value.
+     * The test is run multiple times to ensure the uniqueness of the generated id.
+     */
+    @SneakyThrows
+    @Test
+    public void testUniquenessOfGeneratedRandomUniqueIdOfDistinctIDGeneratorWithOriginId() {
+        IDGeneratorProperties props = new IDGeneratorProperties();
+        props.setOriginId("abc123");
+        IDGenerator idGenerator = new IDGenerator(props);
+        idGenerator.init();
+        String id1 = idGenerator.generateRandomUniqueId();
+        String id2 = idGenerator.generateRandomUniqueId();
+        assertThat(id1).isNotEqualTo(id2);
+    }
+
+    /**
+     * Test the uniqueness of the generated random unique id with originId set to null.
+     * The test IDGenerator is created twice to ensure uniqueness between different instances.
+     */
+    @SneakyThrows
+    @Test
+    public void testUniquenessOfGeneratedRandomUniqueIdOfNewIdGeneratorsWithoutOriginId() {
+        IDGeneratorProperties props = new IDGeneratorProperties();
+        props.setOriginId(null);
+
+        IDGenerator idGenerator = new IDGenerator(props);
+        idGenerator.init();
+        String id1 = idGenerator.generateRandomUniqueId();
+
+        idGenerator = new IDGenerator(props);
+        idGenerator.init();
+        String id2 = idGenerator.generateRandomUniqueId();
+        assertThat(id1).isNotEqualTo(id2);
+    }
+
+    /**
+     * Test the uniqueness of the generated random unique id with originId set to a specific value.
+     * The test IDGenerator is created twice to ensure uniqueness between different instances.
+     */
+    @SneakyThrows
+    @Test
+    public void testUniquenessOfGeneratedRandomUniqueIdOfNewIdGeneratorsWithOriginId() {
+        IDGeneratorProperties props = new IDGeneratorProperties();
+        props.setOriginId("abc123");
+
+        IDGenerator idGenerator = new IDGenerator(props);
+        idGenerator.init();
+        String id1 = idGenerator.generateRandomUniqueId();
+
+        idGenerator = new IDGenerator(props);
+        idGenerator.init();
+        String id2 = idGenerator.generateRandomUniqueId();
+        assertThat(id1).isNotEqualTo(id2);
+    }
 }
