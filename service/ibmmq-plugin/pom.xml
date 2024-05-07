@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.ibmmq</groupId>
     <artifactId>ibmmq-plugin</artifactId>
-    <version>1.6.3-SNAPSHOT</version>
+    <version>1.6.6-SNAPSHOT</version>
     <name>Solace Event Management Agent - IBM MQ Plugin</name>
     <description>Solace Event Management Agent - IBM MQ Plugin</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <solace.maas.ema.version>1.6.3-SNAPSHOT</solace.maas.ema.version>
-        <spring.boot.version>3.1.8</spring.boot.version>
+        <solace.maas.ema.version>1.6.6-SNAPSHOT</solace.maas.ema.version>
+        <spring.boot.version>3.1.11</spring.boot.version>
         <!--
                 <spring.cloud.openfeign.version>4.0.6</spring.cloud.openfeign.version>
                 <openfeign.jackson.version>13.0</openfeign.jackson.version>
