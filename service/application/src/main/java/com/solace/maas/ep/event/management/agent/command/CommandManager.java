@@ -12,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.plugin.service.MessagingService
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +45,14 @@ public class CommandManager {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
     private final EventPortalProperties eventPortalProperties;
     private final ThreadPoolTaskExecutor configPushPool;
+    private final CommandLogStreamingProcessor commandLogStreamingProcessor;
 
-    public CommandManager(TerraformManager terraformManager, CommandMapper commandMapper,
-                          CommandPublisher commandPublisher, MessagingServiceDelegateService messagingServiceDelegateService,
-                          EventPortalProperties eventPortalProperties) {
+    public CommandManager(TerraformManager terraformManager,
+                          CommandMapper commandMapper,
+                          CommandPublisher commandPublisher,
+                          MessagingServiceDelegateService messagingServiceDelegateService,
+                          EventPortalProperties eventPortalProperties,
+                          CommandLogStreamingProcessor commandLogStreamingProcessor) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
@@ -58,6 +65,7 @@ public class CommandManager {
         configPushPool.setThreadNamePrefix("config-push-pool-");
         configPushPool.setTaskDecorator(new MdcTaskDecorator());
         configPushPool.initialize();
+        this.commandLogStreamingProcessor = commandLogStreamingProcessor;
     }
 
     public void execute(CommandMessage request) {
@@ -72,6 +80,7 @@ public class CommandManager {
                 });
     }
 
+    @SuppressWarnings("PMD")
     public void configPush(CommandRequest request) {
         Map<String, String> envVars;
         try {
@@ -83,38 +92,76 @@ public class CommandManager {
             finalizeAndSendResponse(request);
             return;
         }
+        List<Path> executionLogFilesToClean = new ArrayList<>();
 
-        for (CommandBundle bundle : request.getCommandBundles()) {
-            // For now everything is run serially
-            for (Command command : bundle.getCommands()) {
-                try {
-                    switch (command.getCommandType()) {
-                        case terraform:
-                            terraformManager.execute(request, command, envVars);
-                            break;
-                        default:
-                            command.setResult(CommandResult.builder()
-                                    .status(JobStatus.error)
-                                    .logs(List.of(
-                                            Map.of("message", "unknown command type " + command.getCommandType(),
-                                                    "errorType", "UnknownCommandType",
-                                                    "level", LOG_LEVEL_ERROR,
-                                                    "timestamp", OffsetDateTime.now())))
-                                    .build());
-                            break;
+        try {
+            for (CommandBundle bundle : request.getCommandBundles()) {
+                // For now everything is run serially
+                for (Command command : bundle.getCommands()) {
+                    Path executionLog = executeCommand(request, command, envVars);
+                    if (executionLog != null) {
+                        streamCommandExecutionLogToEpCore(request, command, executionLog);
+                        executionLogFilesToClean.add(executionLog);
                     }
-                } catch (Exception e) {
-                    log.error("Error executing command", e);
-                    setCommandError(command, e);
-                }
-                if (exitEarlyOnFailedCommand(bundle, command)) {
-                    break;
+                    if (exitEarlyOnFailedCommand(bundle, command)) {
+                        break;
+                    }
+
                 }
             }
+            finalizeAndSendResponse(request);
+        } finally {
+            // Clean up activity : delete all the execution log files
+            cleanup(executionLogFilesToClean);
         }
 
-        finalizeAndSendResponse(request);
     }
+
+    private Path executeCommand(CommandRequest request,
+                                Command command,
+                                Map<String, String> envVars) {
+        Path executionLog = null;
+        try {
+            switch (command.getCommandType()) {
+                case terraform:
+                    executionLog = terraformManager.execute(request, command, envVars);
+                    break;
+                default:
+                    command.setResult(CommandResult.builder()
+                            .status(JobStatus.error)
+                            .logs(List.of(
+                                    Map.of("message", "unknown command type " + command.getCommandType(),
+                                            "errorType", "UnknownCommandType",
+                                            "level", LOG_LEVEL_ERROR,
+                                            "timestamp", OffsetDateTime.now())))
+                            .build());
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("Error executing command", e);
+            setCommandError(command, e);
+        }
+
+        return executionLog;
+    }
+
+    private void cleanup(List<Path> listOfExecutionLogFiles) {
+        try {
+            commandLogStreamingProcessor.deleteExecutionLogFiles(listOfExecutionLogFiles);
+        } catch (Exception e) {
+            log.error("Error while deleting execution log.", e);
+        }
+    }
+
+    private void streamCommandExecutionLogToEpCore(CommandRequest request, Command command, Path executionLog) {
+        try {
+            commandLogStreamingProcessor.streamLogsToEP(request, command, executionLog);
+        } catch (Exception e) {
+            log.error("Error sending logs to ep-core for command with commandCorrelationId",
+                    request.getCommandCorrelationId(), e);
+        }
+    }
+
 
     private static boolean exitEarlyOnFailedCommand(CommandBundle bundle, Command command) {
         return Boolean.TRUE.equals(bundle.getExitOnFailure())
@@ -140,6 +187,7 @@ public class CommandManager {
         commandPublisher.sendCommandResponse(response, topicVars);
     }
 
+
     private Map<String, String> setBrokerSpecificEnvVars(String messagingServiceId) {
         Map<String, String> envVars = new HashMap<>();
         Object client = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
@@ -152,4 +200,6 @@ public class CommandManager {
         }
         return envVars;
     }
+
+
 }

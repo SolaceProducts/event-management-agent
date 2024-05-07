@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.util;
 
 import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
-import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -61,12 +61,16 @@ public class IDGenerator {
 
     @PostConstruct
     public void init() {
-        byte[] instanceSeed = "1".getBytes(StandardCharsets.UTF_8);
-        if (idGeneratorProperties.getOriginId() != null) {
+        if (idGeneratorProperties.getOriginId() == null) {
+            // Fallback to default seed which creates a unique seed for each instance
+            random = new SecureRandom();
+        } else {
             String instanceSeedString = idGeneratorProperties.getOriginId() + (System.nanoTime() & 65_535);
-            instanceSeed = instanceSeedString.getBytes(StandardCharsets.UTF_8);
+            byte[] instanceSeed = instanceSeedString.getBytes(StandardCharsets.UTF_8);
+            random = new SecureRandom(instanceSeed);
+
         }
 
-        random = new SecureRandom(instanceSeed);
+
     }
 }
