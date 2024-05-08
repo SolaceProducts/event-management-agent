@@ -42,7 +42,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @TestConfiguration
@@ -80,7 +79,7 @@ public class TestConfig {
     @Bean
     @Primary
     public VmrProcessor getVmrProcessor() {
-        VmrProcessor processor = spy(mock(VmrProcessor.class));
+        VmrProcessor processor = mock(VmrProcessor.class);
         Topic topic = mock(Topic.class);
         when(topic.getName()).thenReturn("test");
 

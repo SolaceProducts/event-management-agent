@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot-starter-test.version>3.2.5</spring-boot-starter-test.version>
+        <spring-boot.version>3.2.5</spring-boot.version>
         <httpclient.version>4.5.14</httpclient.version>
         <mockwebserver.version>4.9.0</mockwebserver.version>
         <jupiter.version>5.10.2</jupiter.version>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-starter-test.version}</version>
+            <version>${spring-boot.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -67,6 +67,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>
                         com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.ConfluentSchemaRegistryApplication

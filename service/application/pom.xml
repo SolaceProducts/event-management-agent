@@ -14,11 +14,13 @@
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
+        <spring-boot.version>3.2.5</spring-boot.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
         <jackson.version>2.16.1</jackson.version>
+        <dockerfile-maven.version>1.4.13</dockerfile-maven.version>
     </properties>
     <repositories>
         <repository>
@@ -52,6 +54,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <version>${spring-boot.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
@@ -84,6 +87,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -330,19 +334,13 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <layout>ZIP</layout>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
             <!-- Installer Package -->
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>${dockerfile-maven.version}</version>
                 <executions>
                     <execution>
                         <id>aws-githash</id>
@@ -378,6 +376,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <layout>ZIP</layout>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

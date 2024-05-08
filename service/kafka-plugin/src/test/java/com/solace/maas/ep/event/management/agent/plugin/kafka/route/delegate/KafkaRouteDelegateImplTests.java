@@ -10,8 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = KafkaTestConfig.class)
@@ -35,8 +34,7 @@ class KafkaRouteDelegateImplTests {
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_TOPIC_LISTING.name(),
                 "service1");
 
-        assertThatNoException();
-        assertThat(!routeBundles.isEmpty());
+        assertThat(routeBundles).isNotEmpty();
     }
 
     @Test
@@ -45,8 +43,7 @@ class KafkaRouteDelegateImplTests {
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_TOPIC_CONFIGURATION.name(),
                         "service1");
 
-        assertThatNoException();
-        assertThat(!routeBundles.isEmpty());
+        assertThat(routeBundles).isNotEmpty();
     }
 
     @Test
@@ -55,8 +52,7 @@ class KafkaRouteDelegateImplTests {
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_TOPIC_CONFIGURATION_FULL.name(),
                         "service1");
 
-        assertThatNoException();
-        assertThat(!routeBundles.isEmpty());
+        assertThat(routeBundles).isNotEmpty();
     }
 
     @Test
@@ -65,8 +61,7 @@ class KafkaRouteDelegateImplTests {
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_CONSUMER_GROUPS.name(),
                         "service1");
 
-        assertThatNoException();
-        assertThat(!routeBundles.isEmpty());
+        assertThat(routeBundles).isNotEmpty();
     }
 
     @Test
@@ -76,8 +71,7 @@ class KafkaRouteDelegateImplTests {
                         KafkaScanType.KAFKA_CONSUMER_GROUPS_CONFIGURATION.name(),
                         "service1");
 
-        assertThatNoException();
-        assertThat(!routeBundles.isEmpty());
+        assertThat(routeBundles).isNotEmpty();
     }
 
     @Test
@@ -86,7 +80,6 @@ class KafkaRouteDelegateImplTests {
                 kafkaRouteDelegate.generateRouteList(destinations, List.of(), KafkaScanType.KAFKA_ALL.name(),
                         "service1");
 
-        assertThatNoException();
-        assertThat(!routeBundles.isEmpty());
+        assertThat(routeBundles).isNotEmpty();
     }
 }
