@@ -336,22 +336,6 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
-            <!-- Installer Package -->
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>${dockerfile-maven.version}</version>
-                <executions>
-                    <execution>
-                        <id>aws-githash</id>
-                        <phase>deploy</phase>
-                    </execution>
-                    <execution>
-                        <id>aws-version</id>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
