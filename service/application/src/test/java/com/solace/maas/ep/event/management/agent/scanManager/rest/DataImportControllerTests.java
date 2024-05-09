@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ImportRequestBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ZipRequestBO;
 import com.solace.maas.ep.event.management.agent.service.ImportService;
+import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.SneakyThrows;
 import org.junit.Rule;
@@ -23,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -56,8 +56,6 @@ public class DataImportControllerTests {
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(reply.getBody()).contains("Manual import started.");
-
-        assertThatNoException();
     }
 
     @SneakyThrows
@@ -77,8 +75,6 @@ public class DataImportControllerTests {
                 controller.zip("scanId");
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        assertThatNoException();
     }
 
     @SneakyThrows
@@ -91,13 +87,13 @@ public class DataImportControllerTests {
                 controller.zip("scanId");
 
         assertThat(reply.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-
-        assertThatNoException();
     }
 
     @SneakyThrows
     @Test
     public void testDataImportControllerException() {
+        Span testSpan = tracer.spanBuilder().start();
+        tracer.withSpan(testSpan);
         DataImportController controller = new DataImportControllerImpl(importService, tracer);
 
         MultipartFile multipartFile =

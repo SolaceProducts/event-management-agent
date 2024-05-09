@@ -18,7 +18,7 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.MessageReceiver;
 import lombok.extern.slf4j.Slf4j;
-import org.jboss.logging.MDC;
+import org.slf4j.MDC;
 
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +86,7 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
         List<String> scanClassNames = List.of("ScanCommandMessage", "ScanDataImportMessage");
         List<String> commandClassNames = List.of("CommandMessage");
 
-        Map<String, Object> map = objectMapper.readValue(messageAsString, Map.class);
+        Map<String, String> map = objectMapper.readValue(messageAsString, Map.class);
 
         MDC.clear();
         MDC.put(RouteConstants.TRACE_ID, map.get("traceId"));
