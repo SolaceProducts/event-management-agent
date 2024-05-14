@@ -29,4 +29,8 @@ public class HeartbeatMessageHandler extends SolaceMessageHandler<HeartbeatMessa
     public void receiveMessage(String destinationName, HeartbeatMessage message) {
         log.trace("receiveMessage {}", message);
     }
+
+    public Class<HeartbeatMessage> supportedMessageClass(){
+        return HeartbeatMessage.class;
+    }
 }

@@ -66,4 +66,9 @@ public class ScanCommandMessageHandler extends SolaceMessageHandler<ScanCommandM
 
         scanManager.scan(scanRequestBO);
     }
+
+    @Override
+    public Class<ScanCommandMessage> supportedMessageClass() {
+        return ScanCommandMessage.class;
+    }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.constants.Command;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.EnumDeserializer;
@@ -76,7 +77,9 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
             message = (T) objectMapper.readValue(messageAsString, messageClass);
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             log.trace("onMessage: {} {}", inboundMessage.getDestinationName(), message);
-            receiveMessage(inboundMessage.getDestinationName(), message);
+            if (message.getClass() == supportedMessageClass()) {
+                receiveMessage(inboundMessage.getDestinationName(), message);
+            }
         } catch (ClassNotFoundException | JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -103,5 +106,8 @@ public abstract class SolaceMessageHandler<T extends MOPMessage> implements Mess
         }
     }
 
+
     public abstract void receiveMessage(String destinationName, T message);
+
+    public abstract Class<T> supportedMessageClass();
 }

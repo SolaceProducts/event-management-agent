@@ -22,4 +22,9 @@ public class DiscoveryMessageHandler extends SolaceMessageHandler<MOPMessage> {
     public void receiveMessage(String destinationName, MOPMessage message) {
         log.debug("receiveMessage {}\n{}", destinationName, message);
     }
+
+    @Override
+    public Class<MOPMessage> supportedMessageClass() {
+        return MOPMessage.class;
+    }
 }
