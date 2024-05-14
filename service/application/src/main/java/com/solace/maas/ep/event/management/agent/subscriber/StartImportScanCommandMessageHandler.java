@@ -81,4 +81,9 @@ public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<S
             exchange.getIn().setBody(metaInfFileDetailsBOList);
         });
     }
+
+    @Override
+    public Class supportedMessageClass() {
+        return ScanDataImportMessage.class;
+    }
 }

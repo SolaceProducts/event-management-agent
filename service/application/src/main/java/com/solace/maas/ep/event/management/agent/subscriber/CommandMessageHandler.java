@@ -26,4 +26,9 @@ public class CommandMessageHandler extends SolaceMessageHandler<CommandMessage> 
         log.debug("receiveMessage {}\n{}", destinationName, message);
         commandManager.execute(message);
     }
+
+    @Override
+    public Class<CommandMessage> supportedMessageClass() {
+        return CommandMessage.class;
+    }
 }
