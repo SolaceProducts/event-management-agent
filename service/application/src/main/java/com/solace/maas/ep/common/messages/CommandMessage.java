@@ -2,7 +2,6 @@ package com.solace.maas.ep.common.messages;
 
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
@@ -11,7 +10,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class CommandMessage extends MOPMessage {
+public class CommandMessage extends EmaRequestMessage {
 
     private String commandCorrelationId;
     private String context;

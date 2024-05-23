@@ -47,16 +47,21 @@ public class ResourceConfig implements ApplicationRunner {
                     .map(configToEventConverter::convert)
                     .collect(Collectors.toUnmodifiableList());
 
-            messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
-                    .forEach(messagingServiceEntity ->
-                            log.info("Created [{}] resource with id: [{}] and name: [{}].",
-                                    messagingServiceEntity.getType(),
-                                    messagingServiceEntity.getId(), messagingServiceEntity.getName()));
-
-            messagingServiceDelegateService.addMessagingServicesRelations(resources);
+            addMessagingServiceEventsAndRelations(messagingServiceEvents);
+            log.info("***************** resource(s) created.");
 
         } else {
             log.info("No resource(s) created.");
         }
+    }
+
+    private void addMessagingServiceEventsAndRelations(List<MessagingServiceEvent> messagingServiceEvents) {
+        messagingServiceDelegateService.addMessagingServices(messagingServiceEvents)
+                .forEach(messagingServiceEntity ->
+                        log.info("Created [{}] resource with id: [{}] and name: [{}].",
+                                messagingServiceEntity.getType(),
+                                messagingServiceEntity.getId(), messagingServiceEntity.getName()));
+
+        messagingServiceDelegateService.addMessagingServicesRelations(resources);
     }
 }

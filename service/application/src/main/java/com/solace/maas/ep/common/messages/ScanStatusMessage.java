@@ -1,6 +1,5 @@
 package com.solace.maas.ep.common.messages;
 
-import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
@@ -11,7 +10,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ScanStatusMessage extends MOPMessage {
+public class ScanStatusMessage extends EmaRequestMessage {
     // Status of the overall scan.
 
     String orgId;

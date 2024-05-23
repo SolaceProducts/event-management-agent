@@ -2,7 +2,6 @@ package com.solace.maas.ep.common.messages;
 
 import com.solace.maas.ep.common.model.ScanDestination;
 import com.solace.maas.ep.common.model.ScanType;
-import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
@@ -11,7 +10,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ScanCommandMessage extends MOPMessage {
+public class ScanCommandMessage extends EmaRequestMessage {
 
     private String messagingServiceId;
     private String scanId;
