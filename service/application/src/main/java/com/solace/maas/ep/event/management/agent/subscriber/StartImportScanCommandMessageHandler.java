@@ -11,6 +11,7 @@ import com.solace.maas.ep.event.management.agent.service.ManualImportFilesServic
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +20,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
-public class StartImportScanCommandMessageHandler extends SolaceMessageHandler<ScanDataImportMessage> {
+@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == false")
+public class StartImportScanCommandMessageHandler extends SolaceDirectMessageHandler<ScanDataImportMessage> {
 
     private final ProducerTemplate producerTemplate;
     private final ManualImportFilesService manualImportFilesService;

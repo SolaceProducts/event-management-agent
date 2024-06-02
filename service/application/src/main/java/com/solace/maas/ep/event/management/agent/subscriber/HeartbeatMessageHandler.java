@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnExpression("${eventPortal.gateway.messaging.enableHeartbeats} " +
         "and ${eventPortal.gateway.messaging.testHeartbeats}")
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
-public class HeartbeatMessageHandler extends SolaceMessageHandler<HeartbeatMessage> {
+public class HeartbeatMessageHandler extends SolaceDirectMessageHandler<HeartbeatMessage> {
 
     public HeartbeatMessageHandler(
             SolaceConfiguration solaceConfiguration,

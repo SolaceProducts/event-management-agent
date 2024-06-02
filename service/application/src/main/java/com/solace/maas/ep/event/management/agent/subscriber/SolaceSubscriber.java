@@ -18,7 +18,7 @@ public class SolaceSubscriber {
         this.messagingService = messagingService;
     }
 
-    public void registerMessageHandler(SolaceMessageHandler solaceMessageHandler) {
+    public void registerMessageHandler(SolaceDirectMessageHandler solaceMessageHandler) {
         DirectMessageReceiver directMessageReceiver = messagingService
                 .createDirectMessageReceiverBuilder()
                 .withSubscriptions(TopicSubscription.of(solaceMessageHandler.getTopicString()))
