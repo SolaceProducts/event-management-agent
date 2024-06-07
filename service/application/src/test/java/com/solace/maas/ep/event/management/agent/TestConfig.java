@@ -20,7 +20,6 @@ import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
-import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
 import com.solace.maas.ep.event.management.agent.testConfigs.PublisherTestConfig;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
