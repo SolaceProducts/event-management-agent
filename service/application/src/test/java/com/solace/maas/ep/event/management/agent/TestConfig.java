@@ -246,10 +246,4 @@ public class TestConfig {
 
         return kafkaClientConfig;
     }
-
-    @Bean
-    @Primary
-    public ScanManager scanManager() {
-        return mock(ScanManager.class);
-    }
 }

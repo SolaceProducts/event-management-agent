@@ -10,6 +10,8 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBun
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
+import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
+import com.solace.maas.ep.event.management.agent.service.ScanService;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.CommandMessageProcessor;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.ScanCommandMessageProcessor;
 import com.solace.messaging.MessagingService;
@@ -17,8 +19,10 @@ import com.solace.messaging.receiver.InboundMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -44,6 +48,9 @@ import static org.mockito.Mockito.when;
 })
 @Slf4j
 public class PersistentMessageHandlerTests {
+
+    @MockBean
+    private ScanManager scanManager;
 
     @Autowired
     private MessagingService messagingService;
