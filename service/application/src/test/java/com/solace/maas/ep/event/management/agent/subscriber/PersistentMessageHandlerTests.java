@@ -139,7 +139,8 @@ public class PersistentMessageHandlerTests {
 
         Exception e = assertThrows(IllegalArgumentException.class, () -> solacePersistentMessageHandler.onMessage(inboundMessage));
 
-        assertThat(e.getMessage()).isEqualTo("java.lang.UnsupportedOperationException: Could not find message processor for message of class " + ScanDataImportMessage.class.getCanonicalName());
+        assertThat(e.getMessage()).isEqualTo("java.lang.UnsupportedOperationException: Could not find message processor for message of class "
+                + ScanDataImportMessage.class.getCanonicalName());
 
         // message will be acked
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
