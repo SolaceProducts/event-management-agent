@@ -23,7 +23,6 @@ import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
 import com.solace.maas.ep.event.management.agent.testConfigs.PublisherTestConfig;
-import com.solace.maas.ep.event.management.agent.testConfigs.SubscriberTestConfig;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
@@ -49,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 @TestConfiguration
 @Profile("TEST")
-@Import({PublisherTestConfig.class, MessagingServiceTestConfig.class, SubscriberTestConfig.class})
+@Import({PublisherTestConfig.class, MessagingServiceTestConfig.class})
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class TestConfig {
 
