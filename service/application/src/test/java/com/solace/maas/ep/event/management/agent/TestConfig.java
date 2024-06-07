@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
+import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
@@ -19,8 +20,10 @@ import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
+import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.testConfigs.MessagingServiceTestConfig;
 import com.solace.maas.ep.event.management.agent.testConfigs.PublisherTestConfig;
+import com.solace.maas.ep.event.management.agent.testConfigs.SubscriberTestConfig;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
@@ -46,7 +49,7 @@ import static org.mockito.Mockito.when;
 
 @TestConfiguration
 @Profile("TEST")
-@Import({PublisherTestConfig.class, MessagingServiceTestConfig.class})
+@Import({PublisherTestConfig.class, MessagingServiceTestConfig.class, SubscriberTestConfig.class})
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class TestConfig {
 
@@ -55,6 +58,13 @@ public class TestConfig {
 
     @Autowired
     private CamelContext camelContext;
+
+    @Bean
+    @Primary
+    public SolaceConfiguration solaceConfiguration() {
+        return mock(SolaceConfiguration.class);
+    }
+
 
     @Bean
     @Primary
@@ -236,5 +246,11 @@ public class TestConfig {
         when(kafkaClientReconnectionConfigBackoffMax.getUnit()).thenReturn(TimeUnit.MILLISECONDS);
 
         return kafkaClientConfig;
+    }
+
+    @Bean
+    @Primary
+    public ScanManager scanManager() {
+        return mock(ScanManager.class);
     }
 }

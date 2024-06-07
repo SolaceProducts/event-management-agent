@@ -40,18 +40,19 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         messageProcessorsByClassType = messageProcessorList.stream()
                 .collect(Collectors.toMap(MessageProcessor::supportedClass, Function.identity()));
         Queue queue = determineQueue();
-        persistentMessageReceiver = getPersistentMessageReceiver(queue);
+        persistentMessageReceiver = buildPersistentMessageReceiver(queue);
         persistentMessageReceiver.receiveAsync(this);
-        log.debug("Bound to queue {}", queue.getName());
+        log.info("Binding to queue with persistent message handler");
     }
 
 
     @Override
     public void onMessage(InboundMessage inboundMessage) {
-        String mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
-        String messageAsString = inboundMessage.getPayloadAsString();
+        String mopMessageSubclass = "";
 
         try {
+            mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
+            String messageAsString = inboundMessage.getPayloadAsString();
             Class messageClass = cachedJSONDecoders.get(mopMessageSubclass);
             if (messageClass == null) {
                 messageClass = Class.forName(mopMessageSubclass);
@@ -59,19 +60,25 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
             }
             MessageProcessor processor = messageProcessorsByClassType.get(messageClass);
             if (processor == null) {
-                throw new IllegalArgumentException("Could not find message processor for message of class " + messageClass);
+                throw new UnsupportedOperationException("Could not find message processor for message of class " + messageClass.getCanonicalName());
             }
             setupMDC(messageAsString, messageClass.getSimpleName());
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             processor.processMessage(processor.castToMessageClass(toMessage(messageAsString, messageClass)));
-            persistentMessageReceiver.ack(inboundMessage);
+
         } catch (Exception e) {
+            log.error("Error while processing inbound message from queue for mopMessageSubclass: {}", mopMessageSubclass);
             throw new IllegalArgumentException(e);
+        } finally {
+            persistentMessageReceiver.ack(inboundMessage);
         }
     }
 
+    public PersistentMessageReceiver getPersistentMessageReceiver() {
+        return this.persistentMessageReceiver;
+    }
 
-    private PersistentMessageReceiver getPersistentMessageReceiver(Queue queue) {
+    private PersistentMessageReceiver buildPersistentMessageReceiver(Queue queue) {
         return messagingService
                 .createPersistentMessageReceiverBuilder()
                 .build(queue)
@@ -79,13 +86,12 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     }
 
     private Queue determineQueue() {
-        if (StringUtils.isNotEmpty(eventPortalProperties.getIncomingRequestQueueName())) {
-            return Queue.durableNonExclusiveQueue(eventPortalProperties.getIncomingRequestQueueName());
-        } else {
-            return Queue.durableNonExclusiveQueue(
-                    "ep_core_ema_requests_" + eventPortalProperties.getRuntimeAgentId()
-            );
+        if (StringUtils.isEmpty(eventPortalProperties.getIncomingRequestQueueName())) {
+            throw new IllegalArgumentException(
+                    "Cloud managed event management agent requires a non empty value for 'incomingRequestQueueName'. " +
+                            "Please check the application.yml file");
         }
+        return Queue.durableNonExclusiveQueue(eventPortalProperties.getIncomingRequestQueueName());
     }
 
 }

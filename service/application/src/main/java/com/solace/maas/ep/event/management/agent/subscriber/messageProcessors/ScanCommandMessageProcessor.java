@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommandMessage> {
 
     private static final String DEFAULT_DESTINATION = "FILE_WRITER";
