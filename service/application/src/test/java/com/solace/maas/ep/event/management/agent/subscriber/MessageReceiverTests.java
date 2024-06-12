@@ -7,10 +7,10 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportDetailsEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.manualimport.ManualImportFilesEntity;
-import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.mapper.ScanRequestMapper;
 import com.solace.maas.ep.event.management.agent.service.ManualImportDetailsService;
 import com.solace.maas.ep.event.management.agent.service.ManualImportFilesService;
+import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.ScanCommandMessageProcessor;
 import com.solace.messaging.receiver.InboundMessage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class MessageReceiverTests {
     SolaceConfiguration solaceConfiguration;
 
     @Mock
-    ScanManager scanManager;
+    ScanCommandMessageProcessor scanCommandMessageProcessor;
 
     @Mock
     SolaceSubscriber solaceSubscriber;
@@ -89,7 +89,7 @@ public class MessageReceiverTests {
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                solaceConfiguration, solaceSubscriber, scanManager);
+                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
 
         String topic = scanCommandMessageHandler.getTopicString();
         log.info("topic: {}", topic);
@@ -106,7 +106,7 @@ public class MessageReceiverTests {
         assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
             ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                    solaceConfiguration, solaceSubscriber, scanManager);
+                    solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
             scanCommandMessageHandler.onMessage(inboundMessage);
         });
     }
@@ -115,7 +115,7 @@ public class MessageReceiverTests {
     @SneakyThrows
     public void testScanCommandMessage() {
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                solaceConfiguration, solaceSubscriber, scanManager);
+                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
 
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",

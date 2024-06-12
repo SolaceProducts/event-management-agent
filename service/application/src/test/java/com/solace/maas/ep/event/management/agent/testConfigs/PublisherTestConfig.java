@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.plugin.publisher.SolaceWebPubli
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
-import com.solace.messaging.MessagingService;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -19,11 +18,7 @@ import static org.mockito.Mockito.mock;
 @Profile("TEST")
 @Slf4j
 public class PublisherTestConfig {
-    @Bean
-    @Primary
-    public MessagingService messagingService() {
-        return mock(MessagingService.class);
-    }
+
 
     @Bean
     @Primary

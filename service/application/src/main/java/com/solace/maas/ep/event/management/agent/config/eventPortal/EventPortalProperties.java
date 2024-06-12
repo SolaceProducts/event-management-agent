@@ -21,6 +21,8 @@ public class EventPortalProperties {
     private int commandThreadPoolMinSize = 5;
     private int commandThreadPoolMaxSize = 10;
     private int commandThreadPoolQueueSize = 1_000;
+    private Boolean managed = false;
+    private String incomingRequestQueueName;
 
     private GatewayProperties gateway
             = new GatewayProperties("standalone", "standalone", new GatewayMessagingProperties(true, false, List.of()));

@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
+import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
@@ -55,6 +56,13 @@ public class TestConfig {
 
     @Autowired
     private CamelContext camelContext;
+
+    @Bean
+    @Primary
+    public SolaceConfiguration solaceConfiguration() {
+        return mock(SolaceConfiguration.class);
+    }
+
 
     @Bean
     @Primary
