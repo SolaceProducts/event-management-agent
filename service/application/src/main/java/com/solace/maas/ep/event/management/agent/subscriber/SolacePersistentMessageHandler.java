@@ -11,6 +11,9 @@ import com.solace.messaging.resources.Queue;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -22,13 +25,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == true")
-public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler implements MessageReceiver.MessageHandler {
+@DependsOn({"resourceConfig"})
+public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler implements MessageReceiver.MessageHandler,
+        ApplicationListener<ApplicationReadyEvent> {
     private final Map<String, Class> cachedJSONDecoders = new HashMap();
 
     private final Map<Class, MessageProcessor> messageProcessorsByClassType;
     private final MessagingService messagingService;
     private final EventPortalProperties eventPortalProperties;
-    private final PersistentMessageReceiver persistentMessageReceiver;
+    private PersistentMessageReceiver persistentMessageReceiver;
 
     protected SolacePersistentMessageHandler(MessagingService messagingService,
                                              EventPortalProperties eventPortalProperties,
@@ -39,12 +44,8 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         this.eventPortalProperties = eventPortalProperties;
         messageProcessorsByClassType = messageProcessorList.stream()
                 .collect(Collectors.toMap(MessageProcessor::supportedClass, Function.identity()));
-        Queue queue = determineQueue();
-        persistentMessageReceiver = buildPersistentMessageReceiver(queue);
-        persistentMessageReceiver.receiveAsync(this);
-        log.info("Binding to queue with persistent message handler");
-    }
 
+    }
 
     @Override
     public void onMessage(InboundMessage inboundMessage) {
@@ -94,4 +95,11 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         return Queue.durableNonExclusiveQueue(eventPortalProperties.getIncomingRequestQueueName());
     }
 
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        Queue queue = determineQueue();
+        persistentMessageReceiver = buildPersistentMessageReceiver(queue);
+        persistentMessageReceiver.receiveAsync(this);
+        log.info("Binding to queue with persistent message handler");
+    }
 }
