@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == true")
-@DependsOn({"resourceConfig"})
 public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler implements MessageReceiver.MessageHandler,
         ApplicationListener<ApplicationReadyEvent> {
     private final Map<String, Class> cachedJSONDecoders = new HashMap();
