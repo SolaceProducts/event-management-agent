@@ -1,6 +1,5 @@
 package com.solace.maas.ep.common.messages;
 
-import com.solace.maas.ep.common.model.EventBrokerResourceConfiguration;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
@@ -19,7 +18,6 @@ public class CommandMessage extends MOPMessage {
     private String serviceId;
     private JobStatus status;
     private List<CommandBundle> commandBundles;
-    private List<EventBrokerResourceConfiguration> resources;
 
     public CommandMessage() {
         super();
