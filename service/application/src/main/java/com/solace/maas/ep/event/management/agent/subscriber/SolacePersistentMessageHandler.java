@@ -8,6 +8,7 @@ import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.MessageReceiver;
 import com.solace.messaging.receiver.PersistentMessageReceiver;
 import com.solace.messaging.resources.Queue;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -31,6 +32,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     private final Map<Class, MessageProcessor> messageProcessorsByClassType;
     private final MessagingService messagingService;
     private final EventPortalProperties eventPortalProperties;
+    @Getter
     private PersistentMessageReceiver persistentMessageReceiver;
 
     protected SolacePersistentMessageHandler(MessagingService messagingService,
@@ -48,7 +50,8 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     @Override
     public void onMessage(InboundMessage inboundMessage) {
         String mopMessageSubclass = "";
-
+        MessageProcessor processor = null;
+        Object message = null;
         try {
             mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
             String messageAsString = inboundMessage.getPayloadAsString();
@@ -57,24 +60,27 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                 messageClass = Class.forName(mopMessageSubclass);
                 cachedJSONDecoders.put(mopMessageSubclass, messageClass);
             }
-            MessageProcessor processor = messageProcessorsByClassType.get(messageClass);
+            processor = messageProcessorsByClassType.get(messageClass);
             if (processor == null) {
                 throw new UnsupportedOperationException("Could not find message processor for message of class " + messageClass.getCanonicalName());
             }
             setupMDC(messageAsString, messageClass.getSimpleName());
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
-            processor.processMessage(processor.castToMessageClass(toMessage(messageAsString, messageClass)));
+            message = toMessage(messageAsString, messageClass);
+            processor.processMessage(processor.castToMessageClass(message));
 
         } catch (Exception e) {
-            log.error("Error while processing inbound message from queue for mopMessageSubclass: {}", mopMessageSubclass);
+            if (processor != null && message != null) {
+                log.error("Error while processing inbound message from queue for mopMessageSubclass: {}", mopMessageSubclass);
+                processor.onFailure(e, processor.castToMessageClass(message));
+            } else {
+                log.error("Unsupported message type and/or processor encountered. Skipping processing", e);
+            }
+
             throw new IllegalArgumentException(e);
         } finally {
             persistentMessageReceiver.ack(inboundMessage);
         }
-    }
-
-    public PersistentMessageReceiver getPersistentMessageReceiver() {
-        return this.persistentMessageReceiver;
     }
 
     private PersistentMessageReceiver buildPersistentMessageReceiver(Queue queue) {
