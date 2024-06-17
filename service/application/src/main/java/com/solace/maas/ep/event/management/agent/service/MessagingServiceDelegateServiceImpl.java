@@ -11,12 +11,13 @@ import com.solace.maas.ep.event.management.agent.repository.messagingservice.Ser
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsCompositeKey;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsEntity;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +73,14 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
                 .collect(Collectors.toUnmodifiableList());
 
         return repository.saveAll(messagingServiceEntities);
+    }
+
+    @Transactional
+    public void deleteMessagingServiceByIds(Set<String> messagingServiceIds) {
+        if(CollectionUtils.isEmpty(messagingServiceIds)){
+            return;
+        }
+        repository.deleteAllById(messagingServiceIds);
     }
 
     /**
