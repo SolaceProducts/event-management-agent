@@ -74,10 +74,9 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                 log.error("Error while processing inbound message from queue for mopMessageSubclass: {}", mopMessageSubclass);
                 processor.onFailure(e, processor.castToMessageClass(message));
             } else {
-                log.error("Unsupported message type and/or processor encountered. Skipping processing", e);
+                log.error("Unsupported message and/or processor encountered. Skipping processing", e);
             }
 
-            throw new IllegalArgumentException(e);
         } finally {
             persistentMessageReceiver.ack(inboundMessage);
         }
