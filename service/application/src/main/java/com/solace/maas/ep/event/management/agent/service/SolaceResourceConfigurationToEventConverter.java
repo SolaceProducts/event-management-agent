@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-public class EventBrokerResourceConfigToEventConverter {
+public class SolaceResourceConfigurationToEventConverter {
     public MessagingServiceEvent mapToMessagingServiceEvent(EventBrokerResourceConfiguration eventBrokerResource) {
         Objects.requireNonNull(eventBrokerResource);
         MessagingServiceEvent serviceEvent = new MessagingServiceEvent();
