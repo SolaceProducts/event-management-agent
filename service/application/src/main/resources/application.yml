@@ -7,58 +7,59 @@ springdoc:
 server:
   port: 8180
 spring:
-  servlet:
-    multipart:
-      max-request-size: ${MAX_REQUEST_SIZE:5MB}
-      max-file-size: ${MAX_FILE_SIZE:5MB}
-  main:
-    allow-bean-definition-overriding: true
+  jpa:
+    defer-datasource-initialization: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    driver-class-name: org.h2.Driver
+    password: password
+    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
   h2:
     console:
       path: /h2
-      enabled: true
       settings:
         web-allow-others: true
-  datasource:
-    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
-    password: password
-    driver-class-name: org.h2.Driver
-    username: sa
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.H2Dialect
-    defer-datasource-initialization: true
+      enabled: true
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:5MB}
+      max-request-size: ${MAX_REQUEST_SIZE:5MB}
 camel:
   springboot:
     use-mdc-logging: true
 kafka:
   client:
     config:
-      connections:
-        max-idle:
-          unit: milliseconds
-          value: 10000
-        request-timeout:
-          unit: milliseconds
-          value: 5000
-        timeout:
-          unit: milliseconds
-          value: 60000
       reconnections:
         max-backoff:
-          unit: milliseconds
           value: 1000
-        backoff:
           unit: milliseconds
+        backoff:
           value: 50
+          unit: milliseconds
+      connections:
+        max-idle:
+          value: 10000
+          unit: milliseconds
+        request-timeout:
+          value: 5000
+          unit: milliseconds
+        timeout:
+          value: 60000
+          unit: milliseconds
 eventPortal:
-  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:av60o82f4ir}
+  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:13k1j7c913c}
   organizationId: ${EP_ORGANIZATION_ID:localrcorg}
-  topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
   gateway:
     id: f0ydyzsr1jp
     name: POCCloudManagedEMAEVMR
+    managed: true
+    incomingRequestQueueName: ep_core_ema_requests_fakedcid
     messaging:
       standalone: false
       rtoSession: false
@@ -70,34 +71,8 @@ eventPortal:
           msgVpn: ${EP_GATEWAY_MSGVPN:poccloudmanagedemaevmr}
           url: ${EP_GATEWAY_URL:tcps://mr-connection-i41xmmlismp.messaging.solace.cloud:55443}
           users:
-            - clientName: client_av60o82f4ir
+            - password: b{w{Z3Xh{0dsp3tbl0Nw6cql
               name: messaging1
-              password: ADttr7Dxf--x9S=wIivwR!qc
-              username: ${EP_GATEWAY_USERNAME:localrcorg-v6693yiarsp-av60o82f4ir}
-plugins:
-  resources:
-    - id: 26dn6j9g9s0
-      type: solace
-      name: rchakraborty-dev
-      connections:
-        - name: rchakraborty-dev
-          url: https://ep-ivmrs-for-devs.messaging.solace.cloud:943
-          properties:
-            - value: rchakraborty-dev
-              name: msgVpn
-            - value: 100
-              name: sempPageSize
-          authentication:
-            - properties:
-                - value: basicAuthentication
-                  name: type
-              protocol: semp
-              credentials:
-                - properties:
-                    - name: username
-                      value: rchakraborty-dev
-                    - name: password
-                      value: rchakraborty-dev
-                  operations:
-                    - name: ALL
-                  source: ENVIRONMENT_VARIABLE
+              clientName: client_13k1j7c913c
+              username: ${EP_GATEWAY_USERNAME:localrcorg-v6693yiarsp-13k1j7c913c}
+  topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
