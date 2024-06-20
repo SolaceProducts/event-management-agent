@@ -1,10 +1,9 @@
 package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -17,8 +16,6 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
 
     private final DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper;
 
-    @Autowired
-    private ObjectMapper objectMapper;
     public CommandMessageProcessor(CommandManager commandManager,
                                    DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper) {
         this.commandManager = commandManager;
@@ -27,12 +24,9 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
 
     @Override
     public void processMessage(CommandMessage message) {
-        try{
-            System.out.println(objectMapper.writeValueAsString(message));
-        } catch (Exception e){
-
+        if (CollectionUtils.isNotEmpty(message.getResources())) {
+            dynamicResourceConfigurationHelper.loadSolaceBrokerResourceConfigurations(message.getResources());
         }
-        dynamicResourceConfigurationHelper.loadSolaceBrokerResourceConfigurations(message.getResources());
         commandManager.execute(message);
     }
 
