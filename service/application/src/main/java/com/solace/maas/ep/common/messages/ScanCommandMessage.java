@@ -4,6 +4,7 @@ import com.solace.maas.ep.common.model.CommandMessageWithResources;
 import com.solace.maas.ep.common.model.EventBrokerResourceConfiguration;
 import com.solace.maas.ep.common.model.ScanDestination;
 import com.solace.maas.ep.common.model.ScanType;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
@@ -28,7 +29,8 @@ public class ScanCommandMessage extends MOPMessage implements CommandMessageWith
     public ScanCommandMessage(String messagingServiceId,
                               String scanId,
                               List<ScanType> scanTypes,
-                              List<ScanDestination> destinations) {
+                              List<ScanDestination> destinations,
+                              List<EventBrokerResourceConfiguration> resources) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanDataControl)
@@ -38,7 +40,17 @@ public class ScanCommandMessage extends MOPMessage implements CommandMessageWith
         this.scanId = scanId;
         this.scanTypes = scanTypes;
         this.destinations = destinations;
+        this.resources = resources;
     }
+
+    public ScanCommandMessage(String messagingServiceId,
+                              String scanId,
+                              List<ScanType> scanTypes,
+                              List<ScanDestination> destinations) {
+        this(messagingServiceId, scanId, scanTypes, destinations, null);
+    }
+
+
 
     @Override
     public String toLog() {
