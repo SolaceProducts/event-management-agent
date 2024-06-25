@@ -4,7 +4,6 @@ import com.solace.maas.ep.common.model.CommandMessageWithResources;
 import com.solace.maas.ep.common.model.EventBrokerResourceConfiguration;
 import com.solace.maas.ep.common.model.ScanDestination;
 import com.solace.maas.ep.common.model.ScanType;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
