@@ -19,33 +19,32 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ScanCommandMessageTests {
 
-    @Test
-    void instantiateScanCommandMessage(){
+    private void assertMopMessageProperties(ScanCommandMessage scanCommandMessage) {
+        assertNotNull(scanCommandMessage);
+        assertEquals(MOPMessageType.generic, scanCommandMessage.getMopMsgType());
+        assertEquals(MOPProtocol.scanDataControl, scanCommandMessage.getMopProtocol());
+        assertEquals("1", scanCommandMessage.getMopVer());
+        assertEquals(MOPUHFlag.ignore, scanCommandMessage.getMsgUh());
+    }
 
+    @Test
+    void instantiateScanCommandMessage() {
         ScanCommandMessage scanCommandMessage = new ScanCommandMessage(
                 "messagingServiceId1",
                 "scanId1",
                 List.of(ScanType.SOLACE_ALL),
                 List.of(ScanDestination.EVENT_PORTAL, ScanDestination.FILE_WRITER)
         );
-        assertNotNull(scanCommandMessage);
-        assertEquals(MOPMessageType.generic,scanCommandMessage.getMopMsgType());
-        assertEquals(MOPProtocol.scanDataControl,scanCommandMessage.getMopProtocol());
-        assertEquals("1",scanCommandMessage.getMopVer());
-        assertEquals(MOPUHFlag.ignore,scanCommandMessage.getMsgUh());
-
+        assertMopMessageProperties(scanCommandMessage);
         assertEquals("messagingServiceId1", scanCommandMessage.getMessagingServiceId());
         assertEquals("scanId1", scanCommandMessage.getScanId());
         assertEquals(List.of(ScanType.SOLACE_ALL), scanCommandMessage.getScanTypes());
         assertEquals(List.of(ScanDestination.EVENT_PORTAL, ScanDestination.FILE_WRITER), scanCommandMessage.getDestinations());
-
         assertNull(scanCommandMessage.getResources());
-
     }
 
     @Test
-    void instantiateScanCommandMessageWithResources(){
-
+    void instantiateScanCommandMessageWithResources() {
         ScanCommandMessage scanCommandMessage = new ScanCommandMessage(
                 "messagingServiceId1",
                 "scanId1",
@@ -53,19 +52,12 @@ public class ScanCommandMessageTests {
                 List.of(ScanDestination.EVENT_PORTAL, ScanDestination.FILE_WRITER),
                 List.of(EventBrokerResourceConfigTestHelper.buildResourceConfiguration(ResourceConfigurationType.SOLACE))
         );
-        assertNotNull(scanCommandMessage);
-        assertEquals(MOPMessageType.generic,scanCommandMessage.getMopMsgType());
-        assertEquals(MOPProtocol.scanDataControl,scanCommandMessage.getMopProtocol());
-        assertEquals("1",scanCommandMessage.getMopVer());
-        assertEquals(MOPUHFlag.ignore,scanCommandMessage.getMsgUh());
-
+        assertMopMessageProperties(scanCommandMessage);
         assertEquals("messagingServiceId1", scanCommandMessage.getMessagingServiceId());
         assertEquals("scanId1", scanCommandMessage.getScanId());
         assertEquals(List.of(ScanType.SOLACE_ALL), scanCommandMessage.getScanTypes());
         assertEquals(List.of(ScanDestination.EVENT_PORTAL, ScanDestination.FILE_WRITER), scanCommandMessage.getDestinations());
-
         assertNotNull(scanCommandMessage.getResources());
-        assertEquals(1,scanCommandMessage.getResources().size());
-
+        assertEquals(1, scanCommandMessage.getResources().size());
     }
 }
