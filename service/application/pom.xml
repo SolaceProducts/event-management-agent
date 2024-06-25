@@ -4,18 +4,18 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.6.8-SNAPSHOT</version>
+        <version>1.6.9-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>event-management-agent</artifactId>
-    <version>1.6.8-SNAPSHOT</version>
+    <version>1.6.9-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
         <spring-boot.version>3.2.5</spring-boot.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spring-security-rsa.version>1.1.1</spring-security-rsa.version>
+        <spring-security-rsa.version>1.1.3</spring-security-rsa.version>
         <spring-kafka.version>3.0.10</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
         <jackson.version>2.16.1</jackson.version>
@@ -227,32 +227,32 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.8-SNAPSHOT</version>
+            <version>1.6.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>1.6.8-SNAPSHOT</version>
+            <version>1.6.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>1.6.8-SNAPSHOT</version>
+            <version>1.6.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>1.6.8-SNAPSHOT</version>
+            <version>1.6.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>1.6.8-SNAPSHOT</version>
+            <version>1.6.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.terraform</groupId>
             <artifactId>terraform-plugin</artifactId>
-            <version>1.6.8-SNAPSHOT</version>
+            <version>1.6.9-SNAPSHOT</version>
         </dependency>
 
         <dependency>
