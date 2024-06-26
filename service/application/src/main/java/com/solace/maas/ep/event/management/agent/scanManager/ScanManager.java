@@ -41,6 +41,7 @@ public class ScanManager {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
     private final String runtimeAgentId;
+    private final String orgId;
     private final ScanStatusPublisher scanStatusPublisher;
 
     @Autowired
@@ -52,6 +53,7 @@ public class ScanManager {
         this.scanService = scanService;
         this.scanStatusPublisher = scanStatusPublisher;
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        orgId = eventPortalProperties.getOrganizationId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -130,9 +132,8 @@ public class ScanManager {
         );
 
         Map<String, String> topicVars = Map.of(
-                "orgId", message.getOrgId(),
-                "runtimeAgentId", runtimeAgentId,
-                COMMAND_CORRELATION_ID, message.getCorrelationId()
+                "orgId", orgId,
+                "runtimeAgentId", runtimeAgentId
         );
         scanStatusPublisher.sendOverallScanStatus(response,topicVars);
     }
