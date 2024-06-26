@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
-import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 
 @Slf4j
 @Service
@@ -123,8 +121,8 @@ public class ScanManager {
         ScanStatusMessage response = new ScanStatusMessage(
                 message.getOrgId(),
                 message.getScanId(),
-                MDC.get(TRACE_ID),
-                MDC.get(ACTOR_ID),
+                MDC.get(RouteConstants.TRACE_ID),
+                MDC.get(RouteConstants.ACTOR_ID),
                 ScanStatus.FAILED.name(),
                 "Scan failed",
                 scanTypeNames
