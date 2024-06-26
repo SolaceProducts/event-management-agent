@@ -1,10 +1,15 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
+import com.solace.maas.ep.common.messages.ScanCommandMessage;
+import com.solace.maas.ep.common.messages.ScanStatusMessage;
+import com.solace.maas.ep.common.model.ScanType;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
+import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
@@ -25,6 +30,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
+
 @Slf4j
 @Service
 public class ScanManager {
@@ -32,12 +41,16 @@ public class ScanManager {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
     private final String runtimeAgentId;
+    private final ScanStatusPublisher scanStatusPublisher;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
-                       ScanService scanService, EventPortalProperties eventPortalProperties) {
+                       ScanService scanService,
+                       EventPortalProperties eventPortalProperties,
+                       ScanStatusPublisher scanStatusPublisher) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
+        this.scanStatusPublisher = scanStatusPublisher;
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
@@ -100,6 +113,28 @@ public class ScanManager {
                 .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
 
         return scanService.singleScan(routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
+    }
+
+    public void handleError(Exception e, ScanCommandMessage message){
+
+        List<String> scanTypeNames = message.getScanTypes().stream().map(ScanType::name).toList();
+
+        ScanStatusMessage response = new ScanStatusMessage(
+                message.getOrgId(),
+                message.getScanId(),
+                MDC.get(TRACE_ID),
+                MDC.get(ACTOR_ID),
+                ScanStatus.FAILED.name(),
+                "Scan failed",
+                scanTypeNames
+        );
+
+        Map<String, String> topicVars = Map.of(
+                "orgId", message.getOrgId(),
+                "runtimeAgentId", runtimeAgentId,
+                COMMAND_CORRELATION_ID, message.getCorrelationId()
+        );
+        scanStatusPublisher.sendOverallScanStatus(response,topicVars);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {
