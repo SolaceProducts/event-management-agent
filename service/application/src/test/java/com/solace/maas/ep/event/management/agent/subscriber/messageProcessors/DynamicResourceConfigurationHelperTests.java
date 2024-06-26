@@ -12,11 +12,8 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -48,14 +45,8 @@ class DynamicResourceConfigurationHelperTests {
         List<EventBrokerResourceConfiguration> resources = List.of(
                 EventBrokerResourceConfigTestHelper.buildResourceConfiguration(ResourceConfigurationType.SOLACE)
         );
-        doNothing().when(messagingServiceDelegateServiceImpl).deleteMessagingServiceByIds(anySet());
         helper.loadSolaceBrokerResourceConfigurations(resources);
-        verify(messagingServiceDelegateServiceImpl, times(1)).deleteMessagingServiceByIds(
-                resources.stream()
-                        .map(EventBrokerResourceConfiguration::getId)
-                        .collect(Collectors.toSet())
-        );
-        verify(messagingServiceDelegateServiceImpl, times(1)).addMessagingServices(any());
+        verify(messagingServiceDelegateServiceImpl, times(1)).upsertMessagingServiceEvents(any());
     }
 
 
