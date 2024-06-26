@@ -83,6 +83,6 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
     @Override
     public void onFailure(Exception e, ScanCommandMessage message) {
-        log.debug("Requires implementation");
+       scanManager.handleError(e,message);
     }
 }
