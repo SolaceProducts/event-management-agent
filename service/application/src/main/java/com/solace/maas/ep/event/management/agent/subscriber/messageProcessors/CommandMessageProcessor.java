@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -13,14 +14,19 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
 
     private final CommandManager commandManager;
 
+    private final DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper;
 
-    public CommandMessageProcessor(CommandManager commandManager) {
-
+    public CommandMessageProcessor(CommandManager commandManager,
+                                   DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper) {
         this.commandManager = commandManager;
+        this.dynamicResourceConfigurationHelper = dynamicResourceConfigurationHelper;
     }
 
     @Override
     public void processMessage(CommandMessage message) {
+        if (CollectionUtils.isNotEmpty(message.getResources())) {
+            dynamicResourceConfigurationHelper.loadSolaceBrokerResourceConfigurations(message.getResources());
+        }
         commandManager.execute(message);
     }
 
@@ -32,5 +38,10 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
     @Override
     public CommandMessage castToMessageClass(Object message) {
         return (CommandMessage) message;
+    }
+
+    @Override
+    public void onFailure(Exception e, CommandMessage message) {
+        commandManager.handleError(e, message);
     }
 }

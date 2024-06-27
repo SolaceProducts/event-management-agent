@@ -73,11 +73,19 @@ public class CommandManager {
         CompletableFuture.runAsync(() -> configPush(requestBO), configPushPool)
                 .exceptionally(e -> {
                     log.error("Error running command", e);
-                    Command firstCommand = requestBO.getCommandBundles().get(0).getCommands().get(0);
-                    setCommandError(firstCommand, (Exception) e);
-                    finalizeAndSendResponse(requestBO);
+                    handleError((Exception) e, requestBO);
                     return null;
                 });
+    }
+
+    public void handleError(Exception e, CommandMessage message) {
+        handleError(e, commandMapper.map(message));
+    }
+
+    private void handleError(Exception e, CommandRequest requestBO) {
+        Command firstCommand = requestBO.getCommandBundles().get(0).getCommands().get(0);
+        setCommandError(firstCommand, e);
+        finalizeAndSendResponse(requestBO);
     }
 
     @SuppressWarnings("PMD")
@@ -87,9 +95,7 @@ public class CommandManager {
             envVars = setBrokerSpecificEnvVars(request.getServiceId());
         } catch (Exception e) {
             log.error("Error getting terraform variables", e);
-            Command firstCommand = request.getCommandBundles().get(0).getCommands().get(0);
-            setCommandError(firstCommand, e);
-            finalizeAndSendResponse(request);
+            handleError(e, request);
             return;
         }
         List<Path> executionLogFilesToClean = new ArrayList<>();

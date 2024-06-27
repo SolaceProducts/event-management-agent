@@ -72,4 +72,9 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     public ScanCommandMessage castToMessageClass(Object message) {
         return (ScanCommandMessage) message;
     }
+
+    @Override
+    public void onFailure(Exception e, ScanCommandMessage message) {
+        log.debug("Requires implementation");
+    }
 }

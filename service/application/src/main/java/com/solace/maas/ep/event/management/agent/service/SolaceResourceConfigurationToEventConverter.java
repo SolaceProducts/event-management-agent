@@ -10,17 +10,21 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.A
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
+import jakarta.validation.Valid;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Objects;
 
 @Service
+@Validated
 public class SolaceResourceConfigurationToEventConverter {
-    public MessagingServiceEvent mapToMessagingServiceEvent(EventBrokerResourceConfiguration eventBrokerResource) {
-        Objects.requireNonNull(eventBrokerResource);
+
+    public MessagingServiceEvent mapToMessagingServiceEvent(@Valid EventBrokerResourceConfiguration eventBrokerResource) {
+        Objects.requireNonNull(eventBrokerResource, "eventBrokerResource cannot be null.");
         MessagingServiceEvent serviceEvent = new MessagingServiceEvent();
-        serviceEvent.setMessagingServiceType(eventBrokerResource.getBrokerType());
         serviceEvent.setName(eventBrokerResource.getName());
         serviceEvent.setId(eventBrokerResource.getId());
         serviceEvent.setMessagingServiceType(eventBrokerResource.getResourceConfigurationType().name());
@@ -34,7 +38,7 @@ public class SolaceResourceConfigurationToEventConverter {
         connectionDetailsEvent.setProperties(List.of(
                 EventProperty.builder()
                         .name("sempPageSize")
-                        .value(connectionDetail.getSempPageSize())
+                        .value(StringUtils.isEmpty(connectionDetail.getSempPageSize()) ? "100" : connectionDetail.getSempPageSize())
                         .build(),
                 EventProperty.builder()
                         .name("msgVpn")
@@ -44,11 +48,11 @@ public class SolaceResourceConfigurationToEventConverter {
         );
         EventBrokerAuthenticationConfiguration authentication = connectionDetail.getAuthentication();
         AuthenticationDetailsEvent authEvent = new AuthenticationDetailsEvent();
-        authEvent.setProtocol(authentication.getProtocol());
+        authEvent.setProtocol(StringUtils.isEmpty(authentication.getProtocol()) ? "semp" : authentication.getProtocol());
         authEvent.setProperties(List.of(
                 EventProperty.builder()
                         .name("type")
-                        .value(authentication.getType())
+                        .value(StringUtils.isEmpty(authentication.getType()) ? "basicAuthentication" : authentication.getType())
                         .build()
         ));
 
