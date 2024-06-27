@@ -4,44 +4,6 @@
     <property resource="command-configs.properties"/>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-
-    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>EMA.log</file>
-        <encoder>
-            <pattern>%d [%thread] %-5level %-50logger{40} : %msg%n</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>EMA-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>1MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>10MB</totalSizeCap>
-            <cleanHistoryOnStart>false</cleanHistoryOnStart>
-        </rollingPolicy>
-    </appender>
-
-    <appender name="RollingFileInJSONFormat" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"component":"event-management-agent-${EMA_ID:-}"}</customFields>
-            <providers>
-                <stackTrace>
-                    <fieldName>stackTrace</fieldName>
-                    <throwableConverter
-                            class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                        <rootCauseFirst>true</rootCauseFirst>
-                    </throwableConverter>
-                </stackTrace>
-            </providers>
-        </encoder>
-        <file>${LOG_FILE_PATH:-EMA.log}</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>EMA-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>10MB</totalSizeCap>
-            <cleanHistoryOnStart>false</cleanHistoryOnStart>
-        </rollingPolicy>
-    </appender>
-
     <appender name="SiftLogger" class="ch.qos.logback.classic.sift.SiftingAppender">
         <discriminator>
             <key>SCAN_ID</key>
@@ -56,7 +18,41 @@
             </appender>
         </sift>
     </appender>
+    <springProperty name="agentId" source="event-portal.runtime-agent-id"/>
+    <springProperty name="USE_JSON_LOG" source="logging.log-in-json-format"/>
+    <property name="USE_JSON" value="${USE_JSON_LOG}"/>
 
+    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <if condition='property("USE_JSON").equals("true")'>
+            <then>
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <customFields>{"component":"event-management-agent-${agentId}"}</customFields>
+                    <providers>
+                        <stackTrace>
+                            <fieldName>stackTrace</fieldName>
+                            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                                <rootCauseFirst>true</rootCauseFirst>
+                            </throwableConverter>
+                        </stackTrace>
+                    </providers>
+                </encoder>
+            </then>
+            <else>
+                <encoder>
+                    <pattern>%d [%thread] %-5level %-50logger{40} : %msg%n</pattern>
+                </encoder>
+            </else>
+        </if>
+
+        <file>${LOG_FILE:-EMA.log}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-EMA-%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
+            <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
+            <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-7}</maxHistory>
+            <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-10MB}</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
     <appender name="StreamingAppender" class="com.solace.maas.ep.event.management.agent.logging.StreamingAppender"/>
 
 
@@ -81,7 +77,8 @@
     </appender>
 
     <springProfile name="default,mysql,mysql-dev,DEV,TEST">
-        <root level="INFO">
+        <springProperty scope="context" name="LOG_ROOT" source="logging.level.root"/>
+        <root level="${LOG_ROOT:-INFO}">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RollingFile"/>
             <appender-ref ref="SiftLogger"/>
@@ -96,23 +93,4 @@
             <appender-ref ref="StreamingAppender"/>
         </logger>
     </springProfile>
-
-    <springProfile name="solaceCloud">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="RollingFileInJSONFormat"/>
-            <appender-ref ref="SiftLogger"/>
-            <appender-ref ref="RollingCommandsFile"/>
-            <appender-ref ref="StreamingAppender"/>
-        </root>
-        <logger name="com.solace.maas" level="DEBUG" additivity="false">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="RollingFileInJSONFormat"/>
-            <appender-ref ref="SiftLogger"/>
-            <appender-ref ref="RollingCommandsFile"/>
-            <appender-ref ref="StreamingAppender"/>
-        </logger>
-
-    </springProfile>
-
 </configuration>
