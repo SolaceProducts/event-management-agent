@@ -72,7 +72,12 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         } catch (Exception e) {
             if (processor != null && message != null) {
                 log.error("Error while processing inbound message from queue for mopMessageSubclass: {}", mopMessageSubclass);
-                processor.onFailure(e, processor.castToMessageClass(message));
+                try {
+                    processor.onFailure(e, processor.castToMessageClass(message));
+                } catch (Exception e1) {
+                    log.error("error while handling message processing failure for mopMessageSubclass: {}", mopMessageSubclass, e);
+                }
+
             } else {
                 log.error("Unsupported message and/or processor encountered. Skipping processing", e);
             }
