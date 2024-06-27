@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate.Kaf
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.route.delegate.DataCollectionFileWriterDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
+import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
@@ -48,6 +49,11 @@ class ScanManagerTest {
 
     @Mock
     private ScanService scanService;
+
+    @Mock
+    private ScanStatusPublisher scanStatusPublisher;
+
+
 
     @Test
     @SneakyThrows
@@ -237,4 +243,6 @@ class ScanManagerTest {
                         .build()
         );
     }
+
+
 }
