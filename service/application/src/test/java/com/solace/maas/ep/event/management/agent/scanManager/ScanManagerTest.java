@@ -50,10 +50,6 @@ class ScanManagerTest {
     @Mock
     private ScanService scanService;
 
-    @Mock
-    private ScanStatusPublisher scanStatusPublisher;
-
-
 
     @Test
     @SneakyThrows
