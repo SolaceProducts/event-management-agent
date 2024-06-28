@@ -11,9 +11,18 @@ management:
     tags:
       # key - value pairs
       maas_id: my-maas-id
+    enable:
+      # enable / disable specific metrics
+      all: false
+      application:
+        started:
+          time: true
+      jvm:
+        info: true
   statsd:
     metrics:
       export:
+        # enable / disable shipping metrics to StatsD endpoint
         enabled: false
         flavor: datadog
         host: 127.0.0.1
