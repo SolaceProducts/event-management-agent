@@ -49,6 +49,7 @@ class ScanManagerTest {
     @Mock
     private ScanService scanService;
 
+
     @Test
     @SneakyThrows
     void testScanManagerExceptions() {
@@ -237,4 +238,6 @@ class ScanManagerTest {
                         .build()
         );
     }
+
+
 }

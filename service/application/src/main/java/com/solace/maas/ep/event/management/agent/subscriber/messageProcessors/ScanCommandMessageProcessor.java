@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -20,9 +21,12 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
     private static final String DEFAULT_DESTINATION = "FILE_WRITER";
     private final ScanManager scanManager;
+    private final DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper;
 
-    public ScanCommandMessageProcessor(ScanManager scanManager) {
+    public ScanCommandMessageProcessor(ScanManager scanManager,
+                                       DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper) {
         this.scanManager = scanManager;
+        this.dynamicResourceConfigurationHelper = dynamicResourceConfigurationHelper;
     }
 
     @Override
@@ -34,6 +38,10 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
         log.debug("Received scan command message: {} for event broker: {}, traceId: {}",
                 message, message.getMessagingServiceId(), message.getTraceId());
+
+        if (CollectionUtils.isNotEmpty(message.getResources())) {
+            dynamicResourceConfigurationHelper.loadSolaceBrokerResourceConfigurations(message.getResources());
+        }
 
         message.getScanTypes().forEach(scanType -> entityTypes.add(scanType.name()));
 
@@ -75,6 +83,6 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
     @Override
     public void onFailure(Exception e, ScanCommandMessage message) {
-        log.debug("Requires implementation");
+       scanManager.handleError(e,message);
     }
 }
