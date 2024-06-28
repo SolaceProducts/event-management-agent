@@ -24,7 +24,7 @@ management:
     metrics:
       export:
         # enable / disable shipping metrics to StatsD endpoint
-        enabled: true
+        enabled: false
         flavor: datadog
         host: 127.0.0.1
         port: 8125
