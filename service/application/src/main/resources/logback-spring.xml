@@ -85,12 +85,5 @@
             <appender-ref ref="RollingCommandsFile"/>
             <appender-ref ref="StreamingAppender"/>
         </root>
-        <logger name="com.solace.maas" level="DEBUG" additivity="false">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="RollingFile"/>
-            <appender-ref ref="SiftLogger"/>
-            <appender-ref ref="RollingCommandsFile"/>
-            <appender-ref ref="StreamingAppender"/>
-        </logger>
     </springProfile>
 </configuration>
