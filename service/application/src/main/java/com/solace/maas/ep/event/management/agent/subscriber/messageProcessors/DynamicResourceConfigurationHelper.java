@@ -3,15 +3,13 @@ package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 import com.solace.maas.ep.common.model.EventBrokerResourceConfiguration;
 import com.solace.maas.ep.common.model.ResourceConfigurationType;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
-import com.solace.maas.ep.event.management.agent.service.SolaceResourceConfigurationToEventConverter;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
+import com.solace.maas.ep.event.management.agent.service.SolaceResourceConfigurationToEventConverter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -38,14 +36,7 @@ public class DynamicResourceConfigurationHelper {
                     .map(solaceResourceConfigurationToEventConverter::mapToMessagingServiceEvent)
                     .toList();
 
-            //deleteMessagingServiceByIds will delete existing stale messaging services if exists
-            messagingServiceDelegateService.deleteMessagingServiceByIds(
-                    solaceEventBrokerResources.stream()
-                            .map(MessagingServiceEvent::getId)
-                            .filter(StringUtils::isNotEmpty)
-                            .collect(Collectors.toSet())
-            );
-            messagingServiceDelegateService.addMessagingServices(solaceEventBrokerResources)
+            messagingServiceDelegateService.upsertMessagingServiceEvents(solaceEventBrokerResources)
                     .forEach(messagingServiceEntity ->
                             log.debug("Loaded [{}] resource with id: [{}] and name: [{}] from message payload.",
                                     messagingServiceEntity.getType(),

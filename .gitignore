@@ -28,6 +28,8 @@ hs_err_pid*
 **/application-DEV.yml
 application.properties
 application.yml
+**/application-*-local.yml
+
 
 .idea
 .DS_Store
@@ -46,3 +48,4 @@ application-mysql-*.yml
 .env
 
 *dependency-reduced-pom.xml
+

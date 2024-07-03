@@ -9,4 +9,6 @@ public interface MessageProcessor<T extends MOPMessage> {
     Class supportedClass();
 
     T castToMessageClass(Object message);
+
+    void onFailure(Exception e, T message);
 }

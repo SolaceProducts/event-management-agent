@@ -18,6 +18,31 @@ logging:
       max-history: 7
       total-size-cap: 1GB
 
+# micrometer / statsd
+management:
+  metrics:
+    tags:
+      # key - value pairs
+      maas_id: my-maas-id
+    enable:
+      # enable / disable specific metrics
+      all: false
+      # sample metrics to be exposed
+      application:
+        started:
+          time: true
+      jvm:
+        info: true
+  statsd:
+    metrics:
+      export:
+        # enable / disable shipping metrics to StatsD endpoint
+        enabled: false
+        flavor: datadog
+        host: 127.0.0.1
+        port: 8125
+        protocol: udp
+
 server:
   port: 8180
 

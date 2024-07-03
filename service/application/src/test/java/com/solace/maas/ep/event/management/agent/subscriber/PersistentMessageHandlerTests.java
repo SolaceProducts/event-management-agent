@@ -1,5 +1,8 @@
 package com.solace.maas.ep.event.management.agent.subscriber;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.common.messages.CommandMessage;
@@ -18,6 +21,7 @@ import com.solace.messaging.receiver.InboundMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -30,7 +34,6 @@ import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
 import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -70,8 +73,14 @@ public class PersistentMessageHandlerTests {
 
     private InboundMessage inboundMessage;
 
+    private ListAppender<ILoggingEvent> listAppender;
+
     @BeforeEach
     void setup() {
+        Logger scanLogger = (Logger) LoggerFactory.getLogger(SolacePersistentMessageHandler.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        scanLogger.addAppender(listAppender);
         inboundMessage = mock(InboundMessage.class);
     }
 
@@ -141,14 +150,13 @@ public class PersistentMessageHandlerTests {
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanDataImportMessage.class.getCanonicalName()
         );
-
-        Exception e = assertThrows(IllegalArgumentException.class, () -> solacePersistentMessageHandler.onMessage(inboundMessage));
-
-        assertThat(e.getMessage()).isEqualTo("java.lang.UnsupportedOperationException: Could not find message processor for message of class "
-                + ScanDataImportMessage.class.getCanonicalName());
-
-        // message will be acked
+        solacePersistentMessageHandler.onMessage(inboundMessage);
+        List<ILoggingEvent> logs = listAppender.list;
+        assertThat(logs.get(logs.size() - 1).getFormattedMessage()).isEqualTo("Unsupported message and/or processor encountered. Skipping processing");
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
+        //unsupported message type, so we don't have an appropriate processor to handle the failure scenario
+        verify(scanCommandMessageProcessor, times(0)).onFailure(any(), any());
+        verify(commandMessageProcessor, times(0)).onFailure(any(), any());
     }
 
 
@@ -164,12 +172,17 @@ public class PersistentMessageHandlerTests {
                 ScanCommandMessage.class.getCanonicalName()
         );
 
-        Exception e = assertThrows(IllegalArgumentException.class, () -> solacePersistentMessageHandler.onMessage(inboundMessage));
-
-        assertThat(e.getMessage()).isEqualTo("java.lang.IllegalArgumentException: Test processing error msg");
-
-        // message will be acked
+        solacePersistentMessageHandler.onMessage(inboundMessage);
+        List<ILoggingEvent> logs = listAppender.list;
+        assertThat(logs.get(logs.size() - 1).getFormattedMessage())
+                .isEqualTo("Error while processing inbound message from queue for mopMessageSubclass: " + ScanCommandMessage.class.getCanonicalName());
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
+
+        // scan command message processor MUST handle the exception
+        verify(scanCommandMessageProcessor, times(1)).onFailure(any(), any());
+
+        //commandMessageProcessor MUST do nothing (not a config push command)
+        verify(commandMessageProcessor, times(0)).onFailure(any(), any());
     }
 
 

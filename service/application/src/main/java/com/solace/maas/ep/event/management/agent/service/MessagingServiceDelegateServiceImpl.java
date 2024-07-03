@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toCollection;
+
 /**
  * Manages the creation and retrieval of Messaging Service information.
  */
@@ -75,12 +77,24 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
         return repository.saveAll(messagingServiceEntities);
     }
 
+
     @Transactional
-    public void deleteMessagingServiceByIds(Set<String> messagingServiceIds) {
-        if(CollectionUtils.isEmpty(messagingServiceIds)){
-            return;
+    public Iterable<MessagingServiceEntity> upsertMessagingServiceEvents(List<MessagingServiceEvent> messagingServiceEvents) {
+        if (CollectionUtils.isEmpty(messagingServiceEvents)) {
+            return List.of();
         }
-        repository.deleteAllById(messagingServiceIds);
+        List<MessagingServiceEntity> messagingServiceEntities = messagingServiceEvents.stream()
+                .map(toBeUpserted -> {
+                    MessagingServiceEntity updated = eventToEntityConverter.convert(toBeUpserted);
+                    Optional<MessagingServiceEntity> existing = repository.findById(toBeUpserted.getId());
+                    if (existing.isPresent()) {
+                        MessagingServiceEntity existingEntity = existing.get();
+                        updated.setScanEntities(existingEntity.getScanEntities());
+                    }
+                    return updated;
+
+                }).collect(toCollection(ArrayList::new));
+        return repository.saveAll(messagingServiceEntities);
     }
 
     /**
