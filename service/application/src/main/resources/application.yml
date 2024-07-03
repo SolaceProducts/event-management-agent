@@ -5,6 +5,19 @@ springdoc:
   swagger-ui:
     path: /event-management-agent/swagger-ui.html
 
+logging:
+  log-in-json-format: false
+  level:
+    root: INFO
+  file:
+    name: /tmp/EMA.log
+  logback:
+    rolling-policy:
+      file-name-pattern: '${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz'
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 1GB
+
 # micrometer / statsd
 management:
   metrics:
@@ -42,6 +55,7 @@ spring:
     username: sa
     password: password
     driver-class-name: org.h2.Driver
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
