@@ -55,4 +55,14 @@ class SelfManagedAgentMessageHandlerBeansTests {
                 );
 
     }
+
+    @Test
+    void testCommandLogStreamingProcessorBeanIsLoaded() {
+        String[] allBeanNames = applicationContext.getBeanDefinitionNames();
+        assertThat(
+                Arrays.stream(allBeanNames)
+                        .map(StringUtils::lowerCase)
+                        .collect(Collectors.toSet())).contains(StringUtils.lowerCase("commandLogStreamingProcessor"));
+
+    }
 }

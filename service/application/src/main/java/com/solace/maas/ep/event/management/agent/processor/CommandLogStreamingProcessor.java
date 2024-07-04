@@ -12,10 +12,9 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.Terraf
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -33,7 +32,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 
 @Component
 @Slf4j
-@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
+@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == false")
 public class CommandLogStreamingProcessor {
 
     public static final String ANY = "*";
@@ -47,28 +46,6 @@ public class CommandLogStreamingProcessor {
         this.commandLogsPublisher = commandLogsPublisher;
         this.eventPortalProperties = eventPortalProperties;
         this.objectMapper = objectMapper;
-    }
-
-
-    public void deleteExecutionLogFiles(List<Path> listOfExecutionLogFiles) {
-        boolean allFilesDeleted = listOfExecutionLogFiles
-                .stream()
-                .allMatch(this::deleteExecutionLogFile);
-        if (!allFilesDeleted) {
-            throw new IllegalArgumentException("Some of the execution log files were not deleted. Please check the logs");
-        }
-    }
-
-    private boolean deleteExecutionLogFile(Path path) {
-        try {
-            if (Files.exists(path)) {
-                Files.delete(path);
-            }
-        } catch (IOException e) {
-            log.warn("Error while deleting execution log at {}", path, e);
-            return false;
-        }
-        return true;
     }
 
 

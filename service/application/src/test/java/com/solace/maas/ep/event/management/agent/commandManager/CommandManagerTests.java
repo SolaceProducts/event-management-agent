@@ -26,11 +26,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -38,6 +36,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +46,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
@@ -81,9 +82,8 @@ class CommandManagerTests {
     @Autowired
     private CommandPublisher commandPublisher;
 
-    @Autowired
-    @Qualifier("mockedCommandLogStreamingProcessor")
-    private CommandLogStreamingProcessor mockedCommandLogStreamingProcessor;
+    @SpyBean
+    private CommandLogStreamingProcessor commandLogStreamingProcessor;
 
     @Autowired
     private MessagingServiceDelegateService messagingServiceDelegateService;
@@ -100,7 +100,7 @@ class CommandManagerTests {
         reset(commandPublisher);
         reset(commandManager);
         reset(messagingServiceDelegateService);
-        reset(mockedCommandLogStreamingProcessor);
+        reset(commandLogStreamingProcessor);
     }
 
     @Test
@@ -139,7 +139,7 @@ class CommandManagerTests {
                 CompletableFuture.runAsync(() -> commandManager.execute(messageList.get(i - 1)), testThreadPool));
 
         // Wait for all the threads to complete (add a timeout just in case)
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(commandThreadPoolQueueSize));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
@@ -175,7 +175,7 @@ class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(2));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(2)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -201,7 +201,7 @@ class CommandManagerTests {
                 .when(messagingServiceDelegateService).getMessagingServiceClient(MESSAGING_SERVICE_ID);
 
         commandManager.execute(message);
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -218,7 +218,7 @@ class CommandManagerTests {
         doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(commandMapper.map(message));
 
         commandManager.execute(message);
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -245,7 +245,7 @@ class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
@@ -356,7 +356,7 @@ class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         assertTrue(mdcIsSet.get());
     }
@@ -394,58 +394,6 @@ class CommandManagerTests {
                 .build();
     }
 
-
-    private CommandMessage buildCommandMessageForConfigPush() {
-
-        List<Command> commands = List.of(
-                Command.builder()
-                        .commandType(CommandType.terraform)
-                        .ignoreResult(false)
-                        .body("asdfasdfadsf")
-                        .command("write_HCL")
-                        .build(),
-                Command.builder()
-                        .commandType(CommandType.terraform)
-                        .ignoreResult(false)
-                        .body("asdfasdfadsf")
-                        .command("write_HCL")
-                        .build(),
-                Command.builder()
-                        .commandType(CommandType.terraform)
-                        .ignoreResult(true)
-                        .body("asdfasdfadsf")
-                        .command("sync")
-                        .build(),
-
-                Command.builder()
-                        .commandType(CommandType.terraform)
-                        .ignoreResult(false)
-                        .body("asdfasdfadsf")
-                        .command("apply")
-                        .build());
-
-        CommandMessage message = new CommandMessage();
-        message.setOrigType(MOPSvcType.maasEventMgmt);
-        message.withMessageType(generic);
-        message.setContext("abc");
-        message.setServiceId(MESSAGING_SERVICE_ID);
-        message.setActorId("myActorId");
-        message.setOrgId(eventPortalProperties.getOrganizationId());
-        message.setTraceId("myTraceId");
-        message.setCommandCorrelationId("myCorrelationIdabc");
-        message.setCommandBundles(List.of(
-                CommandBundle.builder()
-                        .executionType(ExecutionType.serial)
-                        .exitOnFailure(true)
-                        .commands(commands)
-                        .build()));
-        return message;
-    }
-
-    private Boolean commandPublisherIsInvoked(int numberOfExpectedInvocations) {
-        return Mockito.mockingDetails(commandPublisher).getInvocations().size() == numberOfExpectedInvocations;
-    }
-
     private ArgumentCaptor<MOPMessage> executeCommandAndGetResponseMessage(CommandMessage message) {
         ArgumentCaptor<MOPMessage> mopMessageCaptor = ArgumentCaptor.forClass(MOPMessage.class);
 
@@ -460,7 +408,7 @@ class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
         return mopMessageCaptor;
     }
 
@@ -475,7 +423,7 @@ class CommandManagerTests {
 
         @BeforeEach
         void setUp() {
-            message = buildCommandMessageForConfigPush();
+            message = CommandManagerTestHelper.buildCommandMessageForConfigPush(eventPortalProperties.getOrganizationId(), MESSAGING_SERVICE_ID);
             executionLogFileCaptor = ArgumentCaptor.forClass(List.class);
             topicArgCaptor = ArgumentCaptor.forClass(Map.class);
             doNothing().when(commandPublisher).sendCommandResponse(any(), any());
@@ -503,7 +451,7 @@ class CommandManagerTests {
              */
 
             executeCommandsAndVerify(4, 4);
-            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(commandManager, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
                             basePath.resolve("apply"),
@@ -532,7 +480,7 @@ class CommandManagerTests {
               however only 3 log files will be streamed + cleaned
              */
             executeCommandsAndVerify(4, 3);
-            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(commandManager, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
                             basePath.resolve("apply"),
@@ -567,7 +515,7 @@ class CommandManagerTests {
                so we expect 3 commands to be executed and 2 log files to be streamed + cleaned
              */
             executeCommandsAndVerify(3, 2);
-            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(commandManager, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
                             basePath.resolve("write_HCL"),
@@ -582,16 +530,16 @@ class CommandManagerTests {
                 return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
             }).when(terraformManager).execute(any(), any(), any());
 
-            doThrow(new IllegalArgumentException("fake")).when(mockedCommandLogStreamingProcessor).streamLogsToEP(any(), any(), any());
+            doThrow(new IllegalArgumentException("fake")).when(commandLogStreamingProcessor).streamLogsToEP(any(), any(), any());
             commandManager.execute(message);
             // Wait for the command thread to complete
-            await().atMost(5, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+            await().atMost(5, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
 
-            verify(mockedCommandLogStreamingProcessor, times(4)).streamLogsToEP(any(), any(), any());
+            verify(commandLogStreamingProcessor, times(4)).streamLogsToEP(any(), any(), any());
 
             //we still expect cleanup to occur even though log streaming to ep fails
-            verify(mockedCommandLogStreamingProcessor, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
+            verify(commandManager, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
             Assertions.assertThat(executionLogFileCaptor.getValue())
                     .containsExactlyInAnyOrder(
                             basePath.resolve("apply"),
@@ -600,16 +548,70 @@ class CommandManagerTests {
                             basePath.resolve("sync"));
         }
 
+        @Test
+        void testExecutionLogDeletionSuccessFlow(@TempDir Path logPath) throws IOException {
+            Path commandLog1 = logPath.resolve("log1");
+            Path commandLog2 = logPath.resolve("log2");
+            Path commandLog3 = logPath.resolve("log3");
+            Path commandLog4 = logPath.resolve("log4");
+
+            Files.writeString(commandLog1, "log 1");
+            Files.writeString(commandLog2, "log 2");
+            Files.writeString(commandLog3, "log 3");
+            Files.writeString(commandLog4, "log 4");
+            List<Path> allLogs = List.of(commandLog1, commandLog2, commandLog3, commandLog4);
+
+            Assertions.assertThat(
+                    allLogs.stream().allMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
+            ).isTrue();
+            commandManager.deleteExecutionLogFiles(
+                    List.of(commandLog1, commandLog2, commandLog3, commandLog4)
+            );
+
+            Assertions.assertThat(
+                    allLogs.stream().noneMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
+            ).isTrue();
+        }
+
+        @Test
+        void testExecutionLogDeletionWhenSomeLogFilesDontExist(@TempDir Path logPath) throws IOException {
+            Path commandLog1 = logPath.resolve("log1");
+            Path commandLog2 = logPath.resolve("log2");
+            Path commandLog3 = logPath.resolve("log3");
+            Path commandLog4 = logPath.resolve("log4");
+
+            Files.writeString(commandLog1, "log 1");
+            Files.writeString(commandLog2, "log 2");
+
+            List<Path> allLogs = List.of(commandLog1, commandLog2, commandLog3, commandLog4);
+
+            // Only 2 of the log files exist
+            Assertions.assertThat(
+                    Stream.of(commandLog1, commandLog2).allMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
+            ).isTrue();
+        /* Although only 2 out of 4 log files exist, the 2 log files will be deleted anyway
+         and the errors will be handled gracefully
+         */
+            commandManager.deleteExecutionLogFiles(
+                    List.of(commandLog1, commandLog2, commandLog3, commandLog4)
+            );
+
+            Assertions.assertThat(
+                    allLogs.stream().noneMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
+            ).isTrue();
+
+        }
+
         private void executeCommandsAndVerify(int expectedNumberOfCommandExecutions,
                                               int expectedNumberOfLogFilesStreamed) {
             commandManager.execute(message);
 
             // Wait for the command thread to complete
-            await().atMost(5, TimeUnit.SECONDS).until(() -> commandPublisherIsInvoked(1));
+            await().atMost(5, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
             verify(terraformManager, times(expectedNumberOfCommandExecutions)).execute(any(), any(), envArgCaptor.capture());
             verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
-            verify(mockedCommandLogStreamingProcessor, times(expectedNumberOfLogFilesStreamed)).streamLogsToEP(any(), any(), any());
+            verify(commandLogStreamingProcessor, times(expectedNumberOfLogFilesStreamed)).streamLogsToEP(any(), any(), any());
         }
 
         private Path setCommandStatusAndReturnExecutionLog(Command targetCommand,
@@ -631,4 +633,6 @@ class CommandManagerTests {
 
         }
     }
+
+
 }

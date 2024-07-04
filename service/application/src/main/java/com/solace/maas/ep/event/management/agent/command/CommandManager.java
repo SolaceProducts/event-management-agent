@@ -21,12 +21,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
@@ -45,14 +48,14 @@ public class CommandManager {
     private final MessagingServiceDelegateService messagingServiceDelegateService;
     private final EventPortalProperties eventPortalProperties;
     private final ThreadPoolTaskExecutor configPushPool;
-    private final CommandLogStreamingProcessor commandLogStreamingProcessor;
+    private final Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt;
 
     public CommandManager(TerraformManager terraformManager,
                           CommandMapper commandMapper,
                           CommandPublisher commandPublisher,
                           MessagingServiceDelegateService messagingServiceDelegateService,
                           EventPortalProperties eventPortalProperties,
-                          CommandLogStreamingProcessor commandLogStreamingProcessor) {
+                          Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
@@ -65,7 +68,7 @@ public class CommandManager {
         configPushPool.setThreadNamePrefix("config-push-pool-");
         configPushPool.setTaskDecorator(new MdcTaskDecorator());
         configPushPool.initialize();
-        this.commandLogStreamingProcessor = commandLogStreamingProcessor;
+        this.commandLogStreamingProcessorOpt = commandLogStreamingProcessorOpt;
     }
 
     public void execute(CommandMessage request) {
@@ -106,7 +109,10 @@ public class CommandManager {
                 for (Command command : bundle.getCommands()) {
                     Path executionLog = executeCommand(request, command, envVars);
                     if (executionLog != null) {
-                        streamCommandExecutionLogToEpCore(request, command, executionLog);
+                        if (commandLogStreamingProcessorOpt.isPresent()) {
+                            streamCommandExecutionLogToEpCore(request, command, executionLog);
+                        }
+
                         executionLogFilesToClean.add(executionLog);
                     }
                     if (exitEarlyOnFailedCommand(bundle, command)) {
@@ -153,17 +159,41 @@ public class CommandManager {
 
     private void cleanup(List<Path> listOfExecutionLogFiles) {
         try {
-            commandLogStreamingProcessor.deleteExecutionLogFiles(listOfExecutionLogFiles);
+            deleteExecutionLogFiles(listOfExecutionLogFiles);
         } catch (Exception e) {
             log.error("Error while deleting execution log.", e);
         }
     }
 
-    private void streamCommandExecutionLogToEpCore(CommandRequest request, Command command, Path executionLog) {
+    public void deleteExecutionLogFiles(List<Path> listOfExecutionLogFiles) {
+        boolean allFilesDeleted = listOfExecutionLogFiles
+                .stream()
+                .allMatch(this::deleteExecutionLogFile);
+        if (!allFilesDeleted) {
+            throw new IllegalArgumentException("Some of the execution log files were not deleted. Please check the logs");
+        }
+    }
+
+    private boolean deleteExecutionLogFile(Path path) {
         try {
-            commandLogStreamingProcessor.streamLogsToEP(request, command, executionLog);
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
+        } catch (IOException e) {
+            log.warn("Error while deleting execution log at {}", path, e);
+            return false;
+        }
+        return true;
+    }
+
+    public void streamCommandExecutionLogToEpCore(CommandRequest request, Command command, Path executionLog) {
+        if (commandLogStreamingProcessorOpt.isEmpty()) {
+            throw new UnsupportedOperationException("Streaming logs to ep is not supported for this event management agent type");
+        }
+        try {
+            commandLogStreamingProcessorOpt.get().streamLogsToEP(request, command, executionLog);
         } catch (Exception e) {
-            log.error("Error sending logs to ep-core for command with commandCorrelationId",
+            log.error("Error sending logs to ep-core for command with commandCorrelationId {}",
                     request.getCommandCorrelationId(), e);
         }
     }

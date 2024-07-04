@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandReq
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClientFactory;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
@@ -37,6 +38,9 @@ public class TerraformManager {
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
 
+
+    private boolean isManagedAgent;
+
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
                             TerraformProperties terraformProperties,
                             TerraformClientFactory terraformClientFactory) {
@@ -45,7 +49,9 @@ public class TerraformManager {
         this.terraformClientFactory = terraformClientFactory;
     }
 
-    public Path execute(CommandRequest request, Command command, Map<String, String> envVars) {
+    public Path execute(CommandRequest request,
+                        Command command,
+                        Map<String, String> envVars) {
         MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCommandCorrelationId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());
         setEnvVarsFromParameters(command, envVars);

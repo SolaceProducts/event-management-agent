@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
@@ -31,13 +30,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -162,28 +161,13 @@ public class TestConfig {
     }
 
     @Bean
-    @Qualifier("realCommandLogStreamingProcessor")
-    public CommandLogStreamingProcessor realCommandLogStreamingProcessor(CommandLogsPublisher commandLogsPublisher,
-                                                                         EventPortalProperties eventPortalProperties,
-                                                                         ObjectMapper objectMapper) {
-        return new CommandLogStreamingProcessor(commandLogsPublisher, eventPortalProperties, objectMapper);
-    }
-
-    @Bean
-    @Qualifier("mockedCommandLogStreamingProcessor")
-    @Primary
-    public CommandLogStreamingProcessor mockedCommandLogStreamingProcessor() {
-        return mock(CommandLogStreamingProcessor.class);
-    }
-
-    @Bean
     @Primary
     public CommandManager getCommandManager(TerraformManager terraformManager,
                                             CommandMapper commandMapper,
                                             CommandPublisher commandPublisher,
                                             MessagingServiceDelegateService messagingServiceDelegateService,
                                             EventPortalProperties eventPortalProperties,
-                                            CommandLogStreamingProcessor commandLogStreamingProcessor) {
+                                            Optional<CommandLogStreamingProcessor> commandLogStreamingProcessor) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
