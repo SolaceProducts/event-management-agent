@@ -139,7 +139,10 @@ class CommandManagerTests {
                 CompletableFuture.runAsync(() -> commandManager.execute(messageList.get(i - 1)), testThreadPool));
 
         // Wait for all the threads to complete (add a timeout just in case)
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, commandThreadPoolQueueSize));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(
+                commandPublisher,
+                commandThreadPoolQueueSize
+        ));
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
