@@ -39,8 +39,6 @@ public class TerraformManager {
     private final TerraformClientFactory terraformClientFactory;
 
 
-    private boolean isManagedAgent;
-
     public TerraformManager(TerraformLogProcessingService terraformLogProcessingService,
                             TerraformProperties terraformProperties,
                             TerraformClientFactory terraformClientFactory) {
