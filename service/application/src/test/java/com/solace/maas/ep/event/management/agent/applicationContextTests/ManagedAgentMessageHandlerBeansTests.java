@@ -59,4 +59,15 @@ class ManagedAgentMessageHandlerBeansTests {
                 );
 
     }
+
+    @Test
+    void testCommandLogStreamingProcessorBeanIsNotLoaded() {
+        String[] allBeanNames = applicationContext.getBeanDefinitionNames();
+        assertThat(
+                Arrays.stream(allBeanNames)
+                        .map(StringUtils::lowerCase)
+                        .collect(Collectors.toSet()))
+                .doesNotContain(StringUtils.lowerCase("commandLogStreamingProcessor"));
+
+    }
 }

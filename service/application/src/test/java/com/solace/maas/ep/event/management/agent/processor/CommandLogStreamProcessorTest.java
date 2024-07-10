@@ -16,22 +16,18 @@ import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.junit.Assert.assertThrows;
@@ -51,8 +47,7 @@ public class CommandLogStreamProcessorTest {
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
-    @Autowired
-    @Qualifier("realCommandLogStreamingProcessor")
+    @SpyBean
     private CommandLogStreamingProcessor realCommandLogStreamingProcessor;
 
     @Autowired
@@ -163,60 +158,6 @@ public class CommandLogStreamProcessorTest {
         );
         // All the logs will be sent if command status is error
         verify(commandLogsPublisher, times(52)).sendCommandLogData(logMopCaptor.capture(), any());
-
-    }
-
-    @Test
-    void testExecutionLogDeletionSuccessFlow(@TempDir Path logPath) throws IOException {
-        Path commandLog1 = logPath.resolve("log1");
-        Path commandLog2 = logPath.resolve("log2");
-        Path commandLog3 = logPath.resolve("log3");
-        Path commandLog4 = logPath.resolve("log4");
-
-        Files.writeString(commandLog1, "log 1");
-        Files.writeString(commandLog2, "log 2");
-        Files.writeString(commandLog3, "log 3");
-        Files.writeString(commandLog4, "log 4");
-        List<Path> allLogs = List.of(commandLog1, commandLog2, commandLog3, commandLog4);
-
-        Assertions.assertThat(
-                allLogs.stream().allMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        ).isTrue();
-        realCommandLogStreamingProcessor.deleteExecutionLogFiles(
-                List.of(commandLog1, commandLog2, commandLog3, commandLog4)
-        );
-
-        Assertions.assertThat(
-                allLogs.stream().noneMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        ).isTrue();
-    }
-
-    @Test
-    void testExecutionLogDeletionWhenSomeLogFilesDontExist(@TempDir Path logPath) throws IOException {
-        Path commandLog1 = logPath.resolve("log1");
-        Path commandLog2 = logPath.resolve("log2");
-        Path commandLog3 = logPath.resolve("log3");
-        Path commandLog4 = logPath.resolve("log4");
-
-        Files.writeString(commandLog1, "log 1");
-        Files.writeString(commandLog2, "log 2");
-
-        List<Path> allLogs = List.of(commandLog1, commandLog2, commandLog3, commandLog4);
-
-        // Only 2 of the log files exist
-        Assertions.assertThat(
-                Stream.of(commandLog1, commandLog2).allMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        ).isTrue();
-        /* Although only 2 out of 4 log files exist, the 2 log files will be deleted anyway
-         and the errors will be handled gracefully
-         */
-        realCommandLogStreamingProcessor.deleteExecutionLogFiles(
-                List.of(commandLog1, commandLog2, commandLog3, commandLog4)
-        );
-
-        Assertions.assertThat(
-                allLogs.stream().noneMatch(path -> Files.exists(path, LinkOption.NOFOLLOW_LINKS))
-        ).isTrue();
 
     }
 
