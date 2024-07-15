@@ -26,6 +26,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,16 +40,18 @@ public class ScanManager {
     private final ScanService scanService;
     private final String runtimeAgentId;
     private final String orgId;
-    private final ScanStatusPublisher scanStatusPublisher;
+    // This is an optional dependency since it is not available in standalone mode.
+    // If the bean is not present, the publisher will not be used.
+    private final Optional<ScanStatusPublisher> scanStatusPublisherOpt;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
                        ScanService scanService,
                        EventPortalProperties eventPortalProperties,
-                       ScanStatusPublisher scanStatusPublisher) {
+                       Optional<ScanStatusPublisher> scanStatusPublisher) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
-        this.scanStatusPublisher = scanStatusPublisher;
+        this.scanStatusPublisherOpt = scanStatusPublisher;
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
         orgId = eventPortalProperties.getOrganizationId();
     }
@@ -115,6 +118,11 @@ public class ScanManager {
     }
 
     public void handleError(Exception e, ScanCommandMessage message){
+
+        if( scanStatusPublisherOpt.isEmpty()){
+            return;
+        }
+        ScanStatusPublisher scanStatusPublisher = scanStatusPublisherOpt.get();
 
         List<String> scanTypeNames = message.getScanTypes().stream().map(ScanType::name).toList();
 

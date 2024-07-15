@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -47,7 +48,7 @@ class ScanManagerHandleErrorTest {
                 messagingServiceDelegateService,
                 scanService,
                 eventPortalProperties,
-                scanStatusPublisher
+                Optional.of(scanStatusPublisher)
         );
         scanManagerUnderTest.handleError(mockEx,createScanCommandMessage());
         verify(scanStatusPublisher, times(1)).sendOverallScanStatus(any(),any());
