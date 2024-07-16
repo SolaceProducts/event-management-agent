@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == false")
+@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:true}== false && ${event-portal.managed:false} == false")
 public class ScanCommandMessageHandler extends SolaceDirectMessageHandler<ScanCommandMessage> {
 
     private final ScanCommandMessageProcessor scanCommandMessageProcessor;
