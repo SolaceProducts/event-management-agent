@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,7 +39,7 @@ class ScanManagerHandleErrorTest {
     private ScanStatusPublisher scanStatusPublisher;
 
     @Test
-    void testScanManagerHandleError(){
+    void testScanManagerConnectedHandleError(){
         when(eventPortalProperties.getOrganizationId()).thenReturn("orgId");
         when(eventPortalProperties.getRuntimeAgentId()).thenReturn("runtimeAgentId");
 
@@ -54,7 +55,24 @@ class ScanManagerHandleErrorTest {
         verify(scanStatusPublisher, times(1)).sendOverallScanStatus(any(),any());
     }
 
+    @Test
+    void testScanManagerStandaloneHandleError(){
+        when(eventPortalProperties.getOrganizationId()).thenReturn("orgId");
+        when(eventPortalProperties.getRuntimeAgentId()).thenReturn("runtimeAgentId");
 
+        RuntimeException mockEx = new RuntimeException("Mock Exception");
+
+        ScanManager scanManagerUnderTest = new ScanManager(
+                messagingServiceDelegateService,
+                scanService,
+                eventPortalProperties,
+                Optional.empty()
+        );
+        // should just do "nothing" and not throw an exception when scanStatusPublisher is not present
+        assertDoesNotThrow(() -> {
+            scanManagerUnderTest.handleError(mockEx, createScanCommandMessage());
+        });
+    }
 
     private ScanCommandMessage createScanCommandMessage(){
         return new ScanCommandMessage(
