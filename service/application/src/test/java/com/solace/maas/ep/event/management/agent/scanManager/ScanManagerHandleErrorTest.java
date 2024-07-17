@@ -69,9 +69,9 @@ class ScanManagerHandleErrorTest {
                 Optional.empty()
         );
         // should just do "nothing" and not throw an exception when scanStatusPublisher is not present
-        assertDoesNotThrow(() -> {
-            scanManagerUnderTest.handleError(mockEx, createScanCommandMessage());
-        });
+        assertDoesNotThrow(() ->
+            scanManagerUnderTest.handleError(mockEx, createScanCommandMessage()));
+
     }
 
     private ScanCommandMessage createScanCommandMessage(){
