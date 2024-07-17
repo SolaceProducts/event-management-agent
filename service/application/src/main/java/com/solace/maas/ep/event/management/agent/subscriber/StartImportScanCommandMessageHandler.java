@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == false")
+@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:true}== false && ${event-portal.managed:false} == false")
 public class StartImportScanCommandMessageHandler extends SolaceDirectMessageHandler<ScanDataImportMessage> {
 
     private final ProducerTemplate producerTemplate;

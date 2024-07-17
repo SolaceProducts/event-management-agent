@@ -32,7 +32,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 
 @Component
 @Slf4j
-@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == false")
+@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:true}== false && ${event-portal.managed:false} == false")
 public class CommandLogStreamingProcessor {
 
     public static final String ANY = "*";

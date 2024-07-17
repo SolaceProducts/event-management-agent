@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:false}== false && ${event-portal.managed:false} == true")
+@ConditionalOnExpression("${event-portal.gateway.messaging.standalone:true}== false && ${event-portal.managed:false} == true")
 public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler implements MessageReceiver.MessageHandler,
         ApplicationListener<ApplicationReadyEvent> {
     private final Map<String, Class> cachedJSONDecoders = new HashMap();
