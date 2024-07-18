@@ -51,6 +51,8 @@ public class EMAApplication {
 
         properties.put("spring.application.name", "event-management-agent");
         properties.put("server.port", "8180");
+        properties.put("management.statsd.metrics.export.enabled", "false");
         return properties;
     }
 }
+
