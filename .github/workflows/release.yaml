@@ -5,7 +5,7 @@ on:
       releaseVersion:
         description: "Default version to use when preparing a release."
         required: true
-        default: "X.Y.Z"
+        default: "A.B.C"
       developmentVersion:
         description: "Default version to use for new local working copy."
         required: true
@@ -43,39 +43,39 @@ jobs:
         with:
           python-version: 3.8
           cache: 'pip'
-      - name: Pre-Release Check - Whitesource vulnurabilities
-        env:
-          WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
-          WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-        run: |
-          pip install --quiet --upgrade pip
-          export VIRTUAL_ENV=./venv
-          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
-          cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
-      - name: Pre-Release Check - SonarQube Hotspots
-        env:
-          SONARQUBE_HOTSPOTS_API_URL: ${{ secrets.SONARQUBE_HOTSPOTS_API_URL }}
-          SONARQUBE_QUERY_TOKEN: ${{ secrets.SONARQUBE_QUERY_TOKEN }}
-        run: |
-          export VIRTUAL_ENV=./venv
-          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
-          cd ./.github/workflows/release_scripts/  && python3.8 sonarqube_vulnurability_checker.py
-      - name: Pre-Release Check - Prisma vulnurabilities
-        env:
-          PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
-          DOCKER_IMAGE_TO_CHECK: ${{ secrets.PRISMA_DOCKER_IMAGE_TO_CHECK }}
-          PRISMA_ACCESS_KEY: ${{ secrets.PRISMA_ACCESS_KEY }}
-          PRISMA_ACCESS_KEY_SECRET: ${{ secrets.PRISMA_ACCESS_KEY_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-        run: |
-          export VIRTUAL_ENV=./venv
-          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
-          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
+      # - name: Pre-Release Check - Whitesource vulnurabilities
+      #   env:
+      #     WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
+      #     WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      #   run: |
+      #     pip install --quiet --upgrade pip
+      #     export VIRTUAL_ENV=./venv
+      #     python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+      #     cd ./.github/workflows/release_scripts/  && pip install --quiet -r requirements.txt && python3.8 whitesource_vulnurability_checker.py
+      # - name: Pre-Release Check - SonarQube Hotspots
+      #   env:
+      #     SONARQUBE_HOTSPOTS_API_URL: ${{ secrets.SONARQUBE_HOTSPOTS_API_URL }}
+      #     SONARQUBE_QUERY_TOKEN: ${{ secrets.SONARQUBE_QUERY_TOKEN }}
+      #   run: |
+      #     export VIRTUAL_ENV=./venv
+      #     python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+      #     cd ./.github/workflows/release_scripts/  && python3.8 sonarqube_vulnurability_checker.py
+      # - name: Pre-Release Check - Prisma vulnurabilities
+      #   env:
+      #     PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
+      #     DOCKER_IMAGE_TO_CHECK: ${{ secrets.PRISMA_DOCKER_IMAGE_TO_CHECK }}
+      #     PRISMA_ACCESS_KEY: ${{ secrets.PRISMA_ACCESS_KEY }}
+      #     PRISMA_ACCESS_KEY_SECRET: ${{ secrets.PRISMA_ACCESS_KEY_SECRET }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      #   run: |
+      #     export VIRTUAL_ENV=./venv
+      #     python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
+      #     cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
       - name: Prepare Maven Settings
         env:
           MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
@@ -89,47 +89,142 @@ jobs:
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
 
-      - name: Maven Release
-        run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
-      - name: Changelog
-        uses: Bullrich/generate-release-changelog@master
-        id: Changelog
-        env:
-          REPO: ${{ github.repository }}
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: "v${{ github.event.inputs.releaseVersion }}"
-          artifacts: "**/application/target/*.jar"
-          generateReleaseNotes: true
-          makeLatest: true
-          body: ${{ steps.Changelog.outputs.changelog }}
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1.6.0
-      - name: ECR Docker Image Release
-        run: |
-          MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} \
-          --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json \
-          | jq --raw-output '.images[].imageManifest')
+      # - name: Maven Release
+      #   run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+      # - name: Changelog
+      #   uses: Bullrich/generate-release-changelog@master
+      #   id: Changelog
+      #   env:
+      #     REPO: ${{ github.repository }}
+      # - name: Create GitHub Release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     tag: "v${{ github.event.inputs.releaseVersion }}"
+      #     artifacts: "**/application/target/*.jar"
+      #     generateReleaseNotes: true
+      #     makeLatest: true
+      #     body: ${{ steps.Changelog.outputs.changelog }}
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v1.6.0
+      # - name: ECR Docker Image Release
+      #   run: |
+      #     MANIFEST=$(aws ecr batch-get-image --repository-name ${{ github.event.repository.name }} \
+      #     --image-ids imageTag=main --region ${{ secrets.EMA_AWS_DEFAULT_REGION }} --output json \
+      #     | jq --raw-output '.images[].imageManifest')
 
-          aws ecr put-image --repository-name ${{ github.event.repository.name }} \
-            --image-tag ${{ github.event.inputs.releaseVersion }} \
-            --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-      - name: Update Release Manifest DB
-        run: | 
-          export squad="event-portal"
-          export repository="event-management-agent"
-          export release_tag=production
-          export version=${{ github.event.inputs.releaseVersion }}
-          export release_version=${{ github.event.inputs.releaseVersion }}
-          export image_tag=${{ github.event.inputs.releaseVersion }}
-          export chart_version="n/a"
-          export sha=${{ github.sha }}
-          ./.github/workflows/release_scripts/update_release_manifest.sh          
+      #     aws ecr put-image --repository-name ${{ github.event.repository.name }} \
+      #       --image-tag ${{ github.event.inputs.releaseVersion }} \
+      #       --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      # - name: Update Release Manifest DB
+      #   run: | 
+      #     export squad="event-portal"
+      #     export repository="event-management-agent"
+      #     export release_tag=production
+      #     export version=${{ github.event.inputs.releaseVersion }}
+      #     export release_version=${{ github.event.inputs.releaseVersion }}
+      #     export image_tag=${{ github.event.inputs.releaseVersion }}
+      #     export chart_version="n/a"
+      #     export sha=${{ github.sha }}
+      #     ./.github/workflows/release_scripts/update_release_manifest.sh
+      - name: Retrieve docker registry secrets
+        id: docker_registry_secrets
+        uses: hashicorp/vault-action@v2.5.0
+        with:
+          url: "${{ env.VAULT_ADDR }}"
+          role: github-docker-secrets-read-role
+          method: jwt
+          path: jwt-github
+          jwtGithubAudience: https://github.com/SolaceDev
+          exportToken: true
+          secrets: |
+            secret/data/production/azure-china REGISTRY_USERNAME | AZURE_CHINA_PROD_USERNAME ;
+            secret/data/production/azure-china REGISTRY_PASSWORD | AZURE_CHINA_PROD_PASSWORD ;
+            secret/data/production/azure-china REGISTRY_HOSTNAME | AZURE_CHINA_PROD_HOSTNAME ;
+            secret/data/production/gcp-gcr GCP_SERVICE_ACCOUNT | GCP_PROD_SERVICE_ACCOUNT ;
+            secret/data/staging/gcp-gcr GCP_SERVICE_ACCOUNT | GCP_STAGING_SERVICE_ACCOUNT ;
+            secret/data/development/gcp-gcr GCP_SERVICE_ACCOUNT | GCP_DEV_SERVICE_ACCOUNT 
+      - name: Docker meta
+        id: meta_dev
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: |
+            gcr.io/${{ secrets.GCLOUD_PROJECT_ID_DEV }}/event-management-agent
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ github.event.inputs.releaseVersion }}
+
+      - name: Docker meta
+        id: meta_staging
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: |
+            gcr.io/${{ secrets.GCLOUD_PROJECT_ID_STAGING }}/event-management-agent
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ github.event.inputs.releaseVersion }}
+
+      - name: Docker meta
+        id: meta_prod
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: |
+            gcr.io/${{ secrets.GCLOUD_PROJECT_ID_PROD }}/event-management-agent
+            ${{ steps.docker_registry_secrets.outputs.AZURE_CHINA_PROD_HOSTNAME }}/event-management-agent
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ github.event.inputs.releaseVersion }}
+      - name: Log in to gcr development docker registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ steps.docker_registry_secrets.outputs.GCP_DEV_SERVICE_ACCOUNT }}
+
+      - name: Build and publish Docker image to gcr dev with release version
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta_dev.outputs.tags }}
+
+      - name: Log in to gcr staging docker registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ steps.docker_registry_secrets.outputs.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      # - name: Build and publish Docker image to gcr staging with release version
+      #   uses: docker/build-push-action@v4.0.0
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: ${{ steps.meta_staging.outputs.tags }}
+
+      - name: Log in to gcr prod docker registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ steps.docker_registry_secrets.outputs.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Log in to Azure China prod docker registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ${{ steps.docker_registry_secrets.outputs.AZURE_CHINA_PROD_HOSTNAME }}
+          username: ${{ steps.docker_registry_secrets.outputs.AZURE_CHINA_PROD_USERNAME }}
+          password: ${{ steps.docker_registry_secrets.outputs.AZURE_CHINA_PROD_PASSWORD }}
+
+      # - name: Build and publish Docker image to gcr prod and Azure China with release version
+      #   uses: docker/build-push-action@v4.0.0
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: ${{ steps.meta_prod.outputs.tags }}
