@@ -163,3 +163,25 @@ jobs:
           reporter: java-junit
           fail-on-error: true
           only-summary: 'true'
+
+      - name: Docker meta
+        id: meta_dev
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: |
+            gcr.io/${{ secrets.GCLOUD_PROJECT_ID_DEV }}/event-management-agent
+          tags: |
+            type=raw,value=latest
+            type=raw,value=0.0.1
+      - name: Log in to gcr development docker registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.DEV_GCP_SERVICE_ACCOUNT }}
+      - name: Build and publish Docker image to gcr dev with release version
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta_dev.outputs.tags }}
