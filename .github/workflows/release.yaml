@@ -5,7 +5,7 @@ on:
       releaseVersion:
         description: "Default version to use when preparing a release."
         required: true
-        default: "X.Y.Z"
+        default: "A.B.C"
       developmentVersion:
         description: "Default version to use for new local working copy."
         required: true
@@ -132,4 +132,4 @@ jobs:
           export image_tag=${{ github.event.inputs.releaseVersion }}
           export chart_version="n/a"
           export sha=${{ github.sha }}
-          ./.github/workflows/release_scripts/update_release_manifest.sh          
+          ./.github/workflows/release_scripts/update_release_manifest.sh   
