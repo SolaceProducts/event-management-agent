@@ -108,7 +108,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
       - name: Login to Amazon ECR
         # if: env.DOCKER_PUSH=='true'
         id: login-ecr
