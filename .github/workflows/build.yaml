@@ -166,13 +166,14 @@ jobs:
       #     only-summary: 'true'
 
      
-      # - name: Login to Amazon ECR TODO: Shouldnt need to do this again
-      #   if: env.DOCKER_PUSH=='true'
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v1.6.0
+      - name: Login to Amazon ECR #TODO: Shouldnt need to do this again
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1.6.0
       - name: ECR (Dev) - Pull Image
         run: |
+          ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
           docker pull $ECR_DEV_IMAGE
+          echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: GCR (Staging) - Login
         uses: docker/login-action@v3
         with:
