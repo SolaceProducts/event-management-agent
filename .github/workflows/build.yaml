@@ -103,18 +103,18 @@ jobs:
       #     echo "Whitesource- Running scan"
       #     java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
       - name: Configure AWS credentials
-        if: env.DOCKER_PUSH=='true'
+        # if: env.DOCKER_PUSH=='true'
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
       - name: Login to Amazon ECR
-        if: env.DOCKER_PUSH=='true'
+        # if: env.DOCKER_PUSH=='true'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1.6.0
       - name: Docker Build/Push
-        if: env.DOCKER_PUSH=='true'
+        # if: env.DOCKER_PUSH=='true'
         working-directory: service/application/docker
         run: |
           ./buildEventManagementAgentDocker.sh -t main
@@ -165,10 +165,6 @@ jobs:
       #     fail-on-error: true
       #     only-summary: 'true'
 
-     
-      - name: Login to Amazon ECR #TODO: Shouldnt need to do this again
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1.6.0
       - name: ECR (Dev) - Pull Image
         run: |
           ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
