@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - crushton/DATAGO-77999_auto_release_to_envs
     paths-ignore:
       - '.gitignore'
       - '.github/**'
