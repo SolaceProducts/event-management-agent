@@ -168,7 +168,7 @@ jobs:
 
       - name: ECR (Dev) - Pull Image
         run: |
-          ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
           docker pull $ECR_DEV_IMAGE
           echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: GCR (Staging) - Login
