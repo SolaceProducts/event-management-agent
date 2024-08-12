@@ -182,9 +182,9 @@ jobs:
           GCR_IMAGE_TAGS_TO_PUSH=(
           "0.0.1" "latest"
           )
-          GCR_STAGING_IMAGE_REPO="${{ secrets.DELETE_ME_DEV_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
+          GCR_DEV_IMAGE_REPO="gcr.io/${{ secrets.DELETE_ME_DEV_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
           for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
           do
-            docker tag $ECR_DEV_IMAGE $GCR_STAGING_IMAGE_REPO:$current_tag
-            docker push $GCR_STAGING_IMAGE_REPO:$current_tag
+            docker tag $ECR_DEV_IMAGE $GCR_DEV_IMAGE_REPO:$current_tag
+            docker push $GCR_DEV_IMAGE_REPO:$current_tag
           done
