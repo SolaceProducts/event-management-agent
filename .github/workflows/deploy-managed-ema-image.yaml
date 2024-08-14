@@ -1,0 +1,91 @@
+name: Deploy Managed EMA
+on:
+  workflow_dispatch
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1.6.0
+      - name: ECR (Dev) - Pull Image
+        run: |
+          ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          docker pull $ECR_DEV_IMAGE
+          echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
+      - name: GCR (Dev) - Login
+        uses: docker/login-action@v3
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.DEV_GCP_SERVICE_ACCOUNT }}
+      - name: GCR (Dev) - Tag and Push
+        run: |
+          GCR_IMAGE_TAGS_TO_PUSH=(
+          "${{ github.event.inputs.releaseVersion }}" "latest"
+          )
+          GCR_DEV_IMAGE_REPO="gcr.io/${{ secrets.DEV_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
+          for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
+          do
+            docker tag $ECR_DEV_IMAGE $GCR_DEV_IMAGE_REPO:$current_tag
+            docker push $GCR_DEV_IMAGE_REPO:$current_tag
+          done2
+      - name: GCR (Staging) - Login
+        uses: docker/login-action@v3
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.STAGING_GCP_SERVICE_ACCOUNT }}
+      - name: GCR (Staging) - Tag and Push
+        run: |
+          GCR_IMAGE_TAGS_TO_PUSH=(
+          "${{ github.event.inputs.releaseVersion }}" "latest"
+          )
+          GCR_STAGING_IMAGE_REPO="gcr.io/${{ secrets.STAGING_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
+          for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
+          do
+            docker tag $ECR_DEV_IMAGE $GCR_STAGING_IMAGE_REPO:$current_tag
+            docker push $GCR_STAGING_IMAGE_REPO:$current_tag
+          done
+      - name: GCR (Production) - Login
+        uses: docker/login-action@v3
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.PROD_GCP_SERVICE_ACCOUNT }}
+      - name: GCR (Prod) - Tag and Push
+        run: |
+          GCR_IMAGE_TAGS_TO_PUSH=(
+          "${{ github.event.inputs.releaseVersion }}" "latest"
+          )
+          GCR_PROD_IMAGE_REPO="gcr.io/${{ secrets.PROD_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
+          for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
+          do
+            docker tag $ECR_DEV_IMAGE $GCR_PROD_IMAGE_REPO:$current_tag
+            docker push $GCR_PROD_IMAGE_REPO:$current_tag
+          done
+      - name: Log in to Azure China prod docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.AZURE_CHINA_PROD_HOSTNAME }}
+          username: ${{ secrets.AZURE_CHINA_PROD_USERNAME }}
+          password: ${{ secrets.AZURE_CHINA_PROD_PASSWORD }}
+      - name: Azure China (Prod) - Tag and Push
+        run: |
+          IMAGE_TAGS_TO_PUSH=(
+          "${{ github.event.inputs.releaseVersion }}" "latest"
+          )
+          PROD_IMAGE_REPO="${{ secrets.AZURE_CHINA_PROD_HOSTNAME }}/${{ github.event.repository.name }}"
+          for current_tag in ${IMAGE_TAGS_TO_PUSH[@]}
+          do
+            docker tag $ECR_DEV_IMAGE $PROD_IMAGE_REPO:$current_tag
+            docker push $PROD_IMAGE_REPO:$current_tag
+          done

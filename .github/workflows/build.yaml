@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - crushton/DATAGO-77999_auto_release_to_envs
     paths-ignore:
       - '.gitignore'
       - '.github/**'
@@ -19,7 +18,7 @@ jobs:
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
-    environment: ${{ github.ref=='refs/heads/main' && 'build_main' || 'build_main' }} ## TODO: || build_pr
+    environment: ${{ github.ref=='refs/heads/main' && 'build_main' || 'build_pr' }}
     timeout-minutes: 20
     permissions:
        contents: read
@@ -58,133 +57,109 @@ jobs:
           echo "DOCKER_PUSH=$DOCKER_PUSH" >> $GITHUB_ENV
           echo "WHITESOURCE_SCAN=$WHITESOURCE_SCAN" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
-      # - name: Static Code Analysis
-      #   run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
-      # - name: Unit Tests
-      #   run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
-      # - name: Generate Artifacts
-      #   run: |
-      #     mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-      # - name: Sonar Scan
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      #   run: |
-      #     mvn -B $SKIP_FLAGS_ALL_TESTS \
-      #       org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceProducts_event-management-agent \
-      #       --file service/pom.xml
-      # - name: WhiteSource Scan
-      #   if: env.WHITESOURCE_SCAN=='true'
-      #   env:
-      #     unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
-      #     unified_agent_sha_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar.sha256"
-      #     WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
-      #     WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
-      #     TARGET_DIR: "service/application/target/lib"
-      #     WS_EXCLUDES: "local-storage-plugin*.jar,plugin*.jar,kafka-plugin*.jar,confluent-schema-registry-plugin*.jar"
-      #   run: |
-      #     echo "Whitesource- Downloading and verifying latest Agent"
+      - name: Static Code Analysis
+        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+      - name: Unit Tests
+        run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
+      - name: Generate Artifacts
+        run: |
+          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
+      - name: Sonar Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn -B $SKIP_FLAGS_ALL_TESTS \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SolaceProducts_event-management-agent \
+            --file service/pom.xml
+      - name: WhiteSource Scan
+        if: env.WHITESOURCE_SCAN=='true'
+        env:
+          unified_agent_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar"
+          unified_agent_sha_url: "https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar.sha256"
+          WS_APIKEY: ${{ secrets.WHITESOURCE_API_KEY }}
+          WS_PROJECTTOKEN: ${{ secrets.WHITESOURCE_PROJECT_TOKEN }}
+          TARGET_DIR: "service/application/target/lib"
+          WS_EXCLUDES: "local-storage-plugin*.jar,plugin*.jar,kafka-plugin*.jar,confluent-schema-registry-plugin*.jar"
+        run: |
+          echo "Whitesource- Downloading and verifying latest Agent"
 
-      #     curl -LJOs ${{ env.unified_agent_url }}
-      #     sha_from_jar=$(sha256sum  wss-unified-agent.jar | awk '{print $1}')
-      #     curl -LJOs ${{ env.unified_agent_sha_url }}
-      #     sha_from_file=$(cat wss-unified-agent.jar.sha256 | awk '{print $1}')
-      #     if [[ "$sha_from_file" == "$sha_from_jar" ]]; then
-      #         echo "Integrity of the wss-unified-agent.jar file verified .."
-      #     else
-      #         echo "Integrity check of wss-unified-agent.jar file failed .."
-      #         echo "sha_from_jar: $sha_from_jar"
-      #         echo "sha_from_file: $sha_from_file"
-      #         exit 1
-      #     fi
+          curl -LJOs ${{ env.unified_agent_url }}
+          sha_from_jar=$(sha256sum  wss-unified-agent.jar | awk '{print $1}')
+          curl -LJOs ${{ env.unified_agent_sha_url }}
+          sha_from_file=$(cat wss-unified-agent.jar.sha256 | awk '{print $1}')
+          if [[ "$sha_from_file" == "$sha_from_jar" ]]; then
+              echo "Integrity of the wss-unified-agent.jar file verified .."
+          else
+              echo "Integrity check of wss-unified-agent.jar file failed .."
+              echo "sha_from_jar: $sha_from_jar"
+              echo "sha_from_file: $sha_from_file"
+              exit 1
+          fi
 
-      #     echo "Whitesource- Copying Maven Dependencies"
-      #     mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
+          echo "Whitesource- Copying Maven Dependencies"
+          mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib --file service/pom.xml
 
-      #     echo "Whitesource- Running scan"
-      #     java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
+          echo "Whitesource- Running scan"
+          java -jar wss-unified-agent.jar -d  ${{ env.TARGET_DIR }}  -logLevel Info
       - name: Configure AWS credentials
-        # if: env.DOCKER_PUSH=='true'
-        uses: aws-actions/configure-aws-credentials@v4
+        if: env.DOCKER_PUSH=='true'
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
       - name: Login to Amazon ECR
-        # if: env.DOCKER_PUSH=='true'
+        if: env.DOCKER_PUSH=='true'
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-      # - name: Docker Build/Push
-      #   # if: env.DOCKER_PUSH=='true'
-      #   working-directory: service/application/docker
-      #   run: |
-      #     ./buildEventManagementAgentDocker.sh -t main
-      #     ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
-      #     echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
-      #     docker tag "${{ github.event.repository.name }}:main" $ECR_DOCKER_IMAGE
-      #     docker push $ECR_DOCKER_IMAGE
-      #     #Tag/Push additional Docker image
-      #     SHORT_GIT_SHA=${GITHUB_SHA:0:10}
-      #     JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ../pom.xml)
-      #     ADDITIONAL_ECR_DOCKER_IMAGE_TAG="$ECR_DOCKER_IMAGE-$JAR_VERSION-$SHORT_GIT_SHA"
-      #     docker tag "${{ github.event.repository.name }}:main" $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
-      #     docker push $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
-      # - name: Deploy Artifacts
-      #   if: env.GITHUB_PACKAGES_DEPLOY=='true'
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
-      # - name: Publishing Test Results - Checkstyle
-      #   if: always()
-      #   uses: jwgmeligmeyling/checkstyle-github-action@master
-      #   with:
-      #     path: '**/checkstyle-result.xml'
-      # - name: Publishing Test Results - PMD
-      #   if: always()
-      #   uses: jwgmeligmeyling/pmd-github-action@master
-      #   with:
-      #     path: '**/pmd.xml'
-      # - name: Publishing Test Results - SpotBugs
-      #   if: always()
-      #   uses: jwgmeligmeyling/spotbugs-github-action@master
-      #   with:
-      #     path: '**/spotbugsXml.xml'
-      # - name: Publishing Test Results - Unit Tests Pre-Condition
-      #   if: always()
-      #   id: unit_test_report_exists
-      #   uses: andstor/file-existence-action@v2
-      #   with:
-      #     files: "**/surefire-reports/**/*.xml"
-      # - name: Publishing Test Results - Unit Tests
-      #   uses: dorny/test-reporter@v1
-      #   if: always() && steps.unit_test_report_exists.outputs.files_exists == 'true'
-      #   with:
-      #     name: Unit Tests
-      #     path: "**/surefire-reports/**/*.xml"
-      #     reporter: java-junit
-      #     fail-on-error: true
-      #     only-summary: 'true'
-
-      - name: ECR (Dev) - Pull Image
+        uses: aws-actions/amazon-ecr-login@v1.6.0
+      - name: Docker Build/Push
+        if: env.DOCKER_PUSH=='true'
+        working-directory: service/application/docker
         run: |
-          ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
-          docker pull $ECR_DEV_IMAGE
-          echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
-      - name: GCR (Dev) - Login
-        uses: docker/login-action@v3
+          ./buildEventManagementAgentDocker.sh -t main
+          ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          docker tag "${{ github.event.repository.name }}:main" $ECR_DOCKER_IMAGE
+          docker push $ECR_DOCKER_IMAGE
+          #Tag/Push additional Docker image
+          SHORT_GIT_SHA=${GITHUB_SHA:0:10}
+          JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ../pom.xml)
+          ADDITIONAL_ECR_DOCKER_IMAGE_TAG="$ECR_DOCKER_IMAGE-$JAR_VERSION-$SHORT_GIT_SHA"
+          docker tag "${{ github.event.repository.name }}:main" $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
+          docker push $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
+      - name: Deploy Artifacts
+        if: env.GITHUB_PACKAGES_DEPLOY=='true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn deploy $SKIP_FLAGS_ALL_TESTS -Dmaven.install.skip=true --file service/pom.xml
+      - name: Publishing Test Results - Checkstyle
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@master
         with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.DELETE_ME_DEV_GCP_SERVICE_ACCOUNT }}
-      - name: GCR (Dev) - Tag/Push
-        run: |
-          GCR_IMAGE_TAGS_TO_PUSH=(
-          "0.0.1" "latest"
-          )
-          GCR_DEV_IMAGE_REPO="gcr.io/${{ secrets.DELETE_ME_DEV_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
-          for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
-          do
-            docker tag $ECR_DEV_IMAGE $GCR_DEV_IMAGE_REPO:$current_tag
-            docker push $GCR_DEV_IMAGE_REPO:$current_tag
-          done
+          path: '**/checkstyle-result.xml'
+      - name: Publishing Test Results - PMD
+        if: always()
+        uses: jwgmeligmeyling/pmd-github-action@master
+        with:
+          path: '**/pmd.xml'
+      - name: Publishing Test Results - SpotBugs
+        if: always()
+        uses: jwgmeligmeyling/spotbugs-github-action@master
+        with:
+          path: '**/spotbugsXml.xml'
+      - name: Publishing Test Results - Unit Tests Pre-Condition
+        if: always()
+        id: unit_test_report_exists
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "**/surefire-reports/**/*.xml"
+      - name: Publishing Test Results - Unit Tests
+        uses: dorny/test-reporter@v1
+        if: always() && steps.unit_test_report_exists.outputs.files_exists == 'true'
+        with:
+          name: Unit Tests
+          path: "**/surefire-reports/**/*.xml"
+          reporter: java-junit
+          fail-on-error: true
+          only-summary: 'true'
