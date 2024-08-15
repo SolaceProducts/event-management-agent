@@ -25,6 +25,7 @@ import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
 import com.solace.messaging.resources.Topic;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -167,14 +168,16 @@ public class TestConfig {
                                             CommandPublisher commandPublisher,
                                             MessagingServiceDelegateService messagingServiceDelegateService,
                                             EventPortalProperties eventPortalProperties,
-                                            Optional<CommandLogStreamingProcessor> commandLogStreamingProcessor) {
+                                            Optional<CommandLogStreamingProcessor> commandLogStreamingProcessor,
+                                            MeterRegistry meterRegistry) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
                 commandPublisher,
                 messagingServiceDelegateService,
                 eventPortalProperties,
-                commandLogStreamingProcessor
+                commandLogStreamingProcessor,
+                meterRegistry
         );
     }
 

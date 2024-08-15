@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 
 @Data
@@ -18,6 +20,19 @@ public class CommandRequest {
     private String serviceId;
     private JobStatus status;
     private List<CommandBundle> commandBundles;
+    private Instant createdTime;
+    private Instant updatedTime;
+
+    public long getLifetime(TemporalUnit timeUnit) {
+        if (createdTime == null) {
+            // micrometer won't record negative numbers
+            return -1L;
+        }
+        if (updatedTime == null) {
+            return createdTime.until(Instant.now(), timeUnit);
+        }
+        return createdTime.until(updatedTime, timeUnit);
+    }
 
     public void determineStatus() {
         boolean hasAtLeastOneError = false;
