@@ -7,13 +7,8 @@ ENV HOME /home/$USER
 
 VOLUME /tmp
 
-# install sudo as root
-RUN apk add --update sudo
-
 # create user
-RUN adduser -D $USER \
-        && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
-        && chmod 0440 /etc/sudoers.d/$USER
+RUN adduser -D $USER
 
 RUN mkdir -p /opt/ema && chmod 777 /opt/ema && mkdir -p /opt/ema/terraform && chmod 777 /opt/ema/terraform
 WORKDIR /opt/ema
@@ -26,9 +21,9 @@ RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.7.0_amd64.apk
 ARG SOLACE_PROVIDER_VERSION=0.9.2-rc.2
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.tar.gz /opt/ema/terraform
 
-RUN sudo chown -R $USER:$USER $HOME
+RUN chown -R $USER:$USER $HOME
 
-RUN sudo chown -R $USER:$USER /opt/ema/
+RUN chown -R $USER:$USER /opt/ema/
 
 COPY .terraformrc $HOME/.terraformrc
 
