@@ -12,7 +12,7 @@ RUN adduser -D $USER && \
     mkdir -p /opt/ema && \
     chmod 777 /opt/ema && \
     mkdir -p /opt/ema/terraform && \
-    chmod 777 /opt/ema/terraform &&\
+    chmod 777 /opt/ema/terraform && \
     chown -R $USER:$USER $HOME && \
     chown -R $USER:$USER /opt/ema/    
 
