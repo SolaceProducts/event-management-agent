@@ -2,6 +2,10 @@ name: Deploy Managed EMA
 on:
   workflow_dispatch:
     inputs:
+      releaseVersion:
+        description: "The image tag in ECR to push to a new environment."
+        required: true
+        default: "A.B.C"
       deployEnvironment:
         description: "Environment to deploy to (development/staging/production)."
         required: true
