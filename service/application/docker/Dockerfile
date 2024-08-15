@@ -23,9 +23,6 @@ ARG PLATFORM=linux_amd64
 COPY tofu_1.7.0_amd64.apk /opt/ema/terraform
 RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.7.0_amd64.apk
 
-# switch to the created user from root
-USER $USER
-
 COPY .terraformrc $HOME/.terraformrc
 RUN printf '#!/bin/ash\ntofu $*' > /opt/ema/terraform/terraform
 RUN chmod +x /opt/ema/terraform/terraform
@@ -41,6 +38,9 @@ ARG BUILD_TIMESTAMP
 ENV GITHASH="${GITHASH}" \
     GITBRANCH="${GITBRANCH}" \
     BUILD_TIMESTAMP="${BUILD_TIMESTAMP}"
+
+# switch to the created user from root
+USER $USER
 
 ARG JAR_FILE
 ADD ${JAR_FILE} app.jar
