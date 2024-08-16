@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
     <artifactId>confluent-schema-registry-plugin</artifactId>
-    <version>1.6.11-SNAPSHOT</version>
+    <version>1.6.12-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Confluent Schema Registry Plugin</name>
     <description>Solace Event Management Agent - Confluent Schema Registry Plugin</description>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.11-SNAPSHOT</version>
+            <version>1.6.12-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
