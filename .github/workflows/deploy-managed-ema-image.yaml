@@ -52,7 +52,7 @@ jobs:
           do
             docker tag $ECR_DEV_IMAGE $GCR_DEV_IMAGE_REPO:$current_tag
             docker push $GCR_DEV_IMAGE_REPO:$current_tag
-          done2
+          done
       - name: GCR (Staging) - Login
         if: ${{ github.event.inputs.deployEnvironment == 'staging' }}
         uses: docker/login-action@v3
