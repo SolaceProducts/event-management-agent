@@ -236,8 +236,7 @@ public class MessageReceiverTests {
                 "com.solace.maas.ep.common.messages.HeartbeatMessage");
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
-        HeartbeatMessageHandler heartbeatMessageHandler = new HeartbeatMessageHandler(solaceConfiguration,
-                solaceSubscriber, meterRegistry);
+        HeartbeatMessageHandler heartbeatMessageHandler = new HeartbeatMessageHandler(solaceConfiguration, solaceSubscriber);
         heartbeatMessageHandler.onMessage(inboundMessage);
 
     }
