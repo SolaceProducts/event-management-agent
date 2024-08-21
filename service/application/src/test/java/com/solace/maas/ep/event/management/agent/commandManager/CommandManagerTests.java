@@ -218,7 +218,7 @@ class CommandManagerTests {
         CommandMessage message = getCommandMessage("1");
 
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
-        doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(commandMapper.map(message));
+        doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(any());
 
         commandManager.execute(message);
         await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));

@@ -96,7 +96,7 @@ public class ScanServiceTests {
     @Autowired
     private ScanServiceHelper scanServiceHelper;
 
-    @Mock
+    @Autowired
     private MeterRegistry meterRegistry;
 
     @Test

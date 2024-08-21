@@ -12,7 +12,9 @@ import com.solace.maas.ep.event.management.agent.service.ManualImportDetailsServ
 import com.solace.maas.ep.event.management.agent.service.ManualImportFilesService;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.ScanCommandMessageProcessor;
 import com.solace.messaging.receiver.InboundMessage;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.noop.NoopCounter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
@@ -34,6 +36,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -91,6 +94,8 @@ public class MessageReceiverTests {
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 "com.solace.maas.ep.common.messages.ScanCommandMessage");
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
+        when(meterRegistry.counter(any(), any(), any(), any(), any(), any(), any())).thenReturn(new NoopCounter(
+                new Meter.Id("mockMeterId", null, null, null, null)));
 
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
                 solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
@@ -118,6 +123,8 @@ public class MessageReceiverTests {
     @Test
     @SneakyThrows
     public void testScanCommandMessage() {
+        when(meterRegistry.counter(any(), any(), any(), any(), any(), any(), any())).thenReturn(new NoopCounter(
+                new Meter.Id("mockMeterId", null, null, null, null)));
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
                 solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
 
