@@ -18,7 +18,9 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepos
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.noop.NoopCounter;
 import lombok.SneakyThrows;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
@@ -96,7 +98,7 @@ public class ScanServiceTests {
     @Autowired
     private ScanServiceHelper scanServiceHelper;
 
-    @Autowired
+    @Mock
     private MeterRegistry meterRegistry;
 
     @Test
@@ -147,9 +149,10 @@ public class ScanServiceTests {
                 .thenReturn(scanType);
         when(scanStatusRepository.save(scanStatus))
                 .thenReturn(scanStatus);
-
         when(scanRecipientHierarchyRepository.save(any(ScanRecipientHierarchyEntity.class)))
                 .thenReturn(mock(ScanRecipientHierarchyEntity.class));
+        when(meterRegistry.counter(any(), any(String[].class)))
+                .thenReturn(new NoopCounter(new Meter.Id("noop", null, null, null, null)));
 
         scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
                 "groupId",
@@ -314,6 +317,8 @@ public class ScanServiceTests {
     @Test
     @SneakyThrows
     public void testSendScanStatus() {
+        when(meterRegistry.counter(any(), any(String[].class)))
+                .thenReturn(new NoopCounter(new Meter.Id("noop", null, null, null, null)));
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanTypeRepository.class),
                 mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class),

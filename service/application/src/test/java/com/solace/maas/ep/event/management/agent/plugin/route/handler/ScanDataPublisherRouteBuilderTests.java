@@ -71,7 +71,7 @@ class ScanDataPublisherRouteBuilderTests {
             SolacePublisher solacePublisher = mock(SolacePublisher.class);
             EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
             MeterRegistry meterRegistry = mock(MeterRegistry.class);
-            when(meterRegistry.counter(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(meterRegistry.counter(any(), any(String[].class)))
                     .thenReturn(new NoopCounter(new Meter.Id("noop", null, null, null, null)));
 
             ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher, meterRegistry);

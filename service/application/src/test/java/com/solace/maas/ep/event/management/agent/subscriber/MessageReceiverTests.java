@@ -94,7 +94,7 @@ public class MessageReceiverTests {
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 "com.solace.maas.ep.common.messages.ScanCommandMessage");
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
-        when(meterRegistry.counter(any(), any(), any(), any(), any(), any(), any())).thenReturn(new NoopCounter(
+        when(meterRegistry.counter(any(), any(String[].class))).thenReturn(new NoopCounter(
                 new Meter.Id("mockMeterId", null, null, null, null)));
 
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
@@ -123,7 +123,7 @@ public class MessageReceiverTests {
     @Test
     @SneakyThrows
     public void testScanCommandMessage() {
-        when(meterRegistry.counter(any(), any(), any(), any(), any(), any(), any())).thenReturn(new NoopCounter(
+        when(meterRegistry.counter(any(), any(String[].class))).thenReturn(new NoopCounter(
                 new Meter.Id("mockMeterId", null, null, null, null)));
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
                 solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
