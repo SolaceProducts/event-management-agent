@@ -33,4 +33,12 @@ public class HeartbeatMessage extends MOPMessage {
     public String toLog() {
         return null;
     }
+
+    public String getType() {
+        return "HeartbeatMessage";
+    }
+
+    public void setType() {
+        // Intentionally left blank
+    }
 }

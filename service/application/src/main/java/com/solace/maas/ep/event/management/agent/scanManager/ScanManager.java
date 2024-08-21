@@ -110,9 +110,9 @@ public class ScanManager {
                                 brokerScanType, e.getKey()))
                         .filter(Objects::nonNull)
                         .filter(list -> !list.isEmpty())
-                        .collect(Collectors.toList()).stream()
+                        .toList().stream()
                 )
-                .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
+                .toList().stream().flatMap(List::stream).toList();
 
         return scanService.singleScan(routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
     }

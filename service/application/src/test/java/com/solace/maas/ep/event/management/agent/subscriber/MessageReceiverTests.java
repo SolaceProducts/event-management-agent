@@ -12,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.service.ManualImportDetailsServ
 import com.solace.maas.ep.event.management.agent.service.ManualImportFilesService;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.ScanCommandMessageProcessor;
 import com.solace.messaging.receiver.InboundMessage;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
@@ -66,6 +67,9 @@ public class MessageReceiverTests {
     @Mock
     ManualImportDetailsService manualImportDetailsService;
 
+    @Mock
+    MeterRegistry meterRegistry;
+
     @Test
     @SneakyThrows
     public void scanReceiver() {
@@ -89,7 +93,7 @@ public class MessageReceiverTests {
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
+                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
 
         String topic = scanCommandMessageHandler.getTopicString();
         log.info("topic: {}", topic);
@@ -106,7 +110,7 @@ public class MessageReceiverTests {
         assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
             ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                    solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
+                    solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
             scanCommandMessageHandler.onMessage(inboundMessage);
         });
     }
@@ -115,7 +119,7 @@ public class MessageReceiverTests {
     @SneakyThrows
     public void testScanCommandMessage() {
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
+                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
 
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",
@@ -233,7 +237,7 @@ public class MessageReceiverTests {
         when(inboundMessage.getDestinationName()).thenReturn("anyTopic");
 
         HeartbeatMessageHandler heartbeatMessageHandler = new HeartbeatMessageHandler(solaceConfiguration,
-                solaceSubscriber);
+                solaceSubscriber, meterRegistry);
         heartbeatMessageHandler.onMessage(inboundMessage);
 
     }

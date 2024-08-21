@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublishe
 import com.solace.maas.ep.event.management.agent.processor.ScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanDataPublisherRouteBuilder;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -65,8 +66,9 @@ class ScanDataPublisherRouteBuilderTests {
         public static RoutesBuilder createRouteBuilder() {
             SolacePublisher solacePublisher = mock(SolacePublisher.class);
             EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
+            MeterRegistry meterRegistry = mock(MeterRegistry.class);
 
-            ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher);
+            ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher, meterRegistry);
             ScanDataProcessor scanDataProcessor = new ScanDataProcessor(scanDataPublisher, eventPortalProperties);
             ScanTypeDescendentsProcessor scanTypeDescendentsProcessor = mock(ScanTypeDescendentsProcessor.class);
 

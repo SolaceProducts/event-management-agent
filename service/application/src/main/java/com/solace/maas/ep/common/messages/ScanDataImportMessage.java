@@ -45,4 +45,12 @@ public class ScanDataImportMessage extends MOPMessage {
     public String toLog() {
         return null;
     }
+
+    public String getType() {
+        return "ScanDataImportMessage";
+    }
+
+    public void setType() {
+        // Intentionally left blank
+    }
 }

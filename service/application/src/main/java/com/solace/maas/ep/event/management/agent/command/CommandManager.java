@@ -37,11 +37,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static com.solace.maas.ep.common.metrics.MetricConstants.ENTITY_TYPE_TAG;
-import static com.solace.maas.ep.common.metrics.MetricConstants.MAAS_EMA_EVENT_CYCLE_TIME;
-import static com.solace.maas.ep.common.metrics.MetricConstants.MAAS_EMA_EVENT_SENT;
-import static com.solace.maas.ep.common.metrics.MetricConstants.ORG_ID_TAG;
-import static com.solace.maas.ep.common.metrics.MetricConstants.STATUS_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_SENT;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
@@ -235,10 +235,10 @@ public class CommandManager {
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
         commandPublisher.sendCommandResponse(response, topicVars);
-        meterRegistry.counter(MAAS_EMA_EVENT_SENT, ENTITY_TYPE_TAG, response.getType(),
+        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ENTITY_TYPE_TAG, response.getType(),
                 ORG_ID_TAG, response.getOrgId(), STATUS_TAG, response.getStatus().name()).increment();
         Timer jobCycleTime = Timer
-                .builder(MAAS_EMA_EVENT_CYCLE_TIME)
+                .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, response.getOrgId())
                 .tag(STATUS_TAG, request.getStatus().name())
                 .tag(ENTITY_TYPE_TAG, response.getType())
