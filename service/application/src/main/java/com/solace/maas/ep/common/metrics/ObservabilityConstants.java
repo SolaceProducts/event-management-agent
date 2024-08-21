@@ -1,8 +1,6 @@
 package com.solace.maas.ep.common.metrics;
 
 public class ObservabilityConstants {
-    private ObservabilityConstants() {}
-
     public static final String MAAS_EMA_SCAN_EVENT_SENT = "maas.ema.scan_event.sent";
     public static final String MAAS_EMA_CONFIG_PUSH_EVENT_SENT = "maas.ema.config_push_event.sent";
     public static final String MAAS_EMA_HEARTBEAT_EVENT_SENT = "maas.ema.heartbeat_event.sent";
@@ -18,4 +16,6 @@ public class ObservabilityConstants {
     public static final String SCAN_ID_TAG = "scan_id";
 
     public static final String MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE = "ScanCommandReplyMessage";
+
+    private ObservabilityConstants() {}
 }
