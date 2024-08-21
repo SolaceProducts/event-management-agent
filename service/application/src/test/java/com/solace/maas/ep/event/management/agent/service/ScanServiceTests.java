@@ -18,6 +18,7 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepos
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
@@ -94,6 +95,9 @@ public class ScanServiceTests {
 
     @Autowired
     private ScanServiceHelper scanServiceHelper;
+
+    @Mock
+    private MeterRegistry meterRegistry;
 
     @Test
     @SneakyThrows
@@ -312,7 +316,8 @@ public class ScanServiceTests {
     public void testSendScanStatus() {
         ScanService service = new ScanService(mock(ScanRepository.class), mock(ScanRecipientHierarchyRepository.class),
                 mock(ScanTypeRepository.class),
-                mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class), template, idGenerator);
+                mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class),
+                template, idGenerator, meterRegistry);
         service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId", "actorId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
