@@ -98,7 +98,7 @@ public class MessageReceiverTests {
                 new Meter.Id("mockMeterId", null, null, null, null)));
 
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
+                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
 
         String topic = scanCommandMessageHandler.getTopicString();
         log.info("topic: {}", topic);
@@ -115,7 +115,7 @@ public class MessageReceiverTests {
         assertThrows(RuntimeException.class, () -> {
             when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn("badClass");
             ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                    solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
+                    solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
             scanCommandMessageHandler.onMessage(inboundMessage);
         });
     }
@@ -126,7 +126,7 @@ public class MessageReceiverTests {
         when(meterRegistry.counter(any(), any(String[].class))).thenReturn(new NoopCounter(
                 new Meter.Id("mockMeterId", null, null, null, null)));
         ScanCommandMessageHandler scanCommandMessageHandler = new ScanCommandMessageHandler(
-                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor, meterRegistry);
+                solaceConfiguration, solaceSubscriber, scanCommandMessageProcessor);
 
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",

@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.subscriber;
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.ScanCommandMessageProcessor;
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -15,15 +14,12 @@ import org.springframework.stereotype.Component;
 public class ScanCommandMessageHandler extends SolaceDirectMessageHandler<ScanCommandMessage> {
 
     private final ScanCommandMessageProcessor scanCommandMessageProcessor;
-    private final MeterRegistry meterRegistry;
 
     public ScanCommandMessageHandler(SolaceConfiguration solaceConfiguration,
                                      SolaceSubscriber solaceSubscriber,
-                                     ScanCommandMessageProcessor scanCommandMessageProcessor,
-                                     MeterRegistry meterRegistry) {
+                                     ScanCommandMessageProcessor scanCommandMessageProcessor) {
         super(solaceConfiguration.getTopicPrefix() + "scan/command/v1/scanStart/>", solaceSubscriber);
         this.scanCommandMessageProcessor = scanCommandMessageProcessor;
-        this.meterRegistry = meterRegistry;
     }
 
     @Override
