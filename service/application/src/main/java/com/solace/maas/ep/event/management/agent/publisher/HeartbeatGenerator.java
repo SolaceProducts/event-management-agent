@@ -19,7 +19,6 @@ import java.util.List;
 
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_HEARTBEAT_EVENT_SENT;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 
 @ExcludeFromJacocoGeneratedReport
 @Component
@@ -55,7 +54,6 @@ public class HeartbeatGenerator {
     private void logHealthMetric(HeartbeatMessage message, boolean isHealthy) {
         List<Tag> tags = new ArrayList<>();
         tags.add(Tag.of(ENTITY_TYPE_TAG, message.getType()));
-        tags.add(Tag.of(ORG_ID_TAG, message.getOrgId()));
         meterRegistry.gauge(MAAS_EMA_HEARTBEAT_EVENT_SENT, tags, isHealthy ? 1 : 0);
     }
 
