@@ -14,6 +14,7 @@ import com.solace.messaging.config.profile.ConfigurationProfile;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -23,6 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -62,9 +65,10 @@ public class SolaceConfiguration {
     @ConditionalOnMissingBean(EnableRtoCondition.class)
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
     public MessagingService messagingService() {
-        String clientName = "runtimeAgent-" + eventPortalProperties.getRuntimeAgentId();
+        String computedClientName = determineClientName();
+        String clientName = StringUtils.isEmpty(computedClientName) ?
+                "runtimeAgent-" + eventPortalProperties.getRuntimeAgentId() : computedClientName;
         vmrConfiguration.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
-
         log.info("Connecting to event portal using EMA client {}.", clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
@@ -114,4 +118,15 @@ public class SolaceConfiguration {
                 directMessagePublisher());
     }
 
+    private String determineClientName() {
+        String hostName = null;
+        try {
+            hostName = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            log.warn("Could not determine host name", e);
+            return StringUtils.EMPTY;
+        }
+        String agentId = eventPortalProperties.getRuntimeAgentId();
+        return String.format("%s-%s", hostName, agentId);
+    }
 }

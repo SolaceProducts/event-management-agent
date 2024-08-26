@@ -9,7 +9,6 @@ import com.solace.messaging.config.SolaceProperties;
 import com.solacesystems.solclientj.core.handle.SessionHandle;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
@@ -89,11 +88,12 @@ public class VMRProperties {
             }
             username = messagingServiceUsersProperties.getUsername();
             password = messagingServiceUsersProperties.getPassword();
-            String computedClientName = determineClientName();
-            clientName = StringUtils.isEmpty(computedClientName) ? messagingServiceUsersProperties.getClientName() : computedClientName;
-            log.debug("Client name: {}", clientName);
+            String hostName = InetAddress.getLocalHost().getHostName();
+            clientName = messagingServiceUsersProperties.getClientName();
         } catch (NoSuchElementException e) {
             log.error("An error occurred while connecting to EP gateway: {}", e.getMessage());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -137,17 +137,4 @@ public class VMRProperties {
 
         return sessionProperties;
     }
-
-    private String determineClientName() {
-        String hostName = null;
-        try {
-            hostName = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            log.warn("Could not determine host name", e);
-            return StringUtils.EMPTY;
-        }
-        String agentId = eventPortalPluginProperties.getRuntimeAgentId();
-        return String.format("%s-%s", hostName, agentId);
-    }
-
 }
