@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -88,12 +86,9 @@ public class VMRProperties {
             }
             username = messagingServiceUsersProperties.getUsername();
             password = messagingServiceUsersProperties.getPassword();
-            String hostName = InetAddress.getLocalHost().getHostName();
             clientName = messagingServiceUsersProperties.getClientName();
         } catch (NoSuchElementException e) {
             log.error("An error occurred while connecting to EP gateway: {}", e.getMessage());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
         }
     }
 

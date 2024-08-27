@@ -14,6 +14,7 @@ import com.solace.messaging.config.profile.ConfigurationProfile;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -69,7 +70,8 @@ public class SolaceConfiguration {
         String clientName = StringUtils.isEmpty(computedClientName) ?
                 "runtimeAgent-" + eventPortalProperties.getRuntimeAgentId() : computedClientName;
         vmrConfiguration.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
-        log.info("Connecting to event portal using EMA client {}.", clientName);
+        log.info("Event Management Agent with ID {} connecting to event portal using EMA client {}.",
+                eventPortalProperties.getRuntimeAgentId(), clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
                 .withReconnectionRetryStrategy(RetryStrategy.foreverRetry(15_000))
@@ -126,7 +128,9 @@ public class SolaceConfiguration {
             log.warn("Could not determine host name", e);
             return StringUtils.EMPTY;
         }
+
+        String hostNameHash = DigestUtils.sha256Hex(hostName);
         String agentId = eventPortalProperties.getRuntimeAgentId();
-        return String.format("%s-%s", hostName, agentId);
+        return String.format("%s-%s", agentId, hostNameHash);
     }
 }
