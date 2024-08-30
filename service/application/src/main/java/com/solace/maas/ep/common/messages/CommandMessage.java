@@ -66,12 +66,4 @@ public class CommandMessage extends MOPMessage implements CommandMessageWithReso
     public String toLog() {
         return null;
     }
-
-    public String getType() {
-        return "CommandMessage";
-    }
-
-    public void setType() {
-        // Intentionally left blank
-    }
 }

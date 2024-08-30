@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
@@ -235,13 +234,12 @@ public class CommandManager {
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
         commandPublisher.sendCommandResponse(response, topicVars);
-        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ENTITY_TYPE_TAG, response.getType(),
-                ORG_ID_TAG, response.getOrgId(), STATUS_TAG, response.getStatus().name()).increment();
+        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
+                STATUS_TAG, response.getStatus().name()).increment();
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, response.getOrgId())
                 .tag(STATUS_TAG, request.getStatus().name())
-                .tag(ENTITY_TYPE_TAG, response.getType())
                 .register(meterRegistry);
         jobCycleTime.record(request.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 
@@ -41,8 +40,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     public void processMessage(ScanCommandMessage message) {
         MDC.clear();
         String scanId = StringUtils.isEmpty(message.getScanId()) ? UUID.randomUUID().toString() : message.getScanId();
-        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED, ENTITY_TYPE_TAG, message.getType(),
-                SCAN_ID_TAG, scanId).increment();
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED, SCAN_ID_TAG, scanId).increment();
 
         List<String> destinations = new ArrayList<>();
         List<String> entityTypes = new ArrayList<>();

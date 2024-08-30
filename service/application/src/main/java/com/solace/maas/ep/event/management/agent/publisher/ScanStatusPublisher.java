@@ -15,8 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
@@ -58,8 +56,8 @@ public class ScanStatusPublisher {
             throw new ScanOverallStatusException("Over all status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Overall status", Arrays.asList(scanType.split(",")), ScanStatus.valueOf(status));
         } finally {
-            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, ENTITY_TYPE_TAG, MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE,
-                    STATUS_TAG, status, SCAN_ID_TAG, scanId, ORG_ID_TAG, topicDetails.get("orgId")).increment();
+            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status, SCAN_ID_TAG, scanId,
+                    ORG_ID_TAG, topicDetails.get("orgId")).increment();
         }
     }
 
@@ -87,8 +85,8 @@ public class ScanStatusPublisher {
             throw new ScanStatusException("Route status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Route status", List.of(scanType), ScanStatus.valueOf(status));
         }  finally {
-            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, ENTITY_TYPE_TAG, MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE,
-                    STATUS_TAG, status, SCAN_ID_TAG, scanId, ORG_ID_TAG, topicDetails.get("orgId")).increment();
+            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status, SCAN_ID_TAG, scanId,
+                    ORG_ID_TAG, topicDetails.get("orgId")).increment();
         }
     }
 }

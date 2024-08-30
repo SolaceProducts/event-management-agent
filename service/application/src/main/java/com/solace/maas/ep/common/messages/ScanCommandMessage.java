@@ -53,12 +53,4 @@ public class ScanCommandMessage extends MOPMessage implements CommandMessageWith
     public String toLog() {
         return null;
     }
-
-    public String getType() {
-        return "ScanCommandMessage";
-    }
-
-    public void setType() {
-        // Intentionally left blank
-    }
 }

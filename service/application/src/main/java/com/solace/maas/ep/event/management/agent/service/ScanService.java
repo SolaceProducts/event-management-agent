@@ -41,8 +41,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
@@ -298,8 +296,7 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
         });
-        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, ENTITY_TYPE_TAG, MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE,
-                STATUS_TAG, status.name(), SCAN_ID_TAG, scanId).increment();
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status.name(), SCAN_ID_TAG, scanId).increment();
     }
 
     protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, String actorId,

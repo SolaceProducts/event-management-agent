@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
@@ -55,7 +54,6 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
         if (StringUtils.isNotBlank(message.getOrgId())) {
             tags.add(Tag.of(ORG_ID_TAG, message.getOrgId()));
         }
-        tags.add(Tag.of(ENTITY_TYPE_TAG, message.getType()));
         meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_RECEIVED, tags).increment();
     }
 

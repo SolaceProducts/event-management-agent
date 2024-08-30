@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ENTITY_TYPE_TAG;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
@@ -57,7 +55,7 @@ public class ScanDataPublisher {
 
         boolean isSuccessful = solacePublisher.publish(message, topicString);
 
-        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, ENTITY_TYPE_TAG, MAAS_EMA_SCAN_COMMAND_REPLY_MESSAGE,
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
                 STATUS_TAG, isSuccessful ? ScanStatus.COMPLETE.name() : ScanStatus.FAILED.name(),
                 SCAN_ID_TAG, topicDetails.get("scanId"),
                 ORG_ID_TAG, topicDetails.get("orgId")).increment();
