@@ -38,7 +38,7 @@ public class SolacePublisher {
         this.directMessagePublisher = directMessagePublisher;
     }
 
-    public void publish(MOPMessage message, String topicString) {
+    public boolean publish(MOPMessage message, String topicString) {
         Topic topic = Topic.of(topicString);
 
         try {
@@ -51,6 +51,7 @@ public class SolacePublisher {
                 log.trace("publishing to {}:\n{}", topicString, messageString);
                 directMessagePublisher.publish(outboundMessage, topic, properties);
             }
+            return true;
         } catch (PubSubPlusClientException e) {
             log.error("PubSubPlus Client Exception while attempting to publish message: {}", message.toString(), e);
         } catch (IllegalStateException e) {
@@ -60,6 +61,7 @@ public class SolacePublisher {
         } catch (JsonProcessingException e) {
             log.error("JsonProcessingException while attempting to publish message: {}", message.toString(), e);
         }
+        return false;
     }
 
     private Properties getProperties(MOPMessage message) {

@@ -1,20 +1,30 @@
 package com.solace.maas.ep.event.management.agent.publisher;
 
+import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanDataPublisher {
 
     private final SolacePublisher solacePublisher;
+    private final MeterRegistry meterRegistry;
 
-    public ScanDataPublisher(SolacePublisher solacePublisher) {
+    public ScanDataPublisher(SolacePublisher solacePublisher,
+                             MeterRegistry meterRegistry) {
         this.solacePublisher = solacePublisher;
+        this.meterRegistry = meterRegistry;
     }
 
     /**
@@ -43,6 +53,11 @@ public class ScanDataPublisher {
                         topicDetails.get("scanId"),
                         topicDetails.get("scanType"));
 
-        solacePublisher.publish(message, topicString);
+        boolean isSuccessful = solacePublisher.publish(message, topicString);
+
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
+                STATUS_TAG, isSuccessful ? ScanStatus.COMPLETE.name() : ScanStatus.FAILED.name(),
+                SCAN_ID_TAG, topicDetails.get("scanId"),
+                ORG_ID_TAG, topicDetails.get("orgId")).increment();
     }
 }

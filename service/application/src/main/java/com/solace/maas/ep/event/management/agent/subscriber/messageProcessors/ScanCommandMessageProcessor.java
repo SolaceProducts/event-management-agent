@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -14,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
+
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
@@ -22,16 +26,21 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     private static final String DEFAULT_DESTINATION = "FILE_WRITER";
     private final ScanManager scanManager;
     private final DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper;
+    private final MeterRegistry meterRegistry;
 
     public ScanCommandMessageProcessor(ScanManager scanManager,
-                                       DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper) {
+                                       DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper,
+                                       MeterRegistry meterRegistry) {
         this.scanManager = scanManager;
         this.dynamicResourceConfigurationHelper = dynamicResourceConfigurationHelper;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
     public void processMessage(ScanCommandMessage message) {
         MDC.clear();
+        String scanId = StringUtils.isEmpty(message.getScanId()) ? UUID.randomUUID().toString() : message.getScanId();
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED, SCAN_ID_TAG, scanId).increment();
 
         List<String> destinations = new ArrayList<>();
         List<String> entityTypes = new ArrayList<>();
@@ -59,7 +68,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
         ScanRequestBO scanRequestBO = ScanRequestBO.builder()
                 .messagingServiceId(message.getMessagingServiceId())
-                .scanId(!StringUtils.isEmpty(message.getScanId()) ? message.getScanId() : UUID.randomUUID().toString())
+                .scanId(scanId)
                 .traceId(message.getTraceId())
                 .actorId(message.getActorId())
                 .scanTypes(entityTypes)

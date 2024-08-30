@@ -15,6 +15,8 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.Terraf
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,14 +26,21 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_SENT;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
@@ -49,18 +58,21 @@ public class CommandManager {
     private final EventPortalProperties eventPortalProperties;
     private final ThreadPoolTaskExecutor configPushPool;
     private final Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt;
+    private final MeterRegistry meterRegistry;
 
     public CommandManager(TerraformManager terraformManager,
                           CommandMapper commandMapper,
                           CommandPublisher commandPublisher,
                           MessagingServiceDelegateService messagingServiceDelegateService,
                           EventPortalProperties eventPortalProperties,
-                          Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt) {
+                          Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt,
+                          MeterRegistry meterRegistry) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.eventPortalProperties = eventPortalProperties;
+        this.meterRegistry = meterRegistry;
         configPushPool = new ThreadPoolTaskExecutor();
         configPushPool.setCorePoolSize(eventPortalProperties.getCommandThreadPoolMinSize());
         configPushPool.setMaxPoolSize(eventPortalProperties.getCommandThreadPoolMaxSize());
@@ -73,6 +85,7 @@ public class CommandManager {
 
     public void execute(CommandMessage request) {
         CommandRequest requestBO = commandMapper.map(request);
+        requestBO.setCreatedTime(Instant.now());
         CompletableFuture.runAsync(() -> configPush(requestBO), configPushPool)
                 .exceptionally(e -> {
                     log.error("Error running command", e);
@@ -221,6 +234,14 @@ public class CommandManager {
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
         commandPublisher.sendCommandResponse(response, topicVars);
+        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
+                STATUS_TAG, response.getStatus().name()).increment();
+        Timer jobCycleTime = Timer
+                .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
+                .tag(ORG_ID_TAG, response.getOrgId())
+                .tag(STATUS_TAG, request.getStatus().name())
+                .register(meterRegistry);
+        jobCycleTime.record(request.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }
 
 

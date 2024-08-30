@@ -16,7 +16,8 @@ public class CommandMessageHandler extends SolaceDirectMessageHandler<CommandMes
 
     public CommandMessageHandler(
             SolaceConfiguration solaceConfiguration,
-            SolaceSubscriber solaceSubscriber, CommandMessageProcessor commandMessageProcessor) {
+            SolaceSubscriber solaceSubscriber,
+            CommandMessageProcessor commandMessageProcessor) {
         super(solaceConfiguration.getTopicPrefix() + "command/v1/>", solaceSubscriber);
         this.commandMessageProcessor = commandMessageProcessor;
     }

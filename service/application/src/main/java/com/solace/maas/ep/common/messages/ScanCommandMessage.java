@@ -49,8 +49,6 @@ public class ScanCommandMessage extends MOPMessage implements CommandMessageWith
         this(messagingServiceId, scanId, scanTypes, destinations, null);
     }
 
-
-
     @Override
     public String toLog() {
         return null;

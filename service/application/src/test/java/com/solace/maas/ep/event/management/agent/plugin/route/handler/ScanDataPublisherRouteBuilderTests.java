@@ -6,6 +6,9 @@ import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublishe
 import com.solace.maas.ep.event.management.agent.processor.ScanDataProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import com.solace.maas.ep.event.management.agent.route.ep.ScanDataPublisherRouteBuilder;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.noop.NoopCounter;
 import lombok.SneakyThrows;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -23,7 +26,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @CamelSpringBootTest
@@ -65,8 +70,11 @@ class ScanDataPublisherRouteBuilderTests {
         public static RoutesBuilder createRouteBuilder() {
             SolacePublisher solacePublisher = mock(SolacePublisher.class);
             EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
+            MeterRegistry meterRegistry = mock(MeterRegistry.class);
+            when(meterRegistry.counter(any(), any(String[].class)))
+                    .thenReturn(new NoopCounter(new Meter.Id("noop", null, null, null, null)));
 
-            ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher);
+            ScanDataPublisher scanDataPublisher = new ScanDataPublisher(solacePublisher, meterRegistry);
             ScanDataProcessor scanDataProcessor = new ScanDataProcessor(scanDataPublisher, eventPortalProperties);
             ScanTypeDescendentsProcessor scanTypeDescendentsProcessor = mock(ScanTypeDescendentsProcessor.class);
 
