@@ -4,7 +4,6 @@ import com.solace.client.sempv2.ApiClient;
 import com.solace.client.sempv2.ApiException;
 import com.solace.client.sempv2.api.QueueApi;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempEntityType;
