@@ -19,6 +19,7 @@ import java.util.Properties;
 @ExcludeFromJacocoGeneratedReport
 public class VMRConfiguration {
 
+
     @Bean
     @ConditionalOnMissingBean(EnableRtoCondition.class)
     public Properties vmrConfig(VMRProperties vmrProperties) {

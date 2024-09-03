@@ -121,7 +121,7 @@ public class SolaceConfiguration {
     }
 
     private String determineClientName() {
-        String hostName = null;
+        String hostName;
         try {
             hostName = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {

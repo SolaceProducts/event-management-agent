@@ -14,11 +14,10 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.So
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
-import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.Validate;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -30,9 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.semp;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.terraform;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.LOG_LEVEL_ERROR;
@@ -42,43 +42,39 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Service
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class CommandManager {
+    public static final String ERROR_EXECUTING_COMMAND = "Error executing command";
     private final TerraformManager terraformManager;
     private final CommandMapper commandMapper;
     private final CommandPublisher commandPublisher;
     private final MessagingServiceDelegateService messagingServiceDelegateService;
     private final EventPortalProperties eventPortalProperties;
-    private final ThreadPoolTaskExecutor configPushPool;
     private final Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt;
+    private final SempDeleteCommandManager sempDeleteCommandManager;
 
     public CommandManager(TerraformManager terraformManager,
                           CommandMapper commandMapper,
                           CommandPublisher commandPublisher,
                           MessagingServiceDelegateService messagingServiceDelegateService,
                           EventPortalProperties eventPortalProperties,
-                          Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt) {
+                          Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt,
+                          final SempDeleteCommandManager sempDeleteCommandManager) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.eventPortalProperties = eventPortalProperties;
-        configPushPool = new ThreadPoolTaskExecutor();
-        configPushPool.setCorePoolSize(eventPortalProperties.getCommandThreadPoolMinSize());
-        configPushPool.setMaxPoolSize(eventPortalProperties.getCommandThreadPoolMaxSize());
-        configPushPool.setQueueCapacity(eventPortalProperties.getCommandThreadPoolQueueSize());
-        configPushPool.setThreadNamePrefix("config-push-pool-");
-        configPushPool.setTaskDecorator(new MdcTaskDecorator());
-        configPushPool.initialize();
         this.commandLogStreamingProcessorOpt = commandLogStreamingProcessorOpt;
+        this.sempDeleteCommandManager = sempDeleteCommandManager;
     }
 
     public void execute(CommandMessage request) {
         CommandRequest requestBO = commandMapper.map(request);
-        CompletableFuture.runAsync(() -> configPush(requestBO), configPushPool)
-                .exceptionally(e -> {
-                    log.error("Error running command", e);
-                    handleError((Exception) e, requestBO);
-                    return null;
-                });
+        try {
+            configPush(requestBO);
+        } catch (Exception e) {
+            log.error(ERROR_EXECUTING_COMMAND, e);
+            handleError(e, requestBO);
+        }
     }
 
     public void handleError(Exception e, CommandMessage message) {
@@ -94,8 +90,10 @@ public class CommandManager {
     @SuppressWarnings("PMD")
     public void configPush(CommandRequest request) {
         Map<String, String> envVars;
+        SolaceHttpSemp solaceClient;
         try {
-            envVars = setBrokerSpecificEnvVars(request.getServiceId());
+            solaceClient = messagingServiceDelegateService.getMessagingServiceClient(request.getServiceId());
+            envVars = setBrokerSpecificEnvVars(solaceClient);
         } catch (Exception e) {
             log.error("Error getting terraform variables", e);
             handleError(e, request);
@@ -105,17 +103,23 @@ public class CommandManager {
 
         try {
             for (CommandBundle bundle : request.getCommandBundles()) {
+                boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
-                    Path executionLog = executeCommand(request, command, envVars);
-                    if (executionLog != null) {
-                        if (commandLogStreamingProcessorOpt.isPresent()) {
-                            streamCommandExecutionLogToEpCore(request, command, executionLog);
+                    if (command.getCommandType() == semp) {
+                        executeSempCommand(request, command, solaceClient);
+                    } else if (command.getCommandType() == terraform) {
+                        Path executionLog = executeTerraformCommand(request, command, envVars);
+                        if (executionLog != null) {
+                            if (commandLogStreamingProcessorOpt.isPresent()) {
+                                streamCommandExecutionLogToEpCore(request, command, executionLog);
+                            }
+                            executionLogFilesToClean.add(executionLog);
                         }
-
-                        executionLogFilesToClean.add(executionLog);
+                    } else {
+                        handleUnknownCommandType(command);
                     }
-                    if (exitEarlyOnFailedCommand(bundle, command)) {
+                    if (exitEarlyOnFailedCommand(exitEarlyOnFailedCommand, command)) {
                         break;
                     }
 
@@ -129,32 +133,39 @@ public class CommandManager {
 
     }
 
-    private Path executeCommand(CommandRequest request,
-                                Command command,
-                                Map<String, String> envVars) {
+    private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
         Path executionLog = null;
         try {
-            switch (command.getCommandType()) {
-                case terraform:
-                    executionLog = terraformManager.execute(request, command, envVars);
-                    break;
-                default:
-                    command.setResult(CommandResult.builder()
-                            .status(JobStatus.error)
-                            .logs(List.of(
-                                    Map.of("message", "unknown command type " + command.getCommandType(),
-                                            "errorType", "UnknownCommandType",
-                                            "level", LOG_LEVEL_ERROR,
-                                            "timestamp", OffsetDateTime.now())))
-                            .build());
-                    break;
-            }
+            Validate.isTrue(command.getCommandType().equals(terraform), "Command type must be terraform");
+            return terraformManager.execute(request, command, envVars);
         } catch (Exception e) {
-            log.error("Error executing command", e);
+            log.error(ERROR_EXECUTING_COMMAND, e);
+            setCommandError(command, e);
+
+        }
+        return executionLog;
+    }
+
+    private void executeSempCommand(CommandRequest request, Command command, SolaceHttpSemp solaceClient) {
+        try {
+            Validate.isTrue(command.getCommandType().equals(semp), "Command type must be semp");
+            sempDeleteCommandManager.execute(command, solaceClient);
+        } catch (Exception e) {
+            log.error(ERROR_EXECUTING_COMMAND, e);
             setCommandError(command, e);
         }
+    }
 
-        return executionLog;
+    private void handleUnknownCommandType(Command command) {
+        command.setResult(CommandResult.builder()
+                .status(JobStatus.error)
+                .logs(List.of(
+                        Map.of("message", "unknown command type " + command.getCommandType(),
+                                "errorType", "UnknownCommandType",
+                                "level", LOG_LEVEL_ERROR,
+                                "timestamp", OffsetDateTime.now())))
+                .build());
+
     }
 
     private void cleanup(List<Path> listOfExecutionLogFiles) {
@@ -199,8 +210,8 @@ public class CommandManager {
     }
 
 
-    private static boolean exitEarlyOnFailedCommand(CommandBundle bundle, Command command) {
-        return Boolean.TRUE.equals(bundle.getExitOnFailure())
+    private static boolean exitEarlyOnFailedCommand(boolean existEarlyOnFailedCommand, Command command) {
+        return Boolean.TRUE.equals(existEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
                 && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
     }
@@ -224,16 +235,12 @@ public class CommandManager {
     }
 
 
-    private Map<String, String> setBrokerSpecificEnvVars(String messagingServiceId) {
+    private Map<String, String> setBrokerSpecificEnvVars(SolaceHttpSemp solaceClient) {
         Map<String, String> envVars = new HashMap<>();
-        Object client = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
-        if (client instanceof SolaceHttpSemp) {
-            SolaceHttpSemp solaceClient = (SolaceHttpSemp) client;
-            SempClient sempClient = solaceClient.getSempClient();
-            envVars.put("TF_VAR_username", sempClient.getUsername());
-            envVars.put("TF_VAR_password", sempClient.getPassword());
-            envVars.put("TF_VAR_url", sempClient.getConnectionUrl());
-        }
+        SempClient sempClient = solaceClient.getSempClient();
+        envVars.put("TF_VAR_username", sempClient.getUsername());
+        envVars.put("TF_VAR_password", sempClient.getPassword());
+        envVars.put("TF_VAR_url", sempClient.getConnectionUrl());
         return envVars;
     }
 

@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent;
 
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -167,14 +168,16 @@ public class TestConfig {
                                             CommandPublisher commandPublisher,
                                             MessagingServiceDelegateService messagingServiceDelegateService,
                                             EventPortalProperties eventPortalProperties,
-                                            Optional<CommandLogStreamingProcessor> commandLogStreamingProcessor) {
+                                            Optional<CommandLogStreamingProcessor> commandLogStreamingProcessor,
+                                            SempDeleteCommandManager sempDeleteCommandManager) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
                 commandPublisher,
                 messagingServiceDelegateService,
                 eventPortalProperties,
-                commandLogStreamingProcessor
+                commandLogStreamingProcessor,
+                sempDeleteCommandManager
         );
     }
 
@@ -182,6 +185,10 @@ public class TestConfig {
     @Primary
     KafkaClientConnection kafkaClientConnection() {
         return mock(KafkaClientConnection.class);
+    }
+
+    SempDeleteCommandManager sempDeleteCommandManager() {
+        return mock(SempDeleteCommandManager.class);
     }
 
     @Bean

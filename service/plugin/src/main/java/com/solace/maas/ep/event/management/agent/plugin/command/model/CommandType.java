@@ -1,7 +1,8 @@
 package com.solace.maas.ep.event.management.agent.plugin.command.model;
 
 public enum CommandType {
-    terraform("terraform");
+    terraform("terraform"),
+    semp("semp");
 
     private final String type;
 

@@ -32,6 +32,7 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform.client;
  */
 
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.messaging.config.SolaceProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,7 @@ import java.util.function.Consumer;
 
 @ExcludeFromJacocoGeneratedReport
 public class TerraformClient implements AutoCloseable {
-    private static final String TERRAFORM_EXE_NAME = "terraform";
+    private static final String TERRAFORM_EXE_NAME = "/opt/homebrew/bin/terraform";
     private static final String VERSION_COMMAND = "version",
             PLAN_COMMAND = "plan",
             APPLY_COMMAND = "apply",
