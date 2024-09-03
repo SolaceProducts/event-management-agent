@@ -107,7 +107,7 @@ public class CommandManager {
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
                     if (command.getCommandType() == semp) {
-                        executeSempCommand(request, command, solaceClient);
+                        executeSempCommand(command, solaceClient);
                     } else if (command.getCommandType() == terraform) {
                         Path executionLog = executeTerraformCommand(request, command, envVars);
                         if (executionLog != null) {
@@ -146,7 +146,7 @@ public class CommandManager {
         return executionLog;
     }
 
-    private void executeSempCommand(CommandRequest request, Command command, SolaceHttpSemp solaceClient) {
+    private void executeSempCommand(Command command, SolaceHttpSemp solaceClient) {
         try {
             Validate.isTrue(command.getCommandType().equals(semp), "Command type must be semp");
             sempDeleteCommandManager.execute(command, solaceClient);
