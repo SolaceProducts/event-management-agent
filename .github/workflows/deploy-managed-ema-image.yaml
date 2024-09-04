@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: "The image tag in ECR to push to a new environment."
+        description: "The tag of the image to push. We'll pull the main image and re-tag it with this."
         required: true
         default: "A.B.C"
       deployEnvironment:
@@ -45,7 +45,7 @@ jobs:
         if: ${{ github.event.inputs.deployEnvironment == 'development' }}
         run: |
           GCR_IMAGE_TAGS_TO_PUSH=(
-          "${{ github.event.inputs.releaseVersion }}" "latest"
+          "${{ github.event.inputs.releaseVersion }}"
           )
           GCR_DEV_IMAGE_REPO="gcr.io/${{ secrets.DEV_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
           for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
@@ -64,7 +64,7 @@ jobs:
         if: ${{ github.event.inputs.deployEnvironment == 'staging' }}
         run: |
           GCR_IMAGE_TAGS_TO_PUSH=(
-          "${{ github.event.inputs.releaseVersion }}" "latest"
+          "${{ github.event.inputs.releaseVersion }}"
           )
           GCR_STAGING_IMAGE_REPO="gcr.io/${{ secrets.STAGING_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
           for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
@@ -83,7 +83,7 @@ jobs:
         if: ${{ github.event.inputs.deployEnvironment == 'production' }}
         run: |
           GCR_IMAGE_TAGS_TO_PUSH=(
-          "${{ github.event.inputs.releaseVersion }}" "latest"
+          "${{ github.event.inputs.releaseVersion }}"
           )
           GCR_PROD_IMAGE_REPO="gcr.io/${{ secrets.PROD_GCP_PROJECT_ID }}/${{ github.event.repository.name }}"
           for current_tag in ${GCR_IMAGE_TAGS_TO_PUSH[@]}
@@ -102,7 +102,7 @@ jobs:
         if: ${{ github.event.inputs.deployEnvironment == 'production' }}
         run: |
           IMAGE_TAGS_TO_PUSH=(
-          "${{ github.event.inputs.releaseVersion }}" "latest"
+          "${{ github.event.inputs.releaseVersion }}"
           )
           PROD_IMAGE_REPO="${{ secrets.AZURE_CHINA_PROD_HOSTNAME }}/${{ github.event.repository.name }}"
           for current_tag in ${IMAGE_TAGS_TO_PUSH[@]}
