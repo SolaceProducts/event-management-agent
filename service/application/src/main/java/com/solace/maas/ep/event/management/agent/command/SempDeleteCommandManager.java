@@ -1,18 +1,21 @@
 package com.solace.maas.ep.event.management.agent.command;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.client.sempv2.ApiClient;
 import com.solace.client.sempv2.ApiException;
 import com.solace.client.sempv2.api.QueueApi;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.SempEntityType;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.SempQueueDeletionRequest;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.SempTopicSubscriptionDeletionRequest;
+import com.solace.maas.ep.common.model.SempEntityType;
+import com.solace.maas.ep.common.model.SempQueueDeletionRequest;
+import com.solace.maas.ep.common.model.SempTopicSubscriptionDeletionRequest;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_DATA;
@@ -22,6 +25,12 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Slf4j
 public class SempDeleteCommandManager {
     public static final String ERROR_EXECUTING_COMMAND = "Error executing command";
+
+    private final ObjectMapper objectMapper;
+
+    public SempDeleteCommandManager(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public void execute(Command command, SolaceHttpSemp solaceClient) {
         try {
@@ -35,18 +44,24 @@ public class SempDeleteCommandManager {
     }
 
 
-    public void executeSempDeleteCommand(Command command, SolaceHttpSemp solaceClient) throws ApiException {
+    public void executeSempDeleteCommand(Command command, SolaceHttpSemp solaceClient) throws ApiException, JsonProcessingException {
         validate(command, solaceClient);
         ApiClient apiClient = setupApiClient(solaceClient);
         QueueApi queueApi = new QueueApi(apiClient);
 
-        SempEntityType deletionEntityType = (SempEntityType) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE);
+        SempEntityType deletionEntityType = SempEntityType.valueOf((String) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE));
 
         if (deletionEntityType == SempEntityType.solaceQueue) {
-            SempQueueDeletionRequest request = (SempQueueDeletionRequest) command.getParameters().get(SEMP_DELETE_DATA);
-            queueApi.deleteMsgVpnQueue(request.getQueueName(), request.getMsgVpn());
+            SempQueueDeletionRequest request = objectMapper.readValue(
+                    objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                    SempQueueDeletionRequest.class);
+            log.info("Deleting queue Via Semp V2 delete: {}", request.getQueueName());
+            queueApi.deleteMsgVpnQueue(request.getMsgVpn(), request.getQueueName());
         } else if (deletionEntityType == SempEntityType.subscriptionTopic) {
-            SempTopicSubscriptionDeletionRequest request = (SempTopicSubscriptionDeletionRequest) command.getParameters().get(SEMP_DELETE_DATA);
+            SempTopicSubscriptionDeletionRequest request = objectMapper.readValue(
+                    objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                    SempTopicSubscriptionDeletionRequest.class);
+            log.info("Deleting subscription Via Semp V2 delete: {}", request.getTopicName());
             queueApi.deleteMsgVpnQueueSubscription(request.getMsgVpn(), request.getQueueName(), request.getTopicName());
         } else {
             throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
@@ -67,7 +82,7 @@ public class SempDeleteCommandManager {
     private ApiClient setupApiClient(SolaceHttpSemp solaceClient) {
         SempClient sempClient = solaceClient.getSempClient();
         ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(sempClient.getConnectionUrl());
+        apiClient.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         apiClient.setUsername(sempClient.getUsername());
         apiClient.setPassword(sempClient.getPassword());
         return apiClient;

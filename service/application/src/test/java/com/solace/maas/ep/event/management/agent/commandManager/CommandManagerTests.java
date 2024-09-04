@@ -54,6 +54,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageTyp
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -172,10 +173,13 @@ class CommandManagerTests {
     void failSendingResponseBackToEp() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
-
         doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
         doThrow(new RuntimeException("Error sending response back to EP")).when(commandPublisher).sendCommandResponse(any(), any());
-        commandManager.execute(message);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            commandManager.execute(message);
+        });
+        assertTrue(exception.getMessage().contains("Error sending response back to EP"));
 
         // Wait for the command thread to complete
         await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 2));

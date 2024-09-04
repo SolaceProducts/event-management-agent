@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.plugin.command.model;
+package com.solace.maas.ep.common.model;
 
 public enum SempEntityType {
     solaceQueue("solaceQueue"),
@@ -14,5 +14,14 @@ public enum SempEntityType {
 
     public String getValue() {
         return value;
+    }
+
+    public SempEntityType fromValue(String value) {
+        for (SempEntityType entityType : SempEntityType.values()) {
+            if (entityType.getValue().equals(value)) {
+                return entityType;
+            }
+        }
+        throw new IllegalArgumentException("Unsupported entity type: " + value);
     }
 }

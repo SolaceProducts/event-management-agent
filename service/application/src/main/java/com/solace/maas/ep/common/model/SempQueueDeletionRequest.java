@@ -1,4 +1,4 @@
-package com.solace.maas.ep.event.management.agent.plugin.command.model;
+package com.solace.maas.ep.common.model;
 
 import lombok.Builder;
 import lombok.Data;
