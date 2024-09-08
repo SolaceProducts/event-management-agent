@@ -113,13 +113,14 @@ public class ScanManager {
                         .collect(Collectors.toList()).stream()
                 )
                 .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
+        log.info("here");
 
         return scanService.singleScan(routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
     }
 
-    public void handleError(Exception e, ScanCommandMessage message){
+    public void handleError(Exception e, ScanCommandMessage message) {
 
-        if( scanStatusPublisherOpt.isEmpty()){
+        if (scanStatusPublisherOpt.isEmpty()) {
             return;
         }
         ScanStatusPublisher scanStatusPublisher = scanStatusPublisherOpt.get();
@@ -140,7 +141,7 @@ public class ScanManager {
                 "orgId", orgId,
                 "runtimeAgentId", runtimeAgentId
         );
-        scanStatusPublisher.sendOverallScanStatus(response,topicVars);
+        scanStatusPublisher.sendOverallScanStatus(response, topicVars);
     }
 
     private MessagingServiceEntity retrieveMessagingServiceEntity(String messagingServiceId) {
@@ -157,5 +158,10 @@ public class ScanManager {
 
     public Page<ScanItemBO> findByMessagingServiceId(String messagingServiceId, Pageable pageable) {
         return scanService.findByMessagingServiceId(messagingServiceId, pageable);
+    }
+
+
+    public boolean isScanComplete(String scanId) {
+       return  scanService.isScanComplete(scanId);
     }
 }

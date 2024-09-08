@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -435,5 +436,16 @@ public class ScanService {
                             parentScanType + "," + recipient));
         }
         return pathStore;
+    }
+
+    public boolean isScanComplete(String scanId) {
+        List<ScanTypeEntity> allScanTypes = scanTypeRepository.findAllByScanId(scanId);
+        if (CollectionUtils.isEmpty(allScanTypes)) {
+            return false;
+        }
+       return allScanTypes.stream()
+               .map(type -> scanStatusRepository.findByScanType(type))
+               .allMatch(status -> status.getStatus().equals(ScanStatus.COMPLETE.name()));
+
     }
 }

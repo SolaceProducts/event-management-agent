@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,11 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @Component
@@ -68,7 +74,42 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
         log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
 
-        scanManager.scan(scanRequestBO);
+        String scanId = scanManager.scan(scanRequestBO);
+        waitForScanCompletion(scanId);
+    }
+
+    public void waitForScanCompletion(String scanId) {
+        try {
+            await()
+                    .atMost(5, MINUTES)
+                    .pollInterval(10, SECONDS)
+                    .pollInSameThread()
+                    .atMost(5, MINUTES)
+                    .until(() -> {
+                        try {
+                            return waitUntilScanIsCompleted(scanId);
+                        } catch (Exception e) {
+                            System.out.println("Exception occurred: " + e.getMessage() + ". Retrying...");
+                            return false;
+                        }
+                    });
+        } catch (ConditionTimeoutException e) {
+            System.out.println("Scan did not complete within 5 minutes or after 5 retries.");
+            // Handle the timeout scenario as needed
+        }
+    }
+
+    private boolean waitUntilScanIsCompleted(String scanId) {
+        boolean res = scanManager.isScanComplete(scanId);
+        if (res) {
+            log.info("Scan with id {} completed successfully. Will remove from queue now", scanId);
+            try {
+                MINUTES.sleep(1);
+            } catch (InterruptedException e) {
+                log.error("Error occurred while waiting for scan to complete: {}", e.getMessage());
+            }
+        }
+        return res;
     }
 
     @Override
@@ -83,6 +124,6 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
     @Override
     public void onFailure(Exception e, ScanCommandMessage message) {
-       scanManager.handleError(e,message);
+        scanManager.handleError(e, message);
     }
 }
