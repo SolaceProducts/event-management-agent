@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -76,6 +75,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
         String scanId = scanManager.scan(scanRequestBO);
         waitForScanCompletion(scanId);
+        //message will be acked
     }
 
     public void waitForScanCompletion(String scanId) {
@@ -84,32 +84,22 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
                     .atMost(5, MINUTES)
                     .pollInterval(10, SECONDS)
                     .pollInSameThread()
-                    .atMost(5, MINUTES)
                     .until(() -> {
                         try {
                             return waitUntilScanIsCompleted(scanId);
                         } catch (Exception e) {
-                            System.out.println("Exception occurred: " + e.getMessage() + ". Retrying...");
+                            log.error("Error while waiting for scan to complete", e);
                             return false;
                         }
                     });
         } catch (ConditionTimeoutException e) {
-            System.out.println("Scan did not complete within 5 minutes or after 5 retries.");
             // Handle the timeout scenario as needed
+            log.error("Scan with id {} did not complete within the expected time", scanId);
         }
     }
 
     private boolean waitUntilScanIsCompleted(String scanId) {
-        boolean res = scanManager.isScanComplete(scanId);
-        if (res) {
-            log.info("Scan with id {} completed successfully. Will remove from queue now", scanId);
-            try {
-                MINUTES.sleep(1);
-            } catch (InterruptedException e) {
-                log.error("Error occurred while waiting for scan to complete: {}", e.getMessage());
-            }
-        }
-        return res;
+        return scanManager.isScanComplete(scanId);
     }
 
     @Override

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -439,13 +440,20 @@ public class ScanService {
     }
 
     public boolean isScanComplete(String scanId) {
+        Set<String> completeScanStatuses = Set.of(
+                ScanStatus.COMPLETE.name(),
+                ScanStatus.FAILED.name(),
+                ScanStatus.TIMED_OUT.name()
+        );
+
+
         List<ScanTypeEntity> allScanTypes = scanTypeRepository.findAllByScanId(scanId);
         if (CollectionUtils.isEmpty(allScanTypes)) {
             return false;
         }
-       return allScanTypes.stream()
-               .map(type -> scanStatusRepository.findByScanType(type))
-               .allMatch(status -> status.getStatus().equals(ScanStatus.COMPLETE.name()));
+        return allScanTypes.stream()
+                .map(scanStatusRepository::findByScanType)
+                .allMatch(status -> completeScanStatuses.contains(status.getStatus()));
 
     }
 }
