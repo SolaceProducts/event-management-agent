@@ -144,7 +144,7 @@ public class VMRProperties {
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             String hostNameHash = DigestUtils.sha256Hex(hostName);
-            return String.format("%s-%s", eventPortalPluginProperties.getRuntimeAgentId(), hostNameHash);
+            return String.format("%s-%s-%s", "ema", eventPortalPluginProperties.getRuntimeAgentId(), hostNameHash);
         } catch (UnknownHostException e) {
             log.warn("Could not determine host name when determining client name.", e);
             return StringUtils.EMPTY;

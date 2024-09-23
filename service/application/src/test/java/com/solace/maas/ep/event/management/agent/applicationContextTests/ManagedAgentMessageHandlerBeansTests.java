@@ -82,7 +82,7 @@ class ManagedAgentMessageHandlerBeansTests {
     @Test
     void testClientNameIsGeneratedBasedOnHostNameAndAgentId() throws UnknownHostException {
         String hostnameHash = DigestUtils.sha256Hex(InetAddress.getLocalHost().getHostName());
-        assertThat(vmrProperties.getClientName()).isEqualTo("testManagedAgentId-" + hostnameHash);
+        assertThat(vmrProperties.getClientName()).isEqualTo("ema-testManagedAgentId-" + hostnameHash);
 
     }
 }
