@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.6.14</version>
+        <version>1.6.15-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>event-management-agent</artifactId>
-    <version>1.6.14</version>
+    <version>1.6.15-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
@@ -235,32 +235,32 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.14</version>
+            <version>1.6.15-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>1.6.14</version>
+            <version>1.6.15-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>1.6.14</version>
+            <version>1.6.15-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>1.6.14</version>
+            <version>1.6.15-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>1.6.14</version>
+            <version>1.6.15-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.terraform</groupId>
             <artifactId>terraform-plugin</artifactId>
-            <version>1.6.14</version>
+            <version>1.6.15-SNAPSHOT</version>
         </dependency>
 
         <dependency>
