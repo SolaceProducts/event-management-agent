@@ -62,9 +62,7 @@ public class SolaceConfiguration {
     @ConditionalOnMissingBean(EnableRtoCondition.class)
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
     public MessagingService messagingService() {
-        String clientName = "runtimeAgent-" + eventPortalProperties.getRuntimeAgentId();
-        vmrConfiguration.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
-
+        String clientName = vmrConfiguration.getProperty(SolaceProperties.ClientProperties.NAME);
         log.info("Connecting to event portal using EMA client {}.", clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
