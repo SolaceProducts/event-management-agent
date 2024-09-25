@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: "The tag of the image to push. We'll pull the main image and re-tag it with this."
+        description: "The tag of the image to push. For dev, we'll pull the 'main' image and for all other environments, we'll pull image A.B.C, then we push the image with tag A.B.C to where it needs to go."
         required: true
         default: "A.B.C"
       deployEnvironment:
@@ -29,9 +29,16 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1.6.0
-      - name: ECR (Dev) - Pull Image
+      - name: ECR (Dev) - Pull Main Image
+        if: ${{ github.event.inputs.deployEnvironment == 'development' }}
         run: |
           ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
+          docker pull $ECR_DEV_IMAGE
+          echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
+      - name: ECR (Dev) - Pull Prod Ready Image Tag
+        if: ${{ github.event.inputs.deployEnvironment != 'development' }}
+        run: |
+          ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
           docker pull $ECR_DEV_IMAGE
           echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: GCR (Dev) - Login
