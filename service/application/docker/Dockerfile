@@ -8,7 +8,7 @@ ENV HOME /home/$USER
 VOLUME /tmp
 
 # create user and directory setup
-RUN adduser -D $USER && \
+RUN useradd -m $USER && \
     mkdir -p /opt/ema && \
     chmod 777 /opt/ema && \
     mkdir -p /opt/ema/terraform && \
@@ -20,8 +20,10 @@ WORKDIR /opt/ema
 
 ARG PLATFORM=linux_amd64
 
-COPY tofu_1.8.2_amd64.apk /opt/ema/terraform
-RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.8.2_amd64.apk
+COPY tofu_1.8.2_386.deb /opt/ema/terraform
+RUN apt-get update && apt-get install -y unzip
+RUN dpkg -i /opt/ema/terraform/tofu_1.8.2_386.deb || apt-get install -f -y
+RUN rm /opt/ema/terraform/tofu_1.8.2_386.deb && rm -rf /var/lib/apt/lists/*
 
 COPY .terraformrc $HOME/.terraformrc
 RUN printf '#!/bin/ash\ntofu $*' > /opt/ema/terraform/terraform
