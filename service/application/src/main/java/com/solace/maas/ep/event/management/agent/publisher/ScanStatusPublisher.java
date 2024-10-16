@@ -7,7 +7,6 @@ import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublishe
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanOverallStatusException;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanStatusException;
 import io.micrometer.core.instrument.MeterRegistry;
-import com.solace.maas.ep.event.management.agent.subscriber.SolacePersistentMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;

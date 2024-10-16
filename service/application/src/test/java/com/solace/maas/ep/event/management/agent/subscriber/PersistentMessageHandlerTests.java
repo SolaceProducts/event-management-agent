@@ -36,8 +36,6 @@ import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

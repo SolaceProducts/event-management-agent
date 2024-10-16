@@ -6,8 +6,6 @@ import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.common.messages.CommandMessage;
-import com.solace.maas.ep.common.messages.ScanCommandMessage;
-import com.solace.maas.ep.common.messages.ScanDataImportMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
@@ -31,13 +29,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
-import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

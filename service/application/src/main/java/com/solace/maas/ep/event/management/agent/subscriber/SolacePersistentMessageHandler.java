@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.subscriber;
 
-import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.MessageProcessor;
