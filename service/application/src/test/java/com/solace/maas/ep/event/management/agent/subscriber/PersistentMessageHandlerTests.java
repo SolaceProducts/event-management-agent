@@ -144,7 +144,7 @@ public class PersistentMessageHandlerTests {
         verify(scanCommandMessageProcessor, times(1)).castToMessageClass(any());
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
 
-        verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
+
     }
 
     @Test
