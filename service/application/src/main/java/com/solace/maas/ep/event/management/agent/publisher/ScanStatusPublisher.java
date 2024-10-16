@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanOverallStatusException;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanStatusException;
+import io.micrometer.core.instrument.MeterRegistry;
 import com.solace.maas.ep.event.management.agent.subscriber.SolacePersistentMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,15 +16,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
+
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanStatusPublisher {
 
     private final SolacePublisher solacePublisher;
+    private final MeterRegistry meterRegistry;
 
-    public ScanStatusPublisher(SolacePublisher solacePublisher) {
+    public ScanStatusPublisher(SolacePublisher solacePublisher,
+                               MeterRegistry meterRegistry) {
         this.solacePublisher = solacePublisher;
+        this.meterRegistry = meterRegistry;
     }
 
     /**
@@ -47,6 +56,9 @@ public class ScanStatusPublisher {
         } catch (Exception e) {
             throw new ScanOverallStatusException("Over all status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Overall status", Arrays.asList(scanType.split(",")), ScanStatus.valueOf(status));
+        } finally {
+            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status, SCAN_ID_TAG, scanId,
+                    ORG_ID_TAG, topicDetails.get("orgId")).increment();
         }
     }
 
@@ -73,6 +85,9 @@ public class ScanStatusPublisher {
         } catch (Exception e) {
             throw new ScanStatusException("Route status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Route status", List.of(scanType), ScanStatus.valueOf(status));
+        }  finally {
+            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status, SCAN_ID_TAG, scanId,
+                    ORG_ID_TAG, topicDetails.get("orgId")).increment();
         }
     }
 }
