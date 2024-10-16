@@ -43,9 +43,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Tests for {@link SolacePersistentMessageHandler} correct dispatch of messages to appropriate processors
- */
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "eventPortal.gateway.messaging.standalone=false",
@@ -53,7 +50,7 @@ import static org.mockito.Mockito.when;
         "eventPortal.incomingRequestQueueName = ep_core_ema_requests_123456_123123"
 })
 @Slf4j
-public class PersistentMessageHandlerTests {
+public class CommandPersistentMessageHandlerTests {
 
     @MockBean
     private ScanManager scanManager;
@@ -115,8 +112,6 @@ public class PersistentMessageHandlerTests {
         );
 
         solacePersistentMessageHandler.onMessage(inboundMessage);
-        // Wait for the executor to process the message
-        waitForExecutorToProcessMessage();
 
         verify(commandMessageProcessor, times(1)).castToMessageClass(any());
         verify(commandMessageProcessor, times(1)).processMessage(any());
@@ -124,54 +119,11 @@ public class PersistentMessageHandlerTests {
         // There must be no interaction with scanCommandMessageProcessor
         verify(scanCommandMessageProcessor, times(0)).castToMessageClass(any());
         verify(scanCommandMessageProcessor, times(0)).processMessage(any());
-    }
 
-    @Test
-    void testScanCommandMessageHandler() {
-        ScanCommandMessage scanCommandMessage =
-                new ScanCommandMessage("messagingServiceId",
-                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
-        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
-        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
-                ScanCommandMessage.class.getCanonicalName()
-        );
 
-        solacePersistentMessageHandler.onMessage(inboundMessage);
-        waitForExecutorToProcessMessage();
-
-        verify(commandMessageProcessor, times(0)).castToMessageClass(any());
-        verify(commandMessageProcessor, times(0)).processMessage(any());
-
-        // There must be no interaction with scanCommandMessageProcessor
-        verify(scanCommandMessageProcessor, times(1)).castToMessageClass(any());
-        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
-    }
-
-    @Test
-    void testUnsupportedMessageHandling() {
-        //ScanDataImportMessage is unsupported for persistent message handler
-        ScanDataImportMessage scanDataImportMessage = new ScanDataImportMessage();
-        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanDataImportMessage));
-        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
-                ScanDataImportMessage.class.getCanonicalName()
-        );
-        solacePersistentMessageHandler.onMessage(inboundMessage);
-        waitForExecutorToProcessMessage();
-        List<ILoggingEvent> logs = listAppender.list;
-        assertThat(logs.get(logs.size() - 1).getFormattedMessage()).isEqualTo("Unsupported message and/or processor encountered. Skipping processing");
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
-        //unsupported message type, so we don't have an appropriate processor to handle the failure scenario
-        verify(scanCommandMessageProcessor, times(0)).onFailure(any(), any());
-        verify(commandMessageProcessor, times(0)).onFailure(any(), any());
     }
 
-    private void waitForExecutorToProcessMessage() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 
 

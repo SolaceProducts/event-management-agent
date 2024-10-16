@@ -21,11 +21,11 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeReposit
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanTypeBO;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,14 +36,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 
 /**
  * Responsible for initiating and managing Messaging Service scans.
@@ -67,17 +64,11 @@ public class ScanService {
 
     private final IDGenerator idGenerator;
 
-    private final MeterRegistry meterRegistry;
-
     public ScanService(ScanRepository repository,
                        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
-                       ScanTypeRepository scanTypeRepository,
-                       ScanStatusRepository scanStatusRepository,
-                       ScanRouteService scanRouteService,
-                       RouteService routeService,
-                       ProducerTemplate producerTemplate,
-                       IDGenerator idGenerator,
-                       MeterRegistry meterRegistry) {
+                       ScanTypeRepository scanTypeRepository, ScanStatusRepository scanStatusRepository, ScanRouteService scanRouteService,
+                       RouteService routeService, ProducerTemplate producerTemplate,
+                       IDGenerator idGenerator) {
         this.repository = repository;
         this.scanRecipientHierarchyRepository = scanRecipientHierarchyRepository;
         this.scanTypeRepository = scanTypeRepository;
@@ -86,7 +77,6 @@ public class ScanService {
         this.routeService = routeService;
         this.producerTemplate = producerTemplate;
         this.idGenerator = idGenerator;
-        this.meterRegistry = meterRegistry;
     }
 
     /**
@@ -296,7 +286,6 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
         });
-        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status.name(), SCAN_ID_TAG, scanId).increment();
     }
 
     protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, String actorId,
@@ -448,5 +437,23 @@ public class ScanService {
                             parentScanType + "," + recipient));
         }
         return pathStore;
+    }
+
+    public boolean isScanComplete(String scanId) {
+        Set<String> completeScanStatuses = Set.of(
+                ScanStatus.COMPLETE.name(),
+                ScanStatus.FAILED.name(),
+                ScanStatus.TIMED_OUT.name()
+        );
+
+
+        List<ScanTypeEntity> allScanTypes = scanTypeRepository.findAllByScanId(scanId);
+        if (CollectionUtils.isEmpty(allScanTypes)) {
+            return false;
+        }
+        return allScanTypes.stream()
+                .map(scanStatusRepository::findByScanType)
+                .allMatch(status -> completeScanStatuses.contains(status.getStatus()));
+
     }
 }
