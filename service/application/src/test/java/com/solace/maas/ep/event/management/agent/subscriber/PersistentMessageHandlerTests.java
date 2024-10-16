@@ -143,6 +143,8 @@ public class PersistentMessageHandlerTests {
         // There must be no interaction with scanCommandMessageProcessor
         verify(scanCommandMessageProcessor, times(1)).castToMessageClass(any());
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
+
+        verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
     }
 
     @Test

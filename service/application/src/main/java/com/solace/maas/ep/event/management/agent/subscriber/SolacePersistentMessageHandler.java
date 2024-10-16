@@ -36,8 +36,8 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     private final EventPortalProperties eventPortalProperties;
     private final ThreadPoolTaskExecutor executor;
     @Getter
+    @SuppressWarnings("PMD.MutableStaticState")
     private PersistentMessageReceiver persistentMessageReceiver;
-    public static Map<String,Integer> seenScanIds = new HashMap<>();
 
     protected SolacePersistentMessageHandler(MessagingService messagingService,
                                              EventPortalProperties eventPortalProperties,
