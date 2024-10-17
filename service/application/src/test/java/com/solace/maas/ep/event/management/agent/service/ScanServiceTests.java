@@ -27,6 +27,8 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -338,5 +340,72 @@ public class ScanServiceTests {
         scanService.findById("scan1");
 
         assertThatNoException();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"COMPLETE", "FAILED", "TIMED_OUT"})
+    @SneakyThrows
+    public void testIsScanCompleteIsComplete(String scanStatus) {
+        ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", scanStatus);
+        ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
+
+        when(scanTypeRepository.findAllByScanId(any(String.class)))
+                .thenReturn(List.of(scanTypeA));
+        when(scanStatusRepository.findByScanType(any(ScanTypeEntity.class)))
+                .thenReturn(scanStatusA);
+
+        Assertions.assertTrue(scanService.isScanComplete("scan1"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"IN_PROGRESS", "INITIATED"})
+    @SneakyThrows
+    public void testIsScanCompleteIsNotComplete(String scanStatus) {
+        ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", scanStatus);
+        ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
+
+        when(scanTypeRepository.findAllByScanId(any(String.class)))
+                .thenReturn(List.of(scanTypeA));
+        when(scanStatusRepository.findByScanType(any(ScanTypeEntity.class)))
+                .thenReturn(scanStatusA);
+
+        Assertions.assertFalse(scanService.isScanComplete("scan1"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void testIsScanCompleteIsCompleteScans() {
+        ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
+        ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
+
+        ScanStatusEntity scanStatusB = scanServiceHelper.buildScanStatusEntity("status2", "COMPLETE");
+        ScanTypeEntity scanTypeB = scanServiceHelper.buildScanTypeEntity("124", "queueListing", null, scanStatusB);
+
+        when(scanTypeRepository.findAllByScanId(any(String.class)))
+                .thenReturn(List.of(scanTypeA,scanTypeB));
+        when(scanStatusRepository.findByScanType(scanTypeA))
+                .thenReturn(scanStatusA);
+        when(scanStatusRepository.findByScanType(scanTypeB))
+                .thenReturn(scanStatusB);
+
+        Assertions.assertTrue(scanService.isScanComplete("scan1"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void testIsScanCompleteIsNotCompleteScans() {
+        ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
+        ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
+
+        ScanStatusEntity scanStatusB = scanServiceHelper.buildScanStatusEntity("status2", "IN_PROGRESS");
+        ScanTypeEntity scanTypeB = scanServiceHelper.buildScanTypeEntity("124", "queueConfiguration", null, scanStatusB);
+
+        when(scanTypeRepository.findAllByScanId(any(String.class)))
+                .thenReturn(List.of(scanTypeA,scanTypeB));
+        when(scanStatusRepository.findByScanType(scanTypeA))
+                .thenReturn(scanStatusA);
+        when(scanStatusRepository.findByScanType(scanTypeB))
+                .thenReturn(scanStatusB);
+        Assertions.assertFalse(scanService.isScanComplete("scan1"));
     }
 }
