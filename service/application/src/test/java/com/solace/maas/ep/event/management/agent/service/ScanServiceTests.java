@@ -374,6 +374,19 @@ public class ScanServiceTests {
 
     @Test
     @SneakyThrows
+    public void testIsScanCompleteIsNotCompleteEmptyScanTypeList() {
+        ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
+
+        when(scanTypeRepository.findAllByScanId(any(String.class)))
+                .thenReturn(List.of());
+        when(scanStatusRepository.findByScanType(any(ScanTypeEntity.class)))
+                .thenReturn(scanStatusA);
+
+        Assertions.assertFalse(scanService.isScanComplete("scan1"));
+    }
+
+    @Test
+    @SneakyThrows
     public void testIsScanCompleteIsCompleteScans() {
         ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
         ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
