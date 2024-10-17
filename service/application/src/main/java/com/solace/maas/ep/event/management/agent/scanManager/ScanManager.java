@@ -100,7 +100,7 @@ public class ScanManager {
                         ).stream()
                         .findFirst()
                         .orElseThrow())
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         List<String> brokerScanTypes = scanRequestBO.getScanTypes();
         List<RouteBundle> routes = brokerScanTypes.stream()
@@ -110,9 +110,8 @@ public class ScanManager {
                                 brokerScanType, e.getKey()))
                         .filter(Objects::nonNull)
                         .filter(list -> !list.isEmpty())
-                        .collect(Collectors.toList()).stream()
-                )
-                .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
+                        .toList().stream()
+                ).toList().stream().flatMap(List::stream).toList();
 
         return scanService.singleScan(routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
     }
