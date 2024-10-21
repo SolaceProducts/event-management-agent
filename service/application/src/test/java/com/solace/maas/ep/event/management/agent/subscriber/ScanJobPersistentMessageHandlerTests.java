@@ -40,8 +40,8 @@ import static org.mockito.Mockito.when;
         "eventPortal.gateway.messaging.standalone=false",
         "eventPortal.managed=true",
         "eventPortal.incomingRequestQueueName = ep_core_ema_requests_123456_123123",
-        "eventPortal.waitAckScanCompletePollInterval=1",
-        "eventPortal.waitAckScanCompleteTimeout=10",
+        "eventPortal.waitAckScanCompletePollIntervalSec=1",
+        "eventPortal.waitAckScanCompleteTimeoutSec=10",
 
 
 })
