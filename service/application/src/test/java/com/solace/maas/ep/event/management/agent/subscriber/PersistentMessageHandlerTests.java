@@ -140,7 +140,7 @@ public class PersistentMessageHandlerTests {
         verify(commandMessageProcessor, times(0)).castToMessageClass(any());
         verify(commandMessageProcessor, times(0)).processMessage(any());
 
-        // There must be no interaction with scanCommandMessageProcessor
+        // There must be an interaction with scanCommandMessageProcessor
         verify(scanCommandMessageProcessor, times(1)).castToMessageClass(any());
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
 
