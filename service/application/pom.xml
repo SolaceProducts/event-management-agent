@@ -19,6 +19,7 @@
         <spring-kafka.version>3.2.4</spring-kafka.version>
         <kafka-clients.version>3.5.0</kafka-clients.version>
         <jackson.version>2.16.1</jackson.version>
+        <awaitility.version>4.2.0</awaitility.version>
         <dockerfile-maven.version>1.4.13</dockerfile-maven.version>
     </properties>
     <repositories>
@@ -293,7 +294,6 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
         </dependency>
 
         <!-- for testing -->

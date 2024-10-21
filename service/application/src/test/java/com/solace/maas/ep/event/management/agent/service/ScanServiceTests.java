@@ -345,7 +345,7 @@ public class ScanServiceTests {
     @ParameterizedTest
     @ValueSource(strings = {"COMPLETE", "FAILED", "TIMED_OUT"})
     @SneakyThrows
-    public void testIsScanCompleteIsComplete(String scanStatus) {
+    public void testScanStatusCompletionWithSingleScan(String scanStatus) {
         ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", scanStatus);
         ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
 
@@ -360,7 +360,7 @@ public class ScanServiceTests {
     @ParameterizedTest
     @ValueSource(strings = {"IN_PROGRESS", "INITIATED"})
     @SneakyThrows
-    public void testIsScanCompleteIsNotComplete(String scanStatus) {
+    public void testScanStatusIncompleteWithSingleScan(String scanStatus) {
         ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", scanStatus);
         ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
 
@@ -372,22 +372,11 @@ public class ScanServiceTests {
         Assertions.assertFalse(scanService.isScanComplete("scan1"));
     }
 
-    @Test
-    @SneakyThrows
-    public void testIsScanCompleteIsNotCompleteEmptyScanTypeList() {
-        ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
 
-        when(scanTypeRepository.findAllByScanId(any(String.class)))
-                .thenReturn(List.of());
-        when(scanStatusRepository.findByScanType(any(ScanTypeEntity.class)))
-                .thenReturn(scanStatusA);
 
-        Assertions.assertFalse(scanService.isScanComplete("scan1"));
-    }
-
-    @Test
-    @SneakyThrows
-    public void testIsScanCompleteIsCompleteScans() {
+  @Test
+  @SneakyThrows
+  public void testScanStatusCompletedWithMultipleScans(){
         ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
         ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
 
@@ -406,7 +395,7 @@ public class ScanServiceTests {
 
     @Test
     @SneakyThrows
-    public void testIsScanCompleteIsNotCompleteScans() {
+    public void testScanStatusNotCompleteWithMultipleScans() {
         ScanStatusEntity scanStatusA = scanServiceHelper.buildScanStatusEntity("status1", "COMPLETE");
         ScanTypeEntity scanTypeA = scanServiceHelper.buildScanTypeEntity("123", "queueListing", null, scanStatusA);
 

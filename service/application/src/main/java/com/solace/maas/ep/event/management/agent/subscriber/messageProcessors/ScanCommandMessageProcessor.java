@@ -85,7 +85,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
         scanManager.scan(scanRequestBO);
         //if managed, wait for scan to complete
-        if (eventPortalProperties.getManaged()) {
+        if (Boolean.TRUE.equals(eventPortalProperties.getManaged())) {
             log.debug("Waiting for scan to complete for scanId: {}", scanId);
             waitForScanCompletion(scanId);
         }
@@ -94,8 +94,8 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     public void waitForScanCompletion(String scanId) {
         try {
             await()
-                    .atMost(eventPortalProperties.getWaitAckScanCompleteTimeout(), SECONDS)
-                    .pollInterval(eventPortalProperties.getWaitAckScanCompletePollInterval(), SECONDS)
+                    .atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec(), SECONDS)
+                    .pollInterval(eventPortalProperties.getWaitAckScanCompletePollIntervalSec(), SECONDS)
                     .pollInSameThread()
                     .until(() -> {
                         try {

@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
 
 })
 @Slf4j
-public class ScanJobPersistentMessageHandlerTests {
+class ScanJobPersistentMessageHandlerTests {
 
     @MockBean
     private ScanManager scanManager;
@@ -105,7 +105,7 @@ public class ScanJobPersistentMessageHandlerTests {
         waitForScanCompletePolling(2);
         // the scan command message processor should be called once by the persistent message handler
        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
-       // if the scan is managed, the waitForScanCompletion method should be called
+       // if the EMA is managed, the waitForScanCompletion method should be called
         verify(scanCommandMessageProcessor, atLeastOnce()).waitForScanCompletion(any());
         // the message should be acked after the scan is complete
        verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
@@ -131,7 +131,7 @@ public class ScanJobPersistentMessageHandlerTests {
 
         // the scan command message processor should be called once by the persistent message handler
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
-        // if the scan is managed, the waitForScanCompletion method should be called
+        // if the EMA is managed, the waitForScanCompletion method should be called
         verify(scanCommandMessageProcessor, atLeastOnce()).waitForScanCompletion(any());
         // the message should be acked after the scan is complete, even though it is timed out
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
@@ -166,7 +166,7 @@ public class ScanJobPersistentMessageHandlerTests {
 
     private void waitForScanCompletePolling(Integer additionalSeconds) {
         try {
-            int timeout =eventPortalProperties.getWaitAckScanCompleteTimeout() + additionalSeconds;
+            int timeout =eventPortalProperties.getWaitAckScanCompleteTimeoutSec() + additionalSeconds;
             Thread.sleep(timeout* 1000L );
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
