@@ -101,6 +101,7 @@ class ScanJobPersistentMessageHandlerTests {
         when(scanManager.scan(any())).thenReturn("scanId");
         when(scanManager.isScanComplete("scanId")).thenReturn(true);
         solacePersistentMessageHandler.onMessage(inboundMessage);
+
        // sleep for a while to allow the scan complete poll interval to pass
         waitForScanCompletePolling(2);
         // the scan command message processor should be called once by the persistent message handler
