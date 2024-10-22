@@ -140,7 +140,8 @@ class ScanJobPersistentMessageHandlerTests {
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // sleep for a while to allow the scan complete poll interval to pass
 
-        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+5, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+5, SECONDS).until(()
+                -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
         assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
         assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
         // timeout should be logged but the message should be still acked
@@ -171,7 +172,8 @@ class ScanJobPersistentMessageHandlerTests {
         when(scanManager.scan(any())).thenThrow(new RuntimeException("Test exception thrown on purpose"));
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // sleep for a while to allow the scan complete poll interval to pass
-        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+2, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+2, SECONDS).until(()
+                -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
         assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
         assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
         // timeout should be logged but the message should be still acked
@@ -181,7 +183,8 @@ class ScanJobPersistentMessageHandlerTests {
 
         List<ILoggingEvent> logs = listAppenderPersistentMessageHandler.list;
         assertThat(logs.get(logs.size() - 1).getFormattedMessage())
-                .isEqualTo("Error while processing inbound message from queue for mopMessageSubclass: " + ScanCommandMessage.class.getCanonicalName());
+                .isEqualTo("Error while processing inbound message from queue for mopMessageSubclass: "
+                        + ScanCommandMessage.class.getCanonicalName());
 
         // the scan command message processor should be called once by the persistent message handler
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
