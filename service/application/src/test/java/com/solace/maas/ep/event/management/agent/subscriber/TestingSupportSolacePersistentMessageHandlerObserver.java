@@ -60,11 +60,4 @@ public class TestingSupportSolacePersistentMessageHandlerObserver implements Sol
             return failedMessages.contains(message);
         }
 
-        public void clear() {
-            receivedMessages.clear();
-            initiatedMessages.clear();
-            completedMessages.clear();
-            acknowledgedMessages.clear();
-            failedMessages.clear();
-        }
 }
