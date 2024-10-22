@@ -27,7 +27,9 @@ import java.util.List;
 
 import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
 import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -74,6 +76,8 @@ class ScanJobPersistentMessageHandlerTests {
     private ListAppender<ILoggingEvent> listAppenderPersistentMessageHandler;
     private ListAppender<ILoggingEvent> listAppendersCanCommandMessageProcessor;
 
+    private TestingSupportSolacePersistentMessageHandlerObserver messageHandlerObserver;
+
     @BeforeEach
     void setup() {
         Logger loggerPersistentMessageHandler = (Logger) LoggerFactory.getLogger(SolacePersistentMessageHandler.class);
@@ -87,6 +91,8 @@ class ScanJobPersistentMessageHandlerTests {
         loggerScanCommandMessageProcessor.addAppender(listAppendersCanCommandMessageProcessor);
 
         inboundMessage = mock(InboundMessage.class);
+        messageHandlerObserver = new TestingSupportSolacePersistentMessageHandlerObserver();
+        solacePersistentMessageHandler.setMessageHandlerObserver(messageHandlerObserver);
     }
 
     @Test
@@ -102,8 +108,14 @@ class ScanJobPersistentMessageHandlerTests {
         when(scanManager.isScanComplete("scanId")).thenReturn(true);
         solacePersistentMessageHandler.onMessage(inboundMessage);
 
-       // sleep for a while to allow the scan complete poll interval to pass
-        waitForScanCompletePolling(2);
+        //happy path - the message should be processed and acked
+        await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+
+        assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasCompletedMessageProcessing(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasFailedMessage(inboundMessage)).isFalse();
+
         // the scan command message processor should be called once by the persistent message handler
        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
        // if the EMA is managed, the waitForScanCompletion method should be called
@@ -127,8 +139,14 @@ class ScanJobPersistentMessageHandlerTests {
         when(scanManager.isScanComplete("scanId")).thenReturn(false);
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // sleep for a while to allow the scan complete poll interval to pass
-        waitForScanCompletePolling(5);
 
+        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+5, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+        assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
+        // timeout should be logged but the message should be still acked
+        // timeout error handling is ultimately the responsibility of Event Portal
+        assertThat(messageHandlerObserver.hasFailedMessage(inboundMessage)).isFalse();
+        assertThat(messageHandlerObserver.hasCompletedMessageProcessing(inboundMessage)).isTrue();
 
         // the scan command message processor should be called once by the persistent message handler
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
@@ -153,7 +171,14 @@ class ScanJobPersistentMessageHandlerTests {
         when(scanManager.scan(any())).thenThrow(new RuntimeException("Test exception thrown on purpose"));
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // sleep for a while to allow the scan complete poll interval to pass
-        waitForScanCompletePolling(2);
+        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+2, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+        assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
+        // timeout should be logged but the message should be still acked
+        // timeout error handling is ultimately the responsibility of Event Portal
+        assertThat(messageHandlerObserver.hasFailedMessage(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasCompletedMessageProcessing(inboundMessage)).isFalse();
+
         List<ILoggingEvent> logs = listAppenderPersistentMessageHandler.list;
         assertThat(logs.get(logs.size() - 1).getFormattedMessage())
                 .isEqualTo("Error while processing inbound message from queue for mopMessageSubclass: " + ScanCommandMessage.class.getCanonicalName());
@@ -165,14 +190,7 @@ class ScanJobPersistentMessageHandlerTests {
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
     }
 
-    private void waitForScanCompletePolling(Integer additionalSeconds) {
-        try {
-            int timeout =eventPortalProperties.getWaitAckScanCompleteTimeoutSec() + additionalSeconds;
-            Thread.sleep(timeout* 1000L );
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     private String jsonString(Object object) {
         try {

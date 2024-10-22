@@ -34,7 +34,9 @@ import java.util.List;
 import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
 import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -48,7 +50,12 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "eventPortal.gateway.messaging.standalone=false",
         "eventPortal.managed=true",
-        "eventPortal.incomingRequestQueueName = ep_core_ema_requests_123456_123123"
+        "eventPortal.incomingRequestQueueName = ep_core_ema_requests_123456_123123",
+        "eventPortal.waitAckScanCompletePollIntervalSec=1",
+        "eventPortal.waitAckScanCompleteTimeoutSec=10",
+        "eventPortal.commandThreadPoolMinSize=5",
+        "eventPortal.commandThreadPoolMaxSize=10",
+        "eventPortal.commandThreadPoolQueueSize=20"
 })
 @Slf4j
 public class PersistentMessageHandlerTests {
@@ -81,6 +88,8 @@ public class PersistentMessageHandlerTests {
 
     private ListAppender<ILoggingEvent> listAppender;
 
+    private TestingSupportSolacePersistentMessageHandlerObserver messageHandlerObserver;
+
     @BeforeEach
     void setup() {
         Logger scanLogger = (Logger) LoggerFactory.getLogger(SolacePersistentMessageHandler.class);
@@ -88,6 +97,8 @@ public class PersistentMessageHandlerTests {
         listAppender.start();
         scanLogger.addAppender(listAppender);
         inboundMessage = mock(InboundMessage.class);
+        messageHandlerObserver = new TestingSupportSolacePersistentMessageHandlerObserver();
+        solacePersistentMessageHandler.setMessageHandlerObserver(messageHandlerObserver);
     }
 
     @Test
@@ -114,7 +125,7 @@ public class PersistentMessageHandlerTests {
 
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // Wait for the executor to process the message
-        waitForExecutorToProcessMessage();
+        await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage));
 
         verify(commandMessageProcessor, times(1)).castToMessageClass(any());
         verify(commandMessageProcessor, times(1)).processMessage(any());
@@ -135,7 +146,7 @@ public class PersistentMessageHandlerTests {
         );
 
         solacePersistentMessageHandler.onMessage(inboundMessage);
-        waitForExecutorToProcessMessage();
+        await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage));
 
         verify(commandMessageProcessor, times(0)).castToMessageClass(any());
         verify(commandMessageProcessor, times(0)).processMessage(any());
@@ -143,8 +154,6 @@ public class PersistentMessageHandlerTests {
         // There must be an interaction with scanCommandMessageProcessor
         verify(scanCommandMessageProcessor, times(1)).castToMessageClass(any());
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
-
-
     }
 
     @Test
@@ -156,7 +165,12 @@ public class PersistentMessageHandlerTests {
                 ScanDataImportMessage.class.getCanonicalName()
         );
         solacePersistentMessageHandler.onMessage(inboundMessage);
-        waitForExecutorToProcessMessage();
+        await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasFailedMessage(inboundMessage));
+        assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
+        assertThat(messageHandlerObserver.hasCompletedMessageProcessing(inboundMessage)).isFalse();
+        assertThat(messageHandlerObserver.hasAcknowledgedMessage(inboundMessage)).isTrue();
+
         List<ILoggingEvent> logs = listAppender.list;
         assertThat(logs.get(logs.size() - 1).getFormattedMessage()).isEqualTo("Unsupported message and/or processor encountered. Skipping processing");
         verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
@@ -164,16 +178,6 @@ public class PersistentMessageHandlerTests {
         verify(scanCommandMessageProcessor, times(0)).onFailure(any(), any());
         verify(commandMessageProcessor, times(0)).onFailure(any(), any());
     }
-
-    private void waitForExecutorToProcessMessage() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
 
     private String jsonString(Object object) {
         try {

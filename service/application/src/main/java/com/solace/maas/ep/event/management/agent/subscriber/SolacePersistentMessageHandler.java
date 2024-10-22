@@ -10,6 +10,7 @@ import com.solace.messaging.receiver.MessageReceiver;
 import com.solace.messaging.receiver.PersistentMessageReceiver;
 import com.solace.messaging.resources.Queue;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -39,6 +40,10 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     @SuppressWarnings("PMD.MutableStaticState")
     private PersistentMessageReceiver persistentMessageReceiver;
 
+    // This is a mutable field, but it is only used for testing purposes
+    @Setter
+    private SolacePersistentMessageHandlerObserver messageHandlerObserver;
+
     protected SolacePersistentMessageHandler(MessagingService messagingService,
                                              EventPortalProperties eventPortalProperties,
                                              List<MessageProcessor> messageProcessorList) {
@@ -55,16 +60,22 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         executor.setThreadNamePrefix("solace-persistent-message-handler-pool-");
         executor.setTaskDecorator(new MdcTaskDecorator());
         executor.initialize();
-
     }
+
 
     @Override
     public void onMessage(InboundMessage inboundMessage) {
+        if (messageHandlerObserver != null) {
+            messageHandlerObserver.onMessageReceived(inboundMessage);
+        }
         executor.submit(() -> processMessage(inboundMessage));
     }
 
 
     private void processMessage(InboundMessage inboundMessage) {
+        if (messageHandlerObserver != null) {
+            messageHandlerObserver.onMessageProcessingInitiated(inboundMessage);
+        }
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
@@ -80,10 +91,19 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             message = toMessage(messageAsString, messageClass);
             processor.processMessage(processor.castToMessageClass(message));
+            if (messageHandlerObserver != null) {
+                messageHandlerObserver.onMessageProcessingCompleted(inboundMessage);
+            }
         } catch (Exception e) {
             handleProcessingError(mopMessageSubclass, processor, message, e);
+            if (messageHandlerObserver != null) {
+                messageHandlerObserver.onMessageProcessingFailed(inboundMessage);
+            }
         } finally {
             acknowledgeMessage(inboundMessage);
+            if (messageHandlerObserver != null) {
+                messageHandlerObserver.onMessageProcessingAcknowledged(inboundMessage);
+            }
         }
     }
 
