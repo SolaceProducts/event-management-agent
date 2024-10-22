@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -453,6 +454,9 @@ public class ScanService {
     }
 
     public boolean isScanComplete(String scanId) {
+        if (ObjectUtils.isEmpty(scanId)){
+            throw new IllegalArgumentException("Scan ID cannot be null or empty");
+        }
         Set<String> completeScanStatuses = Set.of(
                 ScanStatus.COMPLETE.name(),
                 ScanStatus.FAILED.name(),

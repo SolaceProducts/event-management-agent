@@ -410,4 +410,10 @@ public class ScanServiceTests {
                 .thenReturn(scanStatusB);
         Assertions.assertFalse(scanService.isScanComplete("scan1"));
     }
+
+    @Test
+    void testScanServiceIsScanCompleteInvalidArgument() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> scanService.isScanComplete(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> scanService.isScanComplete(""));
+    }
 }

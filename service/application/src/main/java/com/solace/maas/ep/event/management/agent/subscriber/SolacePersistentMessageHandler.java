@@ -40,7 +40,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     @SuppressWarnings("PMD.MutableStaticState")
     private PersistentMessageReceiver persistentMessageReceiver;
 
-    // This is a mutable field, but it is only used for testing purposes
+    // only used for testing
     @Setter
     private SolacePersistentMessageHandlerObserver messageHandlerObserver;
 

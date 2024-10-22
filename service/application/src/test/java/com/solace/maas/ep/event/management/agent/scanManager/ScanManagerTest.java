@@ -239,5 +239,11 @@ class ScanManagerTest {
         );
     }
 
+    @Test
+    void testScanStatusIsScanCompleteInvalidArgument() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> scanManager.isScanComplete(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> scanManager.isScanComplete(""));
+    }
+
 
 }

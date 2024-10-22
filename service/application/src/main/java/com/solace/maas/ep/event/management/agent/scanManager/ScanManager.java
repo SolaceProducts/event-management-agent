@@ -16,6 +16,7 @@ import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -160,6 +161,9 @@ public class ScanManager {
 
 
     public boolean isScanComplete(String scanId) {
+        if (ObjectUtils.isEmpty(scanId)) {
+           throw new IllegalArgumentException("Scan ID cannot be null or empty");
+        }
         return  scanService.isScanComplete(scanId);
     }
 }
