@@ -41,7 +41,6 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     private PersistentMessageReceiver persistentMessageReceiver;
 
     // only used for testing
-    @Setter
     private SolacePersistentMessageHandlerObserver messageHandlerObserver;
 
     protected SolacePersistentMessageHandler(MessagingService messagingService,
@@ -49,6 +48,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                                              List<MessageProcessor> messageProcessorList) {
 
         super();
+        this.messageHandlerObserver = new DefaultSolacePersistentMessageHandlerObserver();
         this.messagingService = messagingService;
         this.eventPortalProperties = eventPortalProperties;
         messageProcessorsByClassType = messageProcessorList.stream()
@@ -63,19 +63,22 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     }
 
 
+    public void setMessageHandlerObserver(SolacePersistentMessageHandlerObserver observer) {
+        this.messageHandlerObserver = observer;
+        if (this.messageHandlerObserver==null){
+            this.messageHandlerObserver = new DefaultSolacePersistentMessageHandlerObserver();
+        }
+    }
+
     @Override
     public void onMessage(InboundMessage inboundMessage) {
-        if (messageHandlerObserver != null) {
-            messageHandlerObserver.onMessageReceived(inboundMessage);
-        }
+        messageHandlerObserver.onMessageReceived(inboundMessage);
         executor.submit(() -> processMessage(inboundMessage));
     }
 
 
     private void processMessage(InboundMessage inboundMessage) {
-        if (messageHandlerObserver != null) {
-            messageHandlerObserver.onMessageProcessingInitiated(inboundMessage);
-        }
+        messageHandlerObserver.onMessageProcessingInitiated(inboundMessage);
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
@@ -91,19 +94,13 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             message = toMessage(messageAsString, messageClass);
             processor.processMessage(processor.castToMessageClass(message));
-            if (messageHandlerObserver != null) {
-                messageHandlerObserver.onMessageProcessingCompleted(inboundMessage);
-            }
+            messageHandlerObserver.onMessageProcessingCompleted(inboundMessage);
         } catch (Exception e) {
             handleProcessingError(mopMessageSubclass, processor, message, e);
-            if (messageHandlerObserver != null) {
-                messageHandlerObserver.onMessageProcessingFailed(inboundMessage);
-            }
+            messageHandlerObserver.onMessageProcessingFailed(inboundMessage);
         } finally {
             acknowledgeMessage(inboundMessage);
-            if (messageHandlerObserver != null) {
-                messageHandlerObserver.onMessageProcessingAcknowledged(inboundMessage);
-            }
+            messageHandlerObserver.onMessageProcessingAcknowledged(inboundMessage);
         }
     }
 
