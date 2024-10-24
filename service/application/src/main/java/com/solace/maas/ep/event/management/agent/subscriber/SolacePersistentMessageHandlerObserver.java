@@ -10,10 +10,6 @@ import com.solace.messaging.receiver.InboundMessage;
  */
 public interface SolacePersistentMessageHandlerObserver {
 
-     void onMessageReceived(InboundMessage message);
-     void onMessageProcessingInitiated(InboundMessage message);
-     void onMessageProcessingCompleted(InboundMessage message);
-     void onMessageProcessingAcknowledged(InboundMessage message);
-     void onMessageProcessingFailed(InboundMessage message);
+     void onPhaseChange(InboundMessage message, PersistentMessageHandlerObserverPhase phase);
 
 }

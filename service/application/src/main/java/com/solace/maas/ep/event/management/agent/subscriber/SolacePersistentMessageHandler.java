@@ -10,6 +10,7 @@ import com.solace.messaging.receiver.MessageReceiver;
 import com.solace.messaging.receiver.PersistentMessageReceiver;
 import com.solace.messaging.resources.Queue;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -40,6 +41,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     private PersistentMessageReceiver persistentMessageReceiver;
 
     // only used for testing
+    @Setter
     private SolacePersistentMessageHandlerObserver messageHandlerObserver;
 
     protected SolacePersistentMessageHandler(MessagingService messagingService,
@@ -47,7 +49,6 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                                              List<MessageProcessor> messageProcessorList) {
 
         super();
-        this.messageHandlerObserver = new DefaultSolacePersistentMessageHandlerObserver();
         this.messagingService = messagingService;
         this.eventPortalProperties = eventPortalProperties;
         messageProcessorsByClassType = messageProcessorList.stream()
@@ -62,22 +63,21 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     }
 
 
-    public void setMessageHandlerObserver(SolacePersistentMessageHandlerObserver observer) {
-        this.messageHandlerObserver = observer;
-        if (this.messageHandlerObserver==null){
-            this.messageHandlerObserver = new DefaultSolacePersistentMessageHandlerObserver();
+    private void notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase phase, InboundMessage inboundMessage) {
+        if (messageHandlerObserver != null) {
+            messageHandlerObserver.onPhaseChange(inboundMessage, phase);
         }
     }
 
     @Override
     public void onMessage(InboundMessage inboundMessage) {
-        messageHandlerObserver.onMessageReceived(inboundMessage);
+        notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.RECEIVED,inboundMessage);
         executor.submit(() -> processMessage(inboundMessage));
     }
 
 
     private void processMessage(InboundMessage inboundMessage) {
-        messageHandlerObserver.onMessageProcessingInitiated(inboundMessage);
+        notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.INITIATED,inboundMessage);
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
@@ -93,13 +93,13 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             message = toMessage(messageAsString, messageClass);
             processor.processMessage(processor.castToMessageClass(message));
-            messageHandlerObserver.onMessageProcessingCompleted(inboundMessage);
+            notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.COMPLETED,inboundMessage);
         } catch (Exception e) {
             handleProcessingError(mopMessageSubclass, processor, message, e);
-            messageHandlerObserver.onMessageProcessingFailed(inboundMessage);
+            notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.FAILED,inboundMessage);
         } finally {
             acknowledgeMessage(inboundMessage);
-            messageHandlerObserver.onMessageProcessingAcknowledged(inboundMessage);
+            notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.ACKNOWLEDGED,inboundMessage);
         }
     }
 

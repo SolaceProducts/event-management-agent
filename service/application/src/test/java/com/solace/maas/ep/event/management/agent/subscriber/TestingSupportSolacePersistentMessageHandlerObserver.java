@@ -15,29 +15,27 @@ public class TestingSupportSolacePersistentMessageHandlerObserver implements Sol
         private final Set<InboundMessage> acknowledgedMessages = Collections.synchronizedSet(new HashSet<>());
         private final Set<InboundMessage> failedMessages =Collections.synchronizedSet(new HashSet<>());
 
-         @Override
-        public void onMessageReceived(InboundMessage message) {
-            receivedMessages.add(message);
-        }
-
         @Override
-        public void onMessageProcessingInitiated(InboundMessage message) {
-            initiatedMessages.add(message);
-        }
-
-        @Override
-        public void onMessageProcessingCompleted(InboundMessage message) {
-            completedMessages.add(message);
-        }
-
-        @Override
-        public void onMessageProcessingAcknowledged(InboundMessage message) {
-            acknowledgedMessages.add(message);
-        }
-
-        @Override
-        public void onMessageProcessingFailed(InboundMessage message) {
-            failedMessages.add(message);
+        public void onPhaseChange(InboundMessage message, PersistentMessageHandlerObserverPhase phase) {
+            switch (phase) {
+                case RECEIVED:
+                    receivedMessages.add(message);
+                    break;
+                case INITIATED:
+                    initiatedMessages.add(message);
+                    break;
+                case COMPLETED:
+                    completedMessages.add(message);
+                    break;
+                case ACKNOWLEDGED:
+                    acknowledgedMessages.add(message);
+                    break;
+                case FAILED:
+                    failedMessages.add(message);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public boolean hasReceivedMessage(InboundMessage message) {

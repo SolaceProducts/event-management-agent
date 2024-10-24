@@ -95,6 +95,32 @@ class ScanJobPersistentMessageHandlerTests {
         solacePersistentMessageHandler.setMessageHandlerObserver(messageHandlerObserver);
     }
 
+    // Test that the message handler is able to process a scan command message without an observer,
+    // which will be the case when EMA is executed and not as unit / it test
+    @Test
+    void testPersistentMessageHandlerScanCommandMsgAckedWithoutObserver() {
+        solacePersistentMessageHandler.setMessageHandlerObserver(null);
+        ScanCommandMessage scanCommandMessage =
+                new ScanCommandMessage("messagingServiceId",
+                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
+        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
+        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
+                ScanCommandMessage.class.getCanonicalName()
+        );
+        when(scanManager.scan(any())).thenReturn("scanId");
+        when(scanManager.isScanComplete("scanId")).thenReturn(true);
+        solacePersistentMessageHandler.onMessage(inboundMessage);
+        // we have to wait now for a second as there is no observer being notified
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+           throw new RuntimeException(e);
+        }
+        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
+
+
+    }
+
     @Test
     void testPersistentMessageHandlerScanCommandMsgAcked() {
         ScanCommandMessage scanCommandMessage =
