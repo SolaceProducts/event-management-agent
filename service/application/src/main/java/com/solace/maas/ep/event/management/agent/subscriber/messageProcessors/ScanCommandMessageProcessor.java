@@ -1,12 +1,14 @@
 package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -14,9 +16,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @Component
@@ -27,11 +30,14 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     private final ScanManager scanManager;
     private final DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper;
     private final MeterRegistry meterRegistry;
+    private final EventPortalProperties eventPortalProperties;
 
     public ScanCommandMessageProcessor(ScanManager scanManager,
+                                       EventPortalProperties eventPortalProperties,
                                        DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper,
                                        MeterRegistry meterRegistry) {
         this.scanManager = scanManager;
+        this.eventPortalProperties = eventPortalProperties;
         this.dynamicResourceConfigurationHelper = dynamicResourceConfigurationHelper;
         this.meterRegistry = meterRegistry;
     }
@@ -78,6 +84,36 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
 
         scanManager.scan(scanRequestBO);
+        //if managed, wait for scan to complete
+        if (Boolean.TRUE.equals(eventPortalProperties.getManaged())) {
+            log.debug("Waiting for scan to complete for scanId: {}", scanId);
+            waitForScanCompletion(scanId);
+        }
+    }
+
+    public void waitForScanCompletion(String scanId) {
+        try {
+            await()
+                    .atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec(), SECONDS)
+                    .pollInterval(eventPortalProperties.getWaitAckScanCompletePollIntervalSec(), SECONDS)
+                    .pollInSameThread()
+                    .until(() -> {
+                        try {
+                            log.debug("Checking if scan with id {} is completed", scanId);
+                            return waitUntilScanIsCompleted(scanId);
+                        } catch (Exception e) {
+                            log.error("Error while waiting for scan to complete", e);
+                            return false;
+                        }
+                    });
+        } catch (ConditionTimeoutException e) {
+            // Handle the timeout scenario as needed
+            log.error("Scan with id {} did not complete within the expected time", scanId);
+        }
+    }
+
+    private boolean waitUntilScanIsCompleted(String scanId) {
+        return scanManager.isScanComplete(scanId);
     }
 
     @Override
@@ -92,6 +128,6 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
     @Override
     public void onFailure(Exception e, ScanCommandMessage message) {
-       scanManager.handleError(e,message);
+        scanManager.handleError(e, message);
     }
 }

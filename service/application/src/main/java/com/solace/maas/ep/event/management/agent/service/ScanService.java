@@ -26,16 +26,19 @@ import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -448,5 +451,26 @@ public class ScanService {
                             parentScanType + "," + recipient));
         }
         return pathStore;
+    }
+
+    public boolean isScanComplete(String scanId) {
+        if (ObjectUtils.isEmpty(scanId)){
+            throw new IllegalArgumentException("Scan ID cannot be null or empty");
+        }
+        Set<String> completeScanStatuses = Set.of(
+                ScanStatus.COMPLETE.name(),
+                ScanStatus.FAILED.name(),
+                ScanStatus.TIMED_OUT.name()
+        );
+
+
+        List<ScanTypeEntity> allScanTypes = scanTypeRepository.findAllByScanId(scanId);
+        if (CollectionUtils.isEmpty(allScanTypes)) {
+            return false;
+        }
+        return allScanTypes.stream()
+                .map(scanStatusRepository::findByScanType)
+                .allMatch(status -> completeScanStatuses.contains(status.getStatus()));
+
     }
 }
