@@ -324,7 +324,7 @@ where "/path/containing/terraform-provider-solacebroker" is replaced with the di
 
 ## Prerequisites
 
-* Java 17 (JDK 17.0.10_7+)
+* Java 17 (JDK 17.0.13_11+)
 * Maven
 
 ## Cloning the GitHub Event Management Agent Repository
