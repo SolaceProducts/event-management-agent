@@ -108,7 +108,6 @@ public class TestConfig {
     @Bean
     @Primary
     public TerraformManager getTerraformManager() {
-        TerraformManager mock = mock(TerraformManager.class);
         return mock(TerraformManager.class);
     }
 
