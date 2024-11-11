@@ -8,9 +8,10 @@ import com.solace.client.sempv2.api.QueueApi;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 
+@SuppressWarnings("PMD")
 public class SempApiProviderImpl implements SempApiProvider {
 
-    private ApiClient apiClient;
+    private final ApiClient apiClient;
     private AclProfileApi aclProfileApi;
     private AuthorizationGroupApi authorizationGroupApi;
     private ClientUsernameApi clientUsernameApi;

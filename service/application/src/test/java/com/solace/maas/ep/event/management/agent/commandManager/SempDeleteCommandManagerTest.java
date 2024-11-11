@@ -38,7 +38,6 @@ import static com.solace.maas.ep.event.management.agent.plugin.command.model.Sem
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -160,7 +159,8 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteAclProfilePublishTopicException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(),any(),any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(),any(),any()))
+                .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -221,7 +221,8 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteAclProfileSubscribeTopicException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(), any(),any(),any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(), any(),any(),any()))
+                .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -236,7 +237,8 @@ public class SempDeleteCommandManagerTest {
     void testDeleteAclProfileSubscribeTopicExceptionWithException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException("default", "aclProfileName", "smf", "a/b/c")).thenThrow(createaServerErrorApiException());
+        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException("default", "aclProfileName", "smf", "a/b/c"))
+                .thenThrow(createaServerErrorApiException());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)

@@ -49,13 +49,12 @@ public class SempDeleteCommandManager {
                     .status(JobStatus.success)
                     .logs(List.of())
                     .build());
+        } catch(ApiException e) {
+            ApiException apiException = (ApiException) e;
+            log.error("Error executing SEMP delete command: {}", apiException.getResponseBody());
+            setCommandError(command, e);
         } catch (Exception e) {
-            if (e instanceof ApiException) {
-                ApiException apiException = (ApiException) e;
-                log.error("Error executing SEMP delete command: {}", apiException.getResponseBody());
-            } else {
-                log.error(ERROR_EXECUTING_COMMAND, e);
-            }
+            log.error(ERROR_EXECUTING_COMMAND, e);
             setCommandError(command, e);
         }
     }
