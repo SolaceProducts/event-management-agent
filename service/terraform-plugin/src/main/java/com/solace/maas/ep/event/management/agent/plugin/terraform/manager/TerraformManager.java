@@ -45,6 +45,16 @@ public class TerraformManager {
         this.terraformClientFactory = terraformClientFactory;
     }
 
+    /**
+     * Delete the terraform state for the given request - this will delete the terraform directory for the given request. <br>
+     * If the terraform state directory does not exist, this method will not throw an exception.
+     * @param request
+     * @throws IllegalStateException if the terraform state cannot be deleted due to permissions or other issues
+     */
+    public void deleteTerraformState(CommandRequest request) throws IllegalStateException {
+        TerraformUtils.deleteConfigPath(request, terraformProperties.getWorkingDirectoryRoot());
+    }
+
     public Path execute(CommandRequest request, Command command, Map<String, String> envVars) {
         MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCommandCorrelationId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());

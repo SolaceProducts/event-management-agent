@@ -16,15 +16,15 @@ public class TestingSupportSolacePersistentMessageHandlerObserver implements Sol
         private final Set<InboundMessage> failedMessages =Collections.synchronizedSet(new HashSet<>());
 
         @Override
-        public void onPhaseChange(InboundMessage message, PersistentMessageHandlerObserverPhase phase) {
+        public boolean onPhaseChange(InboundMessage message, PersistentMessageHandlerObserverPhase phase) {
             switch (phase) {
                 case RECEIVED:
                     receivedMessages.add(message);
                     break;
-                case INITIATED:
+                case PROCESSING_INITIATED:
                     initiatedMessages.add(message);
                     break;
-                case COMPLETED:
+                case PROCESSOR_COMPLETED:
                     completedMessages.add(message);
                     break;
                 case ACKNOWLEDGED:
@@ -36,6 +36,7 @@ public class TestingSupportSolacePersistentMessageHandlerObserver implements Sol
                 default:
                     break;
             }
+            return true;
         }
 
         public boolean hasReceivedMessage(InboundMessage message) {

@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.commandManager;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
@@ -54,6 +55,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageTyp
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -76,7 +78,10 @@ class CommandManagerTests {
     @Autowired
     private CommandMapper commandMapper;
 
-    @Autowired
+    @SpyBean
+    private SempDeleteCommandManager sempDeleteCommandManager;
+
+    @SpyBean
     private TerraformManager terraformManager;
 
     @Autowired
@@ -99,6 +104,7 @@ class CommandManagerTests {
         reset(terraformManager);
         reset(commandPublisher);
         reset(commandManager);
+        reset(sempDeleteCommandManager);
         reset(messagingServiceDelegateService);
         reset(commandLogStreamingProcessor);
     }
@@ -172,13 +178,20 @@ class CommandManagerTests {
     void failSendingResponseBackToEp() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
-
         doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
         doThrow(new RuntimeException("Error sending response back to EP")).when(commandPublisher).sendCommandResponse(any(), any());
-        commandManager.execute(message);
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+        doNothing().when(commandLogStreamingProcessor).streamLogsToEP(any(), any(), any());
 
-        // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 2));
+        RuntimeException thrownException =  assertThrows(RuntimeException.class, () -> {
+            commandManager.execute(message);
+        });
+        assertEquals("Error sending response back to EP", thrownException.getMessage());
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(2)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -271,9 +284,53 @@ class CommandManagerTests {
         assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
     }
 
+    // configPush tries to delete tf-state directory for the given context before executing the commands.
+    // If the directory does not exist, it should not throw an exception.
+    // This test verifies that unexpected exceptions are caught and the error is reported back to EP
+    // The caught exception is attached to the result of the first command in the bundle and the status is set to error
+    @Test
+    void failCommandManagerConfigPushDeleteTfState(){
+        CommandMessage message = getCommandMessage("1");
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+        doThrow(new IllegalStateException("Failed removing Terraform state directory")).when(terraformManager).deleteTerraformState(any());
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        commandManager.execute(message);
+        ArgumentCaptor<Map<String, String>> topicVarsCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicVarsCaptor.capture());
+        assertEquals(JobStatus.error, responseCaptor.getValue().getStatus());
+        assertEquals("Failed removing Terraform state: Failed removing Terraform state directory",
+                responseCaptor.getValue().getCommandBundles().get(0).getCommands().get(0).getResult().getLogs().get(0).get("message"));
+    }
+
+    @Test
+    void testCommandManagerConfigPushDeleteTfState(){
+        CommandMessage message = getCommandMessage("1");
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+        doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
+        doNothing().when(terraformManager).deleteTerraformState(any());
+
+        commandManager.execute(message);
+        ArgumentCaptor<Map<String, String>> topicVarsCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicVarsCaptor.capture());
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+
+    }
+
     @Test
     void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsFalse() {
-        CommandMessage message = getCommandMessage("1", 4, true, false);
+        CommandMessage message = getCommandMessage("1", 2,4, true, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -290,11 +347,13 @@ class CommandManagerTests {
         assertNull(commandBundle.getCommands().get(1).getResult());
         assertNull(commandBundle.getCommands().get(2).getResult());
         assertNull(commandBundle.getCommands().get(3).getResult());
+        assertNull(commandBundle.getCommands().get(4).getResult());
+        assertNull(commandBundle.getCommands().get(5).getResult());
     }
 
     @Test
     void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsTrue() {
-        CommandMessage message = getCommandMessage("1", 4, true, true);
+        CommandMessage message = getCommandMessage("1", 2,4, true, true);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -316,7 +375,7 @@ class CommandManagerTests {
 
     @Test
     void verifyExitOnFailureIsRespectedWhenFalseAndIgnoreResultIsSetToFalse() {
-        CommandMessage message = getCommandMessage("1", 4, false, false);
+        CommandMessage message = getCommandMessage("1", 2,4, false, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -359,7 +418,8 @@ class CommandManagerTests {
         commandManager.execute(message);
 
         // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
+        await().atMost(10, TimeUnit.SECONDS).until(() ->
+                CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
 
         assertTrue(mdcIsSet.get());
     }
@@ -368,7 +428,12 @@ class CommandManagerTests {
         return getCommandMessage(correlationIdSuffix, 1, false, false);
     }
 
-    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfCommands,
+    private CommandMessage getCommandMessage(String correlationIdSuffix,  int numberOfTfCommands,
+                                             boolean exitOnFailure, boolean ignoreResult) {
+        return getCommandMessage(correlationIdSuffix, 0, numberOfTfCommands, exitOnFailure, ignoreResult);
+    }
+
+    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfSempDeleteCommands, int numberOfTfCommands,
                                              boolean exitOnFailure, boolean ignoreResult) {
         CommandMessage message = new CommandMessage();
         message.setOrigType(MOPSvcType.maasEventMgmt);
@@ -383,12 +448,30 @@ class CommandManagerTests {
                 CommandBundle.builder()
                         .executionType(ExecutionType.serial)
                         .exitOnFailure(exitOnFailure)
-                        .commands(IntStream.range(0, numberOfCommands).mapToObj(i -> buildCommand(ignoreResult)).toList())
+                        .commands(Stream.concat(
+                                buildTfCommands(numberOfTfCommands, ignoreResult).stream(),
+                                buildSempDeleteCommands(numberOfSempDeleteCommands, ignoreResult).stream()
+                        ).toList())
                         .build()));
         return message;
     }
 
-    private static Command buildCommand(boolean ignoreResult) {
+    private static List<Command> buildSempDeleteCommands(int numberOfCommands, boolean ignoreResult) {
+        return IntStream.range(0, numberOfCommands).mapToObj(i -> buildSempDeleteCommand(ignoreResult)).toList();
+    }
+    private static List<Command> buildTfCommands(int numberOfCommands, boolean ignoreResult) {
+        return IntStream.range(0, numberOfCommands).mapToObj(i -> buildTfCommand(ignoreResult)).toList();
+    }
+
+    private static Command buildSempDeleteCommand(boolean ignoreResult){
+        return Command.builder()
+                .commandType(CommandType.semp)
+                .ignoreResult(ignoreResult)
+                .body("someSempCommandPayload")
+                .command("delete")
+                .build();
+    }
+    private static Command buildTfCommand(boolean ignoreResult) {
         return Command.builder()
                 .commandType(CommandType.terraform)
                 .ignoreResult(ignoreResult)

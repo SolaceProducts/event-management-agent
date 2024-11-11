@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "error": {
+      "code": 6,
+      "description": "Could not find match for xxx doesnotexist",
+      "status": "NOT_FOUND"
+    },
+    "request": {
+      "method": "DELETE",
+      "uri": "https://some.url.pointing.to.solace.broker"
+    },
+    "responseCode": 400
+  }
+}

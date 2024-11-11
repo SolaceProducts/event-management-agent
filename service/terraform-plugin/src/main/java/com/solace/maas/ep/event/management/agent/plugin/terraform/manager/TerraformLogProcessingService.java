@@ -31,6 +31,18 @@ public class TerraformLogProcessingService {
         this.objectMapper = objectMapper;
     }
 
+    public CommandResult buildTfStateFileDeletionFailureResult(RuntimeException rootCause){
+        Map<String,Object> errorLog = Map.of(
+                "address","N/A",
+                "message", "Failed removing Terraform state: "+rootCause.getMessage(),
+                "level", "ERROR",
+                "timestamp", "N/A");
+        List<Map<String,Object>> logs = List.of(errorLog);
+        return CommandResult.builder()
+                .logs(logs)
+                .status(JobStatus.error)
+                .build();
+    }
     public CommandResult buildTfCommandResult(List<String> jsonLogs) {
         if (CollectionUtils.isEmpty(jsonLogs)) {
             throw new IllegalArgumentException("No terraform logs were collected. Unable to process response.");

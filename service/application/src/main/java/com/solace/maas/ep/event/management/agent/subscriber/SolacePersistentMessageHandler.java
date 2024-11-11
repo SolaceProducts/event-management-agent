@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 @ConditionalOnExpression("${event-portal.gateway.messaging.standalone:true}== false && ${event-portal.managed:false} == true")
 public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler implements MessageReceiver.MessageHandler,
         ApplicationListener<ApplicationReadyEvent> {
+
+
     private final Map<String, Class> cachedJSONDecoders = new HashMap();
 
     private final Map<Class, MessageProcessor> messageProcessorsByClassType;
@@ -63,10 +65,11 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
     }
 
 
-    private void notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase phase, InboundMessage inboundMessage) {
+    private boolean notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase phase, InboundMessage inboundMessage) {
         if (messageHandlerObserver != null) {
-            messageHandlerObserver.onPhaseChange(inboundMessage, phase);
+            return messageHandlerObserver.onPhaseChange(inboundMessage, phase);
         }
+        return true;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
 
 
     private void processMessage(InboundMessage inboundMessage) {
-        notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.INITIATED,inboundMessage);
+        notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PROCESSING_INITIATED,inboundMessage);
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
@@ -92,13 +95,19 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
             setupMDC(messageAsString, messageClass.getSimpleName());
             log.trace("onMessage: {}\n{}", messageClass, messageAsString);
             message = toMessage(messageAsString, messageClass);
-            processor.processMessage(processor.castToMessageClass(message));
-            notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.COMPLETED,inboundMessage);
+            // for testing purposes, we want to be able to stop processing the message and simulate a restart of the EMA
+            if (notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PRE_PROCESSOR_EXECUTION,inboundMessage)) {
+                processor.processMessage(processor.castToMessageClass(message));
+                notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PROCESSOR_COMPLETED,inboundMessage);
+            }
         } catch (Exception e) {
             handleProcessingError(mopMessageSubclass, processor, message, e);
             notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.FAILED,inboundMessage);
         } finally {
-            acknowledgeMessage(inboundMessage);
+            // for testing purposes, we want to be able to stop processing the message and simulate a failure leading to not acknowledging the message
+            if (notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PRE_ACKNOWLEDGED,inboundMessage)) {
+                acknowledgeMessage(inboundMessage);
+            }
             notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.ACKNOWLEDGED,inboundMessage);
         }
     }
