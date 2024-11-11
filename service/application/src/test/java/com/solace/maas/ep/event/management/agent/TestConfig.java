@@ -44,6 +44,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -108,6 +109,7 @@ public class TestConfig {
     @Bean
     @Primary
     public TerraformManager getTerraformManager() {
+        TerraformManager mock = mock(TerraformManager.class);
         return mock(TerraformManager.class);
     }
 

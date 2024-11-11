@@ -65,6 +65,12 @@ public class TerraformUtils {
                 .build());
     }
 
+    /**
+     * Delete the Terraform state directory for the given request under the given directory.<br>
+     * The directory name is constructed as follows: {context}-{serviceId}
+     * @param request
+     * @param directory
+     */
     public static void deleteConfigPath(CommandRequest request, String directory) {
         Path configPath = Paths.get(directory + File.separator
                 + request.getContext()

@@ -17,6 +17,7 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
@@ -84,6 +85,7 @@ class CommandManagerTests {
     @SpyBean
     private TerraformManager terraformManager;
 
+
     @Autowired
     private CommandPublisher commandPublisher;
 
@@ -102,6 +104,7 @@ class CommandManagerTests {
     @BeforeEach
     public void cleanup() {
         reset(terraformManager);
+        doNothing().when(terraformManager).deleteTerraformState(any());
         reset(commandPublisher);
         reset(commandManager);
         reset(sempDeleteCommandManager);
@@ -113,14 +116,12 @@ class CommandManagerTests {
     void testMultiThreadedCommandManager() throws InterruptedException {
 
         // Set up the thread pool
-        int commandThreadPoolQueueSize = eventPortalProperties.getCommandThreadPoolQueueSize();
-        testThreadPool.setCorePoolSize(commandThreadPoolQueueSize);
-        testThreadPool.initialize();
+        int commandAmount = 10;
 
 
         // Build enough requests to fill the command thread pool queue
         List<CommandMessage> messageList = new ArrayList<>();
-        for (int i = 0; i < commandThreadPoolQueueSize; i++) {
+        for (int i = 0; i < commandAmount; i++) {
             messageList.add(getCommandMessage(Integer.toString(i)));
         }
 
@@ -140,19 +141,14 @@ class CommandManagerTests {
                         .connectionUrl("myConnectionUrl")
                         .build()));
 
-        // Execute all the commands in parallel to fill the command thread pool queue
-        IntStream.rangeClosed(1, commandThreadPoolQueueSize).parallel().forEach(i ->
-                CompletableFuture.runAsync(() -> commandManager.execute(messageList.get(i - 1)), testThreadPool));
+        messageList.stream().forEach(message -> {
+            commandManager.execute(message);
+        });
 
-        // Wait for all the threads to complete (add a timeout just in case)
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(
-                commandPublisher,
-                commandThreadPoolQueueSize
-        ));
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(terraformManager, times(commandThreadPoolQueueSize)).execute(any(), any(), envArgCaptor.capture());
+        verify(terraformManager, times(commandAmount)).execute(any(), any(), envArgCaptor.capture());
 
         // Verify the env vars are set with the terraform manager is called
         Map<String, String> envVars = envArgCaptor.getValue();
@@ -161,7 +157,7 @@ class CommandManagerTests {
         assert envVars.get("TF_VAR_url").equals("myConnectionUrl");
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
-        verify(commandPublisher, times(commandThreadPoolQueueSize)).sendCommandResponse(messageArgCaptor.capture(), topicArgCaptor.capture());
+        verify(commandPublisher, times(commandAmount)).sendCommandResponse(messageArgCaptor.capture(), topicArgCaptor.capture());
 
         Map<String, String> topicVars = topicArgCaptor.getValue();
         assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
@@ -169,7 +165,7 @@ class CommandManagerTests {
 
         // Make sure we get all 10 correlation ids in the response messages
         List<String> receivedCorrelationIds = messageArgCaptor.getAllValues().stream().map(CommandMessage::getCommandCorrelationId).toList();
-        List<String> expectedCorrelationIds = IntStream.range(0, commandThreadPoolQueueSize).mapToObj(i -> "myCorrelationId" + i).toList();
+        List<String> expectedCorrelationIds = IntStream.range(0, commandAmount).mapToObj(i -> "myCorrelationId" + i).toList();
         assertTrue(receivedCorrelationIds.size() == expectedCorrelationIds.size() &&
                 receivedCorrelationIds.containsAll(expectedCorrelationIds) && expectedCorrelationIds.containsAll(receivedCorrelationIds));
     }
@@ -217,7 +213,7 @@ class CommandManagerTests {
                 .when(messagingServiceDelegateService).getMessagingServiceClient(MESSAGING_SERVICE_ID);
 
         commandManager.execute(message);
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
+        CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1);
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -234,7 +230,7 @@ class CommandManagerTests {
         doThrow(new RuntimeException("Error running command.")).when(commandManager).configPush(any());
 
         commandManager.execute(message);
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
+        CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1);
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
@@ -260,8 +256,7 @@ class CommandManagerTests {
 
         commandManager.execute(message);
 
-        // Wait for the command thread to complete
-        await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
+        CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1);
 
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);

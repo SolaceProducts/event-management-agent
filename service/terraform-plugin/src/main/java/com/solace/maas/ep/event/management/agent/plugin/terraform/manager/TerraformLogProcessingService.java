@@ -9,6 +9,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +38,7 @@ public class TerraformLogProcessingService {
                 "address","N/A",
                 "message", "Failed removing Terraform state: "+rootCause.getMessage(),
                 "level", "ERROR",
-                "timestamp", "N/A");
+                "timestamp",  OffsetDateTime.now());
         List<Map<String,Object>> logs = List.of(errorLog);
         return CommandResult.builder()
                 .logs(logs)
