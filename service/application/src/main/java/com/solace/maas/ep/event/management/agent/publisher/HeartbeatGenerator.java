@@ -16,10 +16,13 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.CEMA_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_HEARTBEAT_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.VERSION_TAG;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ExcludeFromJacocoGeneratedReport
 @Component
@@ -54,9 +57,11 @@ public class HeartbeatGenerator {
 
     private void logHealthMetric(HeartbeatMessage message, boolean isHealthy) {
         List<Tag> tags = new ArrayList<>();
-        if (Objects.nonNull(message.getOrgId())) {
-            tags.add(Tag.of(ORG_ID_TAG, message.getOrgId()));
-        }
+        tags.add(Tag.of(ORG_ID_TAG, isNotBlank(message.getOrgId()) ? message.getOrgId() : ""));
+        tags.add(Tag.of(CEMA_ID_TAG, isNotBlank(message.getRuntimeAgentId()) ? message.getRuntimeAgentId() : ""));
+        tags.add(Tag.of(STATUS_TAG, isHealthy ? "connected" : "disconnected"));
+        tags.add(Tag.of(VERSION_TAG, isNotBlank(message.getRuntimeAgentVersion()) ? message.getRuntimeAgentVersion() : ""));
+
         meterRegistry.gauge(MAAS_EMA_HEARTBEAT_EVENT_SENT, tags, isHealthy ? 1 : 0);
     }
 
