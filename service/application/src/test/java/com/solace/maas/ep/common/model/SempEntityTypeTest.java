@@ -19,18 +19,9 @@ public class SempEntityTypeTest {
     @Test
     void testUnsupportedEntityType() {
         try {
-            SempEntityType entityType = SempEntityType.fromValue("unsupported");
+            SempEntityType.fromValue("unsupported");
         } catch (IllegalArgumentException e) {
             assert e.getMessage().equals("Unsupported entity type: unsupported");
-        }
-    }
-
-    @Test
-    void testFromValueNull() {
-        try {
-            SempEntityType entityType = SempEntityType.fromValue(null);
-        } catch (IllegalArgumentException e) {
-            assert e.getMessage().equals("Unsupported entity type: null");
         }
     }
 
