@@ -18,7 +18,7 @@ public enum SempEntityType {
         return value;
     }
 
-    public SempEntityType fromValue(String value) {
+    public static SempEntityType fromValue(String value) {
         for (SempEntityType entityType : SempEntityType.values()) {
             if (entityType.getValue().equals(value)) {
                 return entityType;

@@ -82,6 +82,7 @@ public class TerraformCommandIT {
         Mockito.reset(terraformClient);
     }
 
+
     @Test
     public void testWriteHCLWithDefaultFile() throws IOException {
 
