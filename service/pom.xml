@@ -112,6 +112,7 @@
                     <version>0.8.10</version>
                     <configuration>
                         <excludes>
+                            <exclude>**/com/solace/client/sempv2/**</exclude>
                             <exclude>**/config/*</exclude>
                             <exclude>**/*.jar</exclude>
                         </excludes>
