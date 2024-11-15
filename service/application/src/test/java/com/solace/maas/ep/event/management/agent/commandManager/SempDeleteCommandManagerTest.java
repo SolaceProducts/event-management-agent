@@ -129,7 +129,7 @@ public class SempDeleteCommandManagerTest {
     void testDeleteAclPublishTopicExceptionHappyPath() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(),any(),any(),any())).thenReturn(new SempMetaOnlyResponse());
+        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -144,7 +144,7 @@ public class SempDeleteCommandManagerTest {
     void testDeleteAclPublishTopicExceptionWithValidationException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(),any(),any(),any())).thenReturn(new SempMetaOnlyResponse());
+        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -159,7 +159,7 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteAclProfilePublishTopicException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(),any(),any()))
+        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(), any(), any()))
                 .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
@@ -175,7 +175,7 @@ public class SempDeleteCommandManagerTest {
     void testDeleteAclProfilePublishTopicExceptionWithException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(),any(),any())).thenThrow(createaServerErrorApiException());
+        when((aclProfileApi).deleteMsgVpnAclProfilePublishTopicException(any(), any(), any(), any())).thenThrow(createaServerErrorApiException());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -191,7 +191,7 @@ public class SempDeleteCommandManagerTest {
     void testDeleteAclProfileSubscribeTopicExceptionHappyPath() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(),any(),any(),any())).thenReturn(new SempMetaOnlyResponse());
+        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -206,7 +206,7 @@ public class SempDeleteCommandManagerTest {
     void testDeleteAclProfileSubscribeTopicExceptionWithValidationException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(),any(),any(),any())).thenReturn(new SempMetaOnlyResponse());
+        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -221,7 +221,7 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteAclProfileSubscribeTopicException() throws ApiException {
         AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
         when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
-        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(), any(),any(),any()))
+        when((aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException(any(), any(), any(), any()))
                 .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
@@ -440,14 +440,14 @@ public class SempDeleteCommandManagerTest {
     void testDeleteQueueTopicSubscriptionHappyPath() throws ApiException {
         QueueApi queueApi = Mockito.mock(QueueApi.class);
         when(sempApiProvider.getQueueApi()).thenReturn(queueApi);
-        when((queueApi).deleteMsgVpnQueueSubscription(any(),any(), any())).thenReturn(new SempMetaOnlyResponse());
+        when((queueApi).deleteMsgVpnQueueSubscription(any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
                 .parameters(createDeleteQueueSubscriptionParameters(true))
                 .build();
         sempDeleteCommandManager.execute(cmd, sempApiProvider);
-        verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName","a/b/c");
+        verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName", "a/b/c");
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
     }
 
@@ -455,14 +455,14 @@ public class SempDeleteCommandManagerTest {
     void testDeleteQueueTopicSubscriptionWithException() throws ApiException {
         QueueApi queueApi = Mockito.mock(QueueApi.class);
         when(sempApiProvider.getQueueApi()).thenReturn(queueApi);
-        when((queueApi).deleteMsgVpnQueueSubscription(any(),any(), any())).thenThrow(createaServerErrorApiException());
+        when((queueApi).deleteMsgVpnQueueSubscription(any(), any(), any())).thenThrow(createaServerErrorApiException());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
                 .parameters(createDeleteQueueSubscriptionParameters(true))
                 .build();
         sempDeleteCommandManager.execute(cmd, sempApiProvider);
-        verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName","a/b/c");
+        verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName", "a/b/c");
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
     }
 
@@ -470,7 +470,7 @@ public class SempDeleteCommandManagerTest {
     void testDeleteQueueTopicSubscriptionWithValidationException() throws ApiException {
         QueueApi queueApi = Mockito.mock(QueueApi.class);
         when(sempApiProvider.getQueueApi()).thenReturn(queueApi);
-        when((queueApi).deleteMsgVpnQueueSubscription(any(),any(), any())).thenReturn(new SempMetaOnlyResponse());
+        when((queueApi).deleteMsgVpnQueueSubscription(any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -486,24 +486,24 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteQueueTopicSubscriptionWithException() throws ApiException {
         QueueApi queueApi = Mockito.mock(QueueApi.class);
         when(sempApiProvider.getQueueApi()).thenReturn(queueApi);
-        when((queueApi).deleteMsgVpnQueueSubscription(any(),any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        when((queueApi).deleteMsgVpnQueueSubscription(any(), any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
                 .parameters(createDeleteQueueSubscriptionParameters(true))
                 .build();
         sempDeleteCommandManager.execute(cmd, sempApiProvider);
-        verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName","a/b/c");
+        verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName", "a/b/c");
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
     }
 
     // helpers
 
-    private Map<String,Object> createDeleteQueueSubscriptionParameters(boolean valid){
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueueSubscriptionTopic.getValue());
+    private Map<String, Object> createDeleteQueueSubscriptionParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueueSubscriptionTopic);
 
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("queueName", "someQueueName");
@@ -513,11 +513,11 @@ public class SempDeleteCommandManagerTest {
         return parameters;
     }
 
-    private Map<String,Object> createDeleteQueueParameters(boolean valid){
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueue.getValue());
+    private Map<String, Object> createDeleteQueueParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueue);
 
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("queueName", "someQueueName");
@@ -526,11 +526,11 @@ public class SempDeleteCommandManagerTest {
         return parameters;
     }
 
-    private Map<String,Object> createDeleteAclSubscribeTopicExceptionParameters(boolean valid){
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclSubscribeTopicException.getValue());
+    private Map<String, Object> createDeleteAclSubscribeTopicExceptionParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclSubscribeTopicException);
 
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("aclProfileName", "aclProfileName");
@@ -540,11 +540,11 @@ public class SempDeleteCommandManagerTest {
         return parameters;
     }
 
-    private Map<String,Object> createDeleteAclPublishTopicExceptionParameters(boolean valid){
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclPublishTopicException.getValue());
+    private Map<String, Object> createDeleteAclPublishTopicExceptionParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclPublishTopicException);
 
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("aclProfileName", "aclProfileName");
@@ -553,11 +553,12 @@ public class SempDeleteCommandManagerTest {
         parameters.put(SEMP_DELETE_DATA, data);
         return parameters;
     }
-    private Map<String,Object> createDeleteAclParametersParameters(boolean valid) {
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclProfile.getValue());
 
-        Map<String,String> data = new HashMap<>();
+    private Map<String, Object> createDeleteAclParametersParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclProfile);
+
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("aclProfileName", "aclProfileName");
@@ -566,11 +567,11 @@ public class SempDeleteCommandManagerTest {
         return parameters;
     }
 
-    private Map<String,Object> createDeleteClientUsernameParameters(boolean valid) {
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceClientUsername.getValue());
+    private Map<String, Object> createDeleteClientUsernameParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceClientUsername);
 
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("clientUsername", "clientUsername");
@@ -579,11 +580,11 @@ public class SempDeleteCommandManagerTest {
         return parameters;
     }
 
-    private Map<String,Object> createDeleteAuthorizationGroupParameters(boolean valid) {
-        Map<String,Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAuthorizationGroup.getValue());
+    private Map<String, Object> createDeleteAuthorizationGroupParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAuthorizationGroup);
 
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
         if (valid) {
             data.put("authorizationGroupName", "authorizationGroupName");
@@ -591,6 +592,7 @@ public class SempDeleteCommandManagerTest {
         parameters.put(SEMP_DELETE_DATA, data);
         return parameters;
     }
+
     private ApiException createaServerErrorApiException() {
         return new ApiException(500, "", new HashMap<>(), "{\"some\":\"error_message\"}");
     }

@@ -24,6 +24,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.SempDelete
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.Validate;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_DATA;
@@ -32,8 +33,6 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Service
 @Slf4j
 public class SempDeleteCommandManager {
-
-    public static final String ERROR_EXECUTING_COMMAND = "Error executing command";
 
     private final ObjectMapper objectMapper;
 
@@ -49,16 +48,31 @@ public class SempDeleteCommandManager {
                     .status(JobStatus.success)
                     .logs(List.of())
                     .build());
-        } catch(ApiException e) {
-            ApiException apiException = (ApiException) e;
-            log.error("Error executing SEMP delete command: {}", apiException.getResponseBody());
-            setCommandError(command, e);
+            // not found is not an error and is already handled in handleSempApiDeleteException
+            // all other exceptions are considered errors and are (re)-thrown to be handled here
         } catch (Exception e) {
-            log.error(ERROR_EXECUTING_COMMAND, e);
+            log.error("SEMP delete command not executed successfully", e);
+            // SEMP APIExceptions don't expose the response body via e.getMessage()
             setCommandError(command, e);
         }
     }
 
+
+    /**
+     * private void executeSempDeleteCommand(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+     * SempEntityType deletionEntityType = SempEntityType.valueOf((String) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE));
+     * switch (deletionEntityType) {
+     * case solaceAclProfile -> executeDeleteAclProfile(command, sempApiProvider);
+     * case solaceQueue -> executeDeleteSolaceQueue(command, sempApiProvider);
+     * case solaceQueueSubscriptionTopic -> executeDeleteSolaceQueueTopicSubscription(command, sempApiProvider);
+     * case solaceClientUsername -> executeDeleteClientUsername(command, sempApiProvider);
+     * case solaceAuthorizationGroup -> executeDeleteAuthorizationGroup(command, sempApiProvider);
+     * case solaceAclSubscribeTopicException -> executeDeleteAclSubscribeTopicException(command, sempApiProvider);
+     * case solaceAclPublishTopicException -> executeDeleteAclPublishTopicException(command, sempApiProvider);
+     * default -> throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
+     * }
+     * }
+     */
 
     private void executeSempDeleteCommand(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
         SempEntityType deletionEntityType = SempEntityType.valueOf((String) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE));
@@ -89,6 +103,24 @@ public class SempDeleteCommandManager {
         }
     }
 
+    // Suppressing PMD of unused entityName
+    // This is because we are not logging the entityName for security reasons now
+    // We might adapt that in the future to log the entityName based on logging level and properties file
+    @SuppressWarnings("PMD")
+    private void handleSempApiDeleteException(ApiException e, String entityType, String entityName) throws ApiException {
+        // If the entity does not exist, we don't want to consider it an error
+        // This is because of the edge case of dangling entities from previous deployment that did not get finalized
+        // SEMP does not report a 404 for entities that do not exist, so we have to check the response body
+        // NOT_FOUND is the string that SEMP returns within the response JSON, when an entity does not exist
+        if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
+            // we don't want to log the content of the response body, as it may contain sensitive information
+            // we only log the entity type. The entity name is also considered sensitive information and is not logged
+            log.info("SEMP delete: tried to delete {} which did not exist (anymore)", entityType);
+        } else {
+            throw e;
+        }
+    }
+
     private void executeDeleteAclProfile(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
         AclProfileApi aclProfileApi = sempApiProvider.getAclProfileApi();
         SempAclProfileDeletionRequest request = objectMapper.readValue(
@@ -97,18 +129,11 @@ public class SempDeleteCommandManager {
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
 
-        log.info("Deleting ACL profile via Semp V2 delete: {}", request.getAclProfileName());
+        log.info("SEMP delete: Deleting ACL profile");
         try {
             aclProfileApi.deleteMsgVpnAclProfile(request.getMsgVpn(), request.getAclProfileName());
         } catch (ApiException e) {
-            // If the client username does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling client usernames from previous deployment that did not get finalized
-            // SEMP does not report a 404 for client usernames that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete ACL profile {} which did not exist - not considered an error", request.getAclProfileName());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "ACL profile", request.getAclProfileName());
         }
     }
 
@@ -121,20 +146,11 @@ public class SempDeleteCommandManager {
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
         Validate.notEmpty(request.getPublishTopic(), "Publish topic must not be empty");
-
-        log.info("Deleting ACL subscribe topic exception via Semp V2 delete: {}", request.getPublishTopic());
+        log.info("SEMP delete: Deleting ACL publish topic exception");
         try {
-            aclProfileApi.deleteMsgVpnAclProfilePublishTopicException(request.getMsgVpn(), request.getAclProfileName(),"smf", request.getPublishTopic());
+            aclProfileApi.deleteMsgVpnAclProfilePublishTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf", request.getPublishTopic());
         } catch (ApiException e) {
-            // If the client username does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling client usernames from previous deployment that did not get finalized
-            // SEMP does not report a 404 for client usernames that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete ACL publish topic exception {} in ACL profile {}  which did not exist - not considered an error",
-                        request.getPublishTopic(),request.getAclProfileName());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "ACL publish topic exception", request.getPublishTopic());
         }
     }
 
@@ -148,19 +164,11 @@ public class SempDeleteCommandManager {
         Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
         Validate.notEmpty(request.getSubscribeTopic(), "Subscribe topic must not be empty");
 
-        log.info("Deleting ACL subscribe topic exception via Semp V2 delete: {}", request.getSubscribeTopic());
+        log.info("SEMP delete: Deleting ACL subscribe topic exception");
         try {
-            aclProfileApi.deleteMsgVpnAclProfileSubscribeTopicException(request.getMsgVpn(), request.getAclProfileName(),"smf", request.getSubscribeTopic());
+            aclProfileApi.deleteMsgVpnAclProfileSubscribeTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf", request.getSubscribeTopic());
         } catch (ApiException e) {
-            // If the client username does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling client usernames from previous deployment that did not get finalized
-            // SEMP does not report a 404 for client usernames that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete ACL subscribe topic exception {} in ACL profile {}  which did not exist - not considered an error",
-                        request.getSubscribeTopic(),request.getAclProfileName());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "ACL subscribe topic exception", request.getSubscribeTopic());
         }
     }
 
@@ -173,18 +181,11 @@ public class SempDeleteCommandManager {
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getAuthorizationGroupName(), "Authorization group name must not be empty");
 
-        log.info("Deleting authorization group via Semp V2 delete: {}", request.getAuthorizationGroupName());
+        log.info("SEMP delete: Deleting authorization group");
         try {
             authorizationGroupApi.deleteMsgVpnAuthorizationGroup(request.getMsgVpn(), request.getAuthorizationGroupName());
         } catch (ApiException e) {
-            // If the client username does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling client usernames from previous deployment that did not get finalized
-            // SEMP does not report a 404 for client usernames that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete authorization group {} which did not exist - not considered an error", request.getAuthorizationGroupName());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "Authorization group", request.getAuthorizationGroupName());
         }
     }
 
@@ -196,21 +197,14 @@ public class SempDeleteCommandManager {
 
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getClientUsername(), "Client username must not be empty");
-
-        log.info("Deleting client username via Semp V2 delete: {}", request.getClientUsername());
+        log.info("SEMP delete: Deleting client username");
         try {
             clientUsernameApi.deleteMsgVpnClientUsername(request.getMsgVpn(), request.getClientUsername());
         } catch (ApiException e) {
-            // If the client username does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling client usernames from previous deployment that did not get finalized
-            // SEMP does not report a 404 for client usernames that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete client username {} which did not exist - not considered an error", request.getClientUsername());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "Client username", request.getClientUsername());
         }
     }
+
     private void executeDeleteSolaceQueue(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
         QueueApi queueApi = sempApiProvider.getQueueApi();
         SempQueueDeletionRequest request = objectMapper.readValue(
@@ -218,18 +212,11 @@ public class SempDeleteCommandManager {
                 SempQueueDeletionRequest.class);
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getQueueName(), "Queue name must not be empty");
-        log.info("Deleting queue via Semp V2 delete: {}", request.getQueueName());
+        log.info("SEMP delete: Deleting queue");
         try {
             queueApi.deleteMsgVpnQueue(request.getMsgVpn(), request.getQueueName());
         } catch (ApiException e) {
-            // If the queue does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling queues from previous deployment that did not get finalized
-            // SEMP does not report a 404 for queues that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete queue {} which did not exist - not considered an error", request.getQueueName());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "Queue", request.getQueueName());
         }
     }
 
@@ -241,18 +228,11 @@ public class SempDeleteCommandManager {
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getQueueName(), "Queue name must not be empty");
         Validate.notEmpty(request.getTopicName(), "Topic name must not be empty");
-        log.info("Deleting subscription Via Semp V2 delete: {}", request.getTopicName());
+        log.info("SEMP delete: Deleting queue subscription");
         try {
             queueApi.deleteMsgVpnQueueSubscription(request.getMsgVpn(), request.getQueueName(), request.getTopicName());
         } catch (ApiException e) {
-            // If the subscription does not exist, we don't want to consider it an error
-            // This is because of the edge case of dangling subscriptions from previous deployment that did not get finalized
-            // SEMP does not report a 404 for subscriptions that do not exist, so we have to check the response body
-            if (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND")) {
-                log.debug("Tried to delete subscription {} which did not exist - not considered an error", request.getTopicName());
-            } else {
-                throw e;
-            }
+            handleSempApiDeleteException(e, "Subscription", request.getTopicName());
         }
     }
 
@@ -265,7 +245,6 @@ public class SempDeleteCommandManager {
                 "semp entity type");
 
     }
-
 
 
 }

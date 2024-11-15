@@ -13,9 +13,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public class TerraformLogProcessingServiceTest {
 
-
     @Test
-    void testBuildTfStateFileDeletionFailureResult(){
+    void testBuildTfStateFileDeletionFailureResult() {
         RuntimeException rootCause = new RuntimeException("rootCause");
         ObjectMapper objectMapper = new ObjectMapper();
         TerraformLogProcessingService terraformLogProcessingService = new TerraformLogProcessingService(objectMapper);

@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
@@ -16,13 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TerraformUtilsTest {
 
     @Test
-    public void testDeleteConfigPath() throws IOException {
+    public void testDeleteConfigPath(@TempDir Path tempDirectory) throws IOException {
         CommandRequest commandRequest = CommandRequest
                 .builder()
                 .context("someContext")
                 .serviceId("serviceId")
                 .build();
-        Path tempDirectory = Files.createTempDirectory("tfDeleteMeDirectory");
         // by convention, the directory name is someContext-serviceId
         Path subDirectory = tempDirectory.resolve("someContext-serviceId");
         // create sample directories in tempDirectory

@@ -28,6 +28,7 @@ public class SolaceQueueConfigurationProcessor extends ResultProcessorImpl<List<
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
         SolaceHttpSemp sempClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
+
         List<Map<String, Object>> queueResponse = sempClient.getQueues();
 
         return queueResponse;

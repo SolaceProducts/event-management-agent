@@ -92,57 +92,57 @@ public class CommandManager {
         } catch (Exception e) {
             // handleError will throw an exception if sending the response to EP fails
             // this can not be handled here and will be logged in SolacePersistenceMessageHandler
-            handleError(e, requestBO);
+            log.error("Error while executing command", e);
+            attachErrorLogToCommand(false, e, requestBO);
+            finalizeAndSendResponse(requestBO);
         }
     }
 
+    /**
+     * Handles the error by attaching the error to the first command in the request and sends the response to EP.
+     * Convenience method to be used by the onFailure method of the MessageProcessor to handle the error and send the response to EP.
+     *
+     * @param e
+     * @param message
+     */
     public void handleError(Exception e, CommandMessage message) {
-        handleError(e, commandMapper.map(message));
-    }
-
-    private void handleError(Exception e, CommandRequest requestBO) {
-        Command firstCommand = requestBO.getCommandBundles().get(0).getCommands().get(0);
-        setCommandError(firstCommand, e);
+        CommandRequest requestBO = commandMapper.map(message);
+        attachErrorLogToCommand(false, e, requestBO);
         finalizeAndSendResponse(requestBO);
     }
 
     @SuppressWarnings("PMD")
     public void configPush(CommandRequest request) {
-        Map<String, String> envVars;
-        SolaceHttpSemp solaceClient;
-        try {
-            solaceClient = messagingServiceDelegateService.getMessagingServiceClient(request.getServiceId());
-            if (solaceClient == null) {
-                log.error("Messaging service client not found for serviceId {}", request.getServiceId());
-                throw new IllegalStateException("Messaging service client not found");
-            }
-            envVars = setBrokerSpecificEnvVars(solaceClient);
-        } catch (Exception e) {
-            log.error("Error while setting terraform variables", e);
-            handleError(e, request);
-            return;
-        }
-        List<Path> executionLogFilesToClean = new ArrayList<>();
+        Validate.notNull(request, "CommandRequest must not be null");
+        Validate.notEmpty(request.getServiceId(), "ServiceId must not be empty");
+        Validate.notEmpty(request.getCommandBundles(), "CommandBundles must not be empty");
+        Validate.notEmpty(request.getCommandBundles().get(0).getCommands(), "At least one command must be present");
 
+        List<Path> executionLogFilesToClean = new ArrayList<>();
+        boolean attacheErrorToTerraformCommand = false;
         try {
+            // if the serviceId is not found, messagingServiceDelegateService will most likely throw an exception (which is not guaranteed
+            // based on the interface definition) and we need to catch it here.
+            // We also need to check if the client is null if there is no exception thrown
+            SolaceHttpSemp solaceClient = messagingServiceDelegateService.getMessagingServiceClient(request.getServiceId());
+            if (solaceClient == null) {
+                throw new IllegalStateException("Messaging service client not found for serviceId " + request.getServiceId());
+            }
+            Map<String, String> envVars = setBrokerSpecificEnvVars(solaceClient);
+
             // Delete the terraform state file before running the terraform commands
             // It will delete all files in the directory of this context
-            try {
-                terraformManager.deleteTerraformState(request);
-            } catch (RuntimeException e) {
-                log.error("Error deleting terraform state", e);
-                attachErrorLogToFirstTerraformCommand(e, request);
-                finalizeAndSendResponse(request);
-                return;
-            }
+            terraformManager.deleteTerraformState(request);
+
             for (CommandBundle bundle : request.getCommandBundles()) {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
+                    attacheErrorToTerraformCommand = false;
                     if (command.getCommandType() == semp) {
                         executeSempCommand(command, solaceClient);
-
                     } else if (command.getCommandType() == terraform) {
+                        attacheErrorToTerraformCommand = true;
                         Path executionLog = executeTerraformCommand(request, command, envVars);
                         if (executionLog != null) {
                             if (commandLogStreamingProcessorOpt.isPresent()) {
@@ -151,34 +151,80 @@ public class CommandManager {
                             executionLogFilesToClean.add(executionLog);
                         }
                     } else {
+                        // attaches an error entry for the command as CommandResult
                         handleUnknownCommandType(command);
                     }
                     if (exitEarlyOnFailedCommand(exitEarlyOnFailedCommand, command)) {
                         break;
                     }
-
                 }
             }
+        } catch (Exception e) {
+            log.error("ConfigPush command not executed successfully", e);
+            attachErrorLogToCommand(attacheErrorToTerraformCommand, e, request);
             finalizeAndSendResponse(request);
         } finally {
-            // Clean up activity : delete all the execution log files
             cleanup(executionLogFilesToClean);
         }
     }
 
     // Attaches the error log to the first terraform command in the request to be sent back to EP although the error
     // occurred during the deletion of the terraform state file and not during the terraform command execution
-    private void attachErrorLogToFirstTerraformCommand(RuntimeException ex, CommandRequest request){
+    @SuppressWarnings("PMD")
+    private void attachErrorLogToCommand(boolean isTerraformRelatedError, Exception ex, CommandRequest request) {
         for (CommandBundle bundle : request.getCommandBundles()) {
             for (Command command : bundle.getCommands()) {
+                if (!isTerraformRelatedError) {
+                    // attaches the error to the command as CommandResult
+                    setCommandError(command, ex);
+                    return;
+                }
                 if (command.getCommandType() == terraform) {
-                    CommandResult errorResult = terraformLoggingService.buildTfStateFileDeletionFailureResult(ex);
+                    // casting or wrapping the exception to RuntimeException
+                    // due to backwards compatibility of terraformLoggingService.buildTfStateFileDeletionFailureResult
+                    RuntimeException runtimeEx;
+                    if (ex instanceof RuntimeException) {
+                        runtimeEx = (RuntimeException) ex;
+                    } else {
+                        runtimeEx = new RuntimeException(ex);
+                    }
+                    CommandResult errorResult = terraformLoggingService.buildTfStateFileDeletionFailureResult(runtimeEx);
                     command.setResult(errorResult);
                     return;
                 }
             }
         }
-        log.error("No terraform command found to attach error log to");
+        if (isTerraformRelatedError) {
+            log.error("No terraform command found to attach error log to");
+        } else {
+            log.error("No command found to attach error log to");
+        }
+    }
+
+    private void finalizeAndSendResponse(CommandRequest request) {
+        request.determineStatus();
+        Map<String, String> topicVars = Map.of(
+                "orgId", eventPortalProperties.getOrganizationId(),
+                "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
+                COMMAND_CORRELATION_ID, request.getCommandCorrelationId()
+        );
+        CommandMessage response = new CommandMessage(request.getServiceId(),
+                request.getCommandCorrelationId(),
+                request.getContext(),
+                request.getStatus(),
+                request.getCommandBundles());
+        response.setOrgId(eventPortalProperties.getOrganizationId());
+        response.setTraceId(MDC.get(TRACE_ID));
+        response.setActorId(MDC.get(ACTOR_ID));
+        commandPublisher.sendCommandResponse(response, topicVars);
+        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
+                STATUS_TAG, response.getStatus().name()).increment();
+        Timer jobCycleTime = Timer
+                .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
+                .tag(ORG_ID_TAG, response.getOrgId())
+                .tag(STATUS_TAG, request.getStatus().name())
+                .register(meterRegistry);
+        jobCycleTime.record(request.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
@@ -199,6 +245,8 @@ public class CommandManager {
             Validate.isTrue(command.getCommandType().equals(semp), "Command type must be semp");
             // only delete operation is supported for now and only delete operations are sent from EP
             Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION), "Command operation must be delete");
+            // creating a new SempApiProviderImpl instance for each command execution
+            // if this becomes a performance issue, we can consider caching the SempApiProviderImpl instance for each serviceId
             sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient));
         } catch (Exception e) {
             log.error(ERROR_EXECUTING_COMMAND, e);
@@ -215,7 +263,6 @@ public class CommandManager {
                                 "level", LOG_LEVEL_ERROR,
                                 "timestamp", OffsetDateTime.now())))
                 .build());
-
     }
 
     private void cleanup(List<Path> listOfExecutionLogFiles) {
@@ -264,32 +311,6 @@ public class CommandManager {
         return Boolean.TRUE.equals(existEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
                 && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
-    }
-
-    private void finalizeAndSendResponse(CommandRequest request) {
-        request.determineStatus();
-        Map<String, String> topicVars = Map.of(
-                "orgId", eventPortalProperties.getOrganizationId(),
-                "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
-                COMMAND_CORRELATION_ID, request.getCommandCorrelationId()
-        );
-        CommandMessage response = new CommandMessage(request.getServiceId(),
-                request.getCommandCorrelationId(),
-                request.getContext(),
-                request.getStatus(),
-                request.getCommandBundles());
-        response.setOrgId(eventPortalProperties.getOrganizationId());
-        response.setTraceId(MDC.get(TRACE_ID));
-        response.setActorId(MDC.get(ACTOR_ID));
-        commandPublisher.sendCommandResponse(response, topicVars);
-        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
-                STATUS_TAG, response.getStatus().name()).increment();
-        Timer jobCycleTime = Timer
-                .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
-                .tag(ORG_ID_TAG, response.getOrgId())
-                .tag(STATUS_TAG, request.getStatus().name())
-                .register(meterRegistry);
-        jobCycleTime.record(request.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }
 
 
