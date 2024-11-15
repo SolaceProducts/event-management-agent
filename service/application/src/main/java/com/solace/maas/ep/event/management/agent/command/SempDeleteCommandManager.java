@@ -75,7 +75,7 @@ public class SempDeleteCommandManager {
      */
 
     private void executeSempDeleteCommand(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
-        SempEntityType deletionEntityType = SempEntityType.valueOf((String) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE));
+        SempEntityType deletionEntityType = (SempEntityType) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE);
         switch (deletionEntityType) {
             case solaceAclProfile:
                 executeDeleteAclProfile(command, sempApiProvider);

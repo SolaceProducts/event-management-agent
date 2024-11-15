@@ -159,9 +159,13 @@ public class CommandManager {
                     }
                 }
             }
+            finalizeAndSendResponse(request);
         } catch (Exception e) {
             log.error("ConfigPush command not executed successfully", e);
             attachErrorLogToCommand(attacheErrorToTerraformCommand, e, request);
+            // try to send the response to EP
+            // might have failed before sending the regular response to EP
+            // this attempt will most likely fail as well
             finalizeAndSendResponse(request);
         } finally {
             cleanup(executionLogFilesToClean);

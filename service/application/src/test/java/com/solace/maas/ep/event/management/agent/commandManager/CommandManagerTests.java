@@ -182,13 +182,14 @@ class CommandManagerTests {
                         .build()));
         doNothing().when(commandLogStreamingProcessor).streamLogsToEP(any(), any(), any());
 
-        RuntimeException thrownException =  assertThrows(RuntimeException.class, () -> {
+        RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
             commandManager.execute(message);
         });
         assertEquals("Error sending response back to EP", thrownException.getMessage());
 
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
-        verify(commandPublisher, times(2)).sendCommandResponse(messageArgCaptor.capture(), any());
+        // 3 attempts to send the response back to EP
+        verify(commandPublisher, times(3)).sendCommandResponse(messageArgCaptor.capture(), any());
 
         // Check that we attempted to set Error in the response message
         messageArgCaptor.getAllValues().forEach(commandMessage -> {
@@ -282,7 +283,7 @@ class CommandManagerTests {
     // This test verifies that unexpected exceptions are caught and the error is reported back to EP
     // The caught exception is attached to the result of the first command in the bundle and the status is set to error
     @Test
-    void failCommandManagerConfigPushDeleteTfState(){
+    void failCommandManagerConfigPushDeleteTfState() {
         CommandMessage message = getCommandMessage("1");
         when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
                 new SolaceHttpSemp(SempClient.builder()
@@ -297,12 +298,12 @@ class CommandManagerTests {
         ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicVarsCaptor.capture());
         assertEquals(JobStatus.error, responseCaptor.getValue().getStatus());
-        assertEquals("Failed removing Terraform state: Failed removing Terraform state directory",
+        assertEquals("Failed removing Terraform state directory",
                 responseCaptor.getValue().getCommandBundles().get(0).getCommands().get(0).getResult().getLogs().get(0).get("message"));
     }
 
     @Test
-    void testCommandManagerConfigPushDeleteTfState(){
+    void testCommandManagerConfigPushDeleteTfState() {
         CommandMessage message = getCommandMessage("1");
         when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
                 new SolaceHttpSemp(SempClient.builder()
@@ -323,7 +324,7 @@ class CommandManagerTests {
 
     @Test
     void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsFalse() {
-        CommandMessage message = getCommandMessage("1", 2,4, true, false);
+        CommandMessage message = getCommandMessage("1", 2, 4, true, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -346,7 +347,7 @@ class CommandManagerTests {
 
     @Test
     void verifyExitOnFailureIsRespectedWhenTrueAndIgnoreResultIsTrue() {
-        CommandMessage message = getCommandMessage("1", 2,4, true, true);
+        CommandMessage message = getCommandMessage("1", 2, 4, true, true);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -368,7 +369,7 @@ class CommandManagerTests {
 
     @Test
     void verifyExitOnFailureIsRespectedWhenFalseAndIgnoreResultIsSetToFalse() {
-        CommandMessage message = getCommandMessage("1", 2,4, false, false);
+        CommandMessage message = getCommandMessage("1", 2, 4, false, false);
 
         doThrow(new RuntimeException("Error executing command")).when(terraformManager).execute(any(), any(), any());
 
@@ -421,7 +422,7 @@ class CommandManagerTests {
         return getCommandMessage(correlationIdSuffix, 1, false, false);
     }
 
-    private CommandMessage getCommandMessage(String correlationIdSuffix,  int numberOfTfCommands,
+    private CommandMessage getCommandMessage(String correlationIdSuffix, int numberOfTfCommands,
                                              boolean exitOnFailure, boolean ignoreResult) {
         return getCommandMessage(correlationIdSuffix, 0, numberOfTfCommands, exitOnFailure, ignoreResult);
     }
@@ -452,11 +453,12 @@ class CommandManagerTests {
     private static List<Command> buildSempDeleteCommands(int numberOfCommands, boolean ignoreResult) {
         return IntStream.range(0, numberOfCommands).mapToObj(i -> buildSempDeleteCommand(ignoreResult)).toList();
     }
+
     private static List<Command> buildTfCommands(int numberOfCommands, boolean ignoreResult) {
         return IntStream.range(0, numberOfCommands).mapToObj(i -> buildTfCommand(ignoreResult)).toList();
     }
 
-    private static Command buildSempDeleteCommand(boolean ignoreResult){
+    private static Command buildSempDeleteCommand(boolean ignoreResult) {
         return Command.builder()
                 .commandType(CommandType.semp)
                 .ignoreResult(ignoreResult)
@@ -464,6 +466,7 @@ class CommandManagerTests {
                 .command("delete")
                 .build();
     }
+
     private static Command buildTfCommand(boolean ignoreResult) {
         return Command.builder()
                 .commandType(CommandType.terraform)
