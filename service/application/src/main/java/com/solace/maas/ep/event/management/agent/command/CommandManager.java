@@ -86,16 +86,12 @@ public class CommandManager {
     }
 
     public void execute(CommandMessage request) {
+        Validate.notNull(request, "CommandRequest must not be null");
+        Validate.notEmpty(request.getServiceId(), "ServiceId must not be empty");
+        Validate.notEmpty(request.getCommandBundles(), "CommandBundles must not be empty");
+        Validate.notEmpty(request.getCommandBundles().get(0).getCommands(), "At least one command must be present");
         CommandRequest requestBO = commandMapper.map(request);
-        try {
-            configPush(requestBO);
-        } catch (Exception e) {
-            // handleError will throw an exception if sending the response to EP fails
-            // this can not be handled here and will be logged in SolacePersistenceMessageHandler
-            log.error("Error while executing command", e);
-            attachErrorLogToCommand(false, e, requestBO);
-            finalizeAndSendResponse(requestBO);
-        }
+        configPush(requestBO);
     }
 
     /**
@@ -112,12 +108,7 @@ public class CommandManager {
     }
 
     @SuppressWarnings("PMD")
-    public void configPush(CommandRequest request) {
-        Validate.notNull(request, "CommandRequest must not be null");
-        Validate.notEmpty(request.getServiceId(), "ServiceId must not be empty");
-        Validate.notEmpty(request.getCommandBundles(), "CommandBundles must not be empty");
-        Validate.notEmpty(request.getCommandBundles().get(0).getCommands(), "At least one command must be present");
-
+    private void configPush(CommandRequest request) {
         List<Path> executionLogFilesToClean = new ArrayList<>();
         boolean attacheErrorToTerraformCommand = false;
         try {
@@ -159,15 +150,23 @@ public class CommandManager {
                     }
                 }
             }
-            finalizeAndSendResponse(request);
         } catch (Exception e) {
             log.error("ConfigPush command not executed successfully", e);
             attachErrorLogToCommand(attacheErrorToTerraformCommand, e, request);
-            // try to send the response to EP
-            // might have failed before sending the regular response to EP
-            // this attempt will most likely fail as well
-            finalizeAndSendResponse(request);
         } finally {
+            try {
+                finalizeAndSendResponse(request);
+                // the response could also be an error log entry
+                // if we fail to send the response to EP, we can not do anything about it
+                // besides logging it
+            } catch (Exception e) {
+                log.error("Error while sending response to Event Portal. ", e);
+                // at least we can attach the error to the first command
+                // this information might be used by the invoker of this method
+                attachErrorLogToCommand(false, e, request);
+            }
+            // cleanup handles errors by logging and swallowing them
+            // no need to catch them here
             cleanup(executionLogFilesToClean);
         }
     }
