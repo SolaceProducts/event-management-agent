@@ -501,7 +501,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteQueueSubscriptionParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueueSubscriptionTopic);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueueSubscriptionTopic.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -515,7 +515,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteQueueParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueue);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceQueue.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -528,7 +528,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteAclSubscribeTopicExceptionParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclSubscribeTopicException);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclSubscribeTopicException.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -542,7 +542,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteAclPublishTopicExceptionParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclPublishTopicException);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclPublishTopicException.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -556,7 +556,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteAclParametersParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclProfile);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAclProfile.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -569,7 +569,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteClientUsernameParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceClientUsername);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceClientUsername.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -582,7 +582,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteAuthorizationGroupParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAuthorizationGroup);
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceAuthorizationGroup.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
