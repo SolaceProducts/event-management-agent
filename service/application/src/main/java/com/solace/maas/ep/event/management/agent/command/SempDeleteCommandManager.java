@@ -75,31 +75,25 @@ public class SempDeleteCommandManager {
      */
 
     private void executeSempDeleteCommand(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
-        SempEntityType deletionEntityType = (SempEntityType) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE);
+        String entityType = (String) command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE);
+        SempEntityType deletionEntityType = null;
+        if (entityType == null) {
+            throw new IllegalArgumentException("Entity type of a SEMP delete command must not be null");
+        }
+        try {
+            deletionEntityType = SempEntityType.valueOf(entityType);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unsupported SEMP delete entity type:" + entityType);
+        }
         switch (deletionEntityType) {
-            case solaceAclProfile:
-                executeDeleteAclProfile(command, sempApiProvider);
-                break;
-            case solaceQueue:
-                executeDeleteSolaceQueue(command, sempApiProvider);
-                break;
-            case solaceQueueSubscriptionTopic:
-                executeDeleteSolaceQueueTopicSubscription(command, sempApiProvider);
-                break;
-            case solaceClientUsername:
-                executeDeleteClientUsername(command, sempApiProvider);
-                break;
-            case solaceAuthorizationGroup:
-                executeDeleteAuthorizationGroup(command, sempApiProvider);
-                break;
-            case solaceAclSubscribeTopicException:
-                executeDeleteAclSubscribeTopicException(command, sempApiProvider);
-                break;
-            case solaceAclPublishTopicException:
-                executeDeleteAclPublishTopicException(command, sempApiProvider);
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
+            case solaceAclProfile -> executeDeleteAclProfile(command, sempApiProvider);
+            case solaceQueue -> executeDeleteSolaceQueue(command, sempApiProvider);
+            case solaceQueueSubscriptionTopic -> executeDeleteSolaceQueueTopicSubscription(command, sempApiProvider);
+            case solaceClientUsername -> executeDeleteClientUsername(command, sempApiProvider);
+            case solaceAuthorizationGroup -> executeDeleteAuthorizationGroup(command, sempApiProvider);
+            case solaceAclSubscribeTopicException -> executeDeleteAclSubscribeTopicException(command, sempApiProvider);
+            case solaceAclPublishTopicException -> executeDeleteAclPublishTopicException(command, sempApiProvider);
+            default -> throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
         }
     }
 
