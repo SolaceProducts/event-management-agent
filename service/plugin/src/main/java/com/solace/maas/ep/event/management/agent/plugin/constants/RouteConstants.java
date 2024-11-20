@@ -25,6 +25,7 @@ public class RouteConstants {
 
     public static final String MESSAGING_SERVICE_ID = "MESSAGING_SERVICE_ID";
 
+    // EMA ID
     public static final String EVENT_MANAGEMENT_ID = "EVENT_MANAGEMENT_ID";
 
     public static final String IMPORT_ID = "IMPORT_ID";
