@@ -72,12 +72,12 @@ public class TerraformUtils {
      * @param directory
      */
     public static void deleteConfigPath(CommandRequest request, String directory) {
+        Validate.notNull(request, "request must be provided");
+        Validate.notEmpty(request.getContext(), "context of request must be provided");
+        Validate.notEmpty(request.getServiceId(), "serviceId of request must be provided");
+        Validate.notEmpty(directory, "directory must be provided");
         // just in case the delete operation is called concurrently
         synchronized (lock) {
-            Validate.notNull(request, "request must be provided");
-            Validate.notEmpty(request.getContext(), "context of request must be provided");
-            Validate.notEmpty(request.getServiceId(), "serviceId of request must be provided");
-            Validate.notEmpty(directory, "directory must be provided");
             Path configPath = Paths.get(directory + File.separator
                     + request.getContext()
                     + "-"

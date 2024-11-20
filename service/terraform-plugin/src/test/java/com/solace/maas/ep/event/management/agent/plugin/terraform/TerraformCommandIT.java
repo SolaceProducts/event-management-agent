@@ -71,64 +71,6 @@ public class TerraformCommandIT {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    private static Command generateCommand(String tfCommand, String body) {
-        return generateCommand(tfCommand, body, false);
-    }
-
-    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult) {
-        return generateCommand(tfCommand, body, ignoreResult,
-                Map.of("Content-Type", "application/hcl",
-                        "Content-Encoding", "base64"));
-    }
-
-    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult, Map<String, Object> parameters) {
-        return Command.builder()
-                .body(Optional.ofNullable(body)
-                        .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
-                        .orElse(""))
-                .command(tfCommand)
-                .commandType(CommandType.terraform)
-                .ignoreResult(ignoreResult)
-                .parameters(parameters)
-                .build();
-    }
-
-    private static CommandRequest generateCommandRequest(Command commandRequest) {
-        return generateCommandRequest(List.of(commandRequest), false);
-    }
-
-    private static CommandRequest generateCommandRequest(List<Command> commandRequests, boolean exitOnFailure) {
-        return CommandRequest.builder()
-                .commandBundles(List.of(
-                        CommandBundle.builder()
-                                .executionType(ExecutionType.serial)
-                                .exitOnFailure(exitOnFailure)
-                                .commands(commandRequests)
-                                .build()))
-                .commandCorrelationId("234")
-                .context("app123")
-                .serviceId("ms1234")
-                .build();
-    }
-
-    private static String getResourceAsString(Resource resource) {
-        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
-            return FileCopyUtils.copyToString(reader);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static List<String> getResourceAsStringArray(Resource resource) {
-        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
-            return Arrays.stream(FileCopyUtils.copyToString(reader).split("\n"))
-                    .filter(StringUtils::isNotEmpty)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
     @BeforeAll
     public void setup() {
         terraformProperties.setWorkingDirectoryRoot(System.getProperty("java.io.tmpdir"));
@@ -164,6 +106,7 @@ public class TerraformCommandIT {
         Command writeHclCommand = generateCommand("write_HCL", newQueueTf);
         Path writeHclExecutionLogFilePath = terraformManager.execute(generateCommandRequest(writeHclCommand), writeHclCommand, Map.of());
         Assertions.assertThat(writeHclExecutionLogFilePath.toFile().getName()).startsWith("write_HCL");
+
 
         Command applyCommand = generateCommand("apply", newQueueTf);
 
@@ -529,6 +472,47 @@ public class TerraformCommandIT {
         }
     }
 
+    private static Command generateCommand(String tfCommand, String body) {
+        return generateCommand(tfCommand, body, false);
+    }
+
+    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult) {
+        return generateCommand(tfCommand, body, ignoreResult,
+                Map.of("Content-Type", "application/hcl",
+                        "Content-Encoding", "base64"));
+    }
+
+    private static Command generateCommand(String tfCommand, String body, Boolean ignoreResult, Map<String, Object> parameters) {
+        return Command.builder()
+                .body(Optional.ofNullable(body)
+                        .map(b -> Base64.getEncoder().encodeToString(b.getBytes(UTF_8)))
+                        .orElse(""))
+                .command(tfCommand)
+                .commandType(CommandType.terraform)
+                .ignoreResult(ignoreResult)
+                .parameters(parameters)
+                .build();
+    }
+
+
+    private static CommandRequest generateCommandRequest(Command commandRequest) {
+        return generateCommandRequest(List.of(commandRequest), false);
+    }
+
+    private static CommandRequest generateCommandRequest(List<Command> commandRequests, boolean exitOnFailure) {
+        return CommandRequest.builder()
+                .commandBundles(List.of(
+                        CommandBundle.builder()
+                                .executionType(ExecutionType.serial)
+                                .exitOnFailure(exitOnFailure)
+                                .commands(commandRequests)
+                                .build()))
+                .commandCorrelationId("234")
+                .context("app123")
+                .serviceId("ms1234")
+                .build();
+    }
+
     private void setupLogMock(List<String> logs) {
         doAnswer(invocation -> {
             Object arg0 = invocation.getArgument(0);
@@ -536,6 +520,25 @@ public class TerraformCommandIT {
             logs.forEach(listener);
             return null;
         }).when(terraformClient).setOutputListener(any());
+    }
+
+
+    private static String getResourceAsString(Resource resource) {
+        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
+            return FileCopyUtils.copyToString(reader);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static List<String> getResourceAsStringArray(Resource resource) {
+        try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
+            return Arrays.stream(FileCopyUtils.copyToString(reader).split("\n"))
+                    .filter(StringUtils::isNotEmpty)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private void assertAllLogsContainExpectedFields(List<Map<String, Object>> logs) {

@@ -10,14 +10,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ActiveProfiles("TEST")
-public class TerraformUtilsTest {
+class TerraformUtilsTest {
 
     @Test
-    public void testDeleteConfigPath(@TempDir Path tempDirectory) throws IOException {
+    void testDeleteConfigPath(@TempDir Path tempDirectory) throws IOException {
         CommandRequest commandRequest = CommandRequest
                 .builder()
                 .context("someContext")
@@ -31,8 +30,5 @@ public class TerraformUtilsTest {
         TerraformUtils.deleteConfigPath(commandRequest, tempDirectory.toString());
         assertTrue(Files.notExists(subDirectory));
         assertTrue(Files.exists(tempDirectory));
-        //cleanup
-        Files.deleteIfExists(tempDirectory);
-        assertFalse(Files.exists(tempDirectory));
     }
 }
