@@ -12,6 +12,7 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.client.Terrafo
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.Validate;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +44,20 @@ public class TerraformManager {
         this.terraformLogProcessingService = terraformLogProcessingService;
         this.terraformProperties = terraformProperties;
         this.terraformClientFactory = terraformClientFactory;
+    }
+
+    /**
+     * Delete the terraform state for the given request - this will delete the terraform directory for the given request. <br>
+     * If the terraform state directory does not exist, this method will not throw an exception.
+     *
+     * @param request
+     * @throws IllegalStateException if the terraform state cannot be deleted due to permissions or other issues
+     */
+    public void deleteTerraformState(CommandRequest request) throws IllegalStateException {
+        Validate.notNull(request, "request must be provided");
+        Validate.notEmpty(request.getContext(), "context of request must be provided");
+        Validate.notEmpty(request.getServiceId(), "serviceId of request must be provided");
+        TerraformUtils.deleteConfigPath(request, terraformProperties.getWorkingDirectoryRoot());
     }
 
     public Path execute(CommandRequest request, Command command, Map<String, String> envVars) {

@@ -38,6 +38,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -67,7 +68,7 @@ public class PersistentMessageHandlerTests {
     private PersistentMessageReceiver persistentMessageReceiver;
 
     @Autowired
-    private MessagingService messagingService;
+    private MessagingService messagingServicex;
 
     @SpyBean
     private ScanCommandMessageProcessor scanCommandMessageProcessor;
@@ -107,7 +108,7 @@ public class PersistentMessageHandlerTests {
         message.setOrigType(MOPSvcType.maasEventMgmt);
         message.withMessageType(generic);
         message.setContext("abc");
-        message.setServiceId("someSvcId");
+        message.setServiceId("messagingServiceId");
         message.setActorId("myActorId");
         message.setOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
@@ -122,6 +123,7 @@ public class PersistentMessageHandlerTests {
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 CommandMessage.class.getCanonicalName()
         );
+        doNothing().when(commandMessageProcessor).processMessage(any());
 
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // Wait for the executor to process the message

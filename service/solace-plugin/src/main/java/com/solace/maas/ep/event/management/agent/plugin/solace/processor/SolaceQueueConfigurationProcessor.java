@@ -33,4 +33,5 @@ public class SolaceQueueConfigurationProcessor extends ResultProcessorImpl<List<
 
         return queueResponse;
     }
+
 }

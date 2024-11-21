@@ -25,6 +25,7 @@ public class SolaceSubscriber {
                 .build()
                 .start();
 
+        // handler will be called when a message is received in sequence
         directMessageReceiver.receiveAsync(solaceMessageHandler);
         log.debug("Registered message handler for topic {}", solaceMessageHandler.getTopicString());
     }

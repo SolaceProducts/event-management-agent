@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent;
 
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -14,6 +15,7 @@ import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClie
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.kafkaClient.KafkaClientReconnectionConfig;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
+import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformLogProcessingService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
@@ -169,7 +171,9 @@ public class TestConfig {
                                             MessagingServiceDelegateService messagingServiceDelegateService,
                                             EventPortalProperties eventPortalProperties,
                                             Optional<CommandLogStreamingProcessor> commandLogStreamingProcessor,
-                                            MeterRegistry meterRegistry) {
+                                            MeterRegistry meterRegistry,
+                                            SempDeleteCommandManager sempDeleteCommandManager,
+                                            TerraformLogProcessingService terraformLogProcessingService) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
@@ -177,7 +181,9 @@ public class TestConfig {
                 messagingServiceDelegateService,
                 eventPortalProperties,
                 commandLogStreamingProcessor,
-                meterRegistry
+                meterRegistry,
+                sempDeleteCommandManager,
+                terraformLogProcessingService
         );
     }
 

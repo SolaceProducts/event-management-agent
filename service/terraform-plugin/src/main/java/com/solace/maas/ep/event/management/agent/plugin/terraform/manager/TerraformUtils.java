@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
@@ -8,15 +7,17 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.boot.logging.LogLevel;
+import org.apache.commons.lang.Validate;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -24,9 +25,10 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 public class TerraformUtils {
+    private static final Object lock = new Object(); // A lock object for synchronization
+
     public static final String LOG_LEVEL_ERROR = "ERROR";
     private static final String DEFAULT_TF_CONFIG_FILENAME = "config.tf";
     public static final String CONTENT_ENCODING = "Content-Encoding";
@@ -60,6 +62,53 @@ public class TerraformUtils {
                                 "level", LOG_LEVEL_ERROR,
                                 "timestamp", OffsetDateTime.now())))
                 .build());
+    }
+
+    /**
+     * Delete the Terraform state directory for the given request under the given directory.<br>
+     * The directory name is constructed as follows: {context}-{serviceId}
+     *
+     * @param request
+     * @param directory
+     */
+    public static void deleteConfigPath(CommandRequest request, String directory) {
+        Validate.notNull(request, "request must be provided");
+        Validate.notEmpty(request.getContext(), "context of request must be provided");
+        Validate.notEmpty(request.getServiceId(), "serviceId of request must be provided");
+        Validate.notEmpty(directory, "directory must be provided");
+        // just in case the delete operation is called concurrently
+        synchronized (lock) {
+            Path configPath = Paths.get(directory + File.separator
+                    + request.getContext()
+                    + "-"
+                    + request.getServiceId()
+                    + File.separator
+            );
+
+            if (Files.exists(configPath)) {
+                try {
+                    deleteDirectory(configPath);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed removing Terraform state directory: " + directory, e);
+                }
+            }
+        }
+    }
+
+    private static void deleteDirectory(Path path) throws IOException {
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     public static Path createConfigPath(CommandRequest request, String directory) {
