@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -48,19 +49,21 @@ public class TerraformLogProcessingService {
                 .build();
     }
 
-    public CommandResult buildTfCommandResult(List<String> jsonLogs) {
+    public CommandResult buildTfCommandResult(List<String> logsInJsonFormat) {
 
-        if (CollectionUtils.isEmpty(jsonLogs)) {
+        if (CollectionUtils.isEmpty(logsInJsonFormat)) {
             throw new IllegalArgumentException("No terraform logs were collected. Unable to process response.");
         }
 
-        List<Map<String, Object>> successLogs = jsonLogs.stream()
+        // Copy the list to avoid modifying the original and to avoid concurrent modification exceptions
+        List<String> jsonLogsCopy = new ArrayList<>(logsInJsonFormat);
+        List<Map<String, Object>> successLogs = jsonLogsCopy.stream()
                 .map(this::parseTfOutput)
                 .filter(this::isApplyCompleteLog)
                 .map(this::simplifyApplyCompleteLog)
                 .toList();
 
-        List<Map<String, Object>> errorLogs = jsonLogs.stream()
+        List<Map<String, Object>> errorLogs = jsonLogsCopy.stream()
                 .map(this::parseTfOutput)
                 .filter(this::isErrorLog)
                 .map(this::simplifyApplyErroredLog)
