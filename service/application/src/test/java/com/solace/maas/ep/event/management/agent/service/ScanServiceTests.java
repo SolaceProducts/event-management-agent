@@ -156,7 +156,7 @@ public class ScanServiceTests {
         when(meterRegistry.counter(any(), any(String[].class)))
                 .thenReturn(new NoopCounter(new Meter.Id("noop", null, null, null, null)));
 
-        scanService.singleScan(List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
+        scanService.singleScan("orgId", List.of(topicListing, consumerGroups, additionalConsumerGroupConfigBundle),
                 "groupId",
                 "scanId",
                 "traceId",
@@ -325,7 +325,7 @@ public class ScanServiceTests {
                 mock(ScanTypeRepository.class),
                 mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class),
                 template, idGenerator, meterRegistry);
-        service.sendScanStatus("scanId", "groupId", "messagingServiceId", "traceId", "actorId",
+        service.sendScanStatus("orgId", "scanId", "groupId", "messagingServiceId", "traceId", "actorId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
         assertThatNoException();
