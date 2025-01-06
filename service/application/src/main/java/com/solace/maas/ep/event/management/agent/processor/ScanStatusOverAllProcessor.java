@@ -21,11 +21,15 @@ import java.util.Map;
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanStatusOverAllProcessor implements Processor {
+
+    private final String orgId;
     private final String runtimeAgentId;
+
     @Autowired
     public ScanStatusOverAllProcessor(EventPortalProperties eventPortalProperties) {
         super();
 
+        orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
@@ -40,7 +44,6 @@ public class ScanStatusOverAllProcessor implements Processor {
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
-        String orgId = (String) properties.get(RouteConstants.ORG_ID);
 
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         List<String> scanTypes = Arrays.asList(scanType.split(","));

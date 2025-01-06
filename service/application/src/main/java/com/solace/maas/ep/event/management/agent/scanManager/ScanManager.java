@@ -40,6 +40,7 @@ public class ScanManager {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
     private final String runtimeAgentId;
+    private final String orgId;
     // This is an optional dependency since it is not available in standalone mode.
     // If the bean is not present, the publisher will not be used.
     private final Optional<ScanStatusPublisher> scanStatusPublisherOpt;
@@ -53,6 +54,7 @@ public class ScanManager {
         this.scanService = scanService;
         this.scanStatusPublisherOpt = scanStatusPublisher;
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        orgId = eventPortalProperties.getOrganizationId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
@@ -112,10 +114,10 @@ public class ScanManager {
                         .toList().stream()
                 ).toList().stream().flatMap(List::stream).toList();
 
-        return scanService.singleScan(scanRequestBO.getOrgId(), routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
+        return scanService.singleScan(routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
     }
 
-    public void handleError(String orgId, ScanCommandMessage message) {
+    public void handleError(Exception e, ScanCommandMessage message) {
 
         if (scanStatusPublisherOpt.isEmpty()) {
             return;

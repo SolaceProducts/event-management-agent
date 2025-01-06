@@ -17,7 +17,6 @@ import java.util.List;
 @SuppressWarnings("PMD")
 public class ScanRequestBO extends AbstractBaseBO<String> {
 
-    private String orgId;
     private String messagingServiceId;
 
     private String scanId;

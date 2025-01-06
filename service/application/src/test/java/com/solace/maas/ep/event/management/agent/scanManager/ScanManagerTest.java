@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,12 +63,11 @@ class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(any(), List.of(), "groupId", "scanId", "traceId", "actorId",
+        when(scanService.singleScan(List.of(), "groupId", "scanId", "traceId", "actorId",
                 mock(MessagingServiceEntity.class), "runtimeAgent1"))
                 .thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
                 "id",
                 "scanId",
                 "traceId",
@@ -80,7 +78,6 @@ class ScanManagerTest {
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOTopics = new ScanRequestBO(
-                "orgId",
                 "id",
                 "scanId",
                 "traceId",
@@ -91,7 +88,6 @@ class ScanManagerTest {
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOTopics));
 
         ScanRequestBO scanRequestBOConsumerGroups = new ScanRequestBO(
-                "orgId",
                 "id",
                 "scanId",
                 "traceId",
@@ -108,7 +104,7 @@ class ScanManagerTest {
         String messagingServiceId = "messagingServiceId";
         String confluentSchemaRegistryId = "confluentId";
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO("orgId",
+        ScanRequestBO scanRequestBO = new ScanRequestBO(
                 messagingServiceId, "scanId", "traceId", "actorId",
                 List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
                 List.of("FILE_WRITER"));
@@ -155,7 +151,7 @@ class ScanManagerTest {
                     .thenReturn(destinations);
             when(kafkaRouteDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
-            when(scanService.singleScan(any(), List.of(), "groupId", "scanId", "traceId", "actorId",
+            when(scanService.singleScan(List.of(), "groupId", "scanId", "traceId", "actorId",
                     mock(MessagingServiceEntity.class), "runtimeAgent1"))
                     .thenReturn(Mockito.anyString());
 

@@ -75,7 +75,6 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         ScanRequestBO scanRequestBO = ScanRequestBO.builder()
                 .messagingServiceId(message.getMessagingServiceId())
                 .scanId(scanId)
-                .orgId(message.getOrgId())
                 .traceId(message.getTraceId())
                 .actorId(message.getActorId())
                 .scanTypes(entityTypes)
@@ -129,6 +128,6 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
 
     @Override
     public void onFailure(Exception e, ScanCommandMessage message) {
-        scanManager.handleError(message.getOrgId(), message);
+        scanManager.handleError(e, message);
     }
 }

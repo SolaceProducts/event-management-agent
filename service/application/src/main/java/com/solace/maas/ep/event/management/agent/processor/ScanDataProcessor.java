@@ -23,6 +23,7 @@ import java.util.Map;
 public class ScanDataProcessor implements Processor {
 
     private final ScanDataPublisher scanDataPublisher;
+    private final String orgId;
     private final String runtimeAgentId;
 
     @Autowired
@@ -31,6 +32,7 @@ public class ScanDataProcessor implements Processor {
 
         this.scanDataPublisher = scanDataPublisher;
 
+        orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
@@ -46,7 +48,6 @@ public class ScanDataProcessor implements Processor {
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
-        String orgId = (String) properties.get(RouteConstants.ORG_ID);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataMessage scanDataMessage = new ScanDataMessage(orgId, scanId, traceId, actorId, scanType, body, Instant.now().toString());
