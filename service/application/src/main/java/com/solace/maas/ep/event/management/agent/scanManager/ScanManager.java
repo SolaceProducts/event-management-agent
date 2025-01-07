@@ -66,6 +66,7 @@ public class ScanManager {
         MDC.put(RouteConstants.TRACE_ID, traceId);
         MDC.put(RouteConstants.ACTOR_ID, actorId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+        MDC.put(RouteConstants.ORG_ID, scanRequestBO.getOrgId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
