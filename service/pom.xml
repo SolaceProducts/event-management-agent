@@ -40,7 +40,7 @@
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
-        <camel.version>4.5.0</camel.version>
+        <camel.version>4.9.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
 

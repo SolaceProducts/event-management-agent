@@ -13,7 +13,7 @@
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
-        <spring-boot.version>3.3.4</spring-boot.version>
+        <spring-boot.version>3.3.7</spring-boot.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-security-rsa.version>1.1.3</spring-security-rsa.version>
         <spring-kafka.version>3.2.4</spring-kafka.version>
