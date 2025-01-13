@@ -20,15 +20,15 @@ WORKDIR /opt/ema
 
 ARG PLATFORM=linux_amd64
 
-COPY tofu_1.8.2_amd64.apk /opt/ema/terraform
-RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.8.2_amd64.apk
+COPY tofu_1.8.7_amd64.apk /opt/ema/terraform
+RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.8.7_amd64.apk
 
 COPY .terraformrc $HOME/.terraformrc
 RUN printf '#!/bin/ash\ntofu $*' > /opt/ema/terraform/terraform
 RUN chmod +x /opt/ema/terraform/terraform
 ENV PATH $PATH:/opt/ema/terraform
 
-ARG SOLACE_PROVIDER_VERSION=1.0.1
+ARG SOLACE_PROVIDER_VERSION=1.1.0
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.zip /opt/ema/terraform
 
 RUN unzip /opt/ema/terraform/terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.zip -d /opt/ema/terraform && \
