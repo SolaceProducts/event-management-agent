@@ -43,7 +43,6 @@
         <camel.version>4.8.3</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
-
     <dependencyManagement>
         <dependencies>
             <!-- logback/logstash integration -->
