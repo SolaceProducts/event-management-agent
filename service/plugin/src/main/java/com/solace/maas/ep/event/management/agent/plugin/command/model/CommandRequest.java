@@ -22,6 +22,7 @@ public class CommandRequest {
     private List<CommandBundle> commandBundles;
     private Instant createdTime;
     private Instant updatedTime;
+    private String orgId;
 
     public long getLifetime(TemporalUnit timeUnit) {
         if (createdTime == null) {

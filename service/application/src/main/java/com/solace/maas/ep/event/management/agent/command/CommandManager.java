@@ -204,19 +204,19 @@ public class CommandManager {
         }
     }
 
-    private void finalizeAndSendResponse(CommandRequest request) {
-        request.determineStatus();
+    private void finalizeAndSendResponse(CommandRequest requestBO) {
+        requestBO.determineStatus();
         Map<String, String> topicVars = Map.of(
-                "orgId", eventPortalProperties.getOrganizationId(),
+                "orgId", requestBO.getOrgId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
-                COMMAND_CORRELATION_ID, request.getCommandCorrelationId()
+                COMMAND_CORRELATION_ID, requestBO.getCommandCorrelationId()
         );
-        CommandMessage response = new CommandMessage(request.getServiceId(),
-                request.getCommandCorrelationId(),
-                request.getContext(),
-                request.getStatus(),
-                request.getCommandBundles());
-        response.setOrgId(eventPortalProperties.getOrganizationId());
+        CommandMessage response = new CommandMessage(requestBO.getServiceId(),
+                requestBO.getCommandCorrelationId(),
+                requestBO.getContext(),
+                requestBO.getStatus(),
+                requestBO.getCommandBundles());
+        response.setOrgId(requestBO.getOrgId());
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
         commandPublisher.sendCommandResponse(response, topicVars);
@@ -225,9 +225,9 @@ public class CommandManager {
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, response.getOrgId())
-                .tag(STATUS_TAG, request.getStatus().name())
+                .tag(STATUS_TAG, requestBO.getStatus().name())
                 .register(meterRegistry);
-        jobCycleTime.record(request.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
+        jobCycleTime.record(requestBO.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
