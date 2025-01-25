@@ -16,8 +16,8 @@ on:
           - production
       buildNewDevImage:
         description: "true/false. If deploying to development, set to 'true' to build a new image, otherwise, we'll pull the 'main' image."
-        required: true
-        default: "A.B.C"
+        required: false
+        default: "true"
 jobs:
   deploy:
     runs-on: ubuntu-latest
