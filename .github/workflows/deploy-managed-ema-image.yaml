@@ -14,6 +14,10 @@ on:
           - development
           - staging
           - production
+      buildNewDevImage:
+        description: "true/false. If deploying to development, set to 'true' to build a new image, otherwise, we'll pull the 'main' image."
+        required: true
+        default: "A.B.C"
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,11 +34,17 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1.6.0
       - name: ECR (Dev) - Pull Main Image
-        if: ${{ github.event.inputs.deployEnvironment == 'development' }}
+        if: ${{ github.event.inputs.deployEnvironment == 'development' && github.event.inputs.buildNewDevImage == 'false' }}
         run: |
           ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
           docker pull $ECR_DEV_IMAGE
           echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
+      - name: ECR (Dev) - Build Image
+        if: ${{ github.event.inputs.deployEnvironment == 'development' && github.event.inputs.buildNewDevImage == 'true' }}
+        working-directory: service/application/docker
+        run: |
+          ./buildEventManagementAgentDocker.sh -t ${{ github.event.inputs.releaseVersion }}
+          ECR_DEV_IMAGE="solace/${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
       - name: ECR (Dev) - Pull Prod Ready Image Tag
         if: ${{ github.event.inputs.deployEnvironment != 'development' }}
         run: |
