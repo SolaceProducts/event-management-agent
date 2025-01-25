@@ -50,7 +50,8 @@ public class CommandLogStreamingProcessor {
 
 
     public void streamLogsToEP(CommandRequest request, Command executedCommand, Path commandExecutionLog) {
-
+        log.debug("Streaming logs to EP for command {} with commandCorrelationId {} for orgId {}", executedCommand.getCommand(),
+                request.getCommandCorrelationId(), request.getOrgId());
         if (executedCommand.getIgnoreResult()) {
             log.debug("Skipping log streaming to ep for command {} with commandCorrelationId {} as ignoreResult is set to true",
                     executedCommand.getCommand(), request.getCommandCorrelationId());
@@ -92,7 +93,8 @@ public class CommandLogStreamingProcessor {
                         log -> sendLogToEpCore(
                                 log,
                                 request.getCommandCorrelationId(),
-                                request.getServiceId()
+                                request.getServiceId(),
+                                request.getOrgId()
                         )
                 );
     }
@@ -111,10 +113,11 @@ public class CommandLogStreamingProcessor {
 
     private void sendLogToEpCore(CommandLogMessage logDataMessage,
                                  String commandCorrelationId,
-                                 String messagingServiceId) {
+                                 String messagingServiceId,
+                                 String organizationId) {
         try {
             Map<String, String> topicDetails = new HashMap<>();
-            topicDetails.put("orgId", eventPortalProperties.getOrganizationId());
+            topicDetails.put("orgId", organizationId);
             topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
             topicDetails.put("messagingServiceId", messagingServiceId);
             topicDetails.put(COMMAND_CORRELATION_ID, commandCorrelationId);

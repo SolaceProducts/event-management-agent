@@ -14,6 +14,7 @@ import com.solace.messaging.config.profile.ConfigurationProfile;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -46,6 +47,20 @@ public class SolaceConfiguration {
         vmrConfiguration = vmrConfig;
         sessionConfiguration = sessionConfig;
         this.eventPortalProperties = eventPortalProperties;
+    }
+
+    public String getTopicPrefix(String orgId) {
+        if (StringUtils.isEmpty(orgId)) {
+            log.warn("Attempted to get topic prefix with empty orgId. Defaulting to application properties org ID {}",
+                    eventPortalProperties.getOrganizationId());
+            orgId = eventPortalProperties.getOrganizationId();
+        }
+        if (topicPrefix == null) {
+            topicPrefix = String.format(TOPIC_PREFIX_FORMAT,
+                    orgId,
+                    eventPortalProperties.getRuntimeAgentId());
+        }
+        return topicPrefix;
     }
 
     public String getTopicPrefix() {
