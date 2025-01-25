@@ -45,6 +45,7 @@ jobs:
         run: |
           ./buildEventManagementAgentDocker.sh -t ${{ github.event.inputs.releaseVersion }}
           ECR_DEV_IMAGE="solace/${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
+          echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: ECR (Dev) - Pull Prod Ready Image Tag
         if: ${{ github.event.inputs.deployEnvironment != 'development' }}
         run: |
