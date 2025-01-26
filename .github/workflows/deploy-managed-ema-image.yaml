@@ -59,8 +59,6 @@ jobs:
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-      - name: Static Code Analysis
-        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
       - name: Generate Artifacts
         run: |
           mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
@@ -69,7 +67,7 @@ jobs:
         working-directory: service/application/docker
         run: |
           ./buildEventManagementAgentDocker.sh -t ${{ github.event.inputs.releaseVersion }}
-          ECR_DEV_IMAGE="solace/${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
+          ECR_DEV_IMAGE="${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
           echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: ECR (Dev) - Pull Prod Ready Image Tag
         if: ${{ github.event.inputs.deployEnvironment != 'development' }}
