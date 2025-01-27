@@ -231,7 +231,6 @@ public class CommandManager {
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
-        Path executionLog = null;
         try {
             Validate.isTrue(command.getCommandType().equals(terraform), "Command type must be terraform");
             return terraformManager.execute(request, command, envVars);
@@ -240,7 +239,7 @@ public class CommandManager {
             setCommandError(command, e);
 
         }
-        return executionLog;
+        return null;
     }
 
     private void executeSempCommand(Command command, SolaceHttpSemp solaceClient) {

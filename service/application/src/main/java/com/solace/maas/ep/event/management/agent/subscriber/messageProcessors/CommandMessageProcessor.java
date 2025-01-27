@@ -38,7 +38,8 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
 
     @Override
     public void processMessage(CommandMessage message) {
-        log.info("Config push command processor started. context={} actorId={} ", message.getContext(), message.getActorId());
+        log.info("Config push command processor started. context={} orgId={} actorId={} ",
+                message.getContext(), message.getOrgId(), message.getActorId());
         logConfigPushMetric(message);
         if (CollectionUtils.isNotEmpty(message.getResources())) {
             dynamicResourceConfigurationHelper.loadSolaceBrokerResourceConfigurations(message.getResources());
