@@ -75,6 +75,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         ScanRequestBO scanRequestBO = ScanRequestBO.builder()
                 .messagingServiceId(message.getMessagingServiceId())
                 .scanId(scanId)
+                .orgId(message.getOrgId())
                 .traceId(message.getTraceId())
                 .actorId(message.getActorId())
                 .scanTypes(entityTypes)

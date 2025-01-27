@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.cli;
 
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
@@ -26,16 +27,18 @@ public class CommandLineScan {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ImportService importService;
     private final CommandLineCommon commandLineCommon;
+    private final EventPortalProperties eventPortalProperties;
 
     public CommandLineScan(ScanManager scanManager, IDGenerator idGenerator,
                            MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
                            ImportService importService,
-                           CommandLineCommon commandLineCommon) {
+                           CommandLineCommon commandLineCommon, EventPortalProperties eventPortalProperties) {
         this.scanManager = scanManager;
         this.idGenerator = idGenerator;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.importService = importService;
         this.commandLineCommon = commandLineCommon;
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     public void runScan(String messagingServiceId, String filePathAndName) throws InterruptedException, IOException {
@@ -45,6 +48,7 @@ public class CommandLineScan {
                 .messagingServiceId(messagingServiceId)
                 .scanId(idGenerator.generateRandomUniqueId())
                 .destinations(List.of("FILE_WRITER"))
+                .orgId(eventPortalProperties.getOrganizationId())
                 .build();
         setScanType(messagingServiceEntity, scanRequestBO, messagingServiceId);
 

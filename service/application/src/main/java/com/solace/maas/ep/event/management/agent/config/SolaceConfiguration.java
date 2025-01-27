@@ -52,7 +52,7 @@ public class SolaceConfiguration {
 
         if (topicPrefix == null) {
             topicPrefix = String.format(TOPIC_PREFIX_FORMAT,
-                    eventPortalProperties.getOrganizationId(),
+                    Boolean.TRUE.equals(eventPortalProperties.getManaged()) ? "*" : eventPortalProperties.getOrganizationId(),
                     eventPortalProperties.getRuntimeAgentId());
         }
         return topicPrefix;

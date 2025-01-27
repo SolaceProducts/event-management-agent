@@ -42,12 +42,12 @@ public class ScanDataPublisher {
 
         String topicString = isImport ?
                 String.format("sc/ep/runtime/%s/%s/importScan/v1/%s",
-                        topicDetails.get("orgId"),
+                        message.getOrgId(),
                         topicDetails.get("runtimeAgentId"),
                         topicDetails.get("messagingServiceId"))
                 :
                 String.format("sc/ep/runtime/%s/%s/scan/data/v1/%s/%s/%s",
-                        topicDetails.get("orgId"),
+                        message.getOrgId(),
                         topicDetails.get("runtimeAgentId"),
                         topicDetails.get("messagingServiceId"),
                         topicDetails.get("scanId"),
@@ -58,6 +58,6 @@ public class ScanDataPublisher {
         meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
                 STATUS_TAG, isSuccessful ? ScanStatus.COMPLETE.name() : ScanStatus.FAILED.name(),
                 SCAN_ID_TAG, topicDetails.get("scanId"),
-                ORG_ID_TAG, topicDetails.get("orgId")).increment();
+                ORG_ID_TAG, message.getOrgId()).increment();
     }
 }
