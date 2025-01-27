@@ -48,9 +48,8 @@ public class CommandLogStreamingProcessor {
         this.objectMapper = objectMapper;
     }
 
-
     public void streamLogsToEP(CommandRequest request, Command executedCommand, Path commandExecutionLog) {
-        log.debug("Streaming logs to EP for command {} with commandCorrelationId {} for orgId {}", executedCommand.getCommand(),
+        log.info("Streaming logs to EP for command {} with commandCorrelationId {} for orgId {}", executedCommand.getCommand(),
                 request.getCommandCorrelationId(), request.getOrgId());
         if (executedCommand.getIgnoreResult()) {
             log.debug("Skipping log streaming to ep for command {} with commandCorrelationId {} as ignoreResult is set to true",
@@ -82,7 +81,7 @@ public class CommandLogStreamingProcessor {
 
                 })
                 .map(strLog -> toCommandLogMessage(
-                        eventPortalProperties.getOrganizationId(),
+                        request.getOrgId(),
                         strLog,
                         request.getCommandCorrelationId(),
                         eventPortalProperties.getRuntimeAgentId()

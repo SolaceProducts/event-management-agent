@@ -28,7 +28,7 @@ public class CommandLogsPublisher {
     public void sendCommandLogData(CommandLogMessage message, Map<String, String> topicDetails) {
         String topicString = solaceConfiguration.getTopicPrefix(topicDetails.get("orgId")) +
                 String.format("commandLogs/v1/%s", topicDetails.get(Command.COMMAND_CORRELATION_ID));
-        log.debug("Sending command log data to topic: {}", topicString);
+        log.info("Sending command log data to topic: {}", topicString);
         solacePublisher.publish(message, topicString);
     }
 }

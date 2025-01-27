@@ -36,7 +36,7 @@ public class CommandPublisher {
                 String.format("%scommandResponse/v1/%s",
                         solaceConfiguration.getTopicPrefix(topicDetails.get("orgId")),
                         topicDetails.get(Command.COMMAND_CORRELATION_ID));
-        log.debug("Sending config push response to topic: {}", topicString);
+        log.info("Sending config push response to topic: {}", topicString);
         solacePublisher.publish(message, topicString);
     }
 }
