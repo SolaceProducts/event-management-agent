@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.route.delegate.ConfluentSchemaRegistryRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate.KafkaRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.route.delegate.DataCollectionFileWriterDelegateImpl;
@@ -36,6 +37,9 @@ class ScanManagerTest {
 
     @Mock
     MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
+
+    @Mock
+    private EventPortalProperties eventPortalProperties;
 
     @InjectMocks
     ScanManager scanManager;
@@ -165,6 +169,7 @@ class ScanManagerTest {
             when(scanService.singleScan(
                     SingleScanSpecification
                             .builder()
+                            .orgId("orgId")
                             .groupId("groupId")
                             .scanId("scanId")
                             .traceId("traceId")
