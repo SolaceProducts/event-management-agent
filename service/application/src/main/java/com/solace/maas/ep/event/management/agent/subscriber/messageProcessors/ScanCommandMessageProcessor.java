@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -45,6 +47,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     @Override
     public void processMessage(ScanCommandMessage message) {
         MDC.clear();
+        Validate.notBlank(message.getOrgId(), "Organization ID cannot be null or empty");
         String scanId = StringUtils.isEmpty(message.getScanId()) ? UUID.randomUUID().toString() : message.getScanId();
         meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED, SCAN_ID_TAG, scanId).increment();
 

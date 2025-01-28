@@ -28,6 +28,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -100,7 +101,7 @@ public class ScanService {
      * @return The id of the scan.
      */
     public String singleScan(SingleScanSpecification singleScanSpecification) {
-
+        Validate.notBlank(singleScanSpecification.getOrgId(), "Organization ID cannot be null or empty");
         String scanId = singleScanSpecification.getScanId();
         String traceId = singleScanSpecification.getTraceId();
         String orgId = singleScanSpecification.getOrgId();
@@ -249,6 +250,8 @@ public class ScanService {
                                String messagingServiceId,
                                String scanTypes,
                                ScanStatus status) {
+
+        Validate.notBlank(orgId, "Organization ID cannot be null or empty");
         producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
@@ -265,6 +268,8 @@ public class ScanService {
 
     protected CompletableFuture<Exchange> scanAsync(String orgId, String groupId, String scanId, String traceId, String actorId,
                                                     RouteEntity route, String messagingServiceId) {
+
+        Validate.notBlank(orgId, "Organization ID cannot be null or empty");
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);

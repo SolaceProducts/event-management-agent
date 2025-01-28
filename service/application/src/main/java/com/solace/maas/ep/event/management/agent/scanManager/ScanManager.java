@@ -18,6 +18,7 @@ import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegat
 import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,7 @@ public class ScanManager {
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
+        Validate.notBlank(scanRequestBO.getOrgId(), " Organization ID cannot be null or empty");
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
         String scanId = scanRequestBO.getScanId();
         String traceId = scanRequestBO.getTraceId();
@@ -130,6 +132,7 @@ public class ScanManager {
 
     public void handleError(Exception e, ScanCommandMessage message) {
 
+        Validate.notBlank(message.getOrgId()," Organization ID cannot be null or empty");
         if (scanStatusPublisherOpt.isEmpty()) {
             return;
         }

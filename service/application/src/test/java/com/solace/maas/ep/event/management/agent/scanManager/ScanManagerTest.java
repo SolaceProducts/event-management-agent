@@ -1,7 +1,6 @@
 package com.solace.maas.ep.event.management.agent.scanManager;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
-import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.route.delegate.ConfluentSchemaRegistryRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate.KafkaRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.route.delegate.DataCollectionFileWriterDelegateImpl;
@@ -34,9 +33,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 class ScanManagerTest {
-
-    @Mock
-    EventPortalProperties eventPortalProperties;
 
     @Mock
     MessagingServiceDelegateServiceImpl messagingServiceDelegateService;

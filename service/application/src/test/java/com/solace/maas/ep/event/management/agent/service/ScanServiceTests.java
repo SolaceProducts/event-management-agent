@@ -2,7 +2,6 @@ package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
-import com.solace.maas.ep.event.management.agent.logging.StreamingAppender;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
@@ -17,7 +16,6 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepository;
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.SingleScanSpecification;
-import com.solace.maas.ep.event.management.agent.service.logging.LoggingService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -61,12 +59,6 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("CPD-START")
 public class ScanServiceTests {
     private final String routeId = UUID.randomUUID().toString();
-
-    @Mock
-    LoggingService loggingService;
-
-    @Mock
-    StreamingAppender streamingAppender;
 
     @Mock
     private ScanRepository scanRepository;
