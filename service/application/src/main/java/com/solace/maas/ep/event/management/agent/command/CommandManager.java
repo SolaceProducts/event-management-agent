@@ -136,6 +136,7 @@ public class CommandManager {
                         attachErrorToTerraformCommand = true;
                         Path executionLog = executeTerraformCommand(request, command, envVars);
                         if (executionLog != null) {
+                            // Only stream logs for self-managed EMAs not in standalone mode
                             if (commandLogStreamingProcessorOpt.isPresent()) {
                                 streamCommandExecutionLogToEpCore(request, command, executionLog);
                             }
@@ -211,7 +212,6 @@ public class CommandManager {
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
                 COMMAND_CORRELATION_ID, requestBO.getCommandCorrelationId()
         );
-        log.info("TEST LOG: orgId of requestBO: {}", requestBO.getOrgId());
         CommandMessage response = new CommandMessage(requestBO.getServiceId(),
                 requestBO.getCommandCorrelationId(),
                 requestBO.getContext(),
