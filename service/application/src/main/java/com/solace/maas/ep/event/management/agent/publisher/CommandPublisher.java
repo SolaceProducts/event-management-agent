@@ -31,7 +31,6 @@ public class CommandPublisher {
      */
 
     public void sendCommandResponse(MOPMessage message, Map<String, String> topicDetails) {
-
         String topicString =
                 String.format("%scommandResponse/v1/%s",
                         solaceConfiguration.getTopicPrefix(topicDetails.get("orgId")),

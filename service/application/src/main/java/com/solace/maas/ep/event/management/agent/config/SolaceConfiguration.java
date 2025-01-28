@@ -51,26 +51,17 @@ public class SolaceConfiguration {
 
     public String getTopicPrefix(String orgId) {
         if (StringUtils.isEmpty(orgId)) {
-            log.warn("Attempted to get topic prefix with empty orgId. Defaulting to application properties org ID {}",
+            log.debug("Attempted to get topic prefix with empty orgId. Defaulting to application properties org ID {}",
                     eventPortalProperties.getOrganizationId());
             orgId = eventPortalProperties.getOrganizationId();
         }
-        if (topicPrefix == null) {
-            topicPrefix = String.format(TOPIC_PREFIX_FORMAT,
-                    orgId,
-                    eventPortalProperties.getRuntimeAgentId());
-        }
-        return topicPrefix;
+        return String.format(TOPIC_PREFIX_FORMAT,
+                orgId,
+                eventPortalProperties.getRuntimeAgentId());
     }
 
     public String getTopicPrefix() {
-
-        if (topicPrefix == null) {
-            topicPrefix = String.format(TOPIC_PREFIX_FORMAT,
-                    eventPortalProperties.getOrganizationId(),
-                    eventPortalProperties.getRuntimeAgentId());
-        }
-        return topicPrefix;
+        return getTopicPrefix(null);
     }
 
     @Bean

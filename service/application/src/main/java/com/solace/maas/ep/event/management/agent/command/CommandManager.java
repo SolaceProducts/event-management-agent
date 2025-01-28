@@ -110,7 +110,7 @@ public class CommandManager {
     @SuppressWarnings("PMD")
     private void configPush(CommandRequest request) {
         List<Path> executionLogFilesToClean = new ArrayList<>();
-        boolean attacheErrorToTerraformCommand = false;
+        boolean attachErrorToTerraformCommand = false;
         try {
             // if the serviceId is not found, messagingServiceDelegateService will most likely throw an exception (which is not guaranteed
             // based on the interface definition) and we need to catch it here.
@@ -129,11 +129,11 @@ public class CommandManager {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
-                    attacheErrorToTerraformCommand = false;
+                    attachErrorToTerraformCommand = false;
                     if (command.getCommandType() == semp) {
                         executeSempCommand(command, solaceClient);
                     } else if (command.getCommandType() == terraform) {
-                        attacheErrorToTerraformCommand = true;
+                        attachErrorToTerraformCommand = true;
                         Path executionLog = executeTerraformCommand(request, command, envVars);
                         if (executionLog != null) {
                             if (commandLogStreamingProcessorOpt.isPresent()) {
@@ -152,7 +152,7 @@ public class CommandManager {
             }
         } catch (Exception e) {
             log.error("ConfigPush command not executed successfully", e);
-            attachErrorLogToCommand(attacheErrorToTerraformCommand, e, request);
+            attachErrorLogToCommand(attachErrorToTerraformCommand, e, request);
         } finally {
             try {
                 finalizeAndSendResponse(request);
@@ -211,6 +211,7 @@ public class CommandManager {
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
                 COMMAND_CORRELATION_ID, requestBO.getCommandCorrelationId()
         );
+        log.info("TEST LOG: orgId of requestBO: {}", requestBO.getOrgId());
         CommandMessage response = new CommandMessage(requestBO.getServiceId(),
                 requestBO.getCommandCorrelationId(),
                 requestBO.getContext(),
