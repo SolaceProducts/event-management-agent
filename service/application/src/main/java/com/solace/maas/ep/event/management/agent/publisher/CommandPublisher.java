@@ -29,13 +29,11 @@ public class CommandPublisher {
      * The topic for command response:
      * sc/ep/runtime/{orgId}/{runtimeAgentId}/commandResponse/v1/{commandCorrelationId}
      */
-
     public void sendCommandResponse(MOPMessage message, Map<String, String> topicDetails) {
         String topicString =
                 String.format("%scommandResponse/v1/%s",
                         solaceConfiguration.getTopicPrefix(topicDetails.get("orgId")),
                         topicDetails.get(Command.COMMAND_CORRELATION_ID));
-        log.info("Sending config push response to topic: {}", topicString);
         solacePublisher.publish(message, topicString);
     }
 }
