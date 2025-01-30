@@ -9,6 +9,7 @@ import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoa
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.SingleScanSpecification;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.SneakyThrows;
@@ -35,10 +36,10 @@ import static org.mockito.Mockito.when;
 class ScanManagerTest {
 
     @Mock
-    EventPortalProperties eventPortalProperties;
+    MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
 
     @Mock
-    MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
+    private EventPortalProperties eventPortalProperties;
 
     @InjectMocks
     ScanManager scanManager;
@@ -63,11 +64,21 @@ class ScanManagerTest {
         when(messagingServiceDelegateService.getMessagingServiceById("id"))
                 .thenReturn(messagingServiceEntity);
 
-        when(scanService.singleScan(List.of(), "groupId", "scanId", "traceId", "actorId",
-                mock(MessagingServiceEntity.class), "runtimeAgent1"))
-                .thenReturn(Mockito.anyString());
+        when(scanService.singleScan(
+                SingleScanSpecification
+                        .builder()
+                        .groupId("groupId")
+                        .scanId("scanId")
+                        .traceId("traceId")
+                        .actorId("actorId")
+                        .messagingServiceEntity(mock(MessagingServiceEntity.class))
+                        .runtimeAgentId("runtimeAgent1")
+                        .routeBundles(List.of())
+                        .build()
+        )).thenReturn(Mockito.anyString());
 
         ScanRequestBO scanRequestBO = new ScanRequestBO(
+                "orgId",
                 "id",
                 "scanId",
                 "traceId",
@@ -78,6 +89,7 @@ class ScanManagerTest {
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
         ScanRequestBO scanRequestBOTopics = new ScanRequestBO(
+                "orgId",
                 "id",
                 "scanId",
                 "traceId",
@@ -88,6 +100,7 @@ class ScanManagerTest {
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOTopics));
 
         ScanRequestBO scanRequestBOConsumerGroups = new ScanRequestBO(
+                "orgId",
                 "id",
                 "scanId",
                 "traceId",
@@ -105,6 +118,7 @@ class ScanManagerTest {
         String confluentSchemaRegistryId = "confluentId";
 
         ScanRequestBO scanRequestBO = new ScanRequestBO(
+                "orgId",
                 messagingServiceId, "scanId", "traceId", "actorId",
                 List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
                 List.of("FILE_WRITER"));
@@ -151,10 +165,20 @@ class ScanManagerTest {
                     .thenReturn(destinations);
             when(kafkaRouteDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
-            when(scanService.singleScan(List.of(), "groupId", "scanId", "traceId", "actorId",
-                    mock(MessagingServiceEntity.class), "runtimeAgent1"))
-                    .thenReturn(Mockito.anyString());
 
+            when(scanService.singleScan(
+                    SingleScanSpecification
+                            .builder()
+                            .orgId("orgId")
+                            .groupId("groupId")
+                            .scanId("scanId")
+                            .traceId("traceId")
+                            .actorId("actorId")
+                            .messagingServiceEntity(mock(MessagingServiceEntity.class))
+                            .runtimeAgentId("runtimeAgent1")
+                            .routeBundles(List.of())
+                            .build()
+            )).thenReturn(Mockito.anyString());
             scanManager.scan(scanRequestBO);
 
             assertThatNoException();

@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanDataImportPublishImportScanEventProcessor implements Processor {
-    private final String orgId;
     private final String runtimeAgentId;
     private final ScanDataPublisher scanDataPublisher;
 
@@ -29,7 +28,6 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
 
         this.scanDataPublisher = scanDataPublisher;
 
-        orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
@@ -50,6 +48,7 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
+        String orgId = (String) properties.get(RouteConstants.ORG_ID);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataImportMessage importDataMessage =

@@ -75,11 +75,13 @@ class ScanManagerHandleErrorTest {
     }
 
     private ScanCommandMessage createScanCommandMessage(){
-        return new ScanCommandMessage(
+        ScanCommandMessage msg =  new ScanCommandMessage(
                 "messageServiceId",
                 "scanId",
                 List.of(ScanType.SOLACE_ALL),
                 List.of(ScanDestination.EVENT_PORTAL),
                 null);
+        msg.setOrgId("orgId");
+        return msg;
     }
 }

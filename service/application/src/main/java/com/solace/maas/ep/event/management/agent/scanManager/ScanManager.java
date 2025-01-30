@@ -13,10 +13,12 @@ import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.SingleScanSpecification;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,7 +42,6 @@ public class ScanManager {
     private final MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
     private final ScanService scanService;
     private final String runtimeAgentId;
-    private final String orgId;
     // This is an optional dependency since it is not available in standalone mode.
     // If the bean is not present, the publisher will not be used.
     private final Optional<ScanStatusPublisher> scanStatusPublisherOpt;
@@ -54,10 +55,10 @@ public class ScanManager {
         this.scanService = scanService;
         this.scanStatusPublisherOpt = scanStatusPublisher;
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
-        orgId = eventPortalProperties.getOrganizationId();
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
+        Validate.notBlank(scanRequestBO.getOrgId(), " Organization ID cannot be null or empty");
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
         String scanId = scanRequestBO.getScanId();
         String traceId = scanRequestBO.getTraceId();
@@ -68,6 +69,7 @@ public class ScanManager {
         MDC.put(RouteConstants.TRACE_ID, traceId);
         MDC.put(RouteConstants.ACTOR_ID, actorId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
+        MDC.put(RouteConstants.ORG_ID, scanRequestBO.getOrgId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
@@ -114,11 +116,23 @@ public class ScanManager {
                         .toList().stream()
                 ).toList().stream().flatMap(List::stream).toList();
 
-        return scanService.singleScan(routes, groupId, scanId, traceId, actorId, messagingServiceEntity, runtimeAgentId);
+        return scanService.singleScan(
+                SingleScanSpecification.builder()
+                        .routeBundles(routes)
+                        .orgId(scanRequestBO.getOrgId())
+                        .groupId(groupId)
+                        .scanId(scanId)
+                        .traceId(traceId)
+                        .actorId(actorId)
+                        .messagingServiceEntity(messagingServiceEntity)
+                        .runtimeAgentId(runtimeAgentId)
+                        .build()
+        );
     }
 
     public void handleError(Exception e, ScanCommandMessage message) {
 
+        Validate.notBlank(message.getOrgId()," Organization ID cannot be null or empty");
         if (scanStatusPublisherOpt.isEmpty()) {
             return;
         }
@@ -137,7 +151,7 @@ public class ScanManager {
         );
 
         Map<String, String> topicVars = Map.of(
-                "orgId", orgId,
+                "orgId", message.getOrgId(),
                 "runtimeAgentId", runtimeAgentId
         );
         scanStatusPublisher.sendOverallScanStatus(response, topicVars);
@@ -162,8 +176,8 @@ public class ScanManager {
 
     public boolean isScanComplete(String scanId) {
         if (ObjectUtils.isEmpty(scanId)) {
-           throw new IllegalArgumentException("Scan ID cannot be null or empty");
+            throw new IllegalArgumentException("Scan ID cannot be null or empty");
         }
-        return  scanService.isScanComplete(scanId);
+        return scanService.isScanComplete(scanId);
     }
 }

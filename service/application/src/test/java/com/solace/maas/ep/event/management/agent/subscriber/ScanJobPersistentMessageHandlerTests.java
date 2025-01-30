@@ -9,13 +9,16 @@ import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
+import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.ScanCommandMessageProcessor;
 import com.solace.messaging.MessagingService;
 import com.solace.messaging.receiver.InboundMessage;
 import com.solace.messaging.receiver.PersistentMessageReceiver;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 
 import static com.solace.maas.ep.common.model.ScanDestination.EVENT_PORTAL;
+import static com.solace.maas.ep.common.model.ScanDestination.FILE_WRITER;
 import static com.solace.maas.ep.common.model.ScanType.SOLACE_ALL;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,26 +99,62 @@ class ScanJobPersistentMessageHandlerTests {
         solacePersistentMessageHandler.setMessageHandlerObserver(messageHandlerObserver);
     }
 
+    @Test
+    void testScanManagerIsInvokedWithCorrectScanRequest() {
+        ArgumentCaptor<ScanRequestBO> captor = ArgumentCaptor.forClass(ScanRequestBO.class);
+        setupMocks(true);
+        solacePersistentMessageHandler.onMessage(inboundMessage);
+        await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
+        verify(scanManager).scan(captor.capture());
+        ScanRequestBO capturedArgument = captor.getValue();
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(capturedArgument.getOrgId()).isEqualTo("orgId");
+        softly.assertThat(capturedArgument.getMessagingServiceId()).isEqualTo("messagingServiceId");
+        softly.assertThat(capturedArgument.getScanId()).isEqualTo("scanId");
+        softly.assertThat(capturedArgument.getScanTypes()).containsExactly(SOLACE_ALL.name());
+        softly.assertThat(capturedArgument.getDestinations()).contains(EVENT_PORTAL.name(), FILE_WRITER.name());
+        softly.assertAll();
+
+        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
+
+
+    }
+
+
+    @Test
+    void testOnFailureIsInvokedWithCorrectScanCommandMessage() {
+        ArgumentCaptor<ScanCommandMessage> captor = ArgumentCaptor.forClass(ScanCommandMessage.class);
+        setupMocksForScanFailure();
+        solacePersistentMessageHandler.onMessage(inboundMessage);
+        await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
+        verify(scanCommandMessageProcessor).onFailure(any(), captor.capture());
+        ScanCommandMessage capturedArgument = captor.getValue();
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(capturedArgument.getOrgId()).isEqualTo("orgId");
+        softly.assertThat(capturedArgument.getMessagingServiceId()).isEqualTo("messagingServiceId");
+        softly.assertThat(capturedArgument.getScanId()).isEqualTo("scanId");
+        softly.assertThat(capturedArgument.getScanTypes()).containsExactly(SOLACE_ALL);
+        softly.assertAll();
+
+        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
+        verify(scanCommandMessageProcessor, times(1)).onFailure(any(), any());
+
+
+    }
+
     // Test that the message handler is able to process a scan command message without an observer,
     // which will be the case when EMA is executed and not as unit / it test
     @Test
     void testPersistentMessageHandlerScanCommandMsgAckedWithoutObserver() {
         solacePersistentMessageHandler.setMessageHandlerObserver(null);
-        ScanCommandMessage scanCommandMessage =
-                new ScanCommandMessage("messagingServiceId",
-                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
-        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
-        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
-                ScanCommandMessage.class.getCanonicalName()
-        );
-        when(scanManager.scan(any())).thenReturn("scanId");
-        when(scanManager.isScanComplete("scanId")).thenReturn(true);
+        setupMocks(true);
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // we have to wait now for a second as there is no observer being notified
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-           throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
         verify(scanCommandMessageProcessor, times(1)).processMessage(any());
 
@@ -123,15 +163,7 @@ class ScanJobPersistentMessageHandlerTests {
 
     @Test
     void testPersistentMessageHandlerScanCommandMsgAcked() {
-        ScanCommandMessage scanCommandMessage =
-                new ScanCommandMessage("messagingServiceId",
-                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
-        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
-        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
-                ScanCommandMessage.class.getCanonicalName()
-        );
-        when(scanManager.scan(any())).thenReturn("scanId");
-        when(scanManager.isScanComplete("scanId")).thenReturn(true);
+        setupMocks(true);
         solacePersistentMessageHandler.onMessage(inboundMessage);
 
         //happy path - the message should be processed and acked
@@ -143,30 +175,20 @@ class ScanJobPersistentMessageHandlerTests {
         assertThat(messageHandlerObserver.hasFailedMessage(inboundMessage)).isFalse();
 
         // the scan command message processor should be called once by the persistent message handler
-       verify(scanCommandMessageProcessor, times(1)).processMessage(any());
-       // if the EMA is managed, the waitForScanCompletion method should be called
+        verify(scanCommandMessageProcessor, times(1)).processMessage(any());
+        // if the EMA is managed, the waitForScanCompletion method should be called
         verify(scanCommandMessageProcessor, atLeastOnce()).waitForScanCompletion(any());
         // the message should be acked after the scan is complete
-       verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
+        verify(solacePersistentMessageHandler.getPersistentMessageReceiver(), times(1)).ack(inboundMessage);
     }
 
     @Test
     void testPersistentMessageHandlerScanCommandTimeoutMsgAcked() {
-        ScanCommandMessage scanCommandMessage =
-                new ScanCommandMessage("messagingServiceId",
-                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
-        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
-        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
-                ScanCommandMessage.class.getCanonicalName()
-        );
-        when(scanManager.scan(any())).thenReturn("scanId");
-        // the scan is not complete and will never be ;-)
-        // the waitForScanCompletion method will throw an exception after the timeout
-        when(scanManager.isScanComplete("scanId")).thenReturn(false);
+        setupMocks(false);
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // sleep for a while to allow the scan complete poll interval to pass
 
-        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+5, SECONDS).until(()
+        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec() + 5, SECONDS).until(()
                 -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
         assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
         assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
@@ -191,6 +213,7 @@ class ScanJobPersistentMessageHandlerTests {
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
+        scanCommandMessage.setOrgId("orgId");
         when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanCommandMessage.class.getCanonicalName()
@@ -198,7 +221,7 @@ class ScanJobPersistentMessageHandlerTests {
         when(scanManager.scan(any())).thenThrow(new RuntimeException("Test exception thrown on purpose"));
         solacePersistentMessageHandler.onMessage(inboundMessage);
         // sleep for a while to allow the scan complete poll interval to pass
-        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec()+2, SECONDS).until(()
+        await().atMost(eventPortalProperties.getWaitAckScanCompleteTimeoutSec() + 2, SECONDS).until(()
                 -> messageHandlerObserver.hasAcknowledgedMessage(inboundMessage));
         assertThat(messageHandlerObserver.hasReceivedMessage(inboundMessage)).isTrue();
         assertThat(messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage)).isTrue();
@@ -220,6 +243,30 @@ class ScanJobPersistentMessageHandlerTests {
     }
 
 
+    private void setupMocks(boolean isScanComplete) {
+        ScanCommandMessage scanCommandMessage =
+                new ScanCommandMessage("messagingServiceId",
+                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
+        scanCommandMessage.setOrgId("orgId");
+        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
+        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
+                ScanCommandMessage.class.getCanonicalName()
+        );
+        when(scanManager.scan(any())).thenReturn("scanId");
+        when(scanManager.isScanComplete("scanId")).thenReturn(isScanComplete);
+    }
+
+    private void setupMocksForScanFailure() {
+        ScanCommandMessage scanCommandMessage =
+                new ScanCommandMessage("messagingServiceId",
+                        "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
+        scanCommandMessage.setOrgId("orgId");
+        when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
+        when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
+                ScanCommandMessage.class.getCanonicalName()
+        );
+        when(scanManager.scan(any())).thenThrow(new RuntimeException("Test exception thrown on purpose"));
+    }
 
     private String jsonString(Object object) {
         try {
