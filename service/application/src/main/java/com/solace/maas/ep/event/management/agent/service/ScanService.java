@@ -56,6 +56,7 @@ import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TA
 @Slf4j
 @Service
 public class ScanService {
+    private static final String NULL_ORG_ID_ERROR_MSG = "Organization ID cannot be null or empty";
     private final ScanRepository repository;
 
     private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
@@ -101,7 +102,7 @@ public class ScanService {
      * @return The id of the scan.
      */
     public String singleScan(SingleScanSpecification singleScanSpecification) {
-        Validate.notBlank(singleScanSpecification.getOrgId(), "Organization ID cannot be null or empty");
+        Validate.notBlank(singleScanSpecification.getOrgId(), NULL_ORG_ID_ERROR_MSG);
         String scanId = singleScanSpecification.getScanId();
         String traceId = singleScanSpecification.getTraceId();
         String orgId = singleScanSpecification.getOrgId();
@@ -251,7 +252,7 @@ public class ScanService {
                                String scanTypes,
                                ScanStatus status) {
 
-        Validate.notBlank(orgId, "Organization ID cannot be null or empty");
+        Validate.notBlank(orgId, NULL_ORG_ID_ERROR_MSG);
         producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
@@ -269,7 +270,7 @@ public class ScanService {
     protected CompletableFuture<Exchange> scanAsync(String orgId, String groupId, String scanId, String traceId, String actorId,
                                                     RouteEntity route, String messagingServiceId) {
 
-        Validate.notBlank(orgId, "Organization ID cannot be null or empty");
+        Validate.notBlank(orgId, NULL_ORG_ID_ERROR_MSG);
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
