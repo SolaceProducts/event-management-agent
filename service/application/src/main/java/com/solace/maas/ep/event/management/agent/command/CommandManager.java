@@ -110,7 +110,7 @@ public class CommandManager {
     @SuppressWarnings("PMD")
     private void configPush(CommandRequest request) {
         List<Path> executionLogFilesToClean = new ArrayList<>();
-        boolean attacheErrorToTerraformCommand = false;
+        boolean attachErrorToTerraformCommand = false;
         try {
             // if the serviceId is not found, messagingServiceDelegateService will most likely throw an exception (which is not guaranteed
             // based on the interface definition) and we need to catch it here.
@@ -129,13 +129,14 @@ public class CommandManager {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
-                    attacheErrorToTerraformCommand = false;
+                    attachErrorToTerraformCommand = false;
                     if (command.getCommandType() == semp) {
                         executeSempCommand(command, solaceClient);
                     } else if (command.getCommandType() == terraform) {
-                        attacheErrorToTerraformCommand = true;
+                        attachErrorToTerraformCommand = true;
                         Path executionLog = executeTerraformCommand(request, command, envVars);
                         if (executionLog != null) {
+                            // Only stream logs for self-managed EMAs not in standalone mode
                             if (commandLogStreamingProcessorOpt.isPresent()) {
                                 streamCommandExecutionLogToEpCore(request, command, executionLog);
                             }
@@ -152,7 +153,7 @@ public class CommandManager {
             }
         } catch (Exception e) {
             log.error("ConfigPush command not executed successfully", e);
-            attachErrorLogToCommand(attacheErrorToTerraformCommand, e, request);
+            attachErrorLogToCommand(attachErrorToTerraformCommand, e, request);
         } finally {
             try {
                 finalizeAndSendResponse(request);
@@ -204,19 +205,19 @@ public class CommandManager {
         }
     }
 
-    private void finalizeAndSendResponse(CommandRequest request) {
-        request.determineStatus();
+    private void finalizeAndSendResponse(CommandRequest requestBO) {
+        requestBO.determineStatus();
         Map<String, String> topicVars = Map.of(
-                "orgId", eventPortalProperties.getOrganizationId(),
+                "orgId", requestBO.getOrgId(),
                 "runtimeAgentId", eventPortalProperties.getRuntimeAgentId(),
-                COMMAND_CORRELATION_ID, request.getCommandCorrelationId()
+                COMMAND_CORRELATION_ID, requestBO.getCommandCorrelationId()
         );
-        CommandMessage response = new CommandMessage(request.getServiceId(),
-                request.getCommandCorrelationId(),
-                request.getContext(),
-                request.getStatus(),
-                request.getCommandBundles());
-        response.setOrgId(eventPortalProperties.getOrganizationId());
+        CommandMessage response = new CommandMessage(requestBO.getServiceId(),
+                requestBO.getCommandCorrelationId(),
+                requestBO.getContext(),
+                requestBO.getStatus(),
+                requestBO.getCommandBundles());
+        response.setOrgId(requestBO.getOrgId());
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
         commandPublisher.sendCommandResponse(response, topicVars);
@@ -225,13 +226,12 @@ public class CommandManager {
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, response.getOrgId())
-                .tag(STATUS_TAG, request.getStatus().name())
+                .tag(STATUS_TAG, requestBO.getStatus().name())
                 .register(meterRegistry);
-        jobCycleTime.record(request.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
+        jobCycleTime.record(requestBO.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
-        Path executionLog = null;
         try {
             Validate.isTrue(command.getCommandType().equals(terraform), "Command type must be terraform");
             return terraformManager.execute(request, command, envVars);
@@ -240,7 +240,7 @@ public class CommandManager {
             setCommandError(command, e);
 
         }
-        return executionLog;
+        return null;
     }
 
     private void executeSempCommand(Command command, SolaceHttpSemp solaceClient) {
