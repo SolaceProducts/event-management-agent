@@ -315,6 +315,16 @@ public class ScanService {
         return repository.save(scanEntity);
     }
 
+    /**
+     * Get information pertaining to a Messaging Service scan.
+     *
+     * @param scanId The information of the Messaging Service scan.
+     * @return The saved Messaging Service scan details.
+     */
+    public ScanEntity getById(String scanId) {
+        return repository.findById(scanId).orElse(null);
+    }
+
     protected ScanRecipientHierarchyEntity save(RouteBundleHierarchyStore routeBundleHierarchy, String scanId) {
         ScanRecipientHierarchyEntity scanRecipientHierarchyEntity =
                 ScanRecipientHierarchyEntity.builder()
