@@ -44,9 +44,6 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
         String orgId = (String) exchange.getIn().getHeader(RouteConstants.ORG_ID);
         String scanType = getScanType(exchange);
 
-        // ToDo: remove this before merging the PR
-        log.info("will2 save scan status as complete for scanId {} orgId {} scanType {}", scanId, orgId, scanType);
-
         scanStatusService.save(scanType, scanId, ScanStatus.COMPLETE);
         if (Boolean.TRUE.equals(eventPortalProperties.getManaged()) && scanService.isScanComplete(scanId)) {
             registerScanCycleTime(scanId, orgId);
@@ -60,10 +57,6 @@ public class RouteCompleteProcessorImpl extends RouteCompleteProcessor {
                 .builder(MAAS_EMA_SCAN_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, orgId)
                 .register(meterRegistry);
-
-        // ToDo: remove this before merging the PR
-        log.info("moodi2 xxx scanEntity {} now {} scanEntity.getCreatedAt().toEpochMilli() {} now-createdAt {}",
-                scanEntity, now, scanEntity.getCreatedAt().toEpochMilli(), now - scanEntity.getCreatedAt().toEpochMilli());
 
         jobCycleTime.record(now - scanEntity.getCreatedAt().toEpochMilli(), TimeUnit.MILLISECONDS);
     }
