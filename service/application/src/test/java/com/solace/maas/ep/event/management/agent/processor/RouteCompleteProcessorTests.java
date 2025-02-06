@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.processor;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanStatusEntity;
@@ -39,6 +40,9 @@ public class RouteCompleteProcessorTests {
 
     @Mock
     ProducerTemplate producerTemplate;
+
+    @Mock
+    EventPortalProperties eventPortalProperties;
 
     @InjectMocks
     RouteCompleteProcessorImpl routeCompleteProcessor;
