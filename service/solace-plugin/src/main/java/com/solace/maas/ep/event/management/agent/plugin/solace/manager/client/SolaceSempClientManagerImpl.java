@@ -7,10 +7,15 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
+import javax.net.ssl.SSLException;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -23,6 +28,7 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
 
     @Override
     public SolaceHttpSemp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
+        System.out.println(connectionDetailsEvent.getUrl() +" is the url");
         log.trace("Creating Solace SEMP client for messaging service [{}].",
                 connectionDetailsEvent.getMessagingServiceId());
 
@@ -36,8 +42,22 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                             return new NoSuchElementException(message);
                         });
 
+        WebClient webClient = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+                        .secure(t -> {
+                            try {
+                                t.sslContext(SslContextBuilder.forClient()
+                                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                                        .build());
+                            } catch (SSLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                ))
+                .build();
+
         SempClient sempClient = SempClient.builder()
-                .webClient(WebClient.builder().build())
+                .webClient(webClient)
                 .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
                 .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
                 .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
