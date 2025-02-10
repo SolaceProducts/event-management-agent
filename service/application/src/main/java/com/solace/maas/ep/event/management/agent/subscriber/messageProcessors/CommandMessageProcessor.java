@@ -4,18 +4,22 @@ import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 
 @Slf4j
@@ -71,5 +75,16 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
     @Override
     public void onFailure(Exception e, CommandMessage message) {
         commandManager.handleError(e, message);
+    }
+
+    @Override
+    public void sendCycleTimeMetric(Instant startTime, CommandMessage message) {
+        Instant endTime = Instant.now();
+        long duration = endTime.toEpochMilli() - startTime.toEpochMilli();
+        Timer jobCycleTime = Timer
+                .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
+                .tag(ORG_ID_TAG, message.getOrgId())
+                .register(meterRegistry);
+        jobCycleTime.record(duration, TimeUnit.MILLISECONDS);
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,8 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
+        Boolean isFailed = false;
+        Instant startTime = Instant.now();
         try {
             mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
             String messageAsString = inboundMessage.getPayloadAsString();
@@ -101,9 +104,13 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                 notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PROCESSOR_COMPLETED,inboundMessage);
             }
         } catch (Exception e) {
+            isFailed = true;
             handleProcessingError(mopMessageSubclass, processor, message, e);
             notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.FAILED,inboundMessage);
         } finally {
+            if(!isFailed){
+                processor.sendCycleTimeMetric(startTime, processor.castToMessageClass(message));
+            }
             // for testing purposes, we want to be able to stop processing the message and simulate a failure leading to not acknowledging the message
             if (notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PRE_ACKNOWLEDGED,inboundMessage)) {
                 acknowledgeMessage(inboundMessage);

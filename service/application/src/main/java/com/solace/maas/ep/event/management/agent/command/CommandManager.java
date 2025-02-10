@@ -17,7 +17,6 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.Terraf
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.Validate;
 import org.slf4j.MDC;
@@ -27,17 +26,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
@@ -92,7 +87,6 @@ public class CommandManager {
         Validate.notEmpty(request.getCommandBundles(), "CommandBundles must not be empty");
         Validate.notEmpty(request.getCommandBundles().get(0).getCommands(), "At least one command must be present");
         CommandRequest requestBO = commandMapper.map(request);
-        requestBO.setCreatedTime(Instant.now());
         configPush(requestBO);
     }
 
@@ -225,12 +219,6 @@ public class CommandManager {
         commandPublisher.sendCommandResponse(response, topicVars);
         meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
                 STATUS_TAG, response.getStatus().name()).increment();
-        Timer jobCycleTime = Timer
-                .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
-                .tag(ORG_ID_TAG, response.getOrgId())
-                .tag(STATUS_TAG, requestBO.getStatus().name())
-                .register(meterRegistry);
-        jobCycleTime.record(requestBO.getLifetime(ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {

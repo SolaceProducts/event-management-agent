@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalP
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -14,11 +15,15 @@ import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_CYCLE_TIME;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
@@ -134,5 +139,16 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     @Override
     public void onFailure(Exception e, ScanCommandMessage message) {
         scanManager.handleError(e, message);
+    }
+
+    @Override
+    public void sendCycleTimeMetric(Instant startTime, ScanCommandMessage message) {
+        Instant endTime = Instant.now();
+        long duration = endTime.toEpochMilli() - startTime.toEpochMilli();
+        Timer jobCycleTime = Timer
+                .builder(MAAS_EMA_SCAN_EVENT_CYCLE_TIME)
+                .tag(ORG_ID_TAG, message.getOrgId())
+                .register(meterRegistry);
+        jobCycleTime.record(duration, TimeUnit.MILLISECONDS);
     }
 }
