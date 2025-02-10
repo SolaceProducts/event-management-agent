@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -91,6 +92,7 @@ public class CommandManager {
         Validate.notEmpty(request.getCommandBundles(), "CommandBundles must not be empty");
         Validate.notEmpty(request.getCommandBundles().get(0).getCommands(), "At least one command must be present");
         CommandRequest requestBO = commandMapper.map(request);
+        requestBO.setCreatedTime(Instant.now());
         configPush(requestBO);
     }
 
