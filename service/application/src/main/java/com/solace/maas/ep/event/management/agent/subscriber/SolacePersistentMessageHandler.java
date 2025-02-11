@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.subscriber;
 
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPConstants;
 import com.solace.maas.ep.event.management.agent.subscriber.messageProcessors.MessageProcessor;
 import com.solace.maas.ep.event.management.agent.util.MdcTaskDecorator;
@@ -12,6 +13,7 @@ import com.solace.messaging.resources.Queue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -19,6 +21,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +87,8 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
+        String status = JobStatus.success.name();
+        Instant startTime = Instant.now();
         try {
             mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
             String messageAsString = inboundMessage.getPayloadAsString();
@@ -101,9 +106,13 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                 notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PROCESSOR_COMPLETED,inboundMessage);
             }
         } catch (Exception e) {
+            status = JobStatus.error.name();
             handleProcessingError(mopMessageSubclass, processor, message, e);
             notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.FAILED,inboundMessage);
         } finally {
+            if(ObjectUtils.isNotEmpty(processor)) {
+                processor.sendCycleTimeMetric(startTime, processor.castToMessageClass(message), status);
+            }
             // for testing purposes, we want to be able to stop processing the message and simulate a failure leading to not acknowledging the message
             if (notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PRE_ACKNOWLEDGED,inboundMessage)) {
                 acknowledgeMessage(inboundMessage);
