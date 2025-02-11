@@ -25,6 +25,7 @@ import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
@@ -142,12 +143,13 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
     }
 
     @Override
-    public void sendCycleTimeMetric(Instant startTime, ScanCommandMessage message) {
+    public void sendCycleTimeMetric(Instant startTime, ScanCommandMessage message, String status) {
         Instant endTime = Instant.now();
         long duration = endTime.toEpochMilli() - startTime.toEpochMilli();
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_SCAN_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, message.getOrgId())
+                .tag(STATUS_TAG, status)
                 .register(meterRegistry);
         jobCycleTime.record(duration, TimeUnit.MILLISECONDS);
     }

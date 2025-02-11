@@ -14,5 +14,5 @@ public interface MessageProcessor<T extends MOPMessage> {
 
     void onFailure(Exception e, T message);
 
-    void sendCycleTimeMetric(Instant startTime, T message);
+    void sendCycleTimeMetric(Instant startTime, T message, String status);
 }

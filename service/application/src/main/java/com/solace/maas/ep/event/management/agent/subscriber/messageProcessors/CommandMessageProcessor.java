@@ -78,12 +78,13 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
     }
 
     @Override
-    public void sendCycleTimeMetric(Instant startTime, CommandMessage message) {
+    public void sendCycleTimeMetric(Instant startTime, CommandMessage message, String status) {
         Instant endTime = Instant.now();
         long duration = endTime.toEpochMilli() - startTime.toEpochMilli();
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, message.getOrgId())
+                .tag(STATUS_TAG, status)
                 .register(meterRegistry);
         jobCycleTime.record(duration, TimeUnit.MILLISECONDS);
     }
