@@ -129,7 +129,7 @@ public class PersistentMessageHandlerTests {
         // Wait for the executor to process the message
         await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage));
 
-        verify(commandMessageProcessor, times(1)).castToMessageClass(any());
+        verify(commandMessageProcessor, times(2)).castToMessageClass(any());
         verify(commandMessageProcessor, times(1)).processMessage(any());
 
         // There must be no interaction with scanCommandMessageProcessor
