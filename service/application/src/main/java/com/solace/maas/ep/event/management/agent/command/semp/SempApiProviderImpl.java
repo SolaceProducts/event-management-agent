@@ -60,6 +60,7 @@ public class SempApiProviderImpl implements SempApiProvider {
         apiClient.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         apiClient.setUsername(sempClient.getUsername());
         apiClient.setPassword(sempClient.getPassword());
+        apiClient.setVerifyingSsl(false);
         return apiClient;
     }
 }
