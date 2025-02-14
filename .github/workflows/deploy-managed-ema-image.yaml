@@ -14,10 +14,6 @@ on:
           - development
           - staging
           - production
-      buildNewDevImage:
-        description: "true/false. If deploying to development, set to 'true' to build a new image, otherwise, we'll pull the 'main' image."
-        required: false
-        default: "false"
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -25,49 +21,19 @@ jobs:
 
     steps:
       - name: Configure AWS credentials
-        if: ${{ github.event.inputs.deployEnvironment != 'development' || github.event.inputs.buildNewDevImage == 'false' }}
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
       - name: Login to Amazon ECR
-        if: ${{ github.event.inputs.deployEnvironment != 'development' || github.event.inputs.buildNewDevImage == 'false' }}
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1.6.0
       - name: ECR (Dev) - Pull Main Image
-        if: ${{ github.event.inputs.deployEnvironment == 'development' && github.event.inputs.buildNewDevImage == 'false' }}
+        if: ${{ github.event.inputs.deployEnvironment == 'development' }}
         run: |
           ECR_DEV_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
           docker pull $ECR_DEV_IMAGE
-          echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
-      - name: "Checkout branch"
-        uses: actions/checkout@v3
-        if: ${{ github.event.inputs.deployEnvironment == 'development' && github.event.inputs.buildNewDevImage == 'true' }}
-        with:
-          fetch-depth: 0
-          lfs: true
-      - name: Set up JDK 17
-        if: ${{ github.event.inputs.deployEnvironment == 'development' && github.event.inputs.buildNewDevImage == 'true' }}
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-          cache: 'maven'
-      - name: Set Build Params
-        run: |
-          export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
-          echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
-          echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-      - name: Generate Artifacts
-        run: |
-          mvn install $SKIP_FLAGS_ALL_TESTS --file service/pom.xml
-      - name: ECR (Dev) - Build Image
-        if: ${{ github.event.inputs.deployEnvironment == 'development' && github.event.inputs.buildNewDevImage == 'true' }}
-        working-directory: service/application/docker
-        run: |
-          ./buildEventManagementAgentDocker.sh -t ${{ github.event.inputs.releaseVersion }}
-          ECR_DEV_IMAGE="${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
           echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: ECR (Dev) - Pull Prod Ready Image Tag
         if: ${{ github.event.inputs.deployEnvironment != 'development' }}
