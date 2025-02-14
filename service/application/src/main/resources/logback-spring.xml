@@ -19,6 +19,7 @@
         </sift>
     </appender>
     <springProperty name="agentId" source="event-portal.runtime-agent-id"/>
+    <springProperty name="organizationId" source="event-portal.organization-id"/>
     <springProperty name="USE_JSON_LOG" source="logging.log-in-json-format"/>
     <property name="USE_JSON" value="${USE_JSON_LOG}"/>
 
@@ -26,7 +27,8 @@
         <if condition='property("USE_JSON").equals("true")'>
             <then>
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                    <customFields>{"component":"event-management-agent-${agentId}"}</customFields>
+                    <customFields>{"component":"event-management-agent-${agentId}",
+                        "IS_PUBLIC": "${organizationId ? true : false}"}</customFields>
                     <providers>
                         <stackTrace>
                             <fieldName>stackTrace</fieldName>
