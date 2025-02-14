@@ -28,8 +28,17 @@
         <if condition='property("USE_JSON").equals("true")'>
             <then>
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                    <customFields>{"component":"event-management-agent-${agentId}",
-                        "organization_id": ${organizationId}}</customFields>
+                    <customFields>{"component":"event-management-agent-${agentId}"}</customFields>
+                    <if condition='property("ORG_ID").equals("*")'>
+                        <then>
+                            <customFields>{"component":"event-management-agent-${agentId}",
+                                "is_public": "true"}</customFields>
+                        </then>
+                        <else>
+                            <customFields>{"component":"event-management-agent-${agentId}",
+                                "is_public": "false"}</customFields>
+                        </else>
+                    </if>
                     <providers>
                         <stackTrace>
                             <fieldName>stackTrace</fieldName>
