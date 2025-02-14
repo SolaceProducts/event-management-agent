@@ -28,8 +28,15 @@
         <if condition='property("USE_JSON").equals("true")'>
             <then>
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                    <customFields>{"component":"event-management-agent-${agentId}",
-                        "IS_PUBLIC": "${isDefined('ORG_ID') ? 'true' : 'false'}"}</customFields>
+                    <customFields>{"component":"event-management-agent-${agentId}"}</customFields>
+                    <if condition='isDefined("ORG_ID")'>
+                        <then>
+                            <customFields>{"IS_PUBLIC": "true"}</customFields>
+                        </then>
+                        <else>
+                            <customFields>{"IS_PUBLIC": "false"}</customFields>
+                        </else>
+                    </if>
                     <providers>
                         <stackTrace>
                             <fieldName>stackTrace</fieldName>
