@@ -19,14 +19,25 @@
         </sift>
     </appender>
     <springProperty name="agentId" source="event-portal.runtime-agent-id"/>
+    <springProperty name="organizationId" source="event-portal.organization-id"/>
     <springProperty name="USE_JSON_LOG" source="logging.log-in-json-format"/>
+    <property name="ORG_ID" value="${organizationId}"/>
     <property name="USE_JSON" value="${USE_JSON_LOG}"/>
 
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <if condition='property("USE_JSON").equals("true")'>
             <then>
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                    <customFields>{"component":"event-management-agent-${agentId}"}</customFields>
+                    <if condition='property("ORG_ID").equals("*")'>
+                        <then>
+                            <customFields>{"component":"event-management-agent-${agentId}",
+                                "is_public": "true"}</customFields>
+                        </then>
+                        <else>
+                            <customFields>{"component":"event-management-agent-${agentId}",
+                                "is_public": "false"}</customFields>
+                        </else>
+                    </if>
                     <providers>
                         <stackTrace>
                             <fieldName>stackTrace</fieldName>
