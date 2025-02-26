@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.kafka</groupId>
     <artifactId>kafka-plugin</artifactId>
-    <version>1.6.22-SNAPSHOT</version>
+    <version>1.6.22</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Kafka Plugin</name>
     <description>Solace Event Management Agent - Kafka Plugin</description>
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.22-SNAPSHOT</version>
+            <version>1.6.22</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
