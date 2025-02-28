@@ -119,7 +119,7 @@ public class CommandManager {
 
             // Delete the terraform state file before running the terraform commands
             // It will delete all files in the directory of this context
-            terraformManager.deleteTerraformState(request);
+            //terraformManager.deleteTerraformState(request);
 
             for (CommandBundle bundle : request.getCommandBundles()) {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();

@@ -7,14 +7,19 @@ import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
+import com.solace.client.sempv2.api.RestDeliveryPointApi;
 import com.solace.maas.ep.common.model.SempAclProfileDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclPublishTopicExceptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclSubscribeTopicExceptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempAuthorizationGroupDeletionRequest;
 import com.solace.maas.ep.common.model.SempClientUsernameDeletionRequest;
 import com.solace.maas.ep.common.model.SempEntityType;
+import com.solace.maas.ep.common.model.SempQueueBindingDeletionRequest;
+import com.solace.maas.ep.common.model.SempQueueBindingRequestHeaderDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueTopicSubscriptionDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpRestConsumerDeletionRequest;
 import com.solace.maas.ep.event.management.agent.command.semp.SempApiProvider;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
@@ -87,8 +92,17 @@ public class SempDeleteCommandManager {
             case solaceAclSubscribeTopicException:
                 executeDeleteAclSubscribeTopicException(command, sempApiProvider);
                 break;
-            case solaceAclPublishTopicException:
-                executeDeleteAclPublishTopicException(command, sempApiProvider);
+            case solaceRDP:
+                executeDeleteRdp(command, sempApiProvider);
+                break;
+            case solaceRDPRestConsumer:
+                executeRdpRestConsumer(command, sempApiProvider);
+                break;
+            case solaceRdpQueueBinding:
+                executeRdpQueueBinding(command, sempApiProvider);
+                break;
+            case solaceRdpQueueBindingProtectedRequestHeader, solaceRdpQueueBindingRequestHeader:
+                executeRdpQueueBindingRequestHeader(command, sempApiProvider);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
@@ -146,6 +160,87 @@ public class SempDeleteCommandManager {
         }
     }
 
+
+    private void executeDeleteRdp(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        log.info("SEMP delete: Deleting Rest Delivery Point");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPoint(request.getMsgVpn(), request.getRdpName());
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Rest Delivery Point", request.getRdpName());
+        }
+    }
+
+
+    private void executeRdpRestConsumer(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpRestConsumerDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpRestConsumerDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getRestConsumerName(), "Rest Consumer name must not be empty");
+        log.info("SEMP delete: Deleting Rest Consumer");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPointRestConsumer(request.getMsgVpn(), request.getRdpName(), request.getRestConsumerName());
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Rest Consumer", request.getRdpName());
+        }
+    }
+
+    private void executeRdpQueueBinding(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempQueueBindingDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempQueueBindingDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getQueueBindingName(), "Queue binding name must not be empty");
+        log.info("SEMP delete: Deleting Queue Binding");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBinding(request.getMsgVpn(), request.getRdpName(), request.getQueueBindingName());
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Queue Binding", request.getRdpName());
+        }
+    }
+
+    private void executeRdpQueueBindingRequestHeader(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempQueueBindingRequestHeaderDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempQueueBindingRequestHeaderDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getQueueBindingName(), "Queue binding name must not be empty");
+        if (request.isProtected()) {
+            log.info("SEMP delete: Deleting protected request header");
+            try {
+                restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(request.getMsgVpn(), request.getRdpName(),
+                        request.getQueueBindingName(), request.getHeaderName());
+            } catch (ApiException e) {
+                handleSempApiDeleteException(e, "Protected Request Header", request.getHeaderName());
+            }
+        } else {
+            log.info("SEMP delete: Deleting request header");
+            try {
+                restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(request.getMsgVpn(), request.getRdpName(),
+                        request.getQueueBindingName(), request.getHeaderName());
+            } catch (ApiException e) {
+                handleSempApiDeleteException(e, "Request Header", request.getHeaderName());
+            }
+        }
+
+    }
+
     private void executeDeleteAclSubscribeTopicException(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
         AclProfileApi aclProfileApi = sempApiProvider.getAclProfileApi();
         SempAclSubscribeTopicExceptionDeletionRequest request = objectMapper.readValue(
@@ -158,7 +253,8 @@ public class SempDeleteCommandManager {
 
         log.info("SEMP delete: Deleting ACL subscribe topic exception");
         try {
-            aclProfileApi.deleteMsgVpnAclProfileSubscribeTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf", request.getSubscribeTopic());
+            aclProfileApi.deleteMsgVpnAclProfileSubscribeTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf",
+                    request.getSubscribeTopic());
         } catch (ApiException e) {
             handleSempApiDeleteException(e, "ACL subscribe topic exception", request.getSubscribeTopic());
         }
@@ -233,7 +329,8 @@ public class SempDeleteCommandManager {
         Validate.isTrue(command.getCommandType().equals(CommandType.semp), "Command type must be semp");
         Validate.notNull(sempApiProvider, "SempApiProvider must not be null");
         Validate.notEmpty(command.getParameters(), "Command parameters must not be empty");
-        Validate.notNull(command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE), "Semp delete request must be against a specific " +
+        Validate.notNull(command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE), "Semp delete request must be against a specific" +
+                " " +
                 "semp entity type");
 
     }
