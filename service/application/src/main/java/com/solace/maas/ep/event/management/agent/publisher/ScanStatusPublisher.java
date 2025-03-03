@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublishe
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanOverallStatusException;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanStatusException;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,11 @@ public class ScanStatusPublisher {
      * topic:
      * sc/ep/runtime/{orgId}/{runtimeAgentId}/scan/status/v1/{messagingServiceId}/{scanId}
      */
+    @SneakyThrows
     public void sendOverallScanStatus(ScanStatusMessage message, Map<String, String> topicDetails) {
+
+        Thread.sleep(120_000);
+
         String scanId = topicDetails.get("scanId");
         String scanType = topicDetails.get("scanType");
         String status = topicDetails.get("status");

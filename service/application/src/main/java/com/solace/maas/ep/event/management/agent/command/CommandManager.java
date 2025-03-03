@@ -147,6 +147,8 @@ public class CommandManager {
                     }
                 }
             }
+
+            Thread.sleep(120_000);
         } catch (Exception e) {
             log.error("ConfigPush command not executed successfully", e);
             attachErrorLogToCommand(attachErrorToTerraformCommand, e, request);
