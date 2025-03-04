@@ -19,7 +19,6 @@ import java.util.Map;
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanLogsProcessor implements Processor {
-    private final String orgId;
     private final String runtimeAgentId;
 
     private final ScanLogsPublisher logDataPublisher;
@@ -30,7 +29,6 @@ public class ScanLogsProcessor implements Processor {
 
         this.logDataPublisher = logDataPublisher;
 
-        orgId = eventPortalProperties.getOrganizationId();
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
@@ -42,6 +40,7 @@ public class ScanLogsProcessor implements Processor {
         ILoggingEvent event = (ILoggingEvent) exchange.getIn().getBody();
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
+        String orgId = (String) properties.get(RouteConstants.ORG_ID);
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 

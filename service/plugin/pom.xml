@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.6.20-SNAPSHOT</version>
+        <version>1.6.24-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.6.20-SNAPSHOT</version>
+    <version>1.6.24-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Plugin</name>
     <description>Solace Event Management Agent - Plugin</description>
@@ -19,10 +19,18 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <jackson.version>2.16.1</jackson.version>
         <spring-boot.version>3.3.7</spring-boot.version>
+        <netty.version>4.1.118.Final</netty.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.118.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
@@ -37,8 +45,22 @@
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-http</artifactId>
-            <version>1.1.22</version>
+            <version>1.1.27</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.projectreactor.netty</groupId>
+                    <artifactId>reactor-netty-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-http</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-http2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -70,6 +92,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.projectreactor.netty</groupId>
+                    <artifactId>reactor-netty-http</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.projectreactor.netty</groupId>
+                    <artifactId>reactor-netty-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>

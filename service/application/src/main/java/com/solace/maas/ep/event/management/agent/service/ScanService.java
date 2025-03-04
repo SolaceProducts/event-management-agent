@@ -20,6 +20,7 @@ import com.solace.maas.ep.event.management.agent.repository.scan.ScanStatusRepos
 import com.solace.maas.ep.event.management.agent.repository.scan.ScanTypeRepository;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanTypeBO;
+import com.solace.maas.ep.event.management.agent.scanManager.model.SingleScanSpecification;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.MDC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,6 +56,7 @@ import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TA
 @Slf4j
 @Service
 public class ScanService {
+    private static final String NULL_ORG_ID_ERROR_MSG = "Organization ID cannot be null or empty";
     private final ScanRepository repository;
 
     private final ScanRecipientHierarchyRepository scanRecipientHierarchyRepository;
@@ -93,69 +96,22 @@ public class ScanService {
     }
 
     /**
-     * The concept of a RouteBundle is introduced to make chaining routes easier
-     * <p>
-     * Each RouteBundle contains a routeId and scanType for a route to be executed,
-     * plus a list of destinations and recipients.
-     * <p>
-     * A destination is another route that is called after the route described by the routeId
-     * and scanId is completed. Destination routes cannot be chained.
-     * <p>
-     * A recipient is another RouteBundle and is the mechanism by which routes are chained
-     * together into a scan.
-     * <p>
-     * The following code is an example of how 3 routes can be chained together for a single scan.
-     * <p>
-     * RouteBundle fileWriterDestination = RouteBundle.builder()
-     * .destinations(List.of())
-     * .scanType("")
-     * .routeId("seda:dataCollectionFileWrite")
-     * .recipients(List.of())
-     * .messagingServiceId(myMessagingService.getId())
-     * .firstRouteInChain(false)
-     * .build();
-     * <p>
-     * RouteBundle loggingDestination = RouteBundle.builder()
-     * .destinations(List.of())
-     * .scanType("")
-     * .routeId("log:test")
-     * .recipients(List.of())
-     * .messagingServiceId(myMessagingService.getId())
-     * .firstRouteInChain(false)
-     * .build();
-     * <p>
-     * RouteBundle solaceSubscriptionConfiguration = RouteBundle.builder()
-     * .destinations(List.of(fileWriterDestination))
-     * .scanType("subscriptionConfiguration")
-     * .routeId("solaceSubscriptionConfiguration")
-     * .recipients(List.of())
-     * .messagingServiceId(myMessagingService.getId())
-     * .firstRouteInChain(false)
-     * .build();
-     * <p>
-     * RouteBundle solaceQueueListing = RouteBundle.builder()
-     * .destinations(List.of(loggingDestination))
-     * .scanType("queueListing")
-     * .routeId("solaceDataPublisher")
-     * .recipients(List.of(solaceSubscriptionConfiguration))
-     * .messagingServiceId(myMessagingService.getId())
-     * .firstRouteInChain(true)
-     * .build();
-     * <p>
-     * RouteBundle solaceQueueConfiguration = RouteBundle.builder()
-     * .destinations(List.of(fileWriterDestination))
-     * .scanType("queueConfiguration")
-     * .routeId("solaceQueueConfiguration")
-     * .recipients(List.of())
-     * .messagingServiceId(myMessagingService.getId())
-     * .firstRouteInChain(true)
-     * .build();
+     * Initiates a single scan for a Messaging Service.
      *
-     * @param routeBundles - see description above
+     * @param singleScanSpecification The specification for the single scan.
      * @return The id of the scan.
      */
-    public String singleScan(List<RouteBundle> routeBundles, String groupId, String scanId, String traceId, String actorId,
-                             MessagingServiceEntity messagingServiceEntity, String runtimeAgentId) {
+    public String singleScan(SingleScanSpecification singleScanSpecification) {
+        Validate.notBlank(singleScanSpecification.getOrgId(), NULL_ORG_ID_ERROR_MSG);
+        String scanId = singleScanSpecification.getScanId();
+        String traceId = singleScanSpecification.getTraceId();
+        String orgId = singleScanSpecification.getOrgId();
+        List<RouteBundle> routeBundles = singleScanSpecification.getRouteBundles();
+        String actorId = singleScanSpecification.getActorId();
+        MessagingServiceEntity messagingServiceEntity = singleScanSpecification.getMessagingServiceEntity();
+        String runtimeAgentId = singleScanSpecification.getRuntimeAgentId();
+        String groupId = singleScanSpecification.getGroupId();
+
         log.info("Scan request [{}], trace ID [{}]: Starting a single scan.", scanId, traceId);
 
         List<String> scanTypes = parseRouteBundle(routeBundles, new ArrayList<>());
@@ -168,7 +124,7 @@ public class ScanService {
         log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
                 scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
-        sendScanStatus(groupId, scanId, traceId, actorId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+        sendScanStatus(orgId, groupId, scanId, traceId, actorId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
                 StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
@@ -185,7 +141,7 @@ public class ScanService {
 
             updateScan(route, routeBundle, returnedScanEntity);
 
-            scanAsync(groupId, scanEntityId, traceId, actorId, route, routeBundle.getMessagingServiceId());
+            scanAsync(orgId, groupId, scanEntityId, traceId, actorId, route, routeBundle.getMessagingServiceId());
         }
 
         return scanId;
@@ -287,12 +243,21 @@ public class ScanService {
      * @param scanTypes          The scan types included in the scan request.
      * @param status             The status of scan.
      */
-    public void sendScanStatus(String groupId, String scanId, String traceId, String actorId, String messagingServiceId, String scanTypes,
+    public void sendScanStatus(String orgId,
+                               String groupId,
+                               String scanId,
+                               String traceId,
+                               String actorId,
+                               String messagingServiceId,
+                               String scanTypes,
                                ScanStatus status) {
+
+        Validate.notBlank(orgId, NULL_ORG_ID_ERROR_MSG);
         producerTemplate.send("direct:overallScanStatusPublisher?block=false&failIfNoConsumers=false", exchange -> {
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.ORG_ID, orgId);
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
@@ -302,13 +267,16 @@ public class ScanService {
         meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status.name(), SCAN_ID_TAG, scanId).increment();
     }
 
-    protected CompletableFuture<Exchange> scanAsync(String groupId, String scanId, String traceId, String actorId,
+    protected CompletableFuture<Exchange> scanAsync(String orgId, String groupId, String scanId, String traceId, String actorId,
                                                     RouteEntity route, String messagingServiceId) {
+
+        Validate.notBlank(orgId, NULL_ORG_ID_ERROR_MSG);
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
             // Need to set headers to let the Route have access to the Scan ID, Group ID, and Messaging Service ID.
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
+            exchange.getIn().setHeader(RouteConstants.ORG_ID, orgId);
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
@@ -322,6 +290,7 @@ public class ScanService {
 
             MDC.put(RouteConstants.SCHEDULE_ID, groupId);
             MDC.put(RouteConstants.SCAN_ID, scanId);
+            MDC.put(RouteConstants.ORG_ID, orgId);
             MDC.put(RouteConstants.TRACE_ID, traceId);
             MDC.put(RouteConstants.ACTOR_ID, actorId);
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
@@ -344,6 +313,16 @@ public class ScanService {
      */
     public ScanEntity save(ScanEntity scanEntity) {
         return repository.save(scanEntity);
+    }
+
+    /**
+     * Get information pertaining to a Messaging Service scan.
+     *
+     * @param scanId The information of the Messaging Service scan.
+     * @return The saved Messaging Service scan details.
+     */
+    public ScanEntity getById(String scanId) {
+        return repository.findById(scanId).orElse(null);
     }
 
     protected ScanRecipientHierarchyEntity save(RouteBundleHierarchyStore routeBundleHierarchy, String scanId) {

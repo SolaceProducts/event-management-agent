@@ -32,6 +32,7 @@ public class HeartbeatGenerator {
     private final String topic;
     private final String runtimeAgentVersion;
     private final MeterRegistry meterRegistry;
+    private final EventPortalProperties eventPortalProperties;
 
     public HeartbeatGenerator(SolaceConfiguration solaceConfiguration,
                               EventPortalProperties eventPortalProperties,
@@ -43,11 +44,13 @@ public class HeartbeatGenerator {
         topic = solaceConfiguration.getTopicPrefix() + "heartbeat/v1";
         this.runtimeAgentVersion = getFormattedVersion(buildProperties.getVersion());
         this.meterRegistry = meterRegistry;
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     @Scheduled(fixedRate = 5000)
     public void sendHeartbeat() {
         HeartbeatMessage message = new HeartbeatMessage(runtimeAgentId, Instant.now().toString(), runtimeAgentVersion);
+        message.setOrgId(eventPortalProperties.getOrganizationId());
         boolean result = solacePublisher.publish(message, topic);
         logHealthMetric(message, result);
     }

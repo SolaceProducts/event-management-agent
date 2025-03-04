@@ -129,7 +129,7 @@ public class PersistentMessageHandlerTests {
         // Wait for the executor to process the message
         await().atMost(5, SECONDS).until(() -> messageHandlerObserver.hasInitiatedMessageProcessing(inboundMessage));
 
-        verify(commandMessageProcessor, times(1)).castToMessageClass(any());
+        verify(commandMessageProcessor, times(2)).castToMessageClass(any());
         verify(commandMessageProcessor, times(1)).processMessage(any());
 
         // There must be no interaction with scanCommandMessageProcessor
@@ -142,6 +142,7 @@ public class PersistentMessageHandlerTests {
         ScanCommandMessage scanCommandMessage =
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
+        scanCommandMessage.setOrgId(eventPortalProperties.getOrganizationId());
         when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanCommandMessage.class.getCanonicalName()

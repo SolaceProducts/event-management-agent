@@ -25,7 +25,7 @@ public class EventPortalProperties {
     private String incomingRequestQueueName;
 
     private int waitAckScanCompleteTimeoutSec = 300;
-    private int waitAckScanCompletePollIntervalSec = 10;
+    private int waitAckScanCompletePollIntervalSec = 3;
 
     private GatewayProperties gateway
             = new GatewayProperties("standalone", "standalone", new GatewayMessagingProperties(true, false, List.of()));

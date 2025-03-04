@@ -11,7 +11,6 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.So
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -90,6 +90,28 @@ class CloudManagedEMACommandManagerTests {
     }
 
     @Test
+    void orgIdFromMessageIsUsedThroughout(@TempDir Path basePath) {
+        // We're not going to need this in the flow, so to ensure it's not used, we'll set it to null
+        eventPortalProperties.setOrganizationId(null);
+        doAnswer((Answer<Path>) invocation -> {
+            Command command = invocation.getArgument(1);
+            return CommandManagerTestHelper.setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
+        }).when(terraformManager).execute(any(), any(), any());
+
+        commandManager.execute(message);
+
+        // Wait for the command thread to complete
+        await().atMost(5, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
+
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
+        Map<String, String> topicVariables = topicArgCaptor.getValue();
+        CommandMessage mopMessageResponse = responseCaptor.getValue();
+        // With this, we know the input mop message has orgId set, and it's used until the end of the flow.
+        assertThat(mopMessageResponse.getOrgId()).isEqualTo("myOrg123");
+        assertThat(topicVariables).containsEntry("orgId", mopMessageResponse.getOrgId());
+    }
+
+    @Test
     void noLogsStreamingToEP(@TempDir Path basePath) {
         doAnswer((Answer<Path>) invocation -> {
             Command command = (Command) invocation.getArgument(1);
@@ -109,7 +131,7 @@ class CloudManagedEMACommandManagerTests {
 
         //Logs will be cleaned up anyway
         verify(commandManager, times(1)).deleteExecutionLogFiles(executionLogFileCaptor.capture());
-        Assertions.assertThat(executionLogFileCaptor.getValue())
+        assertThat(executionLogFileCaptor.getValue())
                 .containsExactlyInAnyOrder(
                         basePath.resolve("apply"),
                         basePath.resolve("write_HCL"),

@@ -9,6 +9,7 @@ public class ObservabilityConstants {
     public static final String MAAS_EMA_CONFIG_PUSH_EVENT_RECEIVED = "maas.ema.config_push_event.received";
 
     public static final String MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME = "maas.ema.config_push_event.cycle_time";
+    public static final String MAAS_EMA_SCAN_EVENT_CYCLE_TIME = "maas.ema.scan_event.cycle_time";
 
     public static final String STATUS_TAG = "status";
     public static final String ORG_ID_TAG = "org_id";

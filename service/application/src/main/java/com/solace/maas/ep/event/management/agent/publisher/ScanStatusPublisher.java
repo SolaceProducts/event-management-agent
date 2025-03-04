@@ -43,9 +43,8 @@ public class ScanStatusPublisher {
         String scanId = topicDetails.get("scanId");
         String scanType = topicDetails.get("scanType");
         String status = topicDetails.get("status");
-
         String topicString = String.format("sc/ep/runtime/%s/%s/scan/status/v1/%s/%s",
-                topicDetails.get("orgId"),
+                message.getOrgId(),
                 topicDetails.get("runtimeAgentId"),
                 topicDetails.get("messagingServiceId"),
                 scanId);
@@ -72,7 +71,7 @@ public class ScanStatusPublisher {
         String status = topicDetails.get("status");
 
         String topicString = String.format("sc/ep/runtime/%s/%s/scan/status/v1/%s/%s/%s/%s",
-                topicDetails.get("orgId"),
+                message.getOrgId(),
                 topicDetails.get("runtimeAgentId"),
                 status,
                 topicDetails.get("messagingServiceId"),
