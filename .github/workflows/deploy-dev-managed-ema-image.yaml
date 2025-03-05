@@ -6,13 +6,6 @@ on:
         description: "The tag of the image to push. We'll push the image with tag A.B.C to where it needs to go."
         required: true
         default: "A.B.C"
-      deployEnvironment:
-        description: "Environment to deploy to (development/dev_china)."
-        required: true
-        type: choice
-        options:
-          - development
-          - dev_china
       buildNewDevImage:
         description: "true/false. Set to 'true' to build a new image, otherwise, we'll pull the 'main' image from ECR."
         required: false
@@ -69,14 +62,12 @@ jobs:
           ECR_DEV_IMAGE="${{ github.event.repository.name }}:${{ github.event.inputs.releaseVersion }}"
           echo "ECR_DEV_IMAGE=$ECR_DEV_IMAGE" >> $GITHUB_ENV
       - name: GCR (Dev) - Login
-        if: ${{ github.event.inputs.deployEnvironment == 'development' }}
         uses: docker/login-action@v3
         with:
           registry: gcr.io
           username: _json_key
           password: ${{ secrets.DEV_GCP_SERVICE_ACCOUNT }}
       - name: GCR (Dev) - Tag and Push
-        if: ${{ github.event.inputs.deployEnvironment == 'development' }}
         run: |
           GCR_IMAGE_TAGS_TO_PUSH=(
           "${{ github.event.inputs.releaseVersion }}"
@@ -88,14 +79,12 @@ jobs:
             docker push $GCR_DEV_IMAGE_REPO:$current_tag
           done
       - name: Azure China (Dev) Log in to the docker registry
-        if: ${{ github.event.inputs.deployEnvironment == 'dev_china' }}
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.AZURE_CHINA_DEV_REGISTRY_HOSTNAME }}
           username: ${{ secrets.AZURE_CHINA_DEV_REGISTRY_USERNAME }}
           password: ${{ secrets.AZURE_CHINA_DEV_REGISTRY_PASSWORD }}
       - name: Azure China (Dev) - Tag and Push
-        if: ${{ github.event.inputs.deployEnvironment == 'dev_china' }}
         run: |
           IMAGE_TAGS_TO_PUSH=(
           "${{ github.event.inputs.releaseVersion }}"
