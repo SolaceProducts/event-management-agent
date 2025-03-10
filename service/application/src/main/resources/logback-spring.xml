@@ -89,7 +89,7 @@
 
     <springProfile name="default,mysql,mysql-dev,DEV,TEST">
         <springProperty scope="context" name="LOG_ROOT" source="logging.level.root"/>
-        <root level="${LOG_ROOT:-INFO}">
+        <root level="${LOG_ROOT:-DEBUG}">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RollingFile"/>
             <appender-ref ref="SiftLogger"/>
