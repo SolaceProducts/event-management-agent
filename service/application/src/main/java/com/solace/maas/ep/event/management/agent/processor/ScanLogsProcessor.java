@@ -8,6 +8,7 @@ import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -19,17 +20,14 @@ import java.util.Map;
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanLogsProcessor implements Processor {
-    private final String runtimeAgentId;
-
+    private final EventPortalProperties eventPortalProperties;
     private final ScanLogsPublisher logDataPublisher;
 
     @Autowired
     public ScanLogsProcessor(ScanLogsPublisher logDataPublisher, EventPortalProperties eventPortalProperties) {
         super();
-
         this.logDataPublisher = logDataPublisher;
-
-        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     @Override
@@ -41,6 +39,9 @@ public class ScanLogsProcessor implements Processor {
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String orgId = (String) properties.get(RouteConstants.ORG_ID);
+        if (StringUtils.isEmpty(orgId) && !StringUtils.equals(eventPortalProperties.getOrganizationId(), "*")) {
+            orgId = eventPortalProperties.getOrganizationId();
+        }
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 
@@ -48,7 +49,7 @@ public class ScanLogsProcessor implements Processor {
                 String.format("%s%s", event.getFormattedMessage(), "\n"), event.getTimeStamp());
 
         topicDetails.put("orgId", orgId);
-        topicDetails.put("runtimeAgentId", runtimeAgentId);
+        topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
 

@@ -8,6 +8,7 @@ import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -23,14 +24,13 @@ import java.util.Map;
 public class ScanDataProcessor implements Processor {
 
     private final ScanDataPublisher scanDataPublisher;
-    private final String runtimeAgentId;
+    private final EventPortalProperties eventPortalProperties;
 
     @Autowired
     public ScanDataProcessor(ScanDataPublisher scanDataPublisher, EventPortalProperties eventPortalProperties) {
         super();
-
+        this.eventPortalProperties = eventPortalProperties;
         this.scanDataPublisher = scanDataPublisher;
-        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     @Override
@@ -46,6 +46,9 @@ public class ScanDataProcessor implements Processor {
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         String orgId = (String) properties.get(RouteConstants.ORG_ID);
+        if (StringUtils.isEmpty(orgId) && !StringUtils.equals(eventPortalProperties.getOrganizationId(), "*")) {
+            orgId = eventPortalProperties.getOrganizationId();
+        }
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataMessage scanDataMessage = new ScanDataMessage(
@@ -59,7 +62,7 @@ public class ScanDataProcessor implements Processor {
         );
 
         topicDetails.put("orgId", orgId);
-        topicDetails.put("runtimeAgentId", runtimeAgentId);
+        topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
         topicDetails.put("scanType", scanType);
