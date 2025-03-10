@@ -8,7 +8,7 @@ springdoc:
 logging:
   log-in-json-format: false
   level:
-    root: INFO
+    root: DEBUG
   file:
     name: /tmp/EMA.log
   logback:
