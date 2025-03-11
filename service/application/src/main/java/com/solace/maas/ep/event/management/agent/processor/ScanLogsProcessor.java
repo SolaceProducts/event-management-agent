@@ -4,11 +4,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.solace.maas.ep.common.messages.ScanLogMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.processor.common.ProcessorUtils;
 import com.solace.maas.ep.event.management.agent.publisher.ScanLogsPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -38,10 +38,7 @@ public class ScanLogsProcessor implements Processor {
         ILoggingEvent event = (ILoggingEvent) exchange.getIn().getBody();
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
-        String orgId = (String) properties.get(RouteConstants.ORG_ID);
-        if (StringUtils.isEmpty(orgId) && !StringUtils.equals(eventPortalProperties.getOrganizationId(), "*")) {
-            orgId = eventPortalProperties.getOrganizationId();
-        }
+        String orgId = ProcessorUtils.determineOrganizationId(eventPortalProperties, exchange);
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
 

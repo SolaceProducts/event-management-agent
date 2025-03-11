@@ -4,11 +4,11 @@ import com.solace.maas.ep.common.messages.ScanDataMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanDataException;
+import com.solace.maas.ep.event.management.agent.processor.common.ProcessorUtils;
 import com.solace.maas.ep.event.management.agent.publisher.ScanDataPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -45,10 +45,7 @@ public class ScanDataProcessor implements Processor {
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
-        String orgId = (String) properties.get(RouteConstants.ORG_ID);
-        if (StringUtils.isEmpty(orgId) && !StringUtils.equals(eventPortalProperties.getOrganizationId(), "*")) {
-            orgId = eventPortalProperties.getOrganizationId();
-        }
+        String orgId = ProcessorUtils.determineOrganizationId(eventPortalProperties, exchange);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataMessage scanDataMessage = new ScanDataMessage(
