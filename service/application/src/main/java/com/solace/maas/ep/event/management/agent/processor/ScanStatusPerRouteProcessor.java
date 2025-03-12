@@ -4,6 +4,7 @@ import com.solace.maas.ep.common.messages.ScanDataStatusMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
+import com.solace.maas.ep.event.management.agent.processor.common.ProcessorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -19,12 +20,12 @@ import java.util.Map;
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 @SuppressWarnings("unchecked")
 public class ScanStatusPerRouteProcessor implements Processor {
-    private final String runtimeAgentId;
+    private final EventPortalProperties eventPortalProperties;
 
     @Autowired
     public ScanStatusPerRouteProcessor(EventPortalProperties eventPortalProperties) {
         super();
-        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     @Override
@@ -39,10 +40,9 @@ public class ScanStatusPerRouteProcessor implements Processor {
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
-        String orgId = (String) properties.get(RouteConstants.ORG_ID);
-
+        String orgId = ProcessorUtils.determineOrganizationId(eventPortalProperties, exchange);
         topicDetails.put("orgId", orgId);
-        topicDetails.put("runtimeAgentId", runtimeAgentId);
+        topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
         topicDetails.put("status", status.name());

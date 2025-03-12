@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class ScanDataImportPublishImportScanEventProcessor implements Processor {
-    private final String runtimeAgentId;
     private final ScanDataPublisher scanDataPublisher;
+    private final EventPortalProperties eventPortalProperties;
 
     public ScanDataImportPublishImportScanEventProcessor(ScanDataPublisher scanDataPublisher,
                                                          EventPortalProperties eventPortalProperties) {
 
         this.scanDataPublisher = scanDataPublisher;
+        this.eventPortalProperties = eventPortalProperties;
 
-        runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
     }
 
     @Override
@@ -48,14 +48,20 @@ public class ScanDataImportPublishImportScanEventProcessor implements Processor 
 
         String messagingServiceId = (String) properties.get(RouteConstants.MESSAGING_SERVICE_ID);
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
-        String orgId = (String) properties.get(RouteConstants.ORG_ID);
+
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
-        ScanDataImportMessage importDataMessage =
-                new ScanDataImportMessage(orgId, scanId, traceId, messagingServiceId, runtimeAgentId, scanTypes);
+        ScanDataImportMessage importDataMessage = new ScanDataImportMessage(
+                        eventPortalProperties.getOrganizationId(),
+                        scanId,
+                        traceId,
+                        messagingServiceId,
+                        eventPortalProperties.getRuntimeAgentId(),
+                        scanTypes
+                );
 
-        topicDetails.put("orgId", orgId);
-        topicDetails.put("runtimeAgentId", runtimeAgentId);
+        topicDetails.put("orgId", eventPortalProperties.getOrganizationId());
+        topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
         topicDetails.put("messagingServiceId", messagingServiceId);
         topicDetails.put("scanId", scanId);
         topicDetails.put("isImportOp", String.valueOf(isImportOp));
