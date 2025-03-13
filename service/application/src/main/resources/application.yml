@@ -75,12 +75,12 @@ spring:
     allow-bean-definition-overriding: true
 
 camel:
-  springboot:
-    use-mdc-logging: true
   errorHandling:
     maximumRedeliveries: 10
     maximumRedeliveryDelay: 60000
     redeliveryDelay: 1000
+  main:
+    use-mdc-logging: true
 
 kafka:
   client:

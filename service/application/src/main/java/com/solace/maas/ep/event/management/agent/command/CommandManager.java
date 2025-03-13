@@ -240,7 +240,7 @@ public class CommandManager {
             Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION), "Command operation must be delete");
             // creating a new SempApiProviderImpl instance for each command execution
             // if this becomes a performance issue, we can consider caching the SempApiProviderImpl instance for each serviceId
-            sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient));
+            sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
         } catch (Exception e) {
             log.error(ERROR_EXECUTING_COMMAND, e);
             setCommandError(command, e);

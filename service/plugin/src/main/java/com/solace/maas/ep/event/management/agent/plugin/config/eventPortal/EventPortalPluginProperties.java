@@ -17,4 +17,5 @@ public class EventPortalPluginProperties {
     private String topicPrefix;
 
     private GatewayProperties gateway;
+    private Boolean skipSslVerify = false;
 }

@@ -5,6 +5,7 @@ import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 
@@ -12,14 +13,17 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.So
 public class SempApiProviderImpl implements SempApiProvider {
 
     private final ApiClient apiClient;
+    private final EventPortalProperties eventPortalProperties;
     private AclProfileApi aclProfileApi;
     private AuthorizationGroupApi authorizationGroupApi;
     private ClientUsernameApi clientUsernameApi;
     private QueueApi queueApi;
 
 
-    public SempApiProviderImpl(SolaceHttpSemp solaceClient ) {
+    public SempApiProviderImpl(SolaceHttpSemp solaceClient,
+                               EventPortalProperties eventPortalProperties) {
         this.apiClient = setupApiClient(solaceClient);
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     @Override
@@ -60,6 +64,7 @@ public class SempApiProviderImpl implements SempApiProvider {
         apiClient.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         apiClient.setUsername(sempClient.getUsername());
         apiClient.setPassword(sempClient.getPassword());
+        apiClient.setVerifyingSsl(eventPortalProperties != null && eventPortalProperties.getSkipSslVerify());
         return apiClient;
     }
 }

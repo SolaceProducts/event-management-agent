@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.manager.client;
 
+import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
@@ -7,10 +8,15 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceConfigurationUtil;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
+import javax.net.ssl.SSLException;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -18,7 +24,10 @@ import java.util.NoSuchElementException;
 @Data
 public class SolaceSempClientManagerImpl implements MessagingServiceClientManager<SolaceHttpSemp> {
 
-    public SolaceSempClientManagerImpl() {
+    private final EventPortalPluginProperties eventPortalPluginProperties;
+
+    public SolaceSempClientManagerImpl(EventPortalPluginProperties eventPortalProperties) {
+        this.eventPortalPluginProperties = eventPortalProperties;
     }
 
     @Override
@@ -35,9 +44,21 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                             log.error(message);
                             return new NoSuchElementException(message);
                         });
+        WebClient.Builder webClient = WebClient.builder();
+        if (Boolean.TRUE.equals(eventPortalPluginProperties.getSkipSslVerify())) {
+            webClient.clientConnector(new ReactorClientHttpConnector(HttpClient.create().secure(t -> {
+                        try {
+                            t.sslContext(SslContextBuilder.forClient()
+                                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                                    .build());
+                        } catch (SSLException e) {
+                            throw new RuntimeException("Failed to configure SSL context.", e);
+                        }
+                    }))).build();
+        }
 
         SempClient sempClient = SempClient.builder()
-                .webClient(WebClient.builder().build())
+                .webClient(webClient.build())
                 .username(MessagingServiceConfigurationUtil.getUsername(authenticationDetailsEvent))
                 .password(MessagingServiceConfigurationUtil.getPassword(authenticationDetailsEvent))
                 .msgVpn(MessagingServiceConfigurationUtil.getMsgVpn(connectionDetailsEvent))
