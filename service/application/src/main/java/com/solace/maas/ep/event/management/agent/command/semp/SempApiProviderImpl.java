@@ -8,7 +8,9 @@ import com.solace.client.sempv2.api.QueueApi;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @SuppressWarnings("PMD")
 public class SempApiProviderImpl implements SempApiProvider {
 
@@ -64,7 +66,9 @@ public class SempApiProviderImpl implements SempApiProvider {
         apiClient.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         apiClient.setUsername(sempClient.getUsername());
         apiClient.setPassword(sempClient.getPassword());
-        apiClient.setVerifyingSsl(eventPortalProperties != null && eventPortalProperties.getSkipSslVerify());
+        log.info("SetVerifyingSsl? {} (application properties skipTlsVerify: {})", eventPortalProperties != null && eventPortalProperties.getSkipTlsVerify(),
+                eventPortalProperties.getSkipTlsVerify());
+        apiClient.setVerifyingSsl(eventPortalProperties != null && eventPortalProperties.getSkipTlsVerify());
         return apiClient;
     }
 }

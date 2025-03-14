@@ -45,7 +45,8 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                             return new NoSuchElementException(message);
                         });
         WebClient.Builder webClient = WebClient.builder();
-        if (Boolean.TRUE.equals(eventPortalPluginProperties.getSkipSslVerify())) {
+        if (Boolean.TRUE.equals(eventPortalPluginProperties.getSkipTlsVerify())) {
+            log.info("Skipping TLS verification for Solace SEMP client.");
             webClient.clientConnector(new ReactorClientHttpConnector(HttpClient.create().secure(t -> {
                         try {
                             t.sslContext(SslContextBuilder.forClient()

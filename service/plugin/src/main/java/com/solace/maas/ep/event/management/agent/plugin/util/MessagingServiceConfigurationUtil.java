@@ -40,8 +40,6 @@ public class MessagingServiceConfigurationUtil {
                 .orElse(null);
     }
 
-    // TODO: Get TLS
-
     public static Map<String, String> getCredentialsProperties(AuthenticationDetailsEvent authenticationDetailsEvent) {
         return authenticationDetailsEvent.getCredentials().stream()
                 .findFirst().
