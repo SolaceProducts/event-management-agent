@@ -20,6 +20,8 @@ public class ConnectionDetailsEvent implements Serializable {
 
     private String url;
 
+    private Boolean skipTlsVerify;
+
     private List<AuthenticationDetailsEvent> authenticationDetails;
 
     private List<EventProperty> properties;

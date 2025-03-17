@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.manager.client;
 
-import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
@@ -24,12 +23,6 @@ import java.util.NoSuchElementException;
 @Data
 public class SolaceSempClientManagerImpl implements MessagingServiceClientManager<SolaceHttpSemp> {
 
-    private final EventPortalPluginProperties eventPortalPluginProperties;
-
-    public SolaceSempClientManagerImpl(EventPortalPluginProperties eventPortalProperties) {
-        this.eventPortalPluginProperties = eventPortalProperties;
-    }
-
     @Override
     public SolaceHttpSemp getClient(ConnectionDetailsEvent connectionDetailsEvent) {
         log.trace("Creating Solace SEMP client for messaging service [{}].",
@@ -45,7 +38,7 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                             return new NoSuchElementException(message);
                         });
         WebClient.Builder webClient = WebClient.builder();
-        if (Boolean.TRUE.equals(eventPortalPluginProperties.getSkipTlsVerify())) {
+        if (Boolean.TRUE.equals(connectionDetailsEvent.getSkipTlsVerify())) {
             log.info("Skipping TLS verification for Solace SEMP client.");
             webClient.clientConnector(new ReactorClientHttpConnector(HttpClient.create().secure(t -> {
                         try {

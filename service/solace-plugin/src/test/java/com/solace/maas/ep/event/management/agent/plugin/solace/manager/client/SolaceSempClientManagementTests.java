@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.plugin.solace.manager.client;
 
-import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.AuthenticationDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.ConnectionDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
@@ -8,7 +7,6 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.E
 import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -18,14 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
-public class SolaceSempClientManagementTests {
-    @Autowired
-    private EventPortalPluginProperties properties;
+class SolaceSempClientManagementTests {
 
-    private final SolaceSempClientManagerImpl sempClientManager = new SolaceSempClientManagerImpl(properties);
+    private final SolaceSempClientManagerImpl sempClientManager = new SolaceSempClientManagerImpl();
 
     @Test
-    public void createSolaceSempClient() {
+    void createSolaceSempClient() {
         ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
                 .url("localhost:1000")
                 .messagingServiceId("messaging_service_id")
