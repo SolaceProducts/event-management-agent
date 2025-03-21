@@ -20,7 +20,7 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <jackson.version>2.16.1</jackson.version>
-        <netty-core.version>1.1.25</netty-core.version>
+        <netty-core.version>1.2.4</netty-core.version>
     </properties>
 
     <dependencyManagement>
@@ -116,6 +116,12 @@
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
             <version>${netty-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>4.2.0.RC4</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
