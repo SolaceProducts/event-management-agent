@@ -46,7 +46,7 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
                                     .build());
                         } catch (SSLException e) {
-                            throw new RuntimeException("Failed to configure SSL context.", e);
+                            log.error("Failed to configure SSL context to skip verification on the Solace SEMP client.", e);
                         }
                     }))).build();
         }
