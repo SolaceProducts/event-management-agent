@@ -62,13 +62,14 @@ public class SempApiProviderImpl implements SempApiProvider {
 
     private ApiClient setupApiClient(SolaceHttpSemp solaceClient) {
         SempClient sempClient = solaceClient.getSempClient();
-        ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
-        apiClient.setUsername(sempClient.getUsername());
-        apiClient.setPassword(sempClient.getPassword());
-        log.info("SetVerifyingSsl? {} (application properties skipTlsVerify: {})", eventPortalProperties != null && eventPortalProperties.getSkipTlsVerify(),
+        ApiClient client = new ApiClient();
+        client.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
+        client.setUsername(sempClient.getUsername());
+        client.setPassword(sempClient.getPassword());
+        boolean verifyTls = eventPortalProperties == null || !eventPortalProperties.getSkipTlsVerify();
+        log.info("SetVerifyingSsl? {} (application properties skipTlsVerify: {})", verifyTls,
                 eventPortalProperties == null ? "false" : eventPortalProperties.getSkipTlsVerify());
-        apiClient.setVerifyingSsl(eventPortalProperties != null && eventPortalProperties.getSkipTlsVerify());
-        return apiClient;
+        client.setVerifyingSsl(verifyTls);
+        return client;
     }
 }
