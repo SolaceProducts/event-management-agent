@@ -15,7 +15,7 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <jacksondatabind.version>2.13.4.2</jacksondatabind.version>
         <junit.version>4.13.2</junit.version>
-        <spring-boot.version>3.3.7</spring-boot.version>
+        <spring-boot.version>3.3.10</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jupiter.version>5.10.2</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
