@@ -6,7 +6,8 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import com.solace.maas.ep.event.management.agent.plugin.solace.SolaceTestConfig;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -16,16 +17,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("TEST")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SolaceTestConfig.class)
-public class SolaceSempClientManagementTests {
+class SolaceSempClientManagementTests {
 
     private final SolaceSempClientManagerImpl sempClientManager = new SolaceSempClientManagerImpl();
 
-    @Test
-    public void createSolaceSempClient() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void createSolaceSempClient(boolean skipTlsVerify) {
         ConnectionDetailsEvent connectionDetailsEvent = ConnectionDetailsEvent.builder()
                 .url("localhost:1000")
                 .messagingServiceId("messaging_service_id")
                 .name("conn_name")
+                .skipTlsVerify(skipTlsVerify)
                 .authenticationDetails(List.of(AuthenticationDetailsEvent.builder()
                         .protocol("SEMP")
                         .credentials(List.of(CredentialDetailsEvent.builder()

@@ -22,6 +22,7 @@ public class EventPortalProperties {
     private int commandThreadPoolMaxSize = 10;
     private int commandThreadPoolQueueSize = 1_000;
     private Boolean managed = false;
+    private Boolean skipTlsVerify = false;
     private String incomingRequestQueueName;
 
     private int waitAckScanCompleteTimeoutSec = 300;

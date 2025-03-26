@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.MessagingServicePluginProperties;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.config.plugin.enumeration.MessagingServiceType;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
@@ -54,6 +55,8 @@ public class MessagingServiceDelegateServiceTests {
     private MessagingServiceRepository repository;
     @Mock
     private ServiceAssociationsRepository serviceAssociationsRepository;
+    @Mock
+    private EventPortalProperties eventPortalProperties;
 
     private MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
 
@@ -61,7 +64,7 @@ public class MessagingServiceDelegateServiceTests {
     public void setUp() {
         messagingServiceDelegateService =
                 new MessagingServiceDelegateServiceImpl(repository, entityToEventConverter, eventToEntityConverter,
-                        serviceAssociationsRepository);
+                        serviceAssociationsRepository, eventPortalProperties);
     }
 
     @Test

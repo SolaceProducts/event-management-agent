@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.service;
 
 import com.solace.maas.ep.event.management.agent.config.MessagingServicePluginProperties;
+import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.event.MessagingServiceEvent;
 import com.solace.maas.ep.event.management.agent.plugin.config.MessagingServiceTypeConfig;
 import com.solace.maas.ep.event.management.agent.plugin.manager.client.MessagingServiceClientManager;
@@ -41,18 +42,21 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     private final MessagingServiceEntityToEventConverter entityToEventConverter;
     private final MessagingServiceEventToEntityConverter eventToEntityConverter;
     private final Map<String, Object> messagingServiceClients;
+    private final EventPortalProperties eventPortalProperties;
 
 
     @Autowired
     public MessagingServiceDelegateServiceImpl(MessagingServiceRepository repository,
                                                MessagingServiceEntityToEventConverter entityToEventConverter,
                                                MessagingServiceEventToEntityConverter eventToEntityConverter,
-                                               ServiceAssociationsRepository serviceAssociationsRepository) {
+                                               ServiceAssociationsRepository serviceAssociationsRepository,
+                                               EventPortalProperties eventPortalProperties) {
         this.repository = repository;
         this.entityToEventConverter = entityToEventConverter;
         this.eventToEntityConverter = eventToEntityConverter;
         this.serviceAssociationsRepository = serviceAssociationsRepository;
         messagingServiceClients = new HashMap<>();
+        this.eventPortalProperties = eventPortalProperties;
     }
 
     /**
@@ -154,6 +158,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
                         return new NoSuchElementException(message);
                     });
 
+            connectionDetailsEvent.setSkipTlsVerify(eventPortalProperties.getSkipTlsVerify());
             T messagingServiceClient = (T) clientManager.getClient(connectionDetailsEvent);
             messagingServiceClients.put(messagingServiceId, messagingServiceClient);
 

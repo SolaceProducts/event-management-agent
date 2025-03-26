@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SolaceClientConfigImpl extends MessagingServiceClientConfig {
+
     protected SolaceClientConfigImpl() {
         super("SOLACE", new SolaceSempClientManagerImpl());
     }
