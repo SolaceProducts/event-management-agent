@@ -7,8 +7,8 @@ on:
         required: true
         default: "A.B.C"
       buildNewDevImage:
-        description: "Set to 'true' to build a new image, otherwise, we'll pull the 'main' image from ECR."
-        required: true
+        description: "Check to build a new image from the current code, otherwise, we'll pull the 'main' image from ECR used in releases."
+        required: false
         type: boolean
         default: false
 jobs:
