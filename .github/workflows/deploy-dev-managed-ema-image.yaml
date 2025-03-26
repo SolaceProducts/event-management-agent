@@ -7,9 +7,10 @@ on:
         required: true
         default: "A.B.C"
       buildNewDevImage:
-        description: "true/false. Set to 'true' to build a new image, otherwise, we'll pull the 'main' image from ECR."
-        required: false
-        default: "false"
+        description: "Set to 'true' to build a new image, otherwise, we'll pull the 'main' image from ECR."
+        required: true
+        type: boolean
+        default: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,7 +18,7 @@ jobs:
 
     steps:
       - name: Configure AWS credentials
-        if: ${{ github.event.inputs.buildNewDevImage == 'false' }}
+        if: ${{ github.event.inputs.buildNewDevImage == false}}
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
