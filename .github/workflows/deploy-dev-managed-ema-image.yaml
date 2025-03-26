@@ -7,9 +7,10 @@ on:
         required: true
         default: "A.B.C"
       buildNewDevImage:
-        description: "true/false. Set to 'true' to build a new image, otherwise, we'll pull the 'main' image from ECR."
+        description: "Check to build a new image from the current code, otherwise, we'll pull the 'main' image from ECR used in releases."
         required: false
-        default: "false"
+        type: boolean
+        default: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
