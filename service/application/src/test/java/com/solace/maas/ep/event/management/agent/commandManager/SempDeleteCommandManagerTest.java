@@ -615,7 +615,7 @@ public class SempDeleteCommandManagerTest {
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
-                .parameters(createDeleteRdpParameters(true))
+                .parameters(createDeleteRdpRestConsumerParameters(true))
                 .build();
         sempDeleteCommandManager.execute(cmd, sempApiProvider);
         verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumer("default", "someRdp", "someRestConsumerName");
