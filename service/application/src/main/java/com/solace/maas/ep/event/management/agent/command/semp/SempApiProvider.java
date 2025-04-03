@@ -4,6 +4,7 @@ import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
+import com.solace.client.sempv2.api.RestDeliveryPointApi;
 
 public interface SempApiProvider {
 
@@ -11,5 +12,6 @@ public interface SempApiProvider {
     AuthorizationGroupApi getAuthorizationGroupApi();
     ClientUsernameApi getClientUsernameApi();
     QueueApi getQueueApi();
+    RestDeliveryPointApi getRestDeliveryPointApi();
 
 }
