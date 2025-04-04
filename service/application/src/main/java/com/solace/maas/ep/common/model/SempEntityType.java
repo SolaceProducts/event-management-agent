@@ -6,6 +6,7 @@ public enum SempEntityType {
     solaceAclSubscribeTopicException,
     solaceAclPublishTopicException,
     solaceClientUsername,
+    solaceClientCertificateUsername,
     solaceAuthorizationGroup,
     solaceQueueSubscriptionTopic
 }
