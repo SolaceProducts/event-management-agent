@@ -101,7 +101,8 @@ public class SempDeleteCommandManager {
             case solaceRdpQueueBinding:
                 executeRdpQueueBinding(command, sempApiProvider);
                 break;
-            case solaceRdpQueueBindingProtectedRequestHeader, solaceRdpQueueBindingRequestHeader:
+            case solaceRdpQueueBindingProtectedRequestHeader:
+            case solaceRdpQueueBindingRequestHeader:
                 executeRdpQueueBindingRequestHeader(command, sempApiProvider);
                 break;
             case solaceAclPublishTopicException:

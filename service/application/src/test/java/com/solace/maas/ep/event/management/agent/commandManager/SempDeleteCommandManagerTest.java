@@ -736,7 +736,8 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteRdpQueueBindingRequestHeader() throws ApiException {
         RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
         when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-        when((rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        when((rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any()))
+                .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -797,7 +798,8 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteRdpQueueBindingProtectedRequestHeader() throws ApiException {
         RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
         when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-        when((rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        when((rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any()))
+                .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
