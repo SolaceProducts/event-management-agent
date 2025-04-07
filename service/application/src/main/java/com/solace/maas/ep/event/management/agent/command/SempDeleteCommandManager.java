@@ -78,7 +78,8 @@ public class SempDeleteCommandManager {
             case solaceQueueSubscriptionTopic:
                 executeDeleteSolaceQueueTopicSubscription(command, sempApiProvider);
                 break;
-            case solaceClientUsername, solaceClientCertificateUsername:
+            case solaceClientUsername:
+            case solaceClientCertificateUsername:
                 executeDeleteClientUsername(command, sempApiProvider);
                 break;
             case solaceAuthorizationGroup:

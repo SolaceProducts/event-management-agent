@@ -31,6 +31,7 @@ import static com.solace.maas.ep.common.model.SempEntityType.solaceAclProfile;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAclPublishTopicException;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAclSubscribeTopicException;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAuthorizationGroup;
+import static com.solace.maas.ep.common.model.SempEntityType.solaceClientCertificateUsername;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceClientUsername;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueue;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueueSubscriptionTopic;
@@ -311,6 +312,68 @@ public class SempDeleteCommandManagerTest {
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
     }
 
+    // test DeleteSolaceClientCertificateUsername
+
+    @Test
+    void testDeleteClientCertificateUsernameHappyPath() throws ApiException {
+        ClientUsernameApi clientUsernameApi = Mockito.mock(ClientUsernameApi.class);
+        when(sempApiProvider.getClientUsernameApi()).thenReturn(clientUsernameApi);
+        when((clientUsernameApi).deleteMsgVpnClientUsername(any(), any())).thenReturn(new SempMetaOnlyResponse());
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteClientCertificateUsernameParameters(true))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+    }
+
+    @Test
+    void testDeleteClientCertificateUsernameWithValidationException() throws ApiException {
+        ClientUsernameApi clientUsernameApi = Mockito.mock(ClientUsernameApi.class);
+        when(sempApiProvider.getClientUsernameApi()).thenReturn(clientUsernameApi);
+        when((clientUsernameApi).deleteMsgVpnClientUsername(any(), any())).thenReturn(new SempMetaOnlyResponse());
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteClientCertificateUsernameParameters(false))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verifyNoInteractions(clientUsernameApi);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+    }
+
+    @Test
+    void testDeleteClientCertificateUsernameWithException() throws ApiException {
+        ClientUsernameApi clientUsernameApi = Mockito.mock(ClientUsernameApi.class);
+        when(sempApiProvider.getClientUsernameApi()).thenReturn(clientUsernameApi);
+        when((clientUsernameApi).deleteMsgVpnClientUsername(any(), any())).thenThrow(createaServerErrorApiException());
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteClientCertificateUsernameParameters(true))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+    }
+
+    @Test
+    void testNotFoundDeleteClientCertificateUsername() throws ApiException {
+        ClientUsernameApi clientUsernameApi = Mockito.mock(ClientUsernameApi.class);
+        when(sempApiProvider.getClientUsernameApi()).thenReturn(clientUsernameApi);
+        when((clientUsernameApi).deleteMsgVpnClientUsername(any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteClientCertificateUsernameParameters(true))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+    }
+
     // test DeleteAuthorizationGroup
 
     @Test
@@ -570,6 +633,19 @@ public class SempDeleteCommandManagerTest {
     private Map<String, Object> createDeleteClientUsernameParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceClientUsername.name());
+
+        Map<String, String> data = new HashMap<>();
+        data.put("msgVpn", "default");
+        if (valid) {
+            data.put("clientUsername", "clientUsername");
+        }
+        parameters.put(SEMP_DELETE_DATA, data);
+        return parameters;
+    }
+
+    private Map<String, Object> createDeleteClientCertificateUsernameParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceClientCertificateUsername.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
