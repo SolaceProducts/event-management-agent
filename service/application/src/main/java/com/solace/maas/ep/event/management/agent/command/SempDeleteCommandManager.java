@@ -92,10 +92,10 @@ public class SempDeleteCommandManager {
             case solaceAclSubscribeTopicException:
                 executeDeleteAclSubscribeTopicException(command, sempApiProvider);
                 break;
-            case solaceRDP:
+            case solaceRdp:
                 executeDeleteRdp(command, sempApiProvider);
                 break;
-            case solaceRDPRestConsumer:
+            case solaceRdpRestConsumer:
                 executeDeleteRdpRestConsumer(command, sempApiProvider);
                 break;
             case solaceRdpQueueBinding:

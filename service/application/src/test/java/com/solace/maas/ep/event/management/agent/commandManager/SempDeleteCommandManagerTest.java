@@ -35,11 +35,11 @@ import static com.solace.maas.ep.common.model.SempEntityType.solaceAuthorization
 import static com.solace.maas.ep.common.model.SempEntityType.solaceClientUsername;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueue;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueueSubscriptionTopic;
-import static com.solace.maas.ep.common.model.SempEntityType.solaceRDP;
-import static com.solace.maas.ep.common.model.SempEntityType.solaceRDPRestConsumer;
+import static com.solace.maas.ep.common.model.SempEntityType.solaceRdp;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpQueueBinding;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpQueueBindingProtectedRequestHeader;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpQueueBindingRequestHeader;
+import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpRestConsumer;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_DATA;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_OPERATION;
@@ -841,7 +841,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteRdpParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceRDP.name());
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceRdp.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
@@ -854,7 +854,7 @@ public class SempDeleteCommandManagerTest {
 
     private Map<String, Object> createDeleteRdpRestConsumerParameters(boolean valid) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceRDPRestConsumer.name());
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceRdpRestConsumer.name());
 
         Map<String, String> data = new HashMap<>();
         data.put("msgVpn", "default");
