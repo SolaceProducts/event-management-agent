@@ -7,6 +7,7 @@ import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
+import com.solace.client.sempv2.api.RestDeliveryPointApi;
 import com.solace.maas.ep.common.model.SempAclProfileDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclPublishTopicExceptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclSubscribeTopicExceptionDeletionRequest;
@@ -15,6 +16,8 @@ import com.solace.maas.ep.common.model.SempClientUsernameDeletionRequest;
 import com.solace.maas.ep.common.model.SempEntityType;
 import com.solace.maas.ep.common.model.SempQueueDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueTopicSubscriptionDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpRestConsumerDeletionRequest;
 import com.solace.maas.ep.event.management.agent.command.semp.SempApiProvider;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
@@ -87,6 +90,12 @@ public class SempDeleteCommandManager {
                 break;
             case solaceAclSubscribeTopicException:
                 executeDeleteAclSubscribeTopicException(command, sempApiProvider);
+                break;
+            case solaceRdp:
+                executeDeleteRdp(command, sempApiProvider);
+                break;
+            case solaceRdpRestConsumer:
+                executeDeleteRdpRestConsumer(command, sempApiProvider);
                 break;
             case solaceAclPublishTopicException:
                 executeDeleteAclPublishTopicException(command, sempApiProvider);
@@ -237,6 +246,40 @@ public class SempDeleteCommandManager {
         Validate.notNull(command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE), "Semp delete request must be against a specific " +
                 "semp entity type");
 
+    }
+
+    private void executeDeleteRdp(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        log.info("SEMP delete: Deleting Rest Delivery Point");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPoint(request.getMsgVpn(), request.getRdpName());
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Rest Delivery Point", request.getRdpName());
+        }
+    }
+
+
+    private void executeDeleteRdpRestConsumer(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpRestConsumerDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpRestConsumerDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getRestConsumerName(), "Rest Consumer name must not be empty");
+        log.info("SEMP delete: Deleting Rest Consumer");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPointRestConsumer(request.getMsgVpn(), request.getRdpName(), request.getRestConsumerName());
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Rest Consumer", request.getRdpName());
+        }
     }
 
 
