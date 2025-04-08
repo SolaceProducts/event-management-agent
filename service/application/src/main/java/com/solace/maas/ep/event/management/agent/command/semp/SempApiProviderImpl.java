@@ -5,6 +5,7 @@ import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
+import com.solace.client.sempv2.api.RestDeliveryPointApi;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
@@ -20,7 +21,7 @@ public class SempApiProviderImpl implements SempApiProvider {
     private AuthorizationGroupApi authorizationGroupApi;
     private ClientUsernameApi clientUsernameApi;
     private QueueApi queueApi;
-
+    private RestDeliveryPointApi restDeliveryPointApi;
 
     public SempApiProviderImpl(SolaceHttpSemp solaceClient,
                                EventPortalProperties eventPortalProperties) {
@@ -71,5 +72,13 @@ public class SempApiProviderImpl implements SempApiProvider {
                 eventPortalProperties == null ? "false" : eventPortalProperties.getSkipTlsVerify());
         client.setVerifyingSsl(verifyTls);
         return client;
+    }
+
+    @Override
+    public RestDeliveryPointApi getRestDeliveryPointApi() {
+        if (restDeliveryPointApi == null) {
+            restDeliveryPointApi = new RestDeliveryPointApi(apiClient);
+        }
+        return restDeliveryPointApi;
     }
 }
