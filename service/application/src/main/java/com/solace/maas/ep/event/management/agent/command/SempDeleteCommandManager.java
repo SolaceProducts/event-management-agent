@@ -93,7 +93,7 @@ public class SempDeleteCommandManager {
             case solaceRDP:
                 executeDeleteRdp(command, sempApiProvider);
                 break;
-            case solaceRDPRestConsumer:
+            case solaceRdpRestConsumer:
                 executeDeleteRdpRestConsumer(command, sempApiProvider);
                 break;
             case solaceAclPublishTopicException:
