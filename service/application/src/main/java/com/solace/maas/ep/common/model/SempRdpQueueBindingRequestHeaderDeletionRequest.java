@@ -10,5 +10,5 @@ public class SempRdpQueueBindingRequestHeaderDeletionRequest {
     private String msgVpn;
     private String queueBindingName;
     private String headerName;
-    boolean isProtected;
+    private boolean isProtected;
 }
