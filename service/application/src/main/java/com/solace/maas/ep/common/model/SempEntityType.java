@@ -2,7 +2,7 @@ package com.solace.maas.ep.common.model;
 
 public enum SempEntityType {
     solaceQueue("solaceQueue"),
-    solaceRDP("solaceRDP"),
+    solaceRdp("solaceRdp"),
     solaceRdpRestConsumer("solaceRdpRestConsumer"),
     solaceRdpQueueBinding("solaceRdpQueueBinding"),
     solaceRdpQueueBindingRequestHeader("solaceRdpQueueBindingRequestHeader"),
