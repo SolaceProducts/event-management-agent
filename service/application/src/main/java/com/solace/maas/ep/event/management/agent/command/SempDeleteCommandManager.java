@@ -17,6 +17,8 @@ import com.solace.maas.ep.common.model.SempEntityType;
 import com.solace.maas.ep.common.model.SempQueueDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueTopicSubscriptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpQueueBindingDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpQueueBindingRequestHeaderDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpRestConsumerDeletionRequest;
 import com.solace.maas.ep.event.management.agent.command.semp.SempApiProvider;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
@@ -95,6 +97,13 @@ public class SempDeleteCommandManager {
                 break;
             case solaceRdpRestConsumer:
                 executeDeleteRdpRestConsumer(command, sempApiProvider);
+                break;
+            case solaceRdpQueueBinding:
+                executeRdpQueueBinding(command, sempApiProvider);
+                break;
+            case solaceRdpQueueBindingProtectedRequestHeader:
+            case solaceRdpQueueBindingRequestHeader:
+                executeRdpQueueBindingRequestHeader(command, sempApiProvider);
                 break;
             case solaceAclPublishTopicException:
                 executeDeleteAclPublishTopicException(command, sempApiProvider);
@@ -281,5 +290,49 @@ public class SempDeleteCommandManager {
         }
     }
 
+    private void executeRdpQueueBinding(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpQueueBindingDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpQueueBindingDeletionRequest.class);
 
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getQueueBindingName(), "Queue binding name must not be empty");
+        log.info("SEMP delete: Deleting Queue Binding");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBinding(request.getMsgVpn(), request.getRdpName(), request.getQueueBindingName());
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Queue Binding", request.getRdpName());
+        }
+    }
+
+    private void executeRdpQueueBindingRequestHeader(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpQueueBindingRequestHeaderDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpQueueBindingRequestHeaderDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getQueueBindingName(), "Queue binding name must not be empty");
+        if (request.isProtected()) {
+            log.info("SEMP delete: Deleting protected request header");
+            try {
+                restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(request.getMsgVpn(), request.getRdpName(),
+                        request.getQueueBindingName(), request.getHeaderName());
+            } catch (ApiException e) {
+                handleSempApiDeleteException(e, "Protected Request Header", request.getHeaderName());
+            }
+        } else {
+            log.info("SEMP delete: Deleting request header");
+            try {
+                restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(request.getMsgVpn(), request.getRdpName(),
+                        request.getQueueBindingName(), request.getHeaderName());
+            } catch (ApiException e) {
+                handleSempApiDeleteException(e, "Request Header", request.getHeaderName());
+            }
+        }
+
+    }
 }
