@@ -749,7 +749,12 @@ public class SempDeleteCommandManagerTest {
     void testNotFoundDeleteRdpOauthJwtClaim() throws ApiException {
         RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
         when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                any(),
+                any(),
+                any(),
+                any())
+        ).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
