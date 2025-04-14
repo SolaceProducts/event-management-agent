@@ -37,6 +37,7 @@ import static com.solace.maas.ep.common.model.SempEntityType.solaceClientUsernam
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueue;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueueSubscriptionTopic;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdp;
+import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpOauthJwtClaim;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpQueueBinding;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpQueueBindingProtectedRequestHeader;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdpQueueBindingRequestHeader;
@@ -688,6 +689,82 @@ public class SempDeleteCommandManagerTest {
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
     }
 
+    // test DeleteRdpOauthJwtClaim
+    @Test
+    void testDeleteRdpOauthJwtClaimHappyPath() throws ApiException {
+        RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
+        when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteRdpOauthJwtParameters(true))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                "default",
+                "someRdp",
+                "someRestConsumerName",
+                "someOauthJwtClaimName"
+        );
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+    }
+
+    @Test
+    void testDeleteRdpOauthJwtClaimWithValidationException() throws ApiException {
+        RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
+        when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteRdpOauthJwtParameters(false))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verifyNoInteractions(rdpApi);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+    }
+
+    @Test
+    void testDeleteRdpOauthJwtClaimWithException() throws ApiException {
+        RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
+        when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenThrow(createaServerErrorApiException());
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteRdpOauthJwtParameters(true))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                "default",
+                "someRdp",
+                "someRestConsumerName",
+                "someOauthJwtClaimName"
+        );
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+    }
+
+    @Test
+    void testNotFoundDeleteRdpOauthJwtClaim() throws ApiException {
+        RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
+        when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_DELETE_OPERATION)
+                .parameters(createDeleteRdpOauthJwtParameters(true))
+                .build();
+        sempDeleteCommandManager.execute(cmd, sempApiProvider);
+        verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                "default",
+                "someRdp",
+                "someRestConsumerName",
+                "someOauthJwtClaimName"
+        );
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+    }
+
     // test DeleteRdpQueueBinding
     @Test
     void testDeleteRdpQueueBindingHappyPath() throws ApiException {
@@ -924,6 +1001,21 @@ public class SempDeleteCommandManagerTest {
         data.put("rdpName", "someRdp");
         if (valid) {
             data.put("restConsumerName", "someRestConsumerName");
+        }
+        parameters.put(SEMP_DELETE_DATA, data);
+        return parameters;
+    }
+
+    private Map<String, Object> createDeleteRdpOauthJwtParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_DELETE_ENTITY_TYPE, solaceRdpOauthJwtClaim.name());
+
+        Map<String, String> data = new HashMap<>();
+        data.put("msgVpn", "default");
+        data.put("rdpName", "someRdp");
+        data.put("restConsumerName", "someRestConsumerName");
+        if (valid) {
+            data.put("oauthJwtClaimName", "someOauthJwtClaimName");
         }
         parameters.put(SEMP_DELETE_DATA, data);
         return parameters;

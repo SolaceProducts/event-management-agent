@@ -17,6 +17,7 @@ import com.solace.maas.ep.common.model.SempEntityType;
 import com.solace.maas.ep.common.model.SempQueueDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueTopicSubscriptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpDeletionRequest;
+import com.solace.maas.ep.common.model.SempRdpOauthJwtClaimDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpQueueBindingDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpQueueBindingRequestHeaderDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpRestConsumerDeletionRequest;
@@ -109,6 +110,9 @@ public class SempDeleteCommandManager {
             case solaceAclPublishTopicException:
                 executeDeleteAclPublishTopicException(command, sempApiProvider);
                 break;
+            case solaceRdpOauthJwtClaim:
+                executeDeleteRdpOauthJwtClaims(command, sempApiProvider);
+                break;
             default:
                 throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
         }
@@ -118,7 +122,7 @@ public class SempDeleteCommandManager {
     // This is because we are not logging the entityName for security reasons now
     // We might adapt that in the future to log the entityName based on logging level and properties file
     @SuppressWarnings("PMD")
-    private void handleSempApiDeleteException(ApiException e, String entityType, String entityName) throws ApiException {
+    private void handleSempApiDeleteException(ApiException e, String entityType) throws ApiException {
         // If the entity does not exist, we don't want to consider it an error
         // This is because of the edge case of dangling entities from previous deployment that did not get finalized
         // SEMP does not report a 404 for entities that do not exist, so we have to check the response body
@@ -144,7 +148,7 @@ public class SempDeleteCommandManager {
         try {
             aclProfileApi.deleteMsgVpnAclProfile(request.getMsgVpn(), request.getAclProfileName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "ACL profile", request.getAclProfileName());
+            handleSempApiDeleteException(e, "ACL profile");
         }
     }
 
@@ -161,7 +165,7 @@ public class SempDeleteCommandManager {
         try {
             aclProfileApi.deleteMsgVpnAclProfilePublishTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf", request.getPublishTopic());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "ACL publish topic exception", request.getPublishTopic());
+            handleSempApiDeleteException(e, "ACL publish topic exception");
         }
     }
 
@@ -179,7 +183,7 @@ public class SempDeleteCommandManager {
         try {
             aclProfileApi.deleteMsgVpnAclProfileSubscribeTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf", request.getSubscribeTopic());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "ACL subscribe topic exception", request.getSubscribeTopic());
+            handleSempApiDeleteException(e, "ACL subscribe topic exception");
         }
     }
 
@@ -196,7 +200,7 @@ public class SempDeleteCommandManager {
         try {
             authorizationGroupApi.deleteMsgVpnAuthorizationGroup(request.getMsgVpn(), request.getAuthorizationGroupName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Authorization group", request.getAuthorizationGroupName());
+            handleSempApiDeleteException(e, "Authorization group");
         }
     }
 
@@ -212,7 +216,7 @@ public class SempDeleteCommandManager {
         try {
             clientUsernameApi.deleteMsgVpnClientUsername(request.getMsgVpn(), request.getClientUsername());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Client username", request.getClientUsername());
+            handleSempApiDeleteException(e, "Client username");
         }
     }
 
@@ -227,7 +231,7 @@ public class SempDeleteCommandManager {
         try {
             queueApi.deleteMsgVpnQueue(request.getMsgVpn(), request.getQueueName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Queue", request.getQueueName());
+            handleSempApiDeleteException(e, "Queue");
         }
     }
 
@@ -243,7 +247,7 @@ public class SempDeleteCommandManager {
         try {
             queueApi.deleteMsgVpnQueueSubscription(request.getMsgVpn(), request.getQueueName(), request.getTopicName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Subscription", request.getTopicName());
+            handleSempApiDeleteException(e, "Subscription");
         }
     }
 
@@ -269,7 +273,7 @@ public class SempDeleteCommandManager {
         try {
             restDeliveryPointApi.deleteMsgVpnRestDeliveryPoint(request.getMsgVpn(), request.getRdpName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Rest Delivery Point", request.getRdpName());
+            handleSempApiDeleteException(e, "Rest Delivery Point");
         }
     }
 
@@ -287,7 +291,30 @@ public class SempDeleteCommandManager {
         try {
             restDeliveryPointApi.deleteMsgVpnRestDeliveryPointRestConsumer(request.getMsgVpn(), request.getRdpName(), request.getRestConsumerName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Rest Consumer", request.getRdpName());
+            handleSempApiDeleteException(e, "Rest Consumer");
+        }
+    }
+
+    private void executeDeleteRdpOauthJwtClaims(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        RestDeliveryPointApi restDeliveryPointApi = sempApiProvider.getRestDeliveryPointApi();
+        SempRdpOauthJwtClaimDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SEMP_DELETE_DATA)),
+                SempRdpOauthJwtClaimDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
+        Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
+        Validate.notEmpty(request.getRestConsumerName(), "Rest Consumer name must not be empty");
+        Validate.notEmpty(request.getOauthJwtClaimName(), "OAuth JWT claim name must not be empty");
+        log.info("SEMP delete: Deleting Oauth JWT Claim");
+        try {
+            restDeliveryPointApi.deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                    request.getMsgVpn(),
+                    request.getRdpName(),
+                    request.getRestConsumerName(),
+                    request.getOauthJwtClaimName()
+            );
+        } catch (ApiException e) {
+            handleSempApiDeleteException(e, "Oauth JWT Claim");
         }
     }
 
@@ -304,7 +331,7 @@ public class SempDeleteCommandManager {
         try {
             restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBinding(request.getMsgVpn(), request.getRdpName(), request.getQueueBindingName());
         } catch (ApiException e) {
-            handleSempApiDeleteException(e, "Queue Binding", request.getRdpName());
+            handleSempApiDeleteException(e, "Queue Binding");
         }
     }
 
@@ -323,7 +350,7 @@ public class SempDeleteCommandManager {
                 restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(request.getMsgVpn(), request.getRdpName(),
                         request.getQueueBindingName(), request.getHeaderName());
             } catch (ApiException e) {
-                handleSempApiDeleteException(e, "Protected Request Header", request.getHeaderName());
+                handleSempApiDeleteException(e, "Protected Request Header");
             }
         } else {
             log.info("SEMP delete: Deleting request header");
@@ -331,7 +358,7 @@ public class SempDeleteCommandManager {
                 restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(request.getMsgVpn(), request.getRdpName(),
                         request.getQueueBindingName(), request.getHeaderName());
             } catch (ApiException e) {
-                handleSempApiDeleteException(e, "Request Header", request.getHeaderName());
+                handleSempApiDeleteException(e, "Request Header");
             }
         }
 
