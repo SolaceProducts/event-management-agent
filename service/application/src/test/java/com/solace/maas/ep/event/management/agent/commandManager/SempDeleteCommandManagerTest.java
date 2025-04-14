@@ -694,7 +694,12 @@ public class SempDeleteCommandManagerTest {
     void testDeleteRdpOauthJwtClaimHappyPath() throws ApiException {
         RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
         when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                any(),
+                any(),
+                any(),
+                any())
+        ).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -714,7 +719,12 @@ public class SempDeleteCommandManagerTest {
     void testDeleteRdpOauthJwtClaimWithValidationException() throws ApiException {
         RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
         when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                any(),
+                any(),
+                any(),
+                any())
+        ).thenReturn(new SempMetaOnlyResponse());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
@@ -729,7 +739,12 @@ public class SempDeleteCommandManagerTest {
     void testDeleteRdpOauthJwtClaimWithException() throws ApiException {
         RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
         when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(any(), any(), any(), any())).thenThrow(createaServerErrorApiException());
+        when((rdpApi).deleteMsgVpnRestDeliveryPointRestConsumerOauthJwtClaim(
+                any(),
+                any(),
+                any(),
+                any())
+        ).thenThrow(createaServerErrorApiException());
         Command cmd = Command.builder()
                 .commandType(CommandType.semp)
                 .command(SEMP_DELETE_OPERATION)
