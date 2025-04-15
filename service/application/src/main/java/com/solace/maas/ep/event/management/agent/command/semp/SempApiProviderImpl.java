@@ -25,6 +25,7 @@ public class SempApiProviderImpl implements SempApiProvider {
 
     public SempApiProviderImpl(SolaceHttpSemp solaceClient,
                                EventPortalProperties eventPortalProperties) {
+        log.info("Crushton: SempApiProvider eventPortalProperties: {}", eventPortalProperties);
         this.apiClient = setupApiClient(solaceClient);
         this.eventPortalProperties = eventPortalProperties;
     }
