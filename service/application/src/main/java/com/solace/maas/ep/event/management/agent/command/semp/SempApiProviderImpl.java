@@ -68,9 +68,9 @@ public class SempApiProviderImpl implements SempApiProvider {
         client.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         client.setUsername(sempClient.getUsername());
         client.setPassword(sempClient.getPassword());
-        boolean verifyTls = eventPortalProperties == null || !eventPortalProperties.getSkipTlsVerify();
+        boolean verifyTls = this.eventPortalProperties == null || !this.eventPortalProperties.getSkipTlsVerify();
         log.info("SetVerifyingSsl on SEMP client: {} (application properties skipTlsVerify: {})", verifyTls,
-                eventPortalProperties == null ? "false (null properties)" : eventPortalProperties.getSkipTlsVerify());
+                this.eventPortalProperties == null ? "false (null properties)" : this.eventPortalProperties.getSkipTlsVerify());
         client.setVerifyingSsl(verifyTls);
         return client;
     }
