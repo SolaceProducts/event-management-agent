@@ -22,9 +22,9 @@ import org.mockito.ArgumentCaptor;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.List;
 
@@ -54,22 +54,22 @@ import static org.mockito.Mockito.when;
 @Slf4j
 class ScanJobPersistentMessageHandlerTests {
 
-    @MockBean
+    @MockitoBean
     private ScanManager scanManager;
 
-    @MockBean
+    @MockitoBean
     private PersistentMessageReceiver persistentMessageReceiver;
 
     @Autowired
     private MessagingService messagingService;
 
-    @SpyBean
+    @MockitoSpyBean
     private ScanCommandMessageProcessor scanCommandMessageProcessor;
 
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
-    @SpyBean
+    @MockitoSpyBean
     private SolacePersistentMessageHandler solacePersistentMessageHandler;
 
     @Autowired
