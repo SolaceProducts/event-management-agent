@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SempApiProviderImpl implements SempApiProvider {
 
     private final ApiClient apiClient;
-    private final EventPortalProperties eventPortalProperties;
     private AclProfileApi aclProfileApi;
     private AuthorizationGroupApi authorizationGroupApi;
     private ClientUsernameApi clientUsernameApi;
@@ -25,9 +24,7 @@ public class SempApiProviderImpl implements SempApiProvider {
 
     public SempApiProviderImpl(SolaceHttpSemp solaceClient,
                                EventPortalProperties eventPortalProperties) {
-        log.info("Crushton: SempApiProvider eventPortalProperties: {}", eventPortalProperties);
-        this.apiClient = setupApiClient(solaceClient);
-        this.eventPortalProperties = eventPortalProperties;
+        this.apiClient = setupApiClient(solaceClient, eventPortalProperties);
     }
 
     @Override
@@ -62,15 +59,15 @@ public class SempApiProviderImpl implements SempApiProvider {
         return queueApi;
     }
 
-    private ApiClient setupApiClient(SolaceHttpSemp solaceClient) {
+    private ApiClient setupApiClient(SolaceHttpSemp solaceClient, EventPortalProperties eventPortalProperties) {
         SempClient sempClient = solaceClient.getSempClient();
         ApiClient client = new ApiClient();
         client.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         client.setUsername(sempClient.getUsername());
         client.setPassword(sempClient.getPassword());
-        boolean verifyTls = this.eventPortalProperties == null || !this.eventPortalProperties.getSkipTlsVerify();
+        boolean verifyTls = eventPortalProperties == null || !eventPortalProperties.getSkipTlsVerify();
         log.info("SetVerifyingSsl on SEMP client: {} (application properties skipTlsVerify: {})", verifyTls,
-                this.eventPortalProperties == null ? "false (null properties)" : this.eventPortalProperties.getSkipTlsVerify());
+                eventPortalProperties == null ? "false (null properties)" : eventPortalProperties.getSkipTlsVerify());
         client.setVerifyingSsl(verifyTls);
         return client;
     }

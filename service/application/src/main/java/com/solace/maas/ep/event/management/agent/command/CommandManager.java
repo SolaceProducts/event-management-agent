@@ -73,7 +73,6 @@ public class CommandManager {
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
         this.messagingServiceDelegateService = messagingServiceDelegateService;
-        log.info("Crushton: CommandManager eventPortalProperties: {}", eventPortalProperties);
         this.eventPortalProperties = eventPortalProperties;
         this.meterRegistry = meterRegistry;
 
@@ -241,7 +240,6 @@ public class CommandManager {
             Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION), "Command operation must be delete");
             // creating a new SempApiProviderImpl instance for each command execution
             // if this becomes a performance issue, we can consider caching the SempApiProviderImpl instance for each serviceId
-            log.info("Crushton: CommandManager creating SempApiProvicerImpl eventPortalProperties: {}", eventPortalProperties);
             sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
         } catch (Exception e) {
             log.error(ERROR_EXECUTING_COMMAND, e);
