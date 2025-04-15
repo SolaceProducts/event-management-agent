@@ -40,6 +40,7 @@ import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAN
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.semp;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.terraform;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_OPERATION;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempPatchCommandConstants.SEMP_PATCH_OPERATION;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.LOG_LEVEL_ERROR;
@@ -58,6 +59,7 @@ public class CommandManager {
     private final Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt;
     private final MeterRegistry meterRegistry;
     private final SempDeleteCommandManager sempDeleteCommandManager;
+    private final SempPatchCommandManager sempPatchCommandManager;
     private final TerraformLogProcessingService terraformLoggingService;
 
     public CommandManager(TerraformManager terraformManager,
@@ -68,7 +70,8 @@ public class CommandManager {
                           Optional<CommandLogStreamingProcessor> commandLogStreamingProcessorOpt,
                           MeterRegistry meterRegistry,
                           final SempDeleteCommandManager sempDeleteCommandManager,
-                          TerraformLogProcessingService terraformLoggingService) {
+                          TerraformLogProcessingService terraformLoggingService,
+                          SempPatchCommandManager sempPatchCommandManager) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
@@ -79,6 +82,7 @@ public class CommandManager {
         this.commandLogStreamingProcessorOpt = commandLogStreamingProcessorOpt;
         this.sempDeleteCommandManager = sempDeleteCommandManager;
         this.terraformLoggingService = terraformLoggingService;
+        this.sempPatchCommandManager = sempPatchCommandManager;
     }
 
     public void execute(CommandMessage request) {
@@ -237,10 +241,19 @@ public class CommandManager {
         try {
             Validate.isTrue(command.getCommandType().equals(semp), "Command type must be semp");
             // only delete operation is supported for now and only delete operations are sent from EP
-            Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION), "Command operation must be delete");
+            Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION)
+                            || command.getCommand().equals(SEMP_PATCH_OPERATION),
+                    "Command operation must be delete or patch");
+
             // creating a new SempApiProviderImpl instance for each command execution
             // if this becomes a performance issue, we can consider caching the SempApiProviderImpl instance for each serviceId
-            sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
+            if (command.getCommand().equals(SEMP_PATCH_OPERATION)) {
+                sempPatchCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
+            } else if (command.getCommand().equals(SEMP_DELETE_OPERATION)) {
+                sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
+            } else {
+                throw new UnsupportedOperationException("Unsupported SEMP command operation: " + command.getCommand());
+            }
         } catch (Exception e) {
             log.error(ERROR_EXECUTING_COMMAND, e);
             setCommandError(command, e);
