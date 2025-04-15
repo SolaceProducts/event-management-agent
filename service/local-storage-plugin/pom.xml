@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.localstorage</groupId>
     <artifactId>local-storage-plugin</artifactId>
-    <version>1.6.26-SNAPSHOT</version>
+    <version>1.6.26</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Local Storage Plugin</name>
     <description>Solace Event Management Agent - Local Storage Plugin</description>
@@ -119,7 +119,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.26-SNAPSHOT</version>
+            <version>1.6.26</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
