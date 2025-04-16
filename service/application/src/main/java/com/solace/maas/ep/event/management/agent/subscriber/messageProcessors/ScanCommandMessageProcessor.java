@@ -93,6 +93,9 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
                 .build();
 
         log.info("Received scan request {}. Request details: {}", scanRequestBO.getScanId(), scanRequestBO);
+        if (Boolean.TRUE.equals(eventPortalProperties.getSkipTlsVerify())) {
+            log.info("Skipping TLS verification for scan request {}.", scanRequestBO.getScanId());
+        }
 
         scanManager.scan(scanRequestBO);
         //if managed, wait for scan to complete
