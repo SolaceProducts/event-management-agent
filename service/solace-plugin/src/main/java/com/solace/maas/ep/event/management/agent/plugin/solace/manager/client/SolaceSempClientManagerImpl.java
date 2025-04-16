@@ -39,7 +39,7 @@ public class SolaceSempClientManagerImpl implements MessagingServiceClientManage
                         });
         WebClient.Builder webClient = WebClient.builder();
         if (Boolean.TRUE.equals(connectionDetailsEvent.getSkipTlsVerify())) {
-            log.info("Skipping TLS verification for Solace SEMP client.");
+            log.info("Skipping TLS verification for new Solace SEMP client.");
             webClient.clientConnector(new ReactorClientHttpConnector(HttpClient.create().secure(t -> {
                         try {
                             t.sslContext(SslContextBuilder.forClient()
