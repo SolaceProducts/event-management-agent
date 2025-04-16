@@ -18,9 +18,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -49,7 +49,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 //CPD-OFF
 class CloudManagedEMACommandManagerTests {
 
-    @SpyBean
+    @MockitoSpyBean
     private CommandManager commandManager;
 
     @Autowired

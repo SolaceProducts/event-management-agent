@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,19 +38,19 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 class ScanCommandMessageProcessorTests {
 
-    @SpyBean
+    @MockitoSpyBean
     private ScanManager scanManager;
 
-    @MockBean
+    @MockitoBean
     private ScanService scanService;
 
-    @SpyBean
+    @MockitoSpyBean
     private ScanCommandMessageProcessor scanCommandMessageProcessor;
 
     @Autowired
     private MessagingServiceRepository repository;
 
-    @MockBean
+    @MockitoBean
     private DynamicResourceConfigurationHelper dynamicResourceConfigurationHelper;
 
     private ArgumentCaptor<SingleScanSpecification> captor;

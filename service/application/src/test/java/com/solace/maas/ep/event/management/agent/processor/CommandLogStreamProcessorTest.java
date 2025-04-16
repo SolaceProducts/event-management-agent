@@ -20,8 +20,8 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class CommandLogStreamProcessorTest {
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
-    @SpyBean
+    @MockitoSpyBean
     private CommandLogStreamingProcessor realCommandLogStreamingProcessor;
 
     @Autowired
