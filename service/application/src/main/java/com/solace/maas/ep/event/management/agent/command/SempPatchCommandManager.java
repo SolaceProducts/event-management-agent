@@ -12,8 +12,6 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.SempPatchCommandConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.Validate;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempPatchCommandConstants.SEMP_PATCH_DATA;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempPatchCommandConstants.SEMP_PATCH_ENTITY_TYPE;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.setCommandError;
 
 @Service
@@ -49,7 +48,7 @@ public class SempPatchCommandManager {
     }
 
     private void executeSempPatchCommand(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
-        String entityType = (String) command.getParameters().get(SempPatchCommandConstants.SEMP_PATCH_ENTITY_TYPE);
+        String entityType = (String) command.getParameters().get(SEMP_PATCH_ENTITY_TYPE);
         SempEntityType patchEntityType;
         if (entityType == null) {
             throw new IllegalArgumentException("Entity type of a SEMP patch command must not be null");
@@ -91,8 +90,9 @@ public class SempPatchCommandManager {
         Validate.isTrue(command.getCommandType().equals(CommandType.semp), "Command type must be semp");
         Validate.notNull(sempApiProvider, "SempApiProvider must not be null");
         Validate.notEmpty(command.getParameters(), "Command parameters must not be empty");
-        Validate.notNull(command.getParameters().get(SempDeleteCommandConstants.SEMP_DELETE_ENTITY_TYPE), "Semp delete request must be against a specific " +
+        Validate.notNull(command.getParameters().get(SEMP_PATCH_ENTITY_TYPE), "Semp patch request must be against a specific " +
                 "semp entity type");
+        Validate.notNull(command.getParameters().get(SEMP_PATCH_DATA), "Semp patch request must contain data");
 
     }
 
@@ -101,7 +101,7 @@ public class SempPatchCommandManager {
         SempRdpRestConsumerPatchRequest request = objectMapper.readValue(
                 objectMapper.writeValueAsString(command.getParameters().get(SEMP_PATCH_DATA)),
                 SempRdpRestConsumerPatchRequest.class);
-
+        Validate.notNull(request.getData(), "Semp patch request data must not be null");
         Validate.notEmpty(request.getMsgVpn(), "Msg VPN must not be empty");
         Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
         Validate.notEmpty(request.getRestConsumerName(), "Rest Consumer name must not be empty");
