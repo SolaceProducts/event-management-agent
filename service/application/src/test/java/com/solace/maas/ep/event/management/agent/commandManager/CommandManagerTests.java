@@ -32,9 +32,10 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,25 +69,26 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
+@TestPropertySource(properties = {"event-portal.gateway.messaging.standalone=false", "event-portal.managed=false"})
 class CommandManagerTests {
 
-    @SpyBean
+    @MockitoSpyBean
     private CommandManager commandManager;
 
     @Autowired
     private CommandMapper commandMapper;
 
-    @SpyBean
+    @MockitoSpyBean
     private SempDeleteCommandManager sempDeleteCommandManager;
 
-    @SpyBean
+    @MockitoSpyBean
     private TerraformManager terraformManager;
 
 
     @Autowired
     private CommandPublisher commandPublisher;
 
-    @SpyBean
+    @MockitoSpyBean
     private CommandLogStreamingProcessor commandLogStreamingProcessor;
 
     @Autowired

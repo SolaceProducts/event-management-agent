@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.List;
 
@@ -61,25 +61,25 @@ import static org.mockito.Mockito.when;
 @Slf4j
 public class PersistentMessageHandlerTests {
 
-    @MockBean
+    @MockitoBean
     private ScanManager scanManager;
 
-    @MockBean
+    @MockitoBean
     private PersistentMessageReceiver persistentMessageReceiver;
 
     @Autowired
     private MessagingService messagingServicex;
 
-    @SpyBean
+    @MockitoSpyBean
     private ScanCommandMessageProcessor scanCommandMessageProcessor;
 
-    @SpyBean
+    @MockitoSpyBean
     private CommandMessageProcessor commandMessageProcessor;
 
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
-    @SpyBean
+    @MockitoSpyBean
     private SolacePersistentMessageHandler solacePersistentMessageHandler;
 
     @Autowired

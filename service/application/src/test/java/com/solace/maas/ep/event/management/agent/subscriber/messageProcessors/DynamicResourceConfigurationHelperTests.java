@@ -8,8 +8,8 @@ import com.solace.maas.ep.event.management.agent.service.SolaceResourceConfigura
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.List;
 
@@ -21,13 +21,13 @@ import static org.mockito.Mockito.verify;
 @ActiveProfiles("TEST")
 class DynamicResourceConfigurationHelperTests {
 
-    @SpyBean
+    @MockitoSpyBean
     private SolaceResourceConfigurationToEventConverter solaceResourceConfigurationToEventConverter;
 
-    @SpyBean
+    @MockitoSpyBean
     private MessagingServiceDelegateServiceImpl messagingServiceDelegateServiceImpl;
 
-    @SpyBean
+    @MockitoSpyBean
     private DynamicResourceConfigurationHelper helper;
 
 

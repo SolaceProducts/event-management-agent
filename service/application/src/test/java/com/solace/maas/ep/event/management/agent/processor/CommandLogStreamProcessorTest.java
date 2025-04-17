@@ -20,8 +20,9 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.verify;
 @ActiveProfiles("TEST")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
+@TestPropertySource(properties = {"event-portal.gateway.messaging.standalone=false", "event-portal.managed=false"})
 public class CommandLogStreamProcessorTest {
 
 
@@ -47,7 +49,7 @@ public class CommandLogStreamProcessorTest {
     @Autowired
     private EventPortalProperties eventPortalProperties;
 
-    @SpyBean
+    @MockitoSpyBean
     private CommandLogStreamingProcessor realCommandLogStreamingProcessor;
 
     @Autowired
