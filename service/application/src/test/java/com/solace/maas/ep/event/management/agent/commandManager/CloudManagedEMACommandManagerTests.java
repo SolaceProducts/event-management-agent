@@ -43,7 +43,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {
         "eventPortal.gateway.messaging.standalone=false",
-        "eventPortal.managed=false",
+        "eventPortal.managed=true",
         "eventPortal.incomingRequestQueueName=ep_core_ema_requests_123456_123123",
         "event-portal.gateway.messaging.rto-session=false"
 })
