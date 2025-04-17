@@ -50,7 +50,7 @@ public class CommandLogStreamProcessorTest {
     private EventPortalProperties eventPortalProperties;
 
     @MockitoSpyBean
-    private  CommandLogStreamingProcessor  realCommandLogStreamingProcessor;
+    private CommandLogStreamingProcessor realCommandLogStreamingProcessor;
 
     @Autowired
     private CommandLogsPublisher commandLogsPublisher;
