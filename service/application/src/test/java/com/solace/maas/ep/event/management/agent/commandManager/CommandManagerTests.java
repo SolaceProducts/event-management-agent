@@ -34,6 +34,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
@@ -68,6 +69,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
+@TestPropertySource(properties = {"event-portal.gateway.messaging.standalone=false", "event-portal.managed=false"})
 class CommandManagerTests {
 
     @MockitoSpyBean

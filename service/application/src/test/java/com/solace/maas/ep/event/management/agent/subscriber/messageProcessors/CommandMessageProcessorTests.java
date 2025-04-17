@@ -11,6 +11,7 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
+@TestPropertySource(properties = {"event-portal.gateway.messaging.standalone=false", "event-portal.managed=false"})
 @ActiveProfiles("TEST")
 class CommandMessageProcessorTests {
 

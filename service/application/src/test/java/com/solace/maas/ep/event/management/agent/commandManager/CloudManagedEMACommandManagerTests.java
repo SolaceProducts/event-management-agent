@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.nio.file.Path;
@@ -39,10 +40,11 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 
 @Slf4j
 @ActiveProfiles("TEST")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {
         "eventPortal.gateway.messaging.standalone=false",
-        "eventPortal.managed=true",
-        "eventPortal.incomingRequestQueueName = ep_core_ema_requests_123456_123123",
+        "eventPortal.managed=false",
+        "eventPortal.incomingRequestQueueName=ep_core_ema_requests_123456_123123",
         "event-portal.gateway.messaging.rto-session=false"
 })
 @DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
