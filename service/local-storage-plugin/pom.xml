@@ -17,10 +17,9 @@
         <junit.version>4.13.2</junit.version>
         <spring-boot.version>3.4.4</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
-        <jupiter.version>5.12.2</jupiter.version>
+        <jupiter.version>5.10.2</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <jackson.version>2.16.1</jackson.version>
         <jackson.version>2.16.1</jackson.version>
     </properties>
     <dependencyManagement>
