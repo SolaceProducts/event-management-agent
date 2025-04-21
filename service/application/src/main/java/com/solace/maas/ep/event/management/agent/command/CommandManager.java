@@ -39,8 +39,8 @@ import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TA
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.semp;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.terraform;
-import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempDeleteCommandConstants.SEMP_DELETE_OPERATION;
-import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempPatchCommandConstants.SEMP_PATCH_OPERATION;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants.SEMP_DELETE_OPERATION;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants.SEMP_PATCH_OPERATION;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.LOG_LEVEL_ERROR;
