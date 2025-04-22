@@ -125,6 +125,10 @@ public class CommandManager {
             // It will delete all files in the directory of this context
             terraformManager.deleteTerraformState(request);
 
+            if (Boolean.TRUE.equals(eventPortalProperties.getSkipTlsVerify())) {
+                log.info("Skipping TLS verification for config push to serviceId {}.", request.getServiceId());
+            }
+
             for (CommandBundle bundle : request.getCommandBundles()) {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
                 // For now everything is run serially

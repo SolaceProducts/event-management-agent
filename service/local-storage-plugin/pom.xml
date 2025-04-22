@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.localstorage</groupId>
     <artifactId>local-storage-plugin</artifactId>
-    <version>1.6.26-SNAPSHOT</version>
+    <version>1.6.27-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Local Storage Plugin</name>
     <description>Solace Event Management Agent - Local Storage Plugin</description>
@@ -15,7 +15,7 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <jacksondatabind.version>2.13.4.2</jacksondatabind.version>
         <junit.version>4.13.2</junit.version>
-        <spring-boot.version>3.3.10</spring-boot.version>
+        <spring-boot.version>3.4.4</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jupiter.version>5.10.2</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
@@ -112,6 +112,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>${commons-collections4.version}</version>
@@ -119,7 +124,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.6.26-SNAPSHOT</version>
+            <version>1.6.27-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
