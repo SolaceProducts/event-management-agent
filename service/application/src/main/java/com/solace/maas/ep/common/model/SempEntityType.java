@@ -8,6 +8,7 @@ public enum SempEntityType {
     solaceRdpQueueBindingRequestHeader("solaceRdpQueueBindingRequestHeader"),
     solaceRdpQueueBindingProtectedRequestHeader("solaceRdpQueueBindingProtectedRequestHeader"),
     solaceAclProfile("solaceAclProfile"),
+    solaceRdpOauthJwtClaim("solaceRdpOauthJwtClaim"),
     solaceAclSubscribeTopicException("solaceAclSubscribeTopicException"),
     solaceAclPublishTopicException("solaceAclPublishTopicException"),
     solaceClientUsername("solaceClientUsername"),
