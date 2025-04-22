@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +45,7 @@ public class SempPatchCommandManagerTest {
     private static final String DIR_SEMP_RESOURCES = "src/test/resources/sempResponses/";
     private static final String SEMP_RESPONSE_MISSING_RESOURCE = "sempResponseMissingResource.json";
 
-    @SpyBean
+    @MockitoSpyBean
     private SempPatchCommandManager sempPatchCommandManager;
 
     private SempApiProvider sempApiProvider;
