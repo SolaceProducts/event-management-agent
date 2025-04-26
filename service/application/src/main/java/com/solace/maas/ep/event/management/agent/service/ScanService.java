@@ -292,6 +292,7 @@ public class ScanService {
             MDC.put(RouteConstants.SCAN_ID, scanId);
             MDC.put(RouteConstants.ORG_ID, orgId);
             MDC.put(RouteConstants.TRACE_ID, traceId);
+            MDC.put(RouteConstants.X_B_3_TRACE_ID, traceId);
             MDC.put(RouteConstants.ACTOR_ID, actorId);
             MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 

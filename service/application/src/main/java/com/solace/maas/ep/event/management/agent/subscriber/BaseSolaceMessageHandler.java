@@ -46,6 +46,7 @@ public abstract class BaseSolaceMessageHandler {
 
         MDC.clear();
         MDC.put(RouteConstants.TRACE_ID, map.get("traceId"));
+        MDC.put(RouteConstants.X_B_3_TRACE_ID, map.get("traceId"));
         MDC.put(RouteConstants.ACTOR_ID, map.get("actorId"));
 
         if (scanClassNames.contains(receivedClassName)) {
