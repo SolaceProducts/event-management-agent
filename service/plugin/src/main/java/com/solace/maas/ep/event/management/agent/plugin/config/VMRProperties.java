@@ -100,6 +100,9 @@ public class VMRProperties {
     }
 
     public Properties getVmrProperties() {
+        System.setProperty("solace.proxy.type", "http");
+        System.setProperty("solace.proxy.host", "localhost");
+        System.setProperty("solace.proxy.port", "8443");
         parseVmrProperties();
 
         Properties properties = new Properties();
@@ -113,7 +116,6 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_USER_NAME, username);
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
-
         return properties;
     }
 
