@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
@@ -62,6 +63,14 @@ public class VMRProperties {
      */
     private String trustStoreDir;
 
+
+    private Boolean proxyEnabled;
+    private String proxyType;
+    private String proxyHost;
+    private String proxyPort;
+    private String proxyUsername;
+    private String proxyPassword;
+
     /**
      * Indicates if the agents is connecting back to EP or running in standalone mode
      */
@@ -85,6 +94,16 @@ public class VMRProperties {
             url = vmrConnectionProperties.getUrl();
             msgVpn = vmrConnectionProperties.getMsgVpn();
 
+            boolean isProxyEnabled = vmrConnectionProperties.getProxyEnabled();
+            if (isProxyEnabled) {
+                proxyEnabled = isProxyEnabled;
+                proxyType = vmrConnectionProperties.getProxyType();
+                proxyHost = vmrConnectionProperties.getProxyHost();
+                proxyPort = vmrConnectionProperties.getProxyPort();
+                proxyUsername = vmrConnectionProperties.getProxyUsername();
+                proxyPassword = vmrConnectionProperties.getProxyPassword();
+            }
+
             if (eventPortalPluginProperties.getGateway().getMessaging().isRtoSession()) {
                 trustStoreDir = vmrConnectionProperties.getTrustStoreDir();
             }
@@ -100,10 +119,9 @@ public class VMRProperties {
     }
 
     public Properties getVmrProperties() {
-        System.setProperty("solace.proxy.type", "http");
-        System.setProperty("solace.proxy.host", "localhost");
-        System.setProperty("solace.proxy.port", "8443");
+
         parseVmrProperties();
+        setProxyConfigurations();
 
         Properties properties = new Properties();
 
@@ -118,6 +136,23 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
         return properties;
     }
+
+
+    private void setProxyConfigurations() {
+        if (proxyEnabled != null && proxyEnabled) {
+            log.info("Proxy is enabled for this connection. Setting proxy properties.");
+            Validate.isTrue(StringUtils.isNotEmpty(proxyType), "Proxy type must be set.");
+            Validate.isTrue(StringUtils.isNotEmpty(proxyHost), "Proxy host must be set.");
+            Validate.isTrue(StringUtils.isNotEmpty(proxyPort), "Proxy port must be set.");
+            System.setProperty("solace.proxy.type", proxyType);
+            System.setProperty("solace.proxy.host", proxyHost);
+            System.setProperty("solace.proxy.port", proxyPort);
+            System.setProperty("solace.proxy.username", proxyUsername);
+            System.setProperty("solace.proxy.password", proxyPassword);
+        }
+
+    }
+
 
     public List<String> getRTOSessionProperties() {
         parseVmrProperties();

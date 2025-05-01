@@ -14,16 +14,18 @@ import java.util.List;
 @NoArgsConstructor
 public class MessagingServiceConnectionProperties implements Serializable {
     private String name;
-
     private String authenticationType;
-
     private String url;
-
     private String msgVpn;
-
     private String trustStoreDir;
-
     private String bootstrapServer;
+
+    private Boolean proxyEnabled;
+    private String proxyType;
+    private String proxyHost;
+    private String proxyPort;
+    private String proxyUsername;
+    private String proxyPassword;
 
     private List<MessagingServiceUsersProperties> users;
 }
