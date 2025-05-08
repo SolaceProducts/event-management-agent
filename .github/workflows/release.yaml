@@ -88,7 +88,8 @@ jobs:
           export SKIP_FLAGS_NON_UNIT_TESTS="-Dcheckstyle.skip -Dpmd.skip -Dcpd.skip -Dfindbugs.skip -Dspotbugs.skip"
           echo "SKIP_FLAGS_NON_UNIT_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS" >> $GITHUB_ENV
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
-
+      - name: Clean before release
+        run: mvn clean --file service/pom.xml
       - name: Maven Release
         run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
       - name: Changelog
@@ -100,7 +101,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: "v${{ github.event.inputs.releaseVersion }}"
-          artifacts: "**/application/target/*.jar"
+          artifacts: "**/application/target/event-management-agent-${{ github.event.inputs.releaseVersion }}.jar"
           generateReleaseNotes: true
           makeLatest: true
           body: ${{ steps.Changelog.outputs.changelog }}
