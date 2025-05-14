@@ -90,11 +90,13 @@ jobs:
           echo "SKIP_FLAGS_ALL_TESTS=$SKIP_FLAGS_NON_UNIT_TESTS -Dmaven.test.skip=true" >> $GITHUB_ENV
       - name: Debug1 - List JAR files
         run: |
-          echo "Listing all JAR files in target directories:"
-          find . -name "*.jar" | grep "target"
+          echo "Listing1 all JAR files in target directories:"
+          find . -path "*/target/*.jar" -type f || echo "No1 JAR files found"
+
       - name: Clean before release
         run: mvn clean --file service/pom.xml
+
       - name: Debug2 - List JAR files
         run: |
           echo "Listing2 all JAR files in target directories:"
-          find . -name "*.jar" | grep "target"
+          find . -path "*/target/*.jar" -type f || echo "No2 JAR files found"
