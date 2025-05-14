@@ -19,6 +19,9 @@ public class Command {
     private Map<String, Object> parameters;
     private Boolean ignoreResult;
     private CommandResult result;
+    private Boolean isPreFlightCheck = false;
+    private PreFlightCheckType preFlightCheckType;
+    private FailureSeverity failureSeverity = FailureSeverity.ERROR;
 
     public boolean hasSignificantErrorResult() {
         if (!Boolean.TRUE.equals(ignoreResult) && result != null) {

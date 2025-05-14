@@ -1,8 +1,11 @@
 package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.FailureSeverity;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.PreFlightCheckType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
@@ -13,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -72,6 +76,57 @@ public class TerraformLogProcessingService {
 
         return CommandResult.builder()
                 .logs(ListUtils.union(successLogs, errorLogs))
+                .status(status)
+                .build();
+    }
+
+    public CommandResult buildPreFlightCheckResult(List<String> logsInJsonFormat, Command command) {
+        if (CollectionUtils.isEmpty(logsInJsonFormat)) {
+            throw new IllegalArgumentException("No terraform logs were collected. Unable to process response.");
+        }
+
+        //Parse logs and check for 404/not found errors
+        List<Map<String, Object>> passedLogs = logsInJsonFormat.stream()
+                .map(this::parseTfOutput)
+                .toList();
+
+        //For client profile checks, 404 means the profile does not exist
+        boolean isResourceNotFound = passedLogs.stream()
+                .anyMatch(log -> log.containsKey("error") &&
+                        String.valueOf(log.get("error")).equals("resource not found"));
+
+        // TODO:
+        JobStatus status = isResourceNotFound ? JobStatus.warning : JobStatus.error;
+
+        // Create appropriate log message for missing client profile
+        List<Map<String, Object>> logs;
+        if (isResourceNotFound && command.getPreFlightCheckType() == PreFlightCheckType.CLIENT_PROFILE_EXISTENCE) {
+            //Extract client profile name from command parameters
+            Map<String, Object> data = (Map<String, Object>) command.getParameters().get("data");
+            String clientProfileName = (String) data.get("clientProfileName");
+
+            logs = List.of(Map.of(
+                    "address", "N/A", // TODO: not sure if this is correct, will come back on this
+                    "message", "Required client profile '" + clientProfileName + "' does not exist",
+                    "level", "WARN",
+                    "timestamp", OffsetDateTime.now()
+            ));
+        } else {
+            logs = passedLogs.stream()
+                    .map(log -> {
+                        // Simplify and normalize log format
+                        return Map.of(
+                                "address", log.containsKey("resource") ? String.valueOf(log.get("resource")) : "N/A",
+                                "message", log.containsKey("message") ? String.valueOf(log.get("message")) :
+                                        (log.containsKey("error") ? String.valueOf(log.get("error")) : "Unknown status"),
+                                "level", command.getFailureSeverity() == FailureSeverity.WARNING ? "WARN" : "ERROR",
+                                "timestamp", log.containsKey("@timestamp") ? log.get("@timestamp") : OffsetDateTime.now()
+                        );
+                    })
+                    .collect(Collectors.toList());
+        }
+        return CommandResult.builder()
+                .logs(logs)
                 .status(status)
                 .build();
     }

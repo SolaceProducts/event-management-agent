@@ -15,4 +15,5 @@ public class CommandBundle {
     private ExecutionType executionType;
     private Boolean exitOnFailure;
     private List<Command> commands;
+    private Boolean isPreFlightBundle = false;
 }

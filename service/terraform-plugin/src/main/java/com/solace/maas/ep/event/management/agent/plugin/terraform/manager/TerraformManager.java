@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.FailureSeverity;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
@@ -79,10 +80,18 @@ public class TerraformManager {
             executionLogWriter = new PrintWriter(new FileOutputStream(executionLogFilePath.toString(), false), true);
             log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                     request.getCommandCorrelationId(), request.getContext());
+
+            // TODO: add indicator if this is a pre-flight check -> use a different variable name
+            // as commandType is colliding with CommandType, will cause confusion
+            String commandType = Boolean.TRUE.equals(command.getIsPreFlightCheck())
+                    ? "pre-flight check command"
+                    : "command";
+
             //Whatever we are writing using executionLogWriter will be sent to ep-core
             executionLogWriter.println(
                     TerraformUtils.convertGenericLogMessageToTFStyleMessage(
-                            String.format("Executing command %s for serviceId %s correlationId %s context %s", command.getCommand(), request.getServiceId(),
+                            String.format("Executing command %s %s for serviceId %s correlationId %s context %s", commandType, command.getCommand(),
+                                    request.getServiceId(),
                                     request.getCommandCorrelationId(), request.getContext()),
                             "debug",
                             objectMapper
@@ -96,19 +105,43 @@ public class TerraformManager {
                     terraformClient,
                     executionLogWriter
             );
-            processTerraformResponse(command, commandVerb, logOutput);
+
+            // process result differently based on whether this is a pre-flight check
+            if (Boolean.TRUE.equals(command.getIsPreFlightCheck())) {
+                log.debug("*** log output for pre-flight check: " + logOutput);
+                processTerraformPreFlightCheckResponse(command, logOutput);
+            } else {
+                processTerraformResponse(command, commandVerb, logOutput);
+            }
+
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.error("An error was encountered while executing the terraform command", e);
-            TerraformUtils.setCommandError(command, e);
+
+            // For pre-flight checks, use appropriate severity level
+            if (Boolean.TRUE.equals(command.getIsPreFlightCheck()) &&
+                    command.getFailureSeverity() == FailureSeverity.WARNING) {
+                log.warn("Pre-flight check failed with warning", e);
+                TerraformUtils.setPreFlightCheckWarning(command, e);
+            } else {
+                TerraformUtils.setCommandError(command, e);
+            }
         } finally {
             if (executionLogWriter != null) {
                 executionLogWriter.close();
             }
         }
         return executionLogFilePath;
+    }
+
+    private void processTerraformPreFlightCheckResponse(Command command, List<String> logOutput) {
+        if (Boolean.FALSE.equals(command.getIgnoreResult())) {
+            // TODO: testing response
+            command.setResult(terraformLogProcessingService.buildPreFlightCheckResult(logOutput, command));
+            command.setIgnoreResult(Boolean.TRUE);
+        }
     }
 
     private static void setEnvVarsFromParameters(Command command, Map<String, String> envVars) {

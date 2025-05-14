@@ -30,6 +30,7 @@ public class TerraformUtils {
     private static final Object lock = new Object(); // A lock object for synchronization
 
     public static final String LOG_LEVEL_ERROR = "ERROR";
+    public static final String LOG_LEVEL_WARN = "WARN";
     private static final String DEFAULT_TF_CONFIG_FILENAME = "config.tf";
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
@@ -60,6 +61,17 @@ public class TerraformUtils {
                         Map.of("message", e.getMessage(),
                                 "errorType", e.getClass().getName(),
                                 "level", LOG_LEVEL_ERROR,
+                                "timestamp", OffsetDateTime.now())))
+                .build());
+    }
+
+    public static void setPreFlightCheckWarning(Command command, Exception e) {
+        command.setResult(CommandResult.builder()
+                .status(JobStatus.warning)
+                .logs(List.of(
+                        Map.of("message", e.getMessage(),
+                                "errorType", e.getClass().getName(),
+                                "level", LOG_LEVEL_WARN,
                                 "timestamp", OffsetDateTime.now())))
                 .build());
     }
