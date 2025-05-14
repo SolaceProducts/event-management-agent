@@ -109,7 +109,6 @@ jobs:
           generateReleaseNotes: true
           makeLatest: true
           body: ${{ steps.Changelog.outputs.changelog }}
-          draft: true
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
