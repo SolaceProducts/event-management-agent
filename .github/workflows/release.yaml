@@ -97,6 +97,10 @@ jobs:
         id: Changelog
         env:
           REPO: ${{ github.repository }}
+      - name: Debug - List JAR files
+        run: |
+          echo "Listing all JAR files in target directories:"
+          find . -name "*.jar" | grep "target"
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
@@ -105,6 +109,7 @@ jobs:
           generateReleaseNotes: true
           makeLatest: true
           body: ${{ steps.Changelog.outputs.changelog }}
+          draft: true
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
