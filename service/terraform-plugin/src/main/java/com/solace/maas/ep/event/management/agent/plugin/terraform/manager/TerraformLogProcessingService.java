@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.PreFlightCheckType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
@@ -103,7 +102,7 @@ public class TerraformLogProcessingService {
 
         // Create appropriate log message for missing client profile
         List<Map<String, Object>> logs;
-        if (isResourceNotFound && command.getPreFlightCheckType() == PreFlightCheckType.CLIENT_PROFILE_EXISTENCE) {
+        if (isResourceNotFound) {
             //Extract client profile name from command parameters
             Map<String, Object> data = (Map<String, Object>) command.getParameters().get("data");
             String clientProfileName = (String) data.get("clientProfileName");

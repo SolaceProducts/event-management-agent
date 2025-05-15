@@ -80,16 +80,10 @@ public class TerraformManager {
             log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                     request.getCommandCorrelationId(), request.getContext());
 
-            // TODO: add indicator if this is a pre-flight check -> use a different variable name
-            // as commandType is colliding with CommandType, will cause confusion
-            String commandType = Boolean.TRUE.equals(command.getIsPreFlightCheck())
-                    ? "pre-flight check command"
-                    : "command";
-
             //Whatever we are writing using executionLogWriter will be sent to ep-core
             executionLogWriter.println(
                     TerraformUtils.convertGenericLogMessageToTFStyleMessage(
-                            String.format("Executing command %s %s for serviceId %s correlationId %s context %s", commandType, command.getCommand(),
+                            String.format("Executing command %s for serviceId %s correlationId %s context %s", command.getCommand(),
                                     request.getServiceId(),
                                     request.getCommandCorrelationId(), request.getContext()),
                             "debug",
@@ -105,42 +99,20 @@ public class TerraformManager {
                     executionLogWriter
             );
 
-            // process result differently based on whether this is a pre-flight check
-            if (Boolean.TRUE.equals(command.getIsPreFlightCheck())) {
-                log.debug("*** log output for pre-flight check: " + logOutput);
-                processTerraformPreFlightCheckResponse(command, logOutput);
-            } else {
-                processTerraformResponse(command, commandVerb, logOutput);
-            }
+            processTerraformResponse(command, commandVerb, logOutput);
 
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.error("An error was encountered while executing the terraform command", e);
-
-            // For pre-flight checks
-            if (Boolean.TRUE.equals(command.getIsPreFlightCheck())) {
-                log.warn("### Pre-flight check failed with warning", e);
-                // TODO:
-                //TerraformUtils.setPreFlightCheckWarning(command, e);
-            } else {
-                TerraformUtils.setCommandError(command, e);
-            }
+            TerraformUtils.setCommandError(command, e);
         } finally {
             if (executionLogWriter != null) {
                 executionLogWriter.close();
             }
         }
         return executionLogFilePath;
-    }
-
-    private void processTerraformPreFlightCheckResponse(Command command, List<String> logOutput) {
-        if (Boolean.FALSE.equals(command.getIgnoreResult())) {
-            // TODO: testing response
-            command.setResult(terraformLogProcessingService.buildPreFlightCheckResult(logOutput, command));
-            command.setIgnoreResult(Boolean.TRUE);
-        }
     }
 
     private static void setEnvVarsFromParameters(Command command, Map<String, String> envVars) {

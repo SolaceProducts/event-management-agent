@@ -10,7 +10,6 @@ import com.solace.maas.ep.event.management.agent.command.semp.SempApiProvider;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.PreFlightCheckType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.Validate;
@@ -57,24 +56,21 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         } catch (ApiException e) {
             // For 404 errors in a pre-flight check, use warning instead of error when appropriate
             if (e.getCode() == 404 || (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"))) {
-                if (command.getIsPreFlightCheck()
-                        && command.getPreFlightCheckType() == PreFlightCheckType.CLIENT_PROFILE_EXISTENCE) {
-                    // Extract client profile name for better error messaging
-                    String resourceName = extractResourceName(command);
-                    log.warn("Pre-flight check: Resource not found: {}", resourceName);
-                    // ensure failures are not ignored
-                    command.setIgnoreResult(false);
-                    // TODO:
-                    command.setResult(CommandResult.builder()
-                            .status(JobStatus.error)
-                            .logs(List.of(Map.of(
-                                    "message", "### Pre-flight check failed: Required resource not found: " + resourceName,
-                                    "level", "WARN",
-                                    "timestamp", OffsetDateTime.now()
-                            )))
-                            .build());
-                    return;
-                }
+                // Extract client profile name for better error messaging
+                String resourceName = extractResourceName(command);
+                log.warn("### Pre-flight check: Resource not found: {}", resourceName);
+                // ensure failures are not ignored
+                command.setIgnoreResult(false);
+                // TODO:
+                command.setResult(CommandResult.builder()
+                        .status(JobStatus.error)
+                        .logs(List.of(Map.of(
+                                "message", "### Pre-flight check failed: Required resource not found: " + resourceName,
+                                "level", "WARN",
+                                "timestamp", OffsetDateTime.now()
+                        )))
+                        .build());
+                return;
             }
             log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
             // Set error for all other API exceptions
@@ -120,7 +116,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         }
 
         switch (getEntityType) {
-            case solaceClientProfile:
+            case solaceClientProfileName:
                 executeGetClientProfile(command, sempApiProvider);
                 break;
             default:
