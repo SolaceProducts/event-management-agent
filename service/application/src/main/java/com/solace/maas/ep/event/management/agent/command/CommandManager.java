@@ -115,6 +115,7 @@ public class CommandManager {
     private void configPush(CommandRequest request) {
         List<Path> executionLogFilesToClean = new ArrayList<>();
         boolean attachErrorToTerraformCommand = false;
+        boolean preFlightBundleFailed = false;
         try {
             // if the serviceId is not found, messagingServiceDelegateService will most likely throw an exception (which is not guaranteed
             // based on the interface definition) and we need to catch it here.
@@ -135,6 +136,14 @@ public class CommandManager {
 
             for (CommandBundle bundle : request.getCommandBundles()) {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
+                boolean isPreFlightBundle = Boolean.TRUE.equals(bundle.getIsPreFlightBundle());
+
+                // Skip this bundle if a previous pre-flight bundle failed
+                if (preFlightBundleFailed) {
+                    log.warn("Skipping bundle execution because a previous pre-flight check failed");
+                    continue;
+                }
+
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
                     attachErrorToTerraformCommand = false;
@@ -155,6 +164,11 @@ public class CommandManager {
                         handleUnknownCommandType(command);
                     }
                     if (exitEarlyOnFailedCommand(exitEarlyOnFailedCommand, command)) {
+                        // If this is a pre-flight bundle that failed, set flag to skip future bundles
+                        if (isPreFlightBundle) {
+                            preFlightBundleFailed = true;
+                            log.warn("Pre-flight check failed, will skip subsequent command bundles");
+                        }
                         break;
                     }
                 }
@@ -325,6 +339,13 @@ public class CommandManager {
 
 
     private static boolean exitEarlyOnFailedCommand(boolean existEarlyOnFailedCommand, Command command) {
+        // TODO: Special case for pre-flight checks?
+        if (Boolean.TRUE.equals(command.getIsPreFlightCheck()) &&
+                command.getResult() != null &&
+                JobStatus.error.equals(command.getResult().getStatus())) {
+            return true; // Always exit if pre-flight check fails
+        }
+
         return Boolean.TRUE.equals(existEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
                 && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
