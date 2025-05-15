@@ -5,8 +5,7 @@ public enum JobStatus {
     error,
     validation_error,
     success;
-
-
+    
     JobStatus() {
     }
 }

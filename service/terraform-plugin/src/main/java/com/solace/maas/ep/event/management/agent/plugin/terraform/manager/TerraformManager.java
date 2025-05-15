@@ -79,12 +79,10 @@ public class TerraformManager {
             executionLogWriter = new PrintWriter(new FileOutputStream(executionLogFilePath.toString(), false), true);
             log.debug("Executing command {} for serviceId {} correlationId {} context {}", command.getCommand(), request.getServiceId(),
                     request.getCommandCorrelationId(), request.getContext());
-
             //Whatever we are writing using executionLogWriter will be sent to ep-core
             executionLogWriter.println(
                     TerraformUtils.convertGenericLogMessageToTFStyleMessage(
-                            String.format("Executing command %s for serviceId %s correlationId %s context %s", command.getCommand(),
-                                    request.getServiceId(),
+                            String.format("Executing command %s for serviceId %s correlationId %s context %s", command.getCommand(), request.getServiceId(),
                                     request.getCommandCorrelationId(), request.getContext()),
                             "debug",
                             objectMapper
@@ -98,9 +96,7 @@ public class TerraformManager {
                     terraformClient,
                     executionLogWriter
             );
-
             processTerraformResponse(command, commandVerb, logOutput);
-
         } catch (InterruptedException e) {
             log.error("Received a thread interrupt while executing the terraform command", e);
             Thread.currentThread().interrupt();
