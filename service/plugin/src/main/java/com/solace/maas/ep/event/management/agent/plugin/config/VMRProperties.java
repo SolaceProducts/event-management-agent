@@ -162,7 +162,6 @@ public class VMRProperties {
     private void applyProxyConfiguration() {
         try {
             MessagingServiceConnectionProperties connectionProps = getEventPortalGatewayConnectionProperties();
-
             if (Boolean.TRUE.equals(connectionProps.getProxyEnabled())) {
                 validateProxySettings(connectionProps);
                 setSolaceProxySystemProperties(connectionProps);
@@ -188,7 +187,7 @@ public class VMRProperties {
     private void validateProxySettings(MessagingServiceConnectionProperties props) {
         Validate.isTrue(!StringUtils.isBlank(props.getProxyHost()), "Proxy host must be configured when proxy is enabled.");
         Validate.notNull(props.getProxyPort(), "Proxy port must be configured when proxy is enabled.");
-        Validate.isTrue(props.getProxyPort() > 0 && props.getProxyPort() <= 65535,
+        Validate.isTrue(props.getProxyPort() > 0 && props.getProxyPort() <= 65_535,
                 "Proxy port must be a valid port number (1-65535).");
         Validate.isTrue("http".equalsIgnoreCase(props.getProxyType()), "Proxy type must be 'http'.");
 
@@ -199,9 +198,8 @@ public class VMRProperties {
     }
 
     private void setSolaceProxySystemProperties(MessagingServiceConnectionProperties props) {
-        log.info("Applying HTTP proxy configuration: host={}, port={}, type={}",
+        log.info("Event management agent will be operating in web proxy mode. Applying HTTP proxy configuration: host={}, port={}, type={}",
                 props.getProxyHost(), props.getProxyPort(), props.getProxyType());
-
         System.setProperty(SOLACE_PROXY_HOST, props.getProxyHost());
         System.setProperty(SOLACE_PROXY_PORT, String.valueOf(props.getProxyPort()));
         System.setProperty(SOLACE_PROXY_TYPE, props.getProxyType()); // JCSMP uses "http" or "socks5"
@@ -216,7 +214,7 @@ public class VMRProperties {
     }
 
     private void clearSolaceProxySystemProperties() {
-        log.info("HTTP proxy is disabled. Clearing any existing Solace proxy system properties.");
+        log.info("Web proxy is disabled for this Event management agent");
         System.clearProperty(SOLACE_PROXY_HOST);
         System.clearProperty(SOLACE_PROXY_PORT);
         System.clearProperty(SOLACE_PROXY_TYPE);

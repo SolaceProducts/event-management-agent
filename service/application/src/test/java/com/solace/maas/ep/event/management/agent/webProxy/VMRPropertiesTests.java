@@ -121,7 +121,14 @@ public class VMRPropertiesTests {
     @Test
     @SneakyThrows
     void testGetVmrPropertiesProxyEnabledWithAuth() {
-        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(true, "secureproxy.example.com", 8443, "http", "proxyuser", "proxypass");
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(
+                true,
+                "secureproxy.example.com",
+                8443,
+                "http",
+                "proxyuser",
+                "proxypass"
+        );
         when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
 
         vmrProperties.getVmrProperties();
@@ -180,7 +187,13 @@ public class VMRPropertiesTests {
     @Test
     @SneakyThrows
     void testProxyEnabledButPortInvalidTooLarge() {
-        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(true, "proxy.example.com", 65536, "http", null, null);
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(
+                true,
+                "proxy.example.com",
+                65_536, "http",
+                null,
+                null
+        );
         when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
 
         assertThatThrownBy(() -> vmrProperties.getVmrProperties())
