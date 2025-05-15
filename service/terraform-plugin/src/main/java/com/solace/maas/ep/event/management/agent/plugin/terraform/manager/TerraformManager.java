@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.FailureSeverity;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
@@ -120,11 +119,11 @@ public class TerraformManager {
         } catch (Exception e) {
             log.error("An error was encountered while executing the terraform command", e);
 
-            // For pre-flight checks, use appropriate severity level
-            if (Boolean.TRUE.equals(command.getIsPreFlightCheck()) &&
-                    command.getFailureSeverity() == FailureSeverity.WARNING) {
-                log.warn("Pre-flight check failed with warning", e);
-                TerraformUtils.setPreFlightCheckWarning(command, e);
+            // For pre-flight checks
+            if (Boolean.TRUE.equals(command.getIsPreFlightCheck())) {
+                log.warn("### Pre-flight check failed with warning", e);
+                // TODO:
+                //TerraformUtils.setPreFlightCheckWarning(command, e);
             } else {
                 TerraformUtils.setCommandError(command, e);
             }

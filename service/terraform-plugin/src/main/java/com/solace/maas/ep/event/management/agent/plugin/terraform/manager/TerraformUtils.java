@@ -64,17 +64,17 @@ public class TerraformUtils {
                                 "timestamp", OffsetDateTime.now())))
                 .build());
     }
-
-    public static void setPreFlightCheckWarning(Command command, Exception e) {
-        command.setResult(CommandResult.builder()
-                .status(JobStatus.warning)
-                .logs(List.of(
-                        Map.of("message", e.getMessage(),
-                                "errorType", e.getClass().getName(),
-                                "level", LOG_LEVEL_WARN,
-                                "timestamp", OffsetDateTime.now())))
-                .build());
-    }
+//TODO:
+//    public static void setPreFlightCheckWarning(Command command, Exception e) {
+//        command.setResult(CommandResult.builder()
+//                .status(JobStatus.warning)
+//                .logs(List.of(
+//                        Map.of("message", e.getMessage(),
+//                                "errorType", e.getClass().getName(),
+//                                "level", LOG_LEVEL_WARN,
+//                                "timestamp", OffsetDateTime.now())))
+//                .build());
+//    }
 
     /**
      * Delete the Terraform state directory for the given request under the given directory.<br>

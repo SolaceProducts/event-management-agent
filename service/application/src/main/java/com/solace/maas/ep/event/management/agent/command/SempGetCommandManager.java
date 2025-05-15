@@ -9,8 +9,8 @@ import com.solace.maas.ep.common.model.SempEntityType;
 import com.solace.maas.ep.event.management.agent.command.semp.SempApiProvider;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.FailureSeverity;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.PreFlightCheckType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.Validate;
@@ -57,19 +57,22 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         } catch (ApiException e) {
             // For 404 errors in a pre-flight check, use warning instead of error when appropriate
             if (e.getCode() == 404 || (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"))) {
-                if (Boolean.TRUE.equals(command.getIsPreFlightCheck()) &&
-                        command.getFailureSeverity() == FailureSeverity.WARNING) {
+                if (command.getIsPreFlightCheck()
+                        && (command.getCommand().equals(SempCommandConstants.SEMP_GET_OPERATION))
+                        && command.getPreFlightCheckType() == PreFlightCheckType.CLIENT_PROFILE_EXISTENCE) {
                     // Extract client profile name for better error messaging
                     String resourceName = extractResourceName(command);
                     log.warn("Pre-flight check: Resource not found: {}", resourceName);
-                    command.setResult(CommandResult.builder()
-                            .status(JobStatus.warning)
-                            .logs(List.of(Map.of(
-                                    "message", "Required resource not found: " + resourceName,
-                                    "level", "WARN",
-                                    "timestamp", OffsetDateTime.now()
-                            )))
-                            .build());
+                    command.setIgnoreResult(true);
+//                    TODO:
+//                    command.setResult(CommandResult.builder()
+//                            .status(JobStatus.error)
+//                            .logs(List.of(Map.of(
+//                                    "message", "##Required resource not found: " + resourceName,
+//                                    "level", "WARN",
+//                                    "timestamp", OffsetDateTime.now()
+//                            )))
+//                            .build());
                     return;
                 }
             }
@@ -135,14 +138,14 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
         Validate.notEmpty(request.getClientProfileName(), "Client profile name must not be empty");
 
-        log.info("SEMP get: Checking client profile existence");
+        log.info("### SEMP get: Checking client profile existence");
 
         // This will throw ApiException if the client profile doesn't exist
         clientProfileApi.getMsgVpnClientProfile(
                 request.getMsgVpn(),
                 request.getClientProfileName(),
-                null,  // select
-                null   // opaquePassword
+                null,  // opaquePassword
+                null // select
         );
 
         // If we get here, the client profile exists

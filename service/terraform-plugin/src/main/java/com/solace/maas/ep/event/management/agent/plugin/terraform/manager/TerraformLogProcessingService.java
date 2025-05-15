@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.plugin.terraform.manager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
-import com.solace.maas.ep.event.management.agent.plugin.command.model.FailureSeverity;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.PreFlightCheckType;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +54,8 @@ public class TerraformLogProcessingService {
 
     public CommandResult buildTfCommandResult(List<String> logsInJsonFormat) {
 
+        log.debug("### buildTfCommandResult");
+
         if (CollectionUtils.isEmpty(logsInJsonFormat)) {
             throw new IllegalArgumentException("No terraform logs were collected. Unable to process response.");
         }
@@ -81,6 +82,8 @@ public class TerraformLogProcessingService {
     }
 
     public CommandResult buildPreFlightCheckResult(List<String> logsInJsonFormat, Command command) {
+        log.debug("### buildPreFlightCheckResult");
+
         if (CollectionUtils.isEmpty(logsInJsonFormat)) {
             throw new IllegalArgumentException("No terraform logs were collected. Unable to process response.");
         }
@@ -96,7 +99,7 @@ public class TerraformLogProcessingService {
                         String.valueOf(log.get("error")).equals("resource not found"));
 
         // TODO:
-        JobStatus status = isResourceNotFound ? JobStatus.warning : JobStatus.error;
+        JobStatus status = isResourceNotFound ? JobStatus.error : JobStatus.success;
 
         // Create appropriate log message for missing client profile
         List<Map<String, Object>> logs;
@@ -119,7 +122,7 @@ public class TerraformLogProcessingService {
                                 "address", log.containsKey("resource") ? String.valueOf(log.get("resource")) : "N/A",
                                 "message", log.containsKey("message") ? String.valueOf(log.get("message")) :
                                         (log.containsKey("error") ? String.valueOf(log.get("error")) : "Unknown status"),
-                                "level", command.getFailureSeverity() == FailureSeverity.WARNING ? "WARN" : "ERROR",
+                                "level", "WARN",
                                 "timestamp", log.containsKey("@timestamp") ? log.get("@timestamp") : OffsetDateTime.now()
                         );
                     })
