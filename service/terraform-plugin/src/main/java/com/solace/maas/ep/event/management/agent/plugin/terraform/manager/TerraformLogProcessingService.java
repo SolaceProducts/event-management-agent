@@ -76,7 +76,7 @@ public class TerraformLogProcessingService {
                 .build();
     }
 
-    
+
     private Map<String, Object> parseTfOutput(String json) {
         try {
             return objectMapper.readValue(json, Map.class);
