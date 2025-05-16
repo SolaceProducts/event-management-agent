@@ -35,7 +35,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
     public String supportedSempCommand() {
         return SempCommandConstants.SEMP_GET_OPERATION;
     }
-    
+
     @Override
     public void execute(Command command, SempApiProvider sempApiProvider) {
         try {
