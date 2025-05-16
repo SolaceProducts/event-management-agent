@@ -179,7 +179,7 @@ public class VMRProperties {
 
     private MessagingServiceConnectionProperties getEventPortalGatewayConnectionProperties() {
         return eventPortalPluginProperties.getGateway().getMessaging().getConnections().stream()
-                .filter(c -> "eventPortalGateway".equals(c.getName())) // Assuming this name, adjust if needed
+                .filter(c -> "eventPortalGateway".equals(c.getName()))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Event Portal gateway connection properties not found."));
     }

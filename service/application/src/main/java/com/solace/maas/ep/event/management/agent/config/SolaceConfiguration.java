@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalP
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.event.management.agent.plugin.config.EnableRtoCondition;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.subscriber.SolaceSubscriber;
@@ -123,12 +124,12 @@ public class SolaceConfiguration {
     }
 
     private boolean isProxyEnabled() {
-        return eventPortalProperties.getGateway().getMessaging().getConnections().stream()
-                .filter(c -> "eventPortalGateway".equals(c.getName())) // Assuming this name, adjust if needed
+        MessagingServiceConnectionProperties gatewayConnection = eventPortalProperties.getGateway().getMessaging().getConnections().stream()
+                .filter(c -> "eventPortalGateway".equals(c.getName()))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Event Portal gateway connection properties not found."))
-                .getProxyEnabled();
+                .orElseThrow(() -> new NoSuchElementException("Event Portal gateway connection properties not found."));
 
+        return (Boolean.TRUE.equals(gatewayConnection.getProxyEnabled()));
     }
 
 }
