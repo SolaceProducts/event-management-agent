@@ -3,6 +3,7 @@ package com.solace.maas.ep.event.management.agent.command.semp;
 import com.solace.client.sempv2.ApiClient;
 import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
+import com.solace.client.sempv2.api.ClientProfileApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
 import com.solace.client.sempv2.api.RestDeliveryPointApi;
@@ -21,10 +22,11 @@ public class SempApiProviderImpl implements SempApiProvider {
     private ClientUsernameApi clientUsernameApi;
     private QueueApi queueApi;
     private RestDeliveryPointApi restDeliveryPointApi;
+    private ClientProfileApi clientProfileApi;
 
     public SempApiProviderImpl(SolaceHttpSemp solaceClient,
                                EventPortalProperties eventPortalProperties) {
-        this.apiClient = setupApiClient(solaceClient, eventPortalProperties);
+        apiClient = setupApiClient(solaceClient, eventPortalProperties);
     }
 
     @Override
@@ -57,6 +59,14 @@ public class SempApiProviderImpl implements SempApiProvider {
             queueApi = new QueueApi(apiClient);
         }
         return queueApi;
+    }
+
+    @Override
+    public ClientProfileApi getClientProfileApi() {
+        if (clientProfileApi == null) {
+            clientProfileApi = new ClientProfileApi(apiClient);
+        }
+        return clientProfileApi;
     }
 
     private ApiClient setupApiClient(SolaceHttpSemp solaceClient, EventPortalProperties eventPortalProperties) {
