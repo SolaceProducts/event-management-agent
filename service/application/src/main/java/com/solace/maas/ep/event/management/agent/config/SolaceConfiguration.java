@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 @Slf4j
@@ -69,7 +70,10 @@ public class SolaceConfiguration {
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
     public MessagingService messagingService() {
         String clientName = vmrConfiguration.getProperty(SolaceProperties.ClientProperties.NAME);
-        log.info("Connecting to event portal using EMA client {}.", clientName);
+        String message = isProxyEnabled() ?
+                "Connecting to event portal using EMA client {} via web proxy." :
+                "Connecting to event portal using EMA client {} without proxy.";
+        log.info(message, clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
                 .withReconnectionRetryStrategy(RetryStrategy.foreverRetry(15_000))
@@ -116,6 +120,15 @@ public class SolaceConfiguration {
     public SolacePublisher solacePublisher() {
         return new SolacePublisher(outboundMessageBuilder(),
                 directMessagePublisher());
+    }
+
+    private boolean isProxyEnabled() {
+        return eventPortalProperties.getGateway().getMessaging().getConnections().stream()
+                .filter(c -> "eventPortalGateway".equals(c.getName())) // Assuming this name, adjust if needed
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Event Portal gateway connection properties not found."))
+                .getProxyEnabled();
+
     }
 
 }
