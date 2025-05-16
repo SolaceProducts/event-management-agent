@@ -35,10 +35,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
     public String supportedSempCommand() {
         return SempCommandConstants.SEMP_GET_OPERATION;
     }
-
-    /**
-     * Overrides the execute method to handle the pre-flight check with special logic for warnings
-     */
+    
     @Override
     public void execute(Command command, SempApiProvider sempApiProvider) {
         try {
@@ -54,18 +51,15 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                     )))
                     .build());
         } catch (ApiException e) {
-            // For 404 errors in a pre-flight check, use warning instead of error when appropriate
             if (e.getCode() == 404 || (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"))) {
-                // Extract client profile name for better error messaging
                 String resourceName = extractResourceName(command);
-                log.warn("### Pre-flight check: Resource not found: {}", resourceName);
-                // ensure failures are not ignored
-                command.setIgnoreResult(false);
-                // TODO:
+                log.warn("Check on client profile name failed. Required resource not found: {}", resourceName);
+
+                command.setIgnoreResult(false); // ensure failures are not ignored
                 command.setResult(CommandResult.builder()
                         .status(JobStatus.error)
                         .logs(List.of(Map.of(
-                                "message", "### Pre-flight check failed: Required resource not found: " + resourceName,
+                                "message", "Check on client profile name failed. Required resource not found: " + resourceName,
                                 "level", "WARN",
                                 "timestamp", OffsetDateTime.now()
                         )))
@@ -73,7 +67,6 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                 return;
             }
             log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
-            // Set error for all other API exceptions
             setCommandError(command, e);
         } catch (Exception e) {
             log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
@@ -81,21 +74,17 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         }
     }
 
-    /**
-     * Extracts the resource name from the command for better error messages
-     */
     private String extractResourceName(Command command) {
         try {
             Object data = command.getParameters().get(SempCommandConstants.SEMP_COMMAND_DATA);
             if (data != null) {
-                // Convert to string and parse as SempClientProfileValidationRequest
                 SempClientProfileValidationRequest request = objectMapper.readValue(
                         objectMapper.writeValueAsString(data),
                         SempClientProfileValidationRequest.class);
                 return request.getClientProfileName();
             }
         } catch (Exception e) {
-            log.warn("Failed to extract resource name from command", e);
+            log.warn("Failed to extract resource name from SEMP {} command", supportedSempCommand(), e);
         }
         return "unknown";
     }
@@ -134,7 +123,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
         Validate.notEmpty(request.getClientProfileName(), "Client profile name must not be empty");
 
-        log.info("### SEMP get: Checking client profile existence");
+        log.debug("SEMP {} command: Checking client profile name existence", supportedSempCommand());
 
         // This will throw ApiException if the client profile doesn't exist
         clientProfileApi.getMsgVpnClientProfile(
