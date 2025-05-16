@@ -20,7 +20,7 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <jackson.version>2.16.1</jackson.version>
-        <reactor-netty.version>1.1.27</reactor-netty.version>
+        <reactor-netty.version>1.2.4</reactor-netty.version>
     </properties>
 
     <dependencyManagement>

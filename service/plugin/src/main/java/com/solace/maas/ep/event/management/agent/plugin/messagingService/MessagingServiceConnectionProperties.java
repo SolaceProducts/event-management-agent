@@ -26,4 +26,11 @@ public class MessagingServiceConnectionProperties implements Serializable {
     private String bootstrapServer;
 
     private List<MessagingServiceUsersProperties> users;
+
+    private Boolean proxyEnabled;
+    private String proxyType;
+    private String proxyHost;
+    private Integer proxyPort;
+    private String proxyUsername;
+    private String proxyPassword;
 }
