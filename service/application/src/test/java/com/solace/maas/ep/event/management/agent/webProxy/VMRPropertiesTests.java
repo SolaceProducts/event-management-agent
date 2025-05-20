@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
 @ExtendWith(MockitoExtension.class)
-public class VMRPropertiesTests {
+class VMRPropertiesTests {
 
     @Mock
     private EventPortalPluginProperties eventPortalPluginProperties;

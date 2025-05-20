@@ -169,11 +169,14 @@ public class VMRProperties {
                 clearSolaceProxySystemProperties();
             }
         } catch (NoSuchElementException e) {
-            log.error("Critical configuration error: Could not find Event Portal gateway connection properties for proxy setup. {}", e.getMessage());
-            throw new RuntimeException("Missing Event Portal gateway connection properties for proxy: " + e.getMessage(), e);
+            log.error(
+                    "Critical configuration error: Could not find Event Portal gateway connection properties for proxy setup. {}",
+                    e.getMessage()
+            );
+            throw new IllegalArgumentException("Missing Event Portal gateway connection properties for proxy: " + e.getMessage(), e);
         } catch (IllegalArgumentException e) {
             log.error("Invalid proxy configuration: {}", e.getMessage());
-            throw new RuntimeException("Invalid proxy configuration: " + e.getMessage(), e);
+            throw new IllegalArgumentException("Invalid proxy configuration: " + e.getMessage(), e);
         }
     }
 
