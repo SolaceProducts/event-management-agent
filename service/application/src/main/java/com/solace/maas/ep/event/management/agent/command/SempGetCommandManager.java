@@ -62,7 +62,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         } catch (ApiException e) {
             if (e.getCode() == 404 || (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"))) {
                 String resourceName = extractResourceName(command);
-                String errorMessage = String.format("Check on client profile name failed. Required resource not found: %s", resourceName);
+                String errorMessage = String.format("Named client profile not found on the event broker: %s", resourceName);
                 Map<String, Object> resultMap = new HashMap<>();
                 resultMap.put("validationErrorMessage", errorMessage);
                 log.warn(errorMessage);
