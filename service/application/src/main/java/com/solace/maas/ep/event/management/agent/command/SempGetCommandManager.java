@@ -16,6 +16,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,13 +54,17 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         } catch (ApiException e) {
             if (e.getCode() == 404 || (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"))) {
                 String resourceName = extractResourceName(command);
-                log.warn("Check on client profile name failed. Required resource not found: {}", resourceName);
+                String errorMessage = String.format("Check on client profile name failed. Required resource not found: %s", resourceName);
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("validationErrorMessage", errorMessage);
+                log.warn(errorMessage);
 
                 command.setIgnoreResult(false); // ensure failures are not ignored
                 command.setResult(CommandResult.builder()
                         .status(JobStatus.validation_error)
+                        .result(resultMap) // Add the result map with the validation error message, which will be extract by ep-core side
                         .logs(List.of(Map.of(
-                                "message", "Check on client profile name failed. Required resource not found: " + resourceName,
+                                "message", errorMessage,
                                 "level", "WARN",
                                 "timestamp", OffsetDateTime.now()
                         )))
