@@ -37,6 +37,14 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         return SempCommandConstants.SEMP_GET_OPERATION;
     }
 
+    /**
+     * Executes a SEMP GET command against the broker.
+     * Specifically handles client profile validation by checking if a profile exists.
+     * Sets appropriate status and error messages based on the result.
+     *
+     * @param command         The command to execute
+     * @param sempApiProvider The provider for SEMP APIs
+     */
     @Override
     public void execute(Command command, SempApiProvider sempApiProvider) {
         try {
