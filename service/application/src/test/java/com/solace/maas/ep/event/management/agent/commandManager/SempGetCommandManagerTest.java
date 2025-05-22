@@ -1,7 +1,6 @@
 package com.solace.maas.ep.event.management.agent.commandManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.client.sempv2.ApiException;
 import com.solace.client.sempv2.api.ClientProfileApi;
 import com.solace.client.sempv2.model.MsgVpnClientProfileResponse;
@@ -50,7 +49,6 @@ public class SempGetCommandManagerTest {
     private SempGetCommandManager sempGetCommandManager;
 
     private SempApiProvider sempApiProvider;
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void reset() {
