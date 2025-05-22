@@ -57,7 +57,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
 
                 command.setIgnoreResult(false); // ensure failures are not ignored
                 command.setResult(CommandResult.builder()
-                        .status(JobStatus.error)
+                        .status(JobStatus.validation_error)
                         .logs(List.of(Map.of(
                                 "message", "Check on client profile name failed. Required resource not found: " + resourceName,
                                 "level", "WARN",

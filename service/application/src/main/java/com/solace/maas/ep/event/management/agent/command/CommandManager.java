@@ -328,7 +328,9 @@ public class CommandManager {
     private static boolean exitEarlyOnFailedCommand(boolean existEarlyOnFailedCommand, Command command) {
         return Boolean.TRUE.equals(existEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
-                && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
+                && (command.getResult() == null
+                || JobStatus.error.equals(command.getResult().getStatus())
+                || JobStatus.validation_error.equals(command.getResult().getStatus()));
     }
 
 
