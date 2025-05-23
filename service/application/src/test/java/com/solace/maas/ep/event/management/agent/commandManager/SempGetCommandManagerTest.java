@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.commandManager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.solace.client.sempv2.ApiException;
 import com.solace.client.sempv2.api.ClientProfileApi;
 import com.solace.client.sempv2.model.MsgVpnClientProfileResponse;
@@ -40,7 +39,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("TEST")
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
-public class SempGetCommandManagerTest {
+class SempGetCommandManagerTest {
 
     private static final String DIR_SEMP_RESOURCES = "src/test/resources/sempResponses/";
     private static final String SEMP_RESPONSE_MISSING_RESOURCE = "sempResponseMissingResource.json";
@@ -56,7 +55,7 @@ public class SempGetCommandManagerTest {
     }
 
     @Test
-    void happyPath() throws ApiException, JsonProcessingException {
+    void happyPath() throws ApiException {
         ClientProfileApi clientProfileApi = Mockito.mock(ClientProfileApi.class);
         when(sempApiProvider.getClientProfileApi()).thenReturn(clientProfileApi);
         when(clientProfileApi.getMsgVpnClientProfile(any(), any(), any(), any()))
@@ -75,7 +74,7 @@ public class SempGetCommandManagerTest {
     }
 
     @Test
-    void withValidationException() throws ApiException {
+    void withValidationException() {
         ClientProfileApi clientProfileApi = Mockito.mock(ClientProfileApi.class);
         when(sempApiProvider.getClientProfileApi()).thenReturn(clientProfileApi);
 
@@ -128,6 +127,120 @@ public class SempGetCommandManagerTest {
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+    }
+
+    @Test
+    void testExtractResourceNameWithException() {
+        // Create a Command with parameters that will cause extractResourceName to throw an exception
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, solaceClientProfileName.name());
+        // Put an object that will cause an exception when trying to extract resource name
+        parameters.put(SEMP_COMMAND_DATA, new Object()); // Not a valid request object
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(parameters)
+                .build();
+
+        // Execute the command
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        // Verify the command failed with error
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+    }
+
+    @Test
+    void testExecuteSempCommandWithNullEntityType() {
+        // Create a Command with null entity type
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_DATA, new HashMap<>());
+        // Explicitly set entity type to null
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, null);
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(parameters)
+                .build();
+
+        // Execute the command
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        // Verify the command failed with error
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        // Check the logs for the error message
+        assertThat(cmd.getResult().getLogs()).isNotEmpty();
+        assertThat(cmd.getResult().getLogs().get(0).get("message"))
+                .isEqualTo("Semp request must be against a specific semp entity type");
+    }
+
+    @Test
+    void testExecuteSempCommandWithInvalidEntityType() {
+        // Create a Command with invalid entity type
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_DATA, new HashMap<>());
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, "nonExistentEntityType");
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(parameters)
+                .build();
+
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        // Verify the command failed with error
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        // Check the logs for the error message
+        assertThat(cmd.getResult().getLogs()).isNotEmpty();
+        assertThat(cmd.getResult().getLogs().get(0).get("message"))
+                .isEqualTo("Unsupported SEMP get entity type: nonExistentEntityType");
+    }
+
+    @Test
+    void testClientProfileValidationErrorEmptyMsgVpn() {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, solaceClientProfileName.name());
+
+        SempClientProfileValidationRequest request = SempClientProfileValidationRequest.builder()
+                .msgVpn("") // Empty msgVpn
+                .clientProfileName("testProfile")
+                .build();
+
+        parameters.put(SEMP_COMMAND_DATA, request);
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(parameters)
+                .build();
+
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getLogs().get(0).get("message").toString())
+                .contains("Msg VPN must not be empty");
+    }
+
+    @Test
+    void with400Exception() throws ApiException {
+        ClientProfileApi clientProfileApi = Mockito.mock(ClientProfileApi.class);
+        when(sempApiProvider.getClientProfileApi()).thenReturn(clientProfileApi);
+        when(clientProfileApi.getMsgVpnClientProfile(any(), any(), any(), any()))
+                .thenThrow(new ApiException(400, "Bad Request", new HashMap<>(),
+                        "{\"meta\":{\"error\":{\"status\":\"NOT_FOUND\",\"code\":400}}}"));
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(createClientProfileGetParameters(true))
+                .build();
+
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.validation_error);
     }
 
     private Map<String, Object> createClientProfileGetParameters(boolean valid) {
