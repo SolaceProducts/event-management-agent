@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent;
 
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
+import com.solace.maas.ep.event.management.agent.command.SempGetCommandManager;
 import com.solace.maas.ep.event.management.agent.command.SempPatchCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.SolaceConfiguration;
@@ -175,7 +176,8 @@ public class TestConfig {
                                             MeterRegistry meterRegistry,
                                             SempDeleteCommandManager sempDeleteCommandManager,
                                             TerraformLogProcessingService terraformLogProcessingService,
-                                            SempPatchCommandManager sempPatchCommandManager) {
+                                            SempPatchCommandManager sempPatchCommandManager,
+                                            SempGetCommandManager sempGetCommandManager) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
@@ -186,8 +188,8 @@ public class TestConfig {
                 meterRegistry,
                 sempDeleteCommandManager,
                 terraformLogProcessingService,
-                sempPatchCommandManager
-
+                sempPatchCommandManager,
+                sempGetCommandManager
         );
     }
 
