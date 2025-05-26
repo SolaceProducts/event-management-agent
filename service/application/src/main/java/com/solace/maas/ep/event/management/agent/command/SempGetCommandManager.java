@@ -82,7 +82,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         String resourceName = extractClientProfileName(command);
         String errorMessage = String.format("Named client profile not found on the event broker: %s", resourceName);
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("validationErrorMessage", errorMessage);
+        resultMap.put(SempCommandConstants.VALIDATION_ERROR_MESSAGE, errorMessage);
         log.warn(errorMessage);
 
         command.setIgnoreResult(false);

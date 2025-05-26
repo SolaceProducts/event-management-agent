@@ -10,6 +10,7 @@ import com.solace.maas.ep.event.management.agent.command.semp.SempApiProvider;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -107,7 +108,7 @@ class SempGetCommandManagerTest {
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.validation_error);
-        assertThat(cmd.getResult().getResult()).containsKey("validationErrorMessage");
+        assertThat(cmd.getResult().getResult()).containsKey(SempCommandConstants.VALIDATION_ERROR_MESSAGE);
     }
 
     @Test
