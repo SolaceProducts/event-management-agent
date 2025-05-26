@@ -50,7 +50,6 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
         try {
             validate(command, sempApiProvider);
             executeSempCommand(command, sempApiProvider);
-            // If we get here, the get operation was successful
             command.setResult(CommandResult.builder()
                     .status(JobStatus.success)
                     .logs(List.of(Map.of(
@@ -60,34 +59,45 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                     )))
                     .build());
         } catch (ApiException e) {
-            if (e.getCode() == 404 || (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"))) {
-                String resourceName = extractResourceName(command);
-                String errorMessage = String.format("Named client profile not found on the event broker: %s", resourceName);
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("validationErrorMessage", errorMessage);
-                log.warn(errorMessage);
-
-                command.setIgnoreResult(false); // ensure failures are not ignored
-                command.setResult(CommandResult.builder()
-                        .status(JobStatus.validation_error)
-                        .result(resultMap) // Add the result map with the validation error message, which will be extract by ep-core side
-                        .logs(List.of(Map.of(
-                                "message", errorMessage,
-                                "level", "WARN",
-                                "timestamp", OffsetDateTime.now()
-                        )))
-                        .build());
-                return;
+            String entityType = (String) command.getParameters().get(SempCommandConstants.SEMP_COMMAND_ENTITY_TYPE);
+            if (SempEntityType.solaceClientProfileName.name().equals(entityType) &&
+                    isResourceNotFoundError(e)) {
+                handleClientProfileNotFound(command);
+            } else {
+                log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                setCommandError(command, e);
             }
-            log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
-            setCommandError(command, e);
         } catch (Exception e) {
             log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
             setCommandError(command, e);
         }
     }
 
-    private String extractResourceName(Command command) {
+    private boolean isResourceNotFoundError(ApiException e) {
+        return e.getCode() == 404 ||
+                (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"));
+    }
+
+    private void handleClientProfileNotFound(Command command) {
+        String resourceName = extractClientProfileName(command);
+        String errorMessage = String.format("Named client profile not found on the event broker: %s", resourceName);
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("validationErrorMessage", errorMessage);
+        log.warn(errorMessage);
+
+        command.setIgnoreResult(false);
+        command.setResult(CommandResult.builder()
+                .status(JobStatus.validation_error)
+                .result(resultMap)
+                .logs(List.of(Map.of(
+                        "message", errorMessage,
+                        "level", "WARN",
+                        "timestamp", OffsetDateTime.now()
+                )))
+                .build());
+    }
+
+    private String extractClientProfileName(Command command) {
         try {
             Object data = command.getParameters().get(SempCommandConstants.SEMP_COMMAND_DATA);
             if (data != null) {
@@ -145,7 +155,5 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                 null,  // opaquePassword
                 null // select
         );
-
-        // If we get here, the client profile exists
     }
 }

@@ -249,7 +249,6 @@ public class CommandManager {
     private void executeSempCommand(Command command, SolaceHttpSemp solaceClient) {
         try {
             Validate.isTrue(command.getCommandType().equals(semp), "Command type must be semp");
-            // only delete operation is supported for now and only delete operations are sent from EP
             Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION)
                             || command.getCommand().equals(SEMP_PATCH_OPERATION)
                             || command.getCommand().equals(SEMP_GET_OPERATION),
