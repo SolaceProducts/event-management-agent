@@ -20,7 +20,6 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <jackson.version>2.16.1</jackson.version>
-        <reactor-netty.version>1.1.27</reactor-netty.version>
     </properties>
 
     <dependencyManagement>
@@ -111,16 +110,6 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>${snakeyaml.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty-http</artifactId>
-            <version>${reactor-netty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty-core</artifactId>
-            <version>${reactor-netty.version}</version>
         </dependency>
     </dependencies>
     <build>

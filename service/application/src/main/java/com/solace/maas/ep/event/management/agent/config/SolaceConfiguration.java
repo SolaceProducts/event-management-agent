@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalP
 import com.solace.maas.ep.event.management.agent.messagingServices.RtoMessagingService;
 import com.solace.maas.ep.event.management.agent.plugin.config.EnableRtoCondition;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
+import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMessageBuilder;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.subscriber.SolaceSubscriber;
@@ -26,6 +27,7 @@ import org.springframework.context.annotation.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 @Slf4j
@@ -69,7 +71,10 @@ public class SolaceConfiguration {
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
     public MessagingService messagingService() {
         String clientName = vmrConfiguration.getProperty(SolaceProperties.ClientProperties.NAME);
-        log.info("Connecting to event portal using EMA client {}.", clientName);
+        String message = isProxyEnabled() ?
+                "Connecting to event portal using EMA client {} via web proxy." :
+                "Connecting to event portal using EMA client {} without proxy.";
+        log.info(message, clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
                 .withReconnectionRetryStrategy(RetryStrategy.foreverRetry(15_000))
@@ -116,6 +121,15 @@ public class SolaceConfiguration {
     public SolacePublisher solacePublisher() {
         return new SolacePublisher(outboundMessageBuilder(),
                 directMessagePublisher());
+    }
+
+    private boolean isProxyEnabled() {
+        MessagingServiceConnectionProperties gatewayConnection = eventPortalProperties.getGateway().getMessaging().getConnections().stream()
+                .filter(c -> "eventPortalGateway".equals(c.getName()))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Event Portal gateway connection properties not found."));
+
+        return (Boolean.TRUE.equals(gatewayConnection.getProxyEnabled()));
     }
 
 }

@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,12 @@ import java.util.Properties;
 @Configuration
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
 public class VMRProperties {
+
+    private static final String SOLACE_PROXY_HOST = "solace.proxy.host";
+    private static final String SOLACE_PROXY_PORT = "solace.proxy.port";
+    private static final String SOLACE_PROXY_TYPE = "solace.proxy.type";
+    private static final String SOLACE_PROXY_USERNAME = "solace.proxy.username";
+    private static final String SOLACE_PROXY_PASSWORD = "solace.proxy.password";
 
     private final EventPortalPluginProperties eventPortalPluginProperties;
 
@@ -101,6 +108,7 @@ public class VMRProperties {
 
     public Properties getVmrProperties() {
         parseVmrProperties();
+        applyProxyConfiguration();
 
         Properties properties = new Properties();
 
@@ -149,5 +157,71 @@ public class VMRProperties {
             log.warn("Could not determine host name when determining client name.", e);
             return StringUtils.EMPTY;
         }
+    }
+
+    private void applyProxyConfiguration() {
+        try {
+            MessagingServiceConnectionProperties connectionProps = getEventPortalGatewayConnectionProperties();
+            if (Boolean.TRUE.equals(connectionProps.getProxyEnabled())) {
+                validateProxySettings(connectionProps);
+                setSolaceProxySystemProperties(connectionProps);
+            } else {
+                clearSolaceProxySystemProperties();
+            }
+        } catch (NoSuchElementException e) {
+            log.error(
+                    "Critical configuration error: Could not find Event Portal gateway connection properties for proxy setup. {}",
+                    e.getMessage()
+            );
+            throw new IllegalArgumentException("Missing Event Portal gateway connection properties for proxy: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid proxy configuration: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid proxy configuration: " + e.getMessage(), e);
+        }
+    }
+
+    private MessagingServiceConnectionProperties getEventPortalGatewayConnectionProperties() {
+        return eventPortalPluginProperties.getGateway().getMessaging().getConnections().stream()
+                .filter(c -> "eventPortalGateway".equals(c.getName()))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Event Portal gateway connection properties not found."));
+    }
+
+    private void validateProxySettings(MessagingServiceConnectionProperties props) {
+        Validate.isTrue(!StringUtils.isBlank(props.getProxyHost()), "Proxy host must be configured when proxy is enabled.");
+        Validate.notNull(props.getProxyPort(), "Proxy port must be configured when proxy is enabled.");
+        Validate.isTrue(props.getProxyPort() > 0 && props.getProxyPort() <= 65_535,
+                "Proxy port must be a valid port number (1-65535).");
+        Validate.isTrue("http".equalsIgnoreCase(props.getProxyType()), "Proxy type must be 'http'.");
+
+        if (StringUtils.isNotBlank(props.getProxyUsername())) {
+            Validate.isTrue(!StringUtils.isBlank(props.getProxyPassword()),
+                    "Proxy password must be configured when proxy username is provided.");
+        }
+    }
+
+    private void setSolaceProxySystemProperties(MessagingServiceConnectionProperties props) {
+        log.info("Event management agent will be operating in web proxy mode. Applying HTTP proxy configuration: host={}, port={}, type={}",
+                props.getProxyHost(), props.getProxyPort(), props.getProxyType());
+        System.setProperty(SOLACE_PROXY_HOST, props.getProxyHost());
+        System.setProperty(SOLACE_PROXY_PORT, String.valueOf(props.getProxyPort()));
+        System.setProperty(SOLACE_PROXY_TYPE, props.getProxyType()); // JCSMP uses "http" or "socks5"
+
+        if (StringUtils.isNotBlank(props.getProxyUsername())) {
+            System.setProperty(SOLACE_PROXY_USERNAME, props.getProxyUsername());
+            System.setProperty(SOLACE_PROXY_PASSWORD, props.getProxyPassword());
+        } else {
+            System.clearProperty(SOLACE_PROXY_USERNAME);
+            System.clearProperty(SOLACE_PROXY_PASSWORD);
+        }
+    }
+
+    private void clearSolaceProxySystemProperties() {
+        log.info("Web proxy is disabled for this Event management agent");
+        System.clearProperty(SOLACE_PROXY_HOST);
+        System.clearProperty(SOLACE_PROXY_PORT);
+        System.clearProperty(SOLACE_PROXY_TYPE);
+        System.clearProperty(SOLACE_PROXY_USERNAME);
+        System.clearProperty(SOLACE_PROXY_PASSWORD);
     }
 }
