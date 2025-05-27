@@ -324,12 +324,12 @@ public class CommandManager {
     }
 
 
-    private static boolean exitEarlyOnFailedCommand(boolean existEarlyOnFailedCommand, Command command) {
-        return Boolean.TRUE.equals(existEarlyOnFailedCommand)
+    private static boolean exitEarlyOnFailedCommand(boolean exitEarlyOnFailedCommand, Command command) {
+        return Boolean.TRUE.equals(exitEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
                 && (command.getResult() == null
-                || JobStatus.error.equals(command.getResult().getStatus())
-                || JobStatus.validation_error.equals(command.getResult().getStatus()));
+                || command.getResult().getStatus() == JobStatus.error
+                || command.getResult().getStatus() == JobStatus.validation_error);
     }
 
 

@@ -12,7 +12,8 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants;
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.encoder.org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -75,7 +76,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
 
     private boolean isResourceNotFoundError(ApiException e) {
         return e.getCode() == 404 ||
-                (e.getCode() == 400 && e.getResponseBody().contains("NOT_FOUND"));
+                (e.getCode() == 400 && StringUtils.contains(e.getResponseBody(), "NOT_FOUND"));
     }
 
     private void handleClientProfileNotFound(Command command) {
