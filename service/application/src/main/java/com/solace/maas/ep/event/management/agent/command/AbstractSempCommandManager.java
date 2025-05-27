@@ -40,7 +40,7 @@ public abstract class AbstractSempCommandManager {
     protected abstract void executeSempCommand(Command command, SempApiProvider sempApiProvider) throws Exception;
 
 
-    private void validate(Command command, SempApiProvider sempApiProvider) {
+    public void validate(Command command, SempApiProvider sempApiProvider) {
         Validate.isTrue(command.getCommand().equals(supportedSempCommand()), "Command must be " + supportedSempCommand());
         Validate.isTrue(command.getCommandType().equals(CommandType.semp), "Command type must be semp");
         Validate.notNull(sempApiProvider, "SempApiProvider must not be null");

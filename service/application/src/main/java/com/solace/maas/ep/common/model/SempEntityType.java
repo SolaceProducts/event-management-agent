@@ -13,6 +13,7 @@ public enum SempEntityType {
     solaceAclPublishTopicException("solaceAclPublishTopicException"),
     solaceClientUsername("solaceClientUsername"),
     solaceClientCertificateUsername("solaceClientCertificateUsername"),
+    solaceClientProfileName("solaceClientProfileName"),
     solaceAuthorizationGroup("solaceAuthorizationGroup"),
     solaceQueueSubscriptionTopic("solaceQueueSubscriptionTopic");
     private final String value;
