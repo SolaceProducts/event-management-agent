@@ -131,9 +131,4 @@ public class SolaceConfiguration {
 
         return (Boolean.TRUE.equals(gatewayConnection.getProxyEnabled()));
     }
-
-    public String getRuntimeAgentId() {
-        return eventPortalProperties.getRuntimeAgentId();
-    }
-
 }
