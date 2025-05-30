@@ -14,9 +14,12 @@ import com.solace.messaging.config.SolaceProperties;
 import com.solace.messaging.config.profile.ConfigurationProfile;
 import com.solace.messaging.publisher.DirectMessagePublisher;
 import com.solace.messaging.publisher.OutboundMessageBuilder;
+import com.solacesystems.jcsmp.JCSMPException;
+import com.solacesystems.jcsmp.JCSMPTransportException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,6 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -41,6 +46,30 @@ public class SolaceConfiguration {
     private final List<String> sessionConfiguration;
     private final EventPortalProperties eventPortalProperties;
     private String topicPrefix;
+
+    /**
+     * Configuration for Solace messaging service.
+     * This class includes a connection failure simulation feature for testing purposes.
+     * To enable the simulation, set the following properties:
+     * - test.connection.simulate-failure: true/false (default: false)
+     * - test.connection.failure-delay-ms: delay in milliseconds before failure (default: 0)
+     * - test.connection.failure-type: type of failure to simulate (default: CONNECTION_RESET)
+     * Available types: CONNECTION_RESET, TIMEOUT, AUTH_FAILURE
+     * Example: To simulate a connection reset after 5 seconds:
+     * test.connection.simulate-failure=true
+     * test.connection.failure-delay-ms=5000
+     * test.connection.failure-type=CONNECTION_RESET
+     */
+    // Add these properties for failure simulation
+    @Value("${test.connection.simulate-failure:false}")
+    private boolean simulateConnectionFailure;
+
+    @Value("${test.connection.failure-delay-ms:0}")
+    private long failureDelayMs;
+
+    @Value("${test.connection.failure-type:CONNECTION_RESET}")
+    private String failureType;
+
 
     @Autowired
     @SuppressWarnings("PMD.LooseCoupling")
@@ -66,10 +95,50 @@ public class SolaceConfiguration {
         return getTopicPrefix(null);
     }
 
+    // Add a helper method to simulate different types of failures
+    private void simulateFailureIfConfigured() {
+        if (simulateConnectionFailure) {
+            log.info("Connection failure simulation is enabled. Type: {}, Delay: {}ms", failureType, failureDelayMs);
+
+            if (failureDelayMs > 0) {
+                try {
+                    log.info("Simulating connection delay before failure...");
+                    Thread.sleep(failureDelayMs);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Failure delay simulation was interrupted");
+                }
+            }
+
+            log.error("Simulating connection failure of type: {}", failureType);
+
+            switch (failureType) {
+                case "CONNECTION_RESET":
+                    throw new RuntimeException(new JCSMPTransportException(
+                            "Simulated connection reset for testing",
+                            new SocketException("Connection reset")));
+                case "TIMEOUT":
+                    throw new RuntimeException(new JCSMPTransportException(
+                            "Simulated connection timeout for testing",
+                            new SocketTimeoutException("Connection timed out")));
+                case "AUTH_FAILURE":
+                    throw new RuntimeException(new JCSMPException(
+                            "Simulated authentication failure for testing"));
+                default:
+                    throw new RuntimeException(new JCSMPTransportException(
+                            "Simulated generic connection failure for testing",
+                            new SocketException("Connection error")));
+            }
+        }
+    }
+
     @Bean
     @ConditionalOnMissingBean(EnableRtoCondition.class)
     @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
     public MessagingService messagingService() {
+        // Simulate failure before attempting to connect if configured
+        simulateFailureIfConfigured();
+
         String clientName = vmrConfiguration.getProperty(SolaceProperties.ClientProperties.NAME);
         String message = isProxyEnabled() ?
                 "Connecting to event portal using EMA client {} via web proxy." :
