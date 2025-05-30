@@ -50,6 +50,10 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
     public void execute(Command command, SempApiProvider sempApiProvider) {
         try {
             validate(command, sempApiProvider);
+
+            // 5 min sleep
+            Thread.sleep(1000 * 60 * 5);
+
             executeSempCommand(command, sempApiProvider);
             command.setResult(CommandResult.builder()
                     .status(JobStatus.success)

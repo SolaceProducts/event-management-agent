@@ -31,6 +31,9 @@ public class SolaceSubscriptionProcessor extends ResultProcessorImpl<List<Map<St
         SolaceHttpSemp sempClient = messagingServiceDelegateService.getMessagingServiceClient(messagingServiceId);
         List<Map<String, Object>> subscriptionsRaw = new ArrayList<>();
 
+        // 5 min sleep
+        Thread.sleep(1000 * 60 * 5);
+
         for (SolaceQueueNameEvent queue : data) {
             subscriptionsRaw.addAll(sempClient.getSubscriptionForQueue(queue.getName()));
         }
