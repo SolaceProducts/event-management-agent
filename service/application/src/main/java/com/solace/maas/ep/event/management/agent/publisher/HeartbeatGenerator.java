@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacoco
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.info.BuildProperties;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_HEARTBEAT_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
@@ -59,6 +61,11 @@ public class HeartbeatGenerator {
         List<Tag> tags = new ArrayList<>();
         if (Objects.nonNull(message.getOrgId())) {
             tags.add(Tag.of(ORG_ID_TAG, message.getOrgId()));
+            tags.add(Tag.of("datacenter_id", Optional.ofNullable(meterRegistry.find("jvm.threads.live").meter())
+                    .map(meter -> meter.getId().getTag("maas_datacenter_id"))
+                    .orElse("Unknown")));
+            tags.add(Tag.of("public_cema",  StringUtils.equals(eventPortalProperties.getOrganizationId(), "*") ? "true" : "false"));
+            tags.add(Tag.of("cema_id",  eventPortalProperties.getRuntimeAgentId()));
         }
         meterRegistry.gauge(MAAS_EMA_HEARTBEAT_EVENT_SENT, tags, isHealthy ? 1 : 0);
     }
