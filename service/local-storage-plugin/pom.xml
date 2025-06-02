@@ -11,7 +11,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <org.json.version>20231013</org.json.version>
-        <camel.version>4.8.3</camel.version>
+        <camel.version>4.8.7</camel.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jacksondatabind.version>2.13.4.2</jacksondatabind.version>
         <junit.version>4.13.2</junit.version>
