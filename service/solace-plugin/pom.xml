@@ -14,7 +14,7 @@
         <solclientj.version>10.0.0</solclientj.version>
         <spring-boot.version>3.4.5</spring-boot.version>
         <jupiter.version>5.12.2</jupiter.version>
-        <camel.version>4.8.3</camel.version>
+        <camel.version>4.8.7</camel.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
