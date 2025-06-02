@@ -19,7 +19,6 @@ import com.solacesystems.jcsmp.JCSMPTransportException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -47,29 +46,12 @@ public class SolaceConfiguration {
     private final EventPortalProperties eventPortalProperties;
     private String topicPrefix;
 
-    /**
-     * Configuration for Solace messaging service.
-     * This class includes a connection failure simulation feature for testing purposes.
-     * To enable the simulation, set the following properties:
-     * - test.connection.simulate-failure: true/false (default: false)
-     * - test.connection.failure-delay-ms: delay in milliseconds before failure (default: 0)
-     * - test.connection.failure-type: type of failure to simulate (default: CONNECTION_RESET)
-     * Available types: CONNECTION_RESET, TIMEOUT, AUTH_FAILURE
-     * Example: To simulate a connection reset after 5 seconds:
-     * test.connection.simulate-failure=true
-     * test.connection.failure-delay-ms=5000
-     * test.connection.failure-type=CONNECTION_RESET
-     */
-    // Add these properties for failure simulation
-    @Value("${test.connection.simulate-failure:false}")
-    private boolean simulateConnectionFailure;
-
-    @Value("${test.connection.failure-delay-ms:0}")
-    private long failureDelayMs;
-
-    @Value("${test.connection.failure-type:CONNECTION_RESET}")
-    private String failureType;
-
+    @SuppressWarnings("PMD.FinalFieldCouldBeStatic")
+    private final boolean simulateConnectionFailure = true;  // Simulation enabled
+    @SuppressWarnings("PMD.FinalFieldCouldBeStatic")
+    private final long failureDelayMs = 2000;                   // Immediate failure if 0
+    @SuppressWarnings("PMD.FinalFieldCouldBeStatic")
+    private final String failureType = "CONNECTION_RESET";   // Connection reset error
 
     @Autowired
     @SuppressWarnings("PMD.LooseCoupling")
