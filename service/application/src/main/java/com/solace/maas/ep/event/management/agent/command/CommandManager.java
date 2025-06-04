@@ -224,6 +224,7 @@ public class CommandManager {
         response.setOrgId(requestBO.getOrgId());
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
+        response.setOriginalOrgId(requestBO.getOriginalOrgId());
         commandPublisher.sendCommandResponse(response, topicVars);
         meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
                 STATUS_TAG, response.getStatus().name()).increment();
