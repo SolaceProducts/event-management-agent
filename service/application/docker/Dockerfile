@@ -28,7 +28,7 @@ RUN printf '#!/bin/ash\ntofu $*' > /opt/ema/terraform/terraform
 RUN chmod +x /opt/ema/terraform/terraform
 ENV PATH $PATH:/opt/ema/terraform
 
-ARG SOLACE_PROVIDER_VERSION=1.1.1
+ARG SOLACE_PROVIDER_VERSION=1.2.0
 ADD terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.zip /opt/ema/terraform
 
 RUN unzip /opt/ema/terraform/terraform-provider-solacebroker_${SOLACE_PROVIDER_VERSION}_${PLATFORM}.zip -d /opt/ema/terraform && \

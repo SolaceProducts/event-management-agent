@@ -5,4 +5,6 @@ public class SempCommandConstants {
     public static final String SEMP_COMMAND_DATA = "data";
     public static final String SEMP_DELETE_OPERATION = "delete";
     public static final String SEMP_PATCH_OPERATION = "patch";
+    public static final String SEMP_GET_OPERATION = "get";
+    public static final String VALIDATION_ERROR_MESSAGE = "validationErrorMessage";
 }

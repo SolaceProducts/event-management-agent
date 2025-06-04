@@ -40,6 +40,7 @@ import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAN
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.semp;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.terraform;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants.SEMP_DELETE_OPERATION;
+import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants.SEMP_GET_OPERATION;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants.SEMP_PATCH_OPERATION;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.ACTOR_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants.TRACE_ID;
@@ -60,6 +61,7 @@ public class CommandManager {
     private final MeterRegistry meterRegistry;
     private final SempDeleteCommandManager sempDeleteCommandManager;
     private final SempPatchCommandManager sempPatchCommandManager;
+    private final SempGetCommandManager sempGetCommandManager;
     private final TerraformLogProcessingService terraformLoggingService;
 
     public CommandManager(TerraformManager terraformManager,
@@ -71,7 +73,8 @@ public class CommandManager {
                           MeterRegistry meterRegistry,
                           final SempDeleteCommandManager sempDeleteCommandManager,
                           TerraformLogProcessingService terraformLoggingService,
-                          SempPatchCommandManager sempPatchCommandManager) {
+                          SempPatchCommandManager sempPatchCommandManager,
+                          SempGetCommandManager sempGetCommandManager) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
@@ -83,6 +86,7 @@ public class CommandManager {
         this.sempDeleteCommandManager = sempDeleteCommandManager;
         this.terraformLoggingService = terraformLoggingService;
         this.sempPatchCommandManager = sempPatchCommandManager;
+        this.sempGetCommandManager = sempGetCommandManager;
     }
 
     public void execute(CommandMessage request) {
@@ -131,6 +135,7 @@ public class CommandManager {
 
             for (CommandBundle bundle : request.getCommandBundles()) {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();
+
                 // For now everything is run serially
                 for (Command command : bundle.getCommands()) {
                     attachErrorToTerraformCommand = false;
@@ -245,19 +250,21 @@ public class CommandManager {
     private void executeSempCommand(Command command, SolaceHttpSemp solaceClient) {
         try {
             Validate.isTrue(command.getCommandType().equals(semp), "Command type must be semp");
-            // only delete operation is supported for now and only delete operations are sent from EP
             Validate.isTrue(command.getCommand().equals(SEMP_DELETE_OPERATION)
-                            || command.getCommand().equals(SEMP_PATCH_OPERATION),
-                    "Command operation must be delete or patch");
+                            || command.getCommand().equals(SEMP_PATCH_OPERATION)
+                            || command.getCommand().equals(SEMP_GET_OPERATION),
+                    "Command operation must be delete, patch or get");
 
             // creating a new SempApiProviderImpl instance for each command execution
             // if this becomes a performance issue, we can consider caching the SempApiProviderImpl instance for each serviceId
+            SempApiProviderImpl sempApiProvider = new SempApiProviderImpl(solaceClient, eventPortalProperties);
+
             if (command.getCommand().equals(SEMP_PATCH_OPERATION)) {
-                sempPatchCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
+                sempPatchCommandManager.execute(command, sempApiProvider);
             } else if (command.getCommand().equals(SEMP_DELETE_OPERATION)) {
-                sempDeleteCommandManager.execute(command, new SempApiProviderImpl(solaceClient, eventPortalProperties));
+                sempDeleteCommandManager.execute(command, sempApiProvider);
             } else {
-                throw new UnsupportedOperationException("Unsupported SEMP command operation: " + command.getCommand());
+                sempGetCommandManager.execute(command, sempApiProvider);
             }
         } catch (Exception e) {
             log.error(ERROR_EXECUTING_COMMAND, e);
@@ -318,10 +325,12 @@ public class CommandManager {
     }
 
 
-    private static boolean exitEarlyOnFailedCommand(boolean existEarlyOnFailedCommand, Command command) {
-        return Boolean.TRUE.equals(existEarlyOnFailedCommand)
+    private static boolean exitEarlyOnFailedCommand(boolean exitEarlyOnFailedCommand, Command command) {
+        return Boolean.TRUE.equals(exitEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
-                && (command.getResult() == null || JobStatus.error.equals(command.getResult().getStatus()));
+                && (command.getResult() == null
+                || command.getResult().getStatus() == JobStatus.error
+                || command.getResult().getStatus() == JobStatus.validation_error);
     }
 
 

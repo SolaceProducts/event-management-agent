@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.solace</groupId>
     <artifactId>solace-plugin</artifactId>
-    <version>1.7.3-SNAPSHOT</version>
+    <version>1.9.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Solace Plugin</name>
     <description>Solace Event Management Agent - Solace Plugin</description>
@@ -14,7 +14,7 @@
         <solclientj.version>10.0.0</solclientj.version>
         <spring-boot.version>3.4.5</spring-boot.version>
         <jupiter.version>5.12.2</jupiter.version>
-        <camel.version>4.8.3</camel.version>
+        <camel.version>4.8.7</camel.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
@@ -104,7 +104,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.7.3-SNAPSHOT</version>
+            <version>1.9.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>

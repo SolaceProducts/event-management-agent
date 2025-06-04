@@ -73,7 +73,7 @@ public class SolaceConfiguration {
         String clientName = vmrConfiguration.getProperty(SolaceProperties.ClientProperties.NAME);
         String message = isProxyEnabled() ?
                 "Connecting to event portal using EMA client {} via web proxy." :
-                "Connecting to event portal using EMA client {} without proxy.";
+                "Connecting to event portal using EMA client {} without web proxy.";
         log.info(message, clientName);
         return MessagingService.builder(ConfigurationProfile.V1)
                 .fromProperties(vmrConfiguration)
@@ -123,7 +123,7 @@ public class SolaceConfiguration {
                 directMessagePublisher());
     }
 
-    private boolean isProxyEnabled() {
+    public boolean isProxyEnabled() {
         MessagingServiceConnectionProperties gatewayConnection = eventPortalProperties.getGateway().getMessaging().getConnections().stream()
                 .filter(c -> "eventPortalGateway".equals(c.getName()))
                 .findFirst()
@@ -131,5 +131,4 @@ public class SolaceConfiguration {
 
         return (Boolean.TRUE.equals(gatewayConnection.getProxyEnabled()));
     }
-
 }

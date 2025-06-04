@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.localstorage</groupId>
     <artifactId>local-storage-plugin</artifactId>
-    <version>1.7.3-SNAPSHOT</version>
+    <version>1.9.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Local Storage Plugin</name>
     <description>Solace Event Management Agent - Local Storage Plugin</description>
@@ -11,7 +11,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <org.json.version>20231013</org.json.version>
-        <camel.version>4.8.3</camel.version>
+        <camel.version>4.8.7</camel.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jacksondatabind.version>2.13.4.2</jacksondatabind.version>
         <junit.version>4.13.2</junit.version>
@@ -124,7 +124,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.7.3-SNAPSHOT</version>
+            <version>1.9.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>

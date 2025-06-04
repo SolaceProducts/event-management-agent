@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.solace.maas</groupId>
     <artifactId>maas-event-management-agent-parent</artifactId>
-    <version>1.7.3-SNAPSHOT</version>
+    <version>1.9.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Solace Event Management Agent Maven Parent</name>
     <description>Solace Solace Event Management Agent Maven Parent</description>
@@ -40,7 +40,7 @@
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
-        <camel.version>4.8.3</camel.version>
+        <camel.version>4.8.7</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
 
