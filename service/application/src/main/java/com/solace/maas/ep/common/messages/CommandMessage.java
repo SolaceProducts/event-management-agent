@@ -21,7 +21,7 @@ public class CommandMessage extends MOPMessage implements CommandMessageWithReso
     private JobStatus status;
     private List<CommandBundle> commandBundles;
     private List<EventBrokerResourceConfiguration> resources;
-    private String originalOrgId;
+    private String originOrgId;
 
     public CommandMessage() {
         super();
