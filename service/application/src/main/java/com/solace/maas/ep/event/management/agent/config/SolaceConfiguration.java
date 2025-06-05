@@ -92,7 +92,7 @@ public class SolaceConfiguration {
                 }
             }
 
-            log.error("Simulating connection failure of type: {}", failureType);
+            log.warn("Simulating connection failure of type: {}", failureType);
 
             switch (failureType) {
                 case "CONNECTION_RESET":
