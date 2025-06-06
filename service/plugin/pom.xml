@@ -6,13 +6,13 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.9.1-SNAPSHOT</version>
+        <version>1.9.1</version>
         <relativePath>..</relativePath>
     </parent>
 
     <groupId>com.solace.maas</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.9.1-SNAPSHOT</version>
+    <version>1.9.1</version>
     <packaging>jar</packaging>
 
     <name>Solace Event Management Agent - Plugin</name>
