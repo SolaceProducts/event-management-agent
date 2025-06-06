@@ -125,14 +125,14 @@ public class SolaceHttpSemp {
         return sempObject;
     }
 
-    private Function<UriBuilder, URI> createUriBuilderFunction(String uriPath,
-                                                               Map<String, String> substitutionMap,
-                                                               String selectFields) {
+    public Function<UriBuilder, URI> createUriBuilderFunction(String uriPath,
+                                                              Map<String, String> substitutionMap,
+                                                              String selectFields) {
         URI sempUri = getSempUri();
 
         if (StringUtils.isNotEmpty(selectFields)) {
             return (uriBuilder) -> uriBuilder
-                    .path(uriPath)
+                    .path(sempUri.getPath() + uriPath)
                     .queryParam("select", selectFields)
                     .host(sempUri.getHost())
                     .port(sempUri.getPort())
@@ -142,7 +142,7 @@ public class SolaceHttpSemp {
         }
 
         return (uriBuilder) -> uriBuilder
-                .path(uriPath)
+                .path(sempUri.getPath() + uriPath)
                 .host(sempUri.getHost())
                 .port(sempUri.getPort())
                 .scheme(sempUri.getScheme())
