@@ -66,11 +66,13 @@ public class ScanManager {
         String groupId = UUID.randomUUID().toString();
 
         MDC.put(RouteConstants.SCAN_ID, scanId);
+
         MDC.put(RouteConstants.TRACE_ID, traceId);
         MDC.put(RouteConstants.X_B_3_TRACE_ID, traceId);
         MDC.put(RouteConstants.ACTOR_ID, actorId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
         MDC.put(RouteConstants.ORG_ID, scanRequestBO.getOrgId());
+        MDC.put(RouteConstants.ORIGIN_ORG_ID, scanRequestBO.getOriginOrgId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
@@ -127,6 +129,7 @@ public class ScanManager {
                         .actorId(actorId)
                         .messagingServiceEntity(messagingServiceEntity)
                         .runtimeAgentId(runtimeAgentId)
+                        .originOrgId(scanRequestBO.getOriginOrgId())
                         .build()
         );
     }
@@ -151,6 +154,8 @@ public class ScanManager {
                 scanTypeNames
         );
 
+        // Set additional properties for the responsex
+        response.setOriginOrgId(message.getOriginOrgId());
         Map<String, String> topicVars = Map.of(
                 "orgId", message.getOrgId(),
                 "runtimeAgentId", runtimeAgentId

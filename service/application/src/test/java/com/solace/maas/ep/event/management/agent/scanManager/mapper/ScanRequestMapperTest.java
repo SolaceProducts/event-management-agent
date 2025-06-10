@@ -34,7 +34,8 @@ public class ScanRequestMapperTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         scanRequestMapper.map(scanRequestBO);
         scanRequestMapper.map((ScanRequestBO) null);
@@ -52,7 +53,8 @@ public class ScanRequestMapperTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         scanRequestMapper.map(scanRequestBO, user);
         scanRequestMapper.map(null, null);

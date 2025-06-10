@@ -20,6 +20,7 @@ public class ScanCommandMessage extends MOPMessage implements CommandMessageWith
     private List<ScanType> scanTypes;
     private List<ScanDestination> destinations;
     private List<EventBrokerResourceConfiguration> resources;
+    private String originOrgId;
 
     public ScanCommandMessage() {
         super();

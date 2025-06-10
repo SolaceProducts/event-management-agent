@@ -31,6 +31,8 @@ public class ScanRequestBO extends AbstractBaseBO<String> {
 
     private List<String> destinations;
 
+    private String originOrgId;
+
     @Override
     public String toString() {
         return "{ messaging service id:[" + messagingServiceId + ']' +

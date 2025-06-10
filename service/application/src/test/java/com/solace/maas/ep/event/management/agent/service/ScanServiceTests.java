@@ -326,7 +326,7 @@ public class ScanServiceTests {
                 mock(ScanTypeRepository.class),
                 mock(ScanStatusRepository.class), mock(ScanRouteService.class), mock(RouteService.class),
                 template, idGenerator, meterRegistry);
-        service.sendScanStatus("orgId", "scanId", "groupId", "messagingServiceId", "traceId", "actorId",
+        service.sendScanStatus("orgId", "orgId","scanId", "groupId", "messagingServiceId", "traceId", "actorId",
                 "queueListing", ScanStatus.IN_PROGRESS);
 
         assertThatNoException();
