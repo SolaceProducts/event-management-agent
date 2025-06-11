@@ -146,6 +146,7 @@ public class ScanManager {
 
         ScanStatusMessage response = new ScanStatusMessage(
                 message.getOrgId(),
+                message.getOriginOrgId(),
                 message.getScanId(),
                 MDC.get(RouteConstants.TRACE_ID),
                 MDC.get(RouteConstants.ACTOR_ID),
@@ -154,8 +155,7 @@ public class ScanManager {
                 scanTypeNames
         );
 
-        // Set additional properties for the responsex
-        response.setOriginOrgId(message.getOriginOrgId());
+        // Set additional properties for the response
         Map<String, String> topicVars = Map.of(
                 "orgId", message.getOrgId(),
                 "runtimeAgentId", runtimeAgentId
