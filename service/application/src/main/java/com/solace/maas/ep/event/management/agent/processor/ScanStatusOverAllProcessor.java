@@ -41,6 +41,7 @@ public class ScanStatusOverAllProcessor implements Processor {
         String scanId = (String) properties.get(RouteConstants.SCAN_ID);
         String traceId = (String) properties.get(RouteConstants.TRACE_ID);
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
+        String originOrgId = (String) properties.get(RouteConstants.ORIGIN_ORG_ID);
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
 
@@ -56,7 +57,7 @@ public class ScanStatusOverAllProcessor implements Processor {
         topicDetails.put("scanType", scanType);
         topicDetails.put("status", status.name());
 
-        ScanStatusMessage generalStatusMessage = new ScanStatusMessage(orgId, scanId, traceId, actorId, status.name(), description, scanTypes);
+        ScanStatusMessage generalStatusMessage = new ScanStatusMessage(orgId, originOrgId, scanId, traceId, actorId, status.name(), description, scanTypes);
 
         exchange.getIn().setHeader(RouteConstants.GENERAL_STATUS_MESSAGE, generalStatusMessage);
         exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);

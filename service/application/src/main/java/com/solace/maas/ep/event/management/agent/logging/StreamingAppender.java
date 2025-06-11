@@ -27,9 +27,11 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         String orgId = event.getMDCPropertyMap().get(RouteConstants.ORG_ID);
+        String originOrgId = event.getMDCPropertyMap().get(RouteConstants.ORIGIN_ORG_ID);
         if (!standalone) {
             if (StringUtils.isNotEmpty(event.getMDCPropertyMap().get(RouteConstants.SCAN_ID))) {
                 sendScanLogsAsync(orgId,
+                        originOrgId,
                         event,
                         event.getMDCPropertyMap().get(RouteConstants.SCAN_ID),
                         event.getMDCPropertyMap().get(RouteConstants.TRACE_ID),
@@ -40,6 +42,7 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
             } else if (StringUtils.isNotEmpty(event.getMDCPropertyMap().get(RouteConstants.COMMAND_CORRELATION_ID))) {
                 sendCommandLogsAsync(
                         orgId,
+                        originOrgId,
                         event,
                         event.getMDCPropertyMap().get(RouteConstants.COMMAND_CORRELATION_ID),
                         event.getMDCPropertyMap().get(RouteConstants.TRACE_ID),
@@ -49,8 +52,13 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
         }
     }
 
-    private void sendCommandLogsAsync(String orgId, ILoggingEvent event, String commandCorrelationId, String traceId,
-                                      String actorId, String messagingServiceId) {
+    private void sendCommandLogsAsync(String orgId,
+                                      String originOrgId,
+                                      ILoggingEvent event,
+                                      String commandCorrelationId,
+                                      String traceId,
+                                      String actorId,
+                                      String messagingServiceId) {
 
 
         RouteEntity route = RouteEntity.builder()
@@ -64,6 +72,7 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.ORG_ID, orgId);
+            exchange.getIn().setHeader(RouteConstants.ORIGIN_ORG_ID, originOrgId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
             exchange.getIn().setBody(event);
@@ -76,8 +85,15 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
         });
     }
 
-    private void sendScanLogsAsync(String orgId, ILoggingEvent event, String scanId, String traceId, String actorId,
-                                   String scanType, String groupId, String messagingServiceId) {
+    private void sendScanLogsAsync(String orgId,
+                                   String originOrgId,
+                                   ILoggingEvent event,
+                                   String scanId,
+                                   String traceId,
+                                   String actorId,
+                                   String scanType,
+                                   String groupId,
+                                   String messagingServiceId) {
         RouteEntity route = creatLoggingRoute(scanType, messagingServiceId);
 
         producerTemplate.asyncSend(route.getId(), exchange -> {
@@ -87,6 +103,7 @@ public class StreamingAppender extends AppenderBase<ILoggingEvent> {
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanType);
             exchange.getIn().setHeader(RouteConstants.ORG_ID, orgId);
+            exchange.getIn().setHeader(RouteConstants.ORIGIN_ORG_ID, originOrgId);
             exchange.getIn().setHeader(RouteConstants.SCHEDULE_ID, groupId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 

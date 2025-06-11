@@ -106,6 +106,7 @@ public class ScanService {
         String scanId = singleScanSpecification.getScanId();
         String traceId = singleScanSpecification.getTraceId();
         String orgId = singleScanSpecification.getOrgId();
+        String originOrgId = singleScanSpecification.getOriginOrgId();
         List<RouteBundle> routeBundles = singleScanSpecification.getRouteBundles();
         String actorId = singleScanSpecification.getActorId();
         MessagingServiceEntity messagingServiceEntity = singleScanSpecification.getMessagingServiceEntity();
@@ -124,8 +125,17 @@ public class ScanService {
         log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
                 scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
-        sendScanStatus(orgId, groupId, scanId, traceId, actorId, routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
-                StringUtils.join(scanTypes, ","), ScanStatus.IN_PROGRESS);
+        sendScanStatus(
+                orgId,
+                originOrgId,
+                groupId,
+                scanId,
+                traceId,
+                actorId,
+                routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+                StringUtils.join(scanTypes, ","),
+                ScanStatus.IN_PROGRESS
+        );
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
@@ -141,7 +151,16 @@ public class ScanService {
 
             updateScan(route, routeBundle, returnedScanEntity);
 
-            scanAsync(orgId, groupId, scanEntityId, traceId, actorId, route, routeBundle.getMessagingServiceId());
+            scanAsync(
+                    orgId,
+                    originOrgId,
+                    groupId,
+                    scanEntityId,
+                    traceId,
+                    actorId,
+                    route,
+                    routeBundle.getMessagingServiceId()
+            );
         }
 
         return scanId;
@@ -160,7 +179,7 @@ public class ScanService {
                         .route(route)
                         .destination(destination.getRouteId())
                         .build())
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         if (!destinationEntities.isEmpty()) {
             scanRouteService.saveDestinations(destinationEntities);
@@ -172,7 +191,7 @@ public class ScanService {
                         .route(route)
                         .recipient("seda:" + recipient.getRouteId())
                         .build())
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         if (!recipientEntities.isEmpty()) {
             scanRouteService.saveRecipients(recipientEntities);
@@ -244,6 +263,7 @@ public class ScanService {
      * @param status             The status of scan.
      */
     public void sendScanStatus(String orgId,
+                               String originOrgId,
                                String groupId,
                                String scanId,
                                String traceId,
@@ -261,14 +281,21 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_TYPE, scanTypes);
+            exchange.getIn().setHeader(RouteConstants.ORIGIN_ORG_ID, originOrgId);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, status);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
         });
         meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status.name(), SCAN_ID_TAG, scanId).increment();
     }
 
-    protected CompletableFuture<Exchange> scanAsync(String orgId, String groupId, String scanId, String traceId, String actorId,
-                                                    RouteEntity route, String messagingServiceId) {
+    protected CompletableFuture<Exchange> scanAsync(String orgId,
+                                                    String originOrgId,
+                                                    String groupId,
+                                                    String scanId,
+                                                    String traceId,
+                                                    String actorId,
+                                                    RouteEntity route,
+                                                    String messagingServiceId) {
 
         Validate.notBlank(orgId, NULL_ORG_ID_ERROR_MSG);
         return producerTemplate.asyncSend("seda:" + route.getId(), exchange -> {
@@ -277,6 +304,7 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_ID, scanId);
             exchange.getIn().setHeader(RouteConstants.TRACE_ID, traceId);
             exchange.getIn().setHeader(RouteConstants.ORG_ID, orgId);
+            exchange.getIn().setHeader(RouteConstants.ORIGIN_ORG_ID, originOrgId);
             exchange.getIn().setHeader(RouteConstants.ACTOR_ID, actorId);
             exchange.getIn().setHeader(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
@@ -434,7 +462,7 @@ public class ScanService {
     }
 
     public boolean isScanComplete(String scanId) {
-        if (ObjectUtils.isEmpty(scanId)){
+        if (ObjectUtils.isEmpty(scanId)) {
             throw new IllegalArgumentException("Scan ID cannot be null or empty");
         }
         Set<String> completeScanStatuses = Set.of(

@@ -84,7 +84,8 @@ class ScanManagerTest {
                 "traceId",
                 "actorId",
                 List.of("topics"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
@@ -95,7 +96,8 @@ class ScanManagerTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN_1"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOTopics));
 
@@ -106,7 +108,8 @@ class ScanManagerTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN_2"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOConsumerGroups));
     }
@@ -121,7 +124,7 @@ class ScanManagerTest {
                 "orgId",
                 messagingServiceId, "scanId", "traceId", "actorId",
                 List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
-                List.of("FILE_WRITER"));
+                List.of("FILE_WRITER"),"originOrgId");
 
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id(messagingServiceId)

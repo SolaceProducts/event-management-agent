@@ -48,7 +48,8 @@ public class EMAControllerTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN_TYPE"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         when(eventPortalProperties.getGateway())
                 .thenReturn(GatewayProperties.builder()
@@ -80,7 +81,8 @@ public class EMAControllerTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN"),
-                List.of("EVENT_PORTAL"));
+                List.of("EVENT_PORTAL"),
+                "originOrgId");
 
         when(eventPortalProperties.getGateway())
                 .thenReturn(GatewayProperties.builder()
@@ -111,7 +113,8 @@ public class EMAControllerTest {
                 "traceId",
                 "actorId",
                 List.of("TEST_SCAN"),
-                List.of());
+                List.of(),
+                "originOrgId");
 
         when(eventPortalProperties.getGateway())
                 .thenReturn(GatewayProperties.builder()

@@ -67,6 +67,7 @@ public class ScanStatusOverAllProcessorTests {
     public void testScanStatusMessageProtocol() {
         ScanStatusMessage scanStatusMessage = new ScanStatusMessage(
                 null,
+                null,
                 "scan1",
                 "traceId",
                 "actorId",

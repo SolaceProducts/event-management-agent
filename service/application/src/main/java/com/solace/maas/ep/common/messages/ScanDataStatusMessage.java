@@ -12,17 +12,25 @@ import lombok.EqualsAndHashCode;
 public class ScanDataStatusMessage extends MOPMessage {
     // Status per data collection type.
 
-    String orgId;
+    private String orgId;
 
-    String scanId;
+    private String scanId;
 
-    String status;
+    private String status;
 
-    String description;
+    private String description;
 
-    String scanType;
+    private String scanType;
+    private String originOrgId;
 
-    public ScanDataStatusMessage(String orgId, String scanId, String traceId, String actorId, String status, String description, String scanType) {
+    public ScanDataStatusMessage(String orgId,
+                                 String originOrgId,
+                                 String scanId,
+                                 String traceId,
+                                 String actorId,
+                                 String status,
+                                 String description,
+                                 String scanType) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanDataControl)
@@ -30,6 +38,7 @@ public class ScanDataStatusMessage extends MOPMessage {
                 .withUhFlag(MOPUHFlag.ignore);
 
         this.orgId = orgId;
+        this.originOrgId = originOrgId;
         this.scanId = scanId;
         this.status = status;
         this.description = description;

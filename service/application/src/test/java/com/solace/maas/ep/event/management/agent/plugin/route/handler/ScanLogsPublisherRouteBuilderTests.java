@@ -87,6 +87,7 @@ public class ScanLogsPublisherRouteBuilderTests {
     public void testScanLogMessageMOPProtocol() {
         ScanLogMessage scanLogMessage = new ScanLogMessage(
                 "orgId",
+                "originOrgId",
                 "scanId",
                 "traceId",
                 "actorId",

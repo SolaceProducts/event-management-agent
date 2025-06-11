@@ -79,4 +79,5 @@ public class SingleScanSpecification {
     private String actorId;
     private MessagingServiceEntity messagingServiceEntity;
     private String runtimeAgentId;
+    private String originOrgId;
 }

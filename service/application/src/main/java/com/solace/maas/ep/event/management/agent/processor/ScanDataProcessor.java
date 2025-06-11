@@ -46,10 +46,12 @@ public class ScanDataProcessor implements Processor {
         String actorId = (String) properties.get(RouteConstants.ACTOR_ID);
         String scanType = (String) properties.get(RouteConstants.SCAN_TYPE);
         String orgId = ProcessorUtils.determineOrganizationId(eventPortalProperties, exchange);
+        String originOrgId = (String) properties.get(RouteConstants.ORIGIN_ORG_ID);
         Boolean isImportOp = (Boolean) properties.get(RouteConstants.IS_DATA_IMPORT);
 
         ScanDataMessage scanDataMessage = new ScanDataMessage(
                 orgId,
+                originOrgId,
                 scanId,
                 traceId,
                 actorId,
