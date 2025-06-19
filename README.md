@@ -87,11 +87,34 @@ The Event Management Agent takes a couple of minutes to start. The Event Managem
 docker logs -f event-management-agent
 ```
 
+### Running the Event Management Agent with Proxy Configuration
+
+If your environment requires proxy configuration to connect to Event Portal, you can configure the Event Management Agent to use a proxy server.
+
+When running the Event Management Agent in Docker, you can configure proxy settings using environment variables:
+
+```
+export EMA_SOLACE_PROXY_ENABLED=true
+export EMA_SOLACE_PROXY_TYPE=http
+export EMA_SOLACE_PROXY_HOST=your_proxy_host
+export EMA_SOLACE_PROXY_PORT=your_proxy_port
+export EMA_SOLACE_PROXY_USERNAME=your_username (optional)
+export EMA_SOLACE_PROXY_PASSWORD=your_password (optional)
+docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
+--env KAFKA_PASSWORD=myKafkaPassword \
+--env SOLACE_PROXY_ENABLED=${EMA_SOLACE_PROXY_ENABLED} \
+--env SOLACE_PROXY_TYPE=${EMA_SOLACE_PROXY_TYPE} \
+--env SOLACE_PROXY_HOST=${EMA_SOLACE_PROXY_HOST} \
+--env SOLACE_PROXY_PORT=${EMA_SOLACE_PROXY_PORT} \
+--env SOLACE_PROXY_USERNAME=${EMA_SOLACE_PROXY_USERNAME} \
+--env SOLACE_PROXY_PASSWORD=${EMA_SOLACE_PROXY_PASSWORD} \
+--name event-management-agent solace/event-management-agent:latest
+```
+
 ## Running a Discovery Scan
 
 The Event Management Agent is now connected to the Solace Cloud Console.
 Follow the steps in the documentation to run a discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
-
 
 # Running the Event Management Agent in Standalone Mode
 
