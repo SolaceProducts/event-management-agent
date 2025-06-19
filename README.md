@@ -2,38 +2,38 @@
 
 The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related event broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
 
-* As the Event Management Agent component of Solace PubSub+ Cloud Event Portal to:
-    - discover runtime event data from event brokers and schema registries
-    - populate Event Portal with the discovered runtime data to enable the management and reuse of EDA assets
-    - audit the runtime data and flag discrepancies between the runtime and the design time intent for event data governance purposes, and to ensure that the runtime and design time configurations stay in-sync
-* As a standalone tool that discovers runtime event data from event or message brokers and schema registries.
+- As the Event Management Agent component of Solace PubSub+ Cloud Event Portal to:
+  - discover runtime event data from event brokers and schema registries
+  - populate Event Portal with the discovered runtime data to enable the management and reuse of EDA assets
+  - audit the runtime data and flag discrepancies between the runtime and the design time intent for event data governance purposes, and to ensure that the runtime and design time configurations stay in-sync
+- As a standalone tool that discovers runtime event data from event or message brokers and schema registries.
 
 Our plan is to open source the Event Management Agent to enable architects and developers to contribute to it as well as to build new plugins so that:
 
-* the agent can discover data from different event broker types
-* existing plugins can be extended to discover additional data
-* EDA data can be discovered from other systems, e.g. schemas from schema registries
+- the agent can discover data from different event broker types
+- existing plugins can be extended to discover additional data
+- EDA data can be discovered from other systems, e.g. schemas from schema registries
 
 ## Available today
 
-* Users can discover Solace PubSub+ and Apache and Confluent Kafka brokers event flow data:
-    - Users can discover Solace PubSub+ queues and subscriptions
-    - Users can discover Apache and Confluent Kafka topics and consumer groups
-* Users can discover Confluent Schema Registry schemas
-* Users get discovered data in the form of JSON files separated by entity types
-* The Event Management Agent architecture is currently in the form of Java packages
+- Users can discover Solace PubSub+ and Apache and Confluent Kafka brokers event flow data:
+  - Users can discover Solace PubSub+ queues and subscriptions
+  - Users can discover Apache and Confluent Kafka topics and consumer groups
+- Users can discover Confluent Schema Registry schemas
+- Users get discovered data in the form of JSON files separated by entity types
+- The Event Management Agent architecture is currently in the form of Java packages
 
 ## On the roadmap
 
-* The Event Management Agent has an open source plugin framework
-* Support additional Solace PubSub+ and Apache Kafka event broker authentication types in the form of plugins such as Kerberos, etc.
-* Collection of topics from events flowing though Solace PubSub+ brokers
-* Export discovered data as AsyncAPI specifications
-* Addition of the infrastructure needed for the Event Management Agent to be a true open source project
-* Discovery of Apache Kafka connectors
-* Introduction of a UI for the Event Management Agent
-* Additional support to more event broker types
-* Event Management Agent executables
+- The Event Management Agent has an open source plugin framework
+- Support additional Solace PubSub+ and Apache Kafka event broker authentication types in the form of plugins such as Kerberos, etc.
+- Collection of topics from events flowing though Solace PubSub+ brokers
+- Export discovered data as AsyncAPI specifications
+- Addition of the infrastructure needed for the Event Management Agent to be a true open source project
+- Discovery of Apache Kafka connectors
+- Introduction of a UI for the Event Management Agent
+- Additional support to more event broker types
+- Event Management Agent executables
 
 # Running the Event Management Agent in connected mode
 
@@ -43,8 +43,8 @@ In this mode, the Event Management Agent connects to the Solace PubSub+ Event Po
 
 The Event Management Agent was tested to run with
 
-* 1 CPU
-* 1 GB RAM
+- 1 CPU
+- 1 GB RAM
 
 ## Prerequisites
 
@@ -55,6 +55,7 @@ Docker is required for any of the steps below that use the event-management-agen
 The Event Management Agent must be installed in a location that has access to your event brokers and schema registries.
 
 Pull the Event Management Agent Docker image from Docker Hub:
+
 ```
 docker pull solace/event-management-agent
 ```
@@ -63,23 +64,24 @@ docker pull solace/event-management-agent
 
 1. Log in the Solace Cloud Console: https://console.solace.cloud/login/
 2. Follow the steps for generating the connection file described in the Solace documentation: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#creating_connection_file
-    - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variable names that will contain the passwords when generating the connection file.
+   - For security considerations, passwords should be configured as environment variables. Therefore, provide the environment variable names that will contain the passwords when generating the connection file.
 3. Download the connection file next to the Event Management Agent
 4. Create the environment variables containing the actual passwords you provided in place of the passwords when generating the connection file
 
 ## Running the Event Management Agent
 
 Specify:
-* the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
-* the environment variables containing the authentication details of your event brokers and schema registries (e.g. KAFKA_PASSWORD)
-* the name of the Event Management Agent container (e.g. event-management-agent)
-* the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
+
+- the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
+- the environment variables containing the authentication details of your event brokers and schema registries (e.g. KAFKA_PASSWORD)
+- the name of the Event Management Agent container (e.g. event-management-agent)
+- the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 ```
 docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml --env KAFKA_PASSWORD=myKafkaPassword --name event-management-agent solace/event-management-agent:latest
 ```
 
-> **_NOTE:_**  Depending on your OS, the container may fail to start if your connection filename contains spaces or special characters. If you see such failures, make sure your filenames are within quotes or that they do not contain spaces or special characters.
+> **_NOTE:_** Depending on your OS, the container may fail to start if your connection filename contains spaces or special characters. If you see such failures, make sure your filenames are within quotes or that they do not contain spaces or special characters.
 
 The Event Management Agent takes a couple of minutes to start. The Event Management Agent logs are available via Docker:
 
@@ -92,19 +94,20 @@ docker logs -f event-management-agent
 The Event Management Agent is now connected to the Solace Cloud Console.
 Follow the steps in the documentation to run a discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
 
-
 # Running the Event Management Agent in Standalone Mode
 
 ## Getting the Event Management Agent
 
 The Event Management Agent must have access to your event brokers and schema registries.
 
-* pull the Event Management Docker image
+- pull the Event Management Docker image
+
 ```
 docker pull solace/event-management-agent
 ```
 
-* clone the Event Management Agent GitHub repository
+- clone the Event Management Agent GitHub repository
+
 ```
 git clone https://github.com/SolaceProducts/event-management-agent.git
 cd event-management-agent
@@ -113,29 +116,57 @@ cd event-management-agent
 ## Generating the Connection File
 
 1. duplicate the connect file found in:
+
 ```
 service/application/src/main/resources/application.yml
 ```
+
 2. uncomment the sections relevant to your event brokers and schema registries
 3. provide the authentication details required to connect to your event brokers and schema registries
 
 ## Running the Event Management Agent in a Docker Container
 
 Specify:
-* the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
-* the name of the Event Management Agent container (e.g. event-management-agent)
-* the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
+
+- the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
+- the name of the Event Management Agent container (e.g. event-management-agent)
+- the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 ```
 docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml --name event-management-agent solace/event-management-agent:latest
 ```
 
-> **_NOTE:_**  Depending on your OS, the container may fail to start if your connection filename contains spaces or special characters. If you see such failures, make sure your filenames are within quotes or that they do not contain spaces or special characters.
+> **_NOTE:_** Depending on your OS, the container may fail to start if your connection filename contains spaces or special characters. If you see such failures, make sure your filenames are within quotes or that they do not contain spaces or special characters.
 
 The Event Management Agent takes a couple of minutes to start. The Event Management Agent logs are available via Docker:
 
 ```
 docker logs -f event-management-agent
+```
+
+### Running the Event Management Agent with Proxy Configuration
+
+If your environment requires proxy configuration to connect to Event Portal, you can configure the Event Management Agent to use a proxy server.
+
+When running the Event Management Agent in Docker, you can configure proxy settings using environment variables:
+
+```
+export EMA_SOLACE_PROXY_ENABLED=true
+export EMA_SOLACE_PROXY_TYPE=http
+export EMA_SOLACE_PROXY_HOST=your_proxy_host
+export EMA_SOLACE_PROXY_PORT=your_proxy_port
+export EMA_SOLACE_PROXY_USERNAME=your_username (optional)
+export EMA_SOLACE_PROXY_PASSWORD=your_password (optional)
+
+docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
+--env KAFKA_PASSWORD=myKafkaPassword \
+--env SOLACE_PROXY_ENABLED=${EMA_SOLACE_PROXY_ENABLED} \
+--env SOLACE_PROXY_TYPE=${EMA_SOLACE_PROXY_TYPE} \
+--env SOLACE_PROXY_HOST=${EMA_SOLACE_PROXY_HOST} \
+--env SOLACE_PROXY_PORT=${EMA_SOLACE_PROXY_PORT} \
+--env SOLACE_PROXY_USERNAME=${EMA_SOLACE_PROXY_USERNAME} \
+--env SOLACE_PROXY_PASSWORD=${EMA_SOLACE_PROXY_PASSWORD} \
+--name event-management-agent solace/event-management-agent:latest
 ```
 
 ## Running Discovery Scans using REST
@@ -145,9 +176,10 @@ docker logs -f event-management-agent
 The Event Management Agent includes REST APIs that allow users to interact with the agent. See [REST Documentation](docs/rest.md) for additional information.
 
 To run a scan:
-* provide the id of the event broker you specified in the connection file, e.g. mykafkacluster
-* provide the scan type, e.g. KAFKA_ALL
-* provide the destination: FILE_WRITER
+
+- provide the id of the event broker you specified in the connection file, e.g. mykafkacluster
+- provide the scan type, e.g. KAFKA_ALL
+- provide the destination: FILE_WRITER
 
 ```
 curl -X 'POST' \
@@ -170,8 +202,8 @@ The agent will return a scan id.
 
 The Event Management Agent can export discovery scans as zip files containing the entity type JSON files.
 
-* provide the scan id, e.g. ih9z9lwwv5r
-* provide the name of the zip file, e.g. ih9z9lwwv5r.zip 
+- provide the scan id, e.g. ih9z9lwwv5r
+- provide the name of the zip file, e.g. ih9z9lwwv5r.zip
 
 ```
 curl -X 'GET' \
@@ -187,14 +219,16 @@ A discovery scan and file export can be run as a single command from a terminal 
 ### Discovery Scan and File Export from CLI Using the Jar File
 
 The Event Management Agent jar file can be obtained by either:
-* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.1` or greater is required.
-* running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
+
+- downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.1` or greater is required.
+- running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
 
 To run a scan:
-* provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
-* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.1-SNAPSHOT.jar)
-* provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
-* provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
+
+- provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
+- provide the event-management-agent jar file. (e.g. event-management-agent-1.5.1-SNAPSHOT.jar)
+- provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
+- provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
 
 The command is as follows:
 
@@ -205,12 +239,13 @@ java -jar event-management-agent-1.5.1-SNAPSHOT.jar scan mysolacebroker /path/to
 ### Discovery Scan and File Export From CLI Using Docker
 
 To run a scan and export operation using the CLI from docker:
-* provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
-* provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
-* provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
-* provide the name of the Event Management Agent container (e.g. event-management-agent)
-* provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
-* add all password environment variables to the environment of the docker container (example BROKER_PASSWORD)
+
+- provide the id of the event broker specified in the connection file. (e.g. mysolacebroker)
+- provide the path and filename for the resulting scan data zip file. (e.g. /path/to/scan.zip)
+- provide the location of the connection file (e.g. /path/to/file/AcmeRetailStandalone.yml)
+- provide the name of the Event Management Agent container (e.g. event-management-agent)
+- provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
+- add all password environment variables to the environment of the docker container (example BROKER_PASSWORD)
 
 The commands are as follows:
 
@@ -230,13 +265,15 @@ See [Generating the Event Management Agent connection file](#generating-the-even
 ### Discovery File Upload From CLI Using the Jar File
 
 The Event Management Agent jar file can be obtained by either:
-* downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.1` or greater is required.
-* running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
+
+- downloading the file from the [releases page](https://github.com/SolaceProducts/event-management-agent/releases). A release of `1.5.1` or greater is required.
+- running a [build of the source code](#installing-maven-dependencies-and-building-the-event-management-agent-jar-file)
 
 To run a scan file upload:
-* provide the event-management-agent jar file. (e.g. event-management-agent-1.5.1-SNAPSHOT.jar)
-* provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
-* provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
+
+- provide the event-management-agent jar file. (e.g. event-management-agent-1.5.1-SNAPSHOT.jar)
+- provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
+- provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
 
 The command is as follows:
 
@@ -247,10 +284,11 @@ java -jar event-management-agent-1.5.1-SNAPSHOT.jar upload /path/to/scan.zip --s
 ### Discovery Scan and File Export From CLI Using Docker
 
 To run a scan file upload using the CLI from docker:
-* provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
-* provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
-* provide the name of the Event Management Agent container (e.g. event-management-agent)
-* provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
+
+- provide the path and filename of the scan data zip file. (e.g. /path/to/scan.zip)
+- provide the location of the connection file (e.g. /path/to/file/AcmeRetail.yml)
+- provide the name of the Event Management Agent container (e.g. event-management-agent)
+- provide the Event Management Agent Docker image (e.g. solace/event-management-agent:latest)
 
 The commands are as follows:
 
@@ -265,9 +303,11 @@ docker run -d -v /path/to/file/AcmeRetail.yml:/config/ema.yml -v /path/to/scan.z
 # Manually Uploading Scans to Event Portal
 
 You can manually upload discovery scan zip files to Event Portal. To do so:
+
 1. Scan and export discovery scans following with a first Event Management Agent running in standalone mode: [Running the Event Management Agent in standalone mode](#running-the-event-management-agent-in-standalone-mode)
 2. Set up a second agent in connected mode following: [Running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode)
 3. Upload your Discovery zip file with the following curl command, providing the name of the zip file, e.g. scan.zip:
+
 ```
 curl -X 'POST' \
   'http://localhost:8180/api/v2/ema/resources/import' \
@@ -293,10 +333,12 @@ The Event Management Agent configuration push functionality is dependent on the 
 Follow [these installation instructions](https://opentofu.org/docs/intro/install/) to install OpenTofu on Linux or MacOS.
 
 The Event Management Agent requires the `terraform` executable to be available and aliased to `tofu`. To accomplish this, follow the instructions below to create an executable script:
+
 ```
 printf '#!/bin/bash\ntofu $*' > terraform
 chmod +x terraform
 ```
+
 The `terraform` script mentioned above needs to be added to the system's PATH.
 
 ### Solace Terraform Provider
@@ -308,6 +350,7 @@ The [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-prov
 2. Unzip the file. This will yield a LICENSE file, a README.md file, and the provider plugin file (`terraform-provider-solacebroker_0.9.2` in the example case).
 
 3. Create or update your `${HOME}/.tofurc` (MacOS and Linux) configuration file with a `provider_installation` section that contains the following `dev_overrides`:
+
 ```
 provider_installation {
   dev_overrides {
@@ -317,15 +360,15 @@ provider_installation {
   direct {}
 }
 ```
-where "/path/containing/terraform-provider-solacebroker" is replaced with the directory location of the `terraform-provider-solacebroker_0.9.2` file (not including the filename).
 
+where "/path/containing/terraform-provider-solacebroker" is replaced with the directory location of the `terraform-provider-solacebroker_0.9.2` file (not including the filename).
 
 # Building the Event Management Agent
 
 ## Prerequisites
 
-* Java 17 (JDK 17.0.13_11+)
-* Maven
+- Java 17 (JDK 17.0.13_11+)
+- Maven
 
 ## Cloning the GitHub Event Management Agent Repository
 
@@ -351,8 +394,9 @@ application/target/event-management-agent-1.0.0-SNAPSHOT.jar
 You can run the Event Management Agent as a process in both connected and standalone modes.
 
 Specify:
-* the Event Management Agent jar file (e.g. event-management-agent-1.0.0-SNAPSHOT.jar)
-* the location of the connection file (e.g. /path/to/file/AcmeRetail.yml) - See [Generating the Event Management Agent connection file](#generating-the-event-management-agent-connection-file) to generate a connection file
+
+- the Event Management Agent jar file (e.g. event-management-agent-1.0.0-SNAPSHOT.jar)
+- the location of the connection file (e.g. /path/to/file/AcmeRetail.yml) - See [Generating the Event Management Agent connection file](#generating-the-event-management-agent-connection-file) to generate a connection file
 
 ```
 java -jar application/target/event-management-agent-1.0.0-SNAPSHOT.jar --spring.config.location=/path/to/file/AcmeRetail.yml
@@ -509,31 +553,31 @@ spec:
         app: ema
     spec:
       containers:
-      - image: docker.io/solace/event-mangement-agent:1.1.1
-        imagePullPolicy: IfNotPresent
-        name: event-management-agent
-        volumeMounts:
-        - mountPath: /config
-          name: ema-example1
-        env: 
+        - image: docker.io/solace/event-mangement-agent:1.1.1
+          imagePullPolicy: IfNotPresent
+          name: event-management-agent
+          volumeMounts:
+            - mountPath: /config
+              name: ema-example1
+          env:
             - name: MY_KAFKA_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: broker-passwords
                   key: MY_KAFKA_PASSWORD
-        ports:
-        - containerPort: 8180
+          ports:
+            - containerPort: 8180
       restartPolicy: Always
       volumes:
-      - configMap:
-          defaultMode: 420
-          items:
-          - key: ema-properties
-            mode: 420
-            path: ema.yml
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: ema-properties
+                mode: 420
+                path: ema.yml
+            name: ema-example1
+            optional: true
           name: ema-example1
-          optional: true
-        name: ema-example1
 ```
 
 ## Service Example
@@ -544,10 +588,10 @@ If users wish to run the EMA in offline mode, they will need to create a service
 
 The Event Management Agent comes with the following event or message broker plugins included:
 
-* Apache and Confluent Kafka
-* Solace PubSub+
-* Confluent Schema Registry
-* MSK
+- Apache and Confluent Kafka
+- Solace PubSub+
+- Confluent Schema Registry
+- MSK
 
 The default application.yml provides various plugin examples. For Kafka, the properties section under credentials is passthrough. For example a property in ConsumerConfig or SSLConfigs classes.
 
@@ -577,8 +621,8 @@ See [motivations](./docs/motivations.md)
 There are several interesting scenarios to test the Event Management Agent. These scenarios can be divided into two main
 categories according to the deployment mode.
 
-* Testing the Event Management Agent as standalone service (stand-alone deployment).
-* Testing the end-to-end flow in Solace PubSub+ Console connected mode (From the frontend to the Event Portal, then to
+- Testing the Event Management Agent as standalone service (stand-alone deployment).
+- Testing the end-to-end flow in Solace PubSub+ Console connected mode (From the frontend to the Event Portal, then to
   the Event Management Agent)
 
 ### Testing the Event Management Agent in Standalone Mode
@@ -623,10 +667,9 @@ c.s.m.e.r.a.c.ResourceConfig : Created [solace] resource with id:[hdfgkdjf] and 
 Contributions are encouraged! If you have ideas to improve an existing plugin, create a new plugin, or improve/extend
 the agent framework then please contribute!
 
-## License 
+## License
 
 Event Management Agent is available under the Apache License V2.
-
 
 ## Contributors
 
