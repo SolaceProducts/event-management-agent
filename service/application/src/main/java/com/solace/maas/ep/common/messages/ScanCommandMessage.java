@@ -9,10 +9,12 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class ScanCommandMessage extends MOPMessage implements CommandMessageWithResources {
 
     private String messagingServiceId;
@@ -21,9 +23,6 @@ public class ScanCommandMessage extends MOPMessage implements CommandMessageWith
     private List<ScanDestination> destinations;
     private List<EventBrokerResourceConfiguration> resources;
 
-    public ScanCommandMessage() {
-        super();
-    }
 
     public ScanCommandMessage(String messagingServiceId,
                               String scanId,

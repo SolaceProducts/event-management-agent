@@ -5,8 +5,10 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class HeartbeatMessage extends MOPMessage {
 
     private String orgId;
@@ -14,11 +16,10 @@ public class HeartbeatMessage extends MOPMessage {
     private String timestamp;
     private String runtimeAgentVersion;
 
-    public HeartbeatMessage() {
-        super();
-    }
 
-    public HeartbeatMessage(String runtimeAgentId, String timestamp,  String runtimeAgentVersion) {
+    public HeartbeatMessage(String runtimeAgentId,
+                            String timestamp,
+                            String runtimeAgentVersion) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.EMAHeartbeat)
