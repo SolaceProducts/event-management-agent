@@ -6,27 +6,31 @@ import com.solace.maas.ep.event.management.agent.plugin.mop.MOPProtocol;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPUHFlag;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@NoArgsConstructor
 public class ScanDataImportMessage extends MOPMessage {
-    String orgId;
+    private String orgId;
 
-    String scanId;
+    private String scanId;
 
-    String messagingServiceId;
+    private String messagingServiceId;
 
-    String runtimeAgentId;
+    private String runtimeAgentId;
 
     private List<String> scanTypes;
 
-    public ScanDataImportMessage() {
-        super();
-    }
 
-    public ScanDataImportMessage(String orgId, String scanId, String traceId, String messagingServiceId, String runtimeAgentId, List<String> scanTypes) {
+    public ScanDataImportMessage(String orgId,
+                                 String scanId,
+                                 String traceId,
+                                 String messagingServiceId,
+                                 String runtimeAgentId,
+                                 List<String> scanTypes) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanDataControl)

@@ -14,17 +14,23 @@ import java.util.List;
 public class ScanStatusMessage extends MOPMessage {
     // Status of the overall scan.
 
-    String orgId;
+    private String orgId;
 
-    String scanId;
+    private String scanId;
 
-    String status;
+    private String status;
 
-    String description;
+    private String description;
 
     private List<String> scanTypes;
 
-    public ScanStatusMessage(String orgId, String scanId, String traceId, String actorId, String status, String description, List<String> scanTypes) {
+    public ScanStatusMessage(String orgId,
+                             String scanId,
+                             String traceId,
+                             String actorId,
+                             String status,
+                             String description,
+                             List<String> scanTypes) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanDataControl)

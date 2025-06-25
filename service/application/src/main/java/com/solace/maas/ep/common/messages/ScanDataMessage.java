@@ -8,17 +8,23 @@ import lombok.Data;
 
 @Data
 public class ScanDataMessage extends MOPMessage {
-    String orgId;
+    private String orgId;
 
-    String scanId;
+    private String scanId;
 
-    String scanType;
+    private String scanType;
 
-    String data;
+    private String data;
 
     private String timestamp;
 
-    public ScanDataMessage(String orgId, String scanId, String traceId, String actorId, String scanType, String data, String timestamp) {
+    public ScanDataMessage(String orgId,
+                           String scanId,
+                           String traceId,
+                           String actorId,
+                           String scanType,
+                           String data,
+                           String timestamp) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.scanData)

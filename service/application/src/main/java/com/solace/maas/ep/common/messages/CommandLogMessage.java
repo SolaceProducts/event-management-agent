@@ -8,20 +8,26 @@ import lombok.Data;
 
 @Data
 public class CommandLogMessage extends MOPMessage {
-    String orgId;
+    private String orgId;
 
-    String commandCorrelationId;
+    private String commandCorrelationId;
 
-    String eventManagementAgentId;
+    private String eventManagementAgentId;
 
-    String level;
+    private String level;
 
-    String log;
+    private String log;
 
-    Long timestamp;
+    private Long timestamp;
 
-    public CommandLogMessage(String orgId, String commandCorrelationId, String traceId, String actorId,
-                             String level, String log, Long timestamp, String runtimeAgentId) {
+    public CommandLogMessage(String orgId,
+                             String commandCorrelationId,
+                             String traceId,
+                             String actorId,
+                             String level,
+                             String log,
+                             Long timestamp,
+                             String runtimeAgentId) {
         super();
         withMessageType(MOPMessageType.generic)
                 .withProtocol(MOPProtocol.epConfigPush)
