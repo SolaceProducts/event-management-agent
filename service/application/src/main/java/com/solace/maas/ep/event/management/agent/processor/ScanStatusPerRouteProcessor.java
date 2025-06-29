@@ -41,6 +41,7 @@ public class ScanStatusPerRouteProcessor implements Processor {
         ScanStatus status = (ScanStatus) properties.get(RouteConstants.SCAN_STATUS);
         String description = (String) properties.get(RouteConstants.SCAN_STATUS_DESC);
         String orgId = ProcessorUtils.determineOrganizationId(eventPortalProperties, exchange);
+        String originOrgId = (String) properties.get(RouteConstants.ORIGIN_ORG_ID);
         topicDetails.put("orgId", orgId);
         topicDetails.put("runtimeAgentId", eventPortalProperties.getRuntimeAgentId());
         topicDetails.put("messagingServiceId", messagingServiceId);
@@ -48,8 +49,14 @@ public class ScanStatusPerRouteProcessor implements Processor {
         topicDetails.put("status", status.name());
         topicDetails.put("scanDataType", scanType);
 
-        ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(orgId, scanId, traceId, actorId,
-                status.name(), description, scanType);
+        ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(orgId,
+                originOrgId,
+                scanId,
+                traceId,
+                actorId,
+                status.name(),
+                description,
+                scanType);
 
         exchange.getIn().setHeader(RouteConstants.SCAN_DATA_STATUS_MESSAGE, scanDataStatusMessage);
         exchange.getIn().setHeader(RouteConstants.TOPIC_DETAILS, topicDetails);

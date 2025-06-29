@@ -77,36 +77,42 @@ class ScanManagerTest {
                         .build()
         )).thenReturn(Mockito.anyString());
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("topics"),
-                List.of());
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("topics", "consumerGroups"))
+                .destinations(List.of())
+                .build();
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBO));
 
-        ScanRequestBO scanRequestBOTopics = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN_1"),
-                List.of());
+        ScanRequestBO scanRequestBOTopics = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN_1"))
+                .destinations(List.of())
+                .build();
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOTopics));
 
-        ScanRequestBO scanRequestBOConsumerGroups = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN_2"),
-                List.of());
+        ScanRequestBO scanRequestBOConsumerGroups = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN_2"))
+                .destinations(List.of())
+                .build();
 
         Assertions.assertThrows(NullPointerException.class, () -> scanManager.scan(scanRequestBOConsumerGroups));
     }
@@ -117,11 +123,16 @@ class ScanManagerTest {
         String messagingServiceId = "messagingServiceId";
         String confluentSchemaRegistryId = "confluentId";
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                messagingServiceId, "scanId", "traceId", "actorId",
-                List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"),
-                List.of("FILE_WRITER"));
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId(messagingServiceId)
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("KAFKA_ALL", "CONFLUENT_SCHEMA_REGISTRY_SCHEMA"))
+                .destinations(List.of("FILE_WRITER"))
+                .build();
 
         MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
                 .id(messagingServiceId)

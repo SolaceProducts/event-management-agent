@@ -27,14 +27,16 @@ public class ScanRequestMapperTest {
         scanRequestMapper.map(scanRequestDTO);
         scanRequestMapper.map((ScanRequestDTO) null);
 
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN"),
-                List.of());
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN"))
+                .destinations(List.of())
+                .build();
 
         scanRequestMapper.map(scanRequestBO);
         scanRequestMapper.map((ScanRequestBO) null);
@@ -45,14 +47,16 @@ public class ScanRequestMapperTest {
     @Test
     public void testMapperWithUser() {
         User user = new User("orgId", "userId");
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN"),
-                List.of());
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN"))
+                .destinations(List.of())
+                .build();
 
         scanRequestMapper.map(scanRequestBO, user);
         scanRequestMapper.map(null, null);

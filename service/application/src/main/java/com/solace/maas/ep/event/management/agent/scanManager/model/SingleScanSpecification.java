@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class SingleScanSpecification {
     private String orgId;
+    private String originOrgId;
     /**
      * The concept of a RouteBundle is introduced to make chaining routes easier
      * <p>

@@ -41,14 +41,16 @@ public class EMAControllerTest {
         EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
 
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of());
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanConnected",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN_TYPE"),
-                List.of());
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanConnected")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN_TYPE"))
+                .destinations(List.of())
+                .build();
 
         when(eventPortalProperties.getGateway())
                 .thenReturn(GatewayProperties.builder()
@@ -73,14 +75,16 @@ public class EMAControllerTest {
         EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
 
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of("EVENT_PORTAL"));
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN"),
-                List.of("EVENT_PORTAL"));
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN"))
+                .destinations(List.of("EVENT_PORTAL"))
+                .build();
 
         when(eventPortalProperties.getGateway())
                 .thenReturn(GatewayProperties.builder()
@@ -104,14 +108,16 @@ public class EMAControllerTest {
         EventPortalProperties eventPortalProperties = mock(EventPortalProperties.class);
 
         ScanRequestDTO scanRequestDTO = new ScanRequestDTO(List.of("topics"), List.of());
-        ScanRequestBO scanRequestBO = new ScanRequestBO(
-                "orgId",
-                "id",
-                "scanId",
-                "traceId",
-                "actorId",
-                List.of("TEST_SCAN"),
-                List.of());
+        ScanRequestBO scanRequestBO = ScanRequestBO.builder()
+                .orgId("orgId")
+                .originOrgId("originOrgId")
+                .messagingServiceId("id")
+                .scanId("scanId")
+                .traceId("traceId")
+                .actorId("actorId")
+                .scanTypes(List.of("TEST_SCAN"))
+                .destinations(List.of())
+                .build();
 
         when(eventPortalProperties.getGateway())
                 .thenReturn(GatewayProperties.builder()
