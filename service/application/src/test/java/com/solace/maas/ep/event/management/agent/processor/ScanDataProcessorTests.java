@@ -62,6 +62,7 @@ public class ScanDataProcessorTests {
     public void testScanMessageMOPProtocol() {
         ScanDataMessage scanDataMessage = new ScanDataMessage(
                 "orgId",
+                "originOrgId",
                 "scanId",
                 "traceId",
                 "actorId",

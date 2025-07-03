@@ -86,6 +86,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
                 .messagingServiceId(message.getMessagingServiceId())
                 .scanId(scanId)
                 .orgId(message.getOrgId())
+                .originOrgId(message.getOriginOrgId())
                 .traceId(message.getTraceId())
                 .actorId(message.getActorId())
                 .scanTypes(entityTypes)

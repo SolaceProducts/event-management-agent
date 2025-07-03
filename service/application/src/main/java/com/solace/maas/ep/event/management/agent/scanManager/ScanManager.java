@@ -71,6 +71,7 @@ public class ScanManager {
         MDC.put(RouteConstants.ACTOR_ID, actorId);
         MDC.put(RouteConstants.SCHEDULE_ID, groupId);
         MDC.put(RouteConstants.ORG_ID, scanRequestBO.getOrgId());
+        MDC.put(RouteConstants.ORIGIN_ORG_ID, scanRequestBO.getOriginOrgId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
@@ -121,6 +122,7 @@ public class ScanManager {
                 SingleScanSpecification.builder()
                         .routeBundles(routes)
                         .orgId(scanRequestBO.getOrgId())
+                        .originOrgId(scanRequestBO.getOriginOrgId())
                         .groupId(groupId)
                         .scanId(scanId)
                         .traceId(traceId)
@@ -133,7 +135,7 @@ public class ScanManager {
 
     public void handleError(Exception e, ScanCommandMessage message) {
 
-        Validate.notBlank(message.getOrgId()," Organization ID cannot be null or empty");
+        Validate.notBlank(message.getOrgId(), " Organization ID cannot be null or empty");
         if (scanStatusPublisherOpt.isEmpty()) {
             return;
         }
@@ -143,6 +145,7 @@ public class ScanManager {
 
         ScanStatusMessage response = new ScanStatusMessage(
                 message.getOrgId(),
+                message.getOriginOrgId(),
                 message.getScanId(),
                 MDC.get(RouteConstants.TRACE_ID),
                 MDC.get(RouteConstants.ACTOR_ID),

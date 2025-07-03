@@ -14,6 +14,8 @@ public class ScanDataStatusMessage extends MOPMessage {
 
     private String orgId;
 
+    private String originOrgId;
+
     private String scanId;
 
     private String status;
@@ -23,6 +25,7 @@ public class ScanDataStatusMessage extends MOPMessage {
     private String scanType;
 
     public ScanDataStatusMessage(String orgId,
+                                 String originOrgId,
                                  String scanId,
                                  String traceId,
                                  String actorId,
@@ -36,6 +39,7 @@ public class ScanDataStatusMessage extends MOPMessage {
                 .withUhFlag(MOPUHFlag.ignore);
 
         this.orgId = orgId;
+        this.originOrgId = originOrgId;
         this.scanId = scanId;
         this.status = status;
         this.description = description;

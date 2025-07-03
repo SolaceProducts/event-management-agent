@@ -10,6 +10,8 @@ import lombok.Data;
 public class ScanDataMessage extends MOPMessage {
     private String orgId;
 
+    private String originOrgId;
+
     private String scanId;
 
     private String scanType;
@@ -19,6 +21,7 @@ public class ScanDataMessage extends MOPMessage {
     private String timestamp;
 
     public ScanDataMessage(String orgId,
+                           String originOrgId,
                            String scanId,
                            String traceId,
                            String actorId,
@@ -32,6 +35,7 @@ public class ScanDataMessage extends MOPMessage {
                 .withUhFlag(MOPUHFlag.ignore);
 
         this.orgId = orgId;
+        this.originOrgId = originOrgId;
         this.scanId = scanId;
         this.scanType = scanType;
         this.data = data;

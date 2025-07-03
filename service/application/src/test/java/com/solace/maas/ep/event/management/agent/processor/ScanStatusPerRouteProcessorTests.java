@@ -67,6 +67,7 @@ public class ScanStatusPerRouteProcessorTests {
     public void testScanDataStatusMessageMOPProtocol() {
         ScanDataStatusMessage scanDataStatusMessage = new ScanDataStatusMessage(
                 null,
+                null,
                 "scan1",
                 "traceId",
                 "actorId",
