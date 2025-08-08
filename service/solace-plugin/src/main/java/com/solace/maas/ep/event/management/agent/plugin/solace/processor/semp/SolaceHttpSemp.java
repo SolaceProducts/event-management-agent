@@ -116,10 +116,10 @@ public class SolaceHttpSemp {
             throw new PluginClientException(ioException);
         } catch (WebClientRequestException requestException) {
             if (requestException.getMessage().startsWith("Failed to resolve")) {
-                log.error("Error connecting to messaging service. Check that the hostname is correct.", requestException);
-                throw new PluginClientException(requestException);
+                log.warn("Error connecting to messaging service. Check that the hostname is correct.", requestException);
+            } else {
+                log.warn("Error connecting to messaging service. Check that the port is correct", requestException);
             }
-            log.error("Error connecting to messaging service. Check that the port is correct", requestException);
             throw new PluginClientException(requestException);
         }
         return sempObject;
@@ -198,40 +198,99 @@ public class SolaceHttpSemp {
 
     private SempListResponse<Map<String, Object>> getSempListResponse(Function<UriBuilder, URI> uriMethod) throws
             com.fasterxml.jackson.core.JsonProcessingException {
-        String rawResponse = sempClient.getWebClient()
-                .get()
-                .uri(uriMethod)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, buildBasicAuthorization())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        try {
+            String rawResponse = sempClient.getWebClient()
+                    .get()
+                    .uri(uriMethod)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, buildBasicAuthorization())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        return objectMapper.readValue(rawResponse,
-                new TypeReference<>() {
-                });
+            return objectMapper.readValue(rawResponse,
+                    new TypeReference<>() {
+                    });
+        } catch (WebClientRequestException requestException) {
+            if (requestException.getMessage().contains("Failed to resolve")) {
+                log.warn("Error connecting to messaging service. Check that the hostname is correct.", requestException);
+            } else if (isSslCertificateError(requestException)) {
+                log.warn("Error connecting to messaging service. SSL certificate validation failed.", requestException);
+            } else {
+                log.warn("Error connecting to messaging service. Check that the port is correct", requestException);
+            }
+            throw requestException;
+        }
     }
 
     private Map<String, Object> getSempFlatRequest(Function<UriBuilder, URI> uriMethod) throws IOException {
-        String rawResponse = sempClient.getWebClient()
-                .get()
-                .uri(uriMethod)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.AUTHORIZATION, buildBasicAuthorization())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        try {
+            String rawResponse = sempClient.getWebClient()
+                    .get()
+                    .uri(uriMethod)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, buildBasicAuthorization())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        SempFlatResponse<Map<String, Object>> sempFlatResponse = objectMapper.readValue(rawResponse,
-                new TypeReference<>() {
-                });
+            SempFlatResponse<Map<String, Object>> sempFlatResponse = objectMapper.readValue(rawResponse,
+                    new TypeReference<>() {
+                    });
 
-        if (sempFlatResponse != null) {
-            return sempFlatResponse.getData();
+            if (sempFlatResponse != null) {
+                return sempFlatResponse.getData();
+            }
+            return null;
+        } catch (WebClientRequestException requestException) {
+            if (requestException.getMessage().contains("Failed to resolve")) {
+                log.warn("Error connecting to messaging service. Check that the hostname is correct.", requestException);
+            } else if (isSslCertificateError(requestException)) {
+                log.warn("Error connecting to messaging service. SSL certificate validation failed.", requestException);
+            } else {
+                log.warn("Error connecting to messaging service. Check that the port is correct", requestException);
+            }
+            throw requestException;
         }
-        return null;
+    }
+
+    /**
+     * Checks if the exception represents an SSL certificate validation error.
+     * This method examines the exception message and cause chain for SSL/TLS certificate-related errors.
+     */
+    public boolean isSslCertificateError(WebClientRequestException requestException) {
+        // Check the exception message for SSL certificate indicators
+        String message = requestException.getMessage();
+        if (message != null && (message.contains("PKIX path building failed") ||
+                message.contains("unable to find valid certification path") ||
+                message.contains("certificate validation failed") ||
+                message.contains("SSLHandshakeException"))) {
+            return true;
+        }
+
+        // Check the cause chain for SSL-related exceptions
+        Throwable cause = requestException.getCause();
+        while (cause != null) {
+            String causeMessage = cause.getMessage();
+            if (causeMessage != null && (causeMessage.contains("PKIX path building failed") ||
+                    causeMessage.contains("unable to find valid certification path") ||
+                    causeMessage.contains("certificate validation failed"))) {
+                return true;
+            }
+
+            // Check for specific SSL exception types
+            if (cause instanceof javax.net.ssl.SSLHandshakeException ||
+                    cause instanceof java.security.cert.CertPathBuilderException ||
+                    cause.getClass().getName().contains("CertPathBuilderException")) {
+                return true;
+            }
+
+            cause = cause.getCause();
+        }
+
+        return false;
     }
 
     private String buildBasicAuthorization() {

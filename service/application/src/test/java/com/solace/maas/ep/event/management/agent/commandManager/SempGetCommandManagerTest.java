@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -242,6 +243,69 @@ class SempGetCommandManagerTest {
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.validation_error);
+    }
+
+    @Test
+    void withConnectTimeoutApiException() throws ApiException {
+        // Create an ApiException with SocketTimeoutException as cause
+        SocketTimeoutException timeoutException = new SocketTimeoutException("Connect timed out");
+        ApiException apiException = new ApiException(timeoutException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withConnectTimeoutExceptionMessage() throws ApiException {
+        // Create an ApiException with "Connect timed out" in the message
+        ApiException apiException = new ApiException("Connect timed out");
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNestedConnectTimeoutException() throws ApiException {
+        // Create nested exception with SocketTimeoutException deep in the cause chain
+        SocketTimeoutException timeoutException = new SocketTimeoutException("Connect timed out");
+        RuntimeException wrapperException = new RuntimeException("Wrapper exception", timeoutException);
+        ApiException apiException = new ApiException(wrapperException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNonTimeoutSocketTimeoutException() throws ApiException {
+        // Create SocketTimeoutException with different message (not connect timeout)
+        SocketTimeoutException timeoutException = new SocketTimeoutException("Read timed out");
+        ApiException apiException = new ApiException(timeoutException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withGeneralExceptionConnectTimeout() throws ApiException {
+        // Create a general Exception (not ApiException) with connect timeout
+        RuntimeException generalException = new RuntimeException("Connect timed out");
+
+        executeTestWithException(generalException);
+    }
+
+    private void executeTestWithException(Exception exception) throws ApiException {
+        ClientProfileApi clientProfileApi = Mockito.mock(ClientProfileApi.class);
+        when(sempApiProvider.getClientProfileApi()).thenReturn(clientProfileApi);
+
+        when(clientProfileApi.getMsgVpnClientProfile(any(), any(), any(), any()))
+                .thenThrow(exception);
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(createClientProfileGetParameters(true))
+                .build();
+
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
     }
 
     private Map<String, Object> createClientProfileGetParameters(boolean valid) {

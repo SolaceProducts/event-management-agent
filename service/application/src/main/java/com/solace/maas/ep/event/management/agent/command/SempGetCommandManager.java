@@ -64,19 +64,53 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
             if (SempEntityType.solaceClientProfileName.name().equals(entityType) &&
                     isResourceNotFoundError(e)) {
                 handleClientProfileNotFound(command);
+            } else if (isConnectTimeoutError(e)) {
+                log.warn("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                setCommandError(command, e);
             } else {
                 log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
                 setCommandError(command, e);
             }
         } catch (Exception e) {
-            log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
-            setCommandError(command, e);
+            if (isConnectTimeoutError(e)) {
+                log.warn("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                setCommandError(command, e);
+            } else {
+                log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                setCommandError(command, e);
+            }
         }
     }
 
     private boolean isResourceNotFoundError(ApiException e) {
         return e.getCode() == 404 ||
                 (e.getCode() == 400 && StringUtils.contains(e.getResponseBody(), "NOT_FOUND"));
+    }
+
+    /**
+     * Checks if the exception represents a connection timeout error.
+     * This method examines the exception message and cause chain for timeout-related errors.
+     */
+    private boolean isConnectTimeoutError(Exception e) {
+        // Check the exception message and cause chain for timeout indicators
+        String message = e.getMessage();
+        if (message != null && message.contains("Connect timed out")) {
+            return true;
+        }
+
+        // Check the cause chain for SocketTimeoutException
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof java.net.SocketTimeoutException) {
+                String causeMessage = cause.getMessage();
+                if (causeMessage != null && causeMessage.contains("Connect timed out")) {
+                    return true;
+                }
+            }
+            cause = cause.getCause();
+        }
+
+        return false;
     }
 
     private void handleClientProfileNotFound(Command command) {

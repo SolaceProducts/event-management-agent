@@ -200,6 +200,13 @@ public class TerraformManager {
 
         Map<String, Object> logMop = objectMapper.readValue(tfLog, Map.class);
         String logLevel = (String) logMop.get("@level");
+        
+        // Check if this is a "no such host" error or SSL certificate error and downgrade to warning
+        if ("error".equals(logLevel) && (isNoSuchHostError(logMop) || isSslCertificateError(logMop))) {
+            log.warn(logMessage);
+            return;
+        }
+        
         switch (logLevel) {
             case "trace" -> log.trace(logMessage);
             case "debug" -> log.debug(logMessage);
@@ -207,6 +214,56 @@ public class TerraformManager {
             case "warn" -> log.warn(logMessage);
             case "error" -> log.error(logMessage);
             default -> log.error("cannot map the logLevel properly for tfLog {}", tfLog);
+        }
+    }
+
+    /**
+     * Checks if the Terraform log represents a "no such host" DNS resolution error.
+     * This method examines the diagnostic detail for DNS-related error messages.
+     */
+    boolean isNoSuchHostError(Map<String, Object> logMap) {
+        try {
+            Object diagnostic = logMap.get("diagnostic");
+            if (diagnostic instanceof Map) {
+                Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
+                Object detail = diagnosticMap.get("detail");
+                if (detail instanceof String) {
+                    String detailStr = (String) detail;
+                    return detailStr.contains("no such host");
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            // If we can't parse the structure, don't suppress the error
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the Terraform log represents an SSL certificate verification error.
+     * This method examines the diagnostic detail for SSL certificate-related error messages.
+     */
+    boolean isSslCertificateError(Map<String, Object> logMap) {
+        try {
+            Object diagnostic = logMap.get("diagnostic");
+            if (diagnostic instanceof Map) {
+                Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
+                Object detail = diagnosticMap.get("detail");
+                if (detail instanceof String) {
+                    String detailStr = (String) detail;
+                    return detailStr.contains("failed to verify certificate") ||
+                           detailStr.contains("certificate is not valid") ||
+                           detailStr.contains("x509: certificate") ||
+                           detailStr.contains("tls: failed to verify certificate") ||
+                           detailStr.contains("certificate verification failed") ||
+                           detailStr.contains("PKIX path building failed") ||
+                           detailStr.contains("unable to find valid certification path");
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            // If we can't parse the structure, don't suppress the error
+            return false;
         }
     }
 
