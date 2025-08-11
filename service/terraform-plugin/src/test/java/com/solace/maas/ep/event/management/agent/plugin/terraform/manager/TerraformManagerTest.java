@@ -6,6 +6,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.stream.Stream;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -76,24 +82,9 @@ class TerraformManagerTest {
             assertFalse(terraformManager.isNoSuchHostError(logMap));
         }
 
-        @Test
-        void withNoDiagnostic() {
-            // Arrange
-            Map<String, Object> logMap = new HashMap<>();
-            logMap.put("@level", "error");
-            logMap.put("@message", "Some error message");
-
-            // Act & Assert
-            assertFalse(terraformManager.isNoSuchHostError(logMap));
-        }
-
-        @Test
-        void withNullDiagnostic() {
-            // Arrange
-            Map<String, Object> logMap = new HashMap<>();
-            logMap.put("@level", "error");
-            logMap.put("diagnostic", null);
-
+        @ParameterizedTest
+        @MethodSource("invalidDiagnosticScenarios")
+        void shouldReturnFalseForInvalidDiagnosticScenarios(Map<String, Object> logMap) {
             // Act & Assert
             assertFalse(terraformManager.isNoSuchHostError(logMap));
         }
@@ -141,17 +132,6 @@ class TerraformManagerTest {
         }
 
         @Test
-        void withInvalidDiagnosticStructure() {
-            // Arrange
-            Map<String, Object> logMap = new HashMap<>();
-            logMap.put("@level", "error");
-            logMap.put("diagnostic", "invalid structure"); // Should be a Map
-
-            // Act & Assert
-            assertFalse(terraformManager.isNoSuchHostError(logMap));
-        }
-
-        @Test
         void withExceptionDuringParsing() {
             // Arrange - Create a map that will cause an exception during parsing
             Map<String, Object> logMap = new HashMap<>() {
@@ -167,6 +147,29 @@ class TerraformManagerTest {
 
             // Act & Assert - Should return false when exception occurs
             assertFalse(terraformManager.isNoSuchHostError(logMap));
+        }
+
+        static Stream<Arguments> invalidDiagnosticScenarios() {
+            // No diagnostic
+            Map<String, Object> noDiagnostic = new HashMap<>();
+            noDiagnostic.put("@level", "error");
+            noDiagnostic.put("@message", "Some error message");
+
+            // Null diagnostic
+            Map<String, Object> nullDiagnostic = new HashMap<>();
+            nullDiagnostic.put("@level", "error");
+            nullDiagnostic.put("diagnostic", null);
+
+            // Invalid diagnostic structure
+            Map<String, Object> invalidDiagnostic = new HashMap<>();
+            invalidDiagnostic.put("@level", "error");
+            invalidDiagnostic.put("diagnostic", "invalid structure"); // Should be a Map
+
+            return Stream.of(
+                    Arguments.of(noDiagnostic),
+                    Arguments.of(nullDiagnostic),
+                    Arguments.of(invalidDiagnostic)
+            );
         }
 
         private Map<String, Object> createTerraformLogMap(String level, String detail) {
@@ -186,85 +189,19 @@ class TerraformManagerTest {
 
     @Nested
     class IsSslCertificateErrorTests {
-        @Test
-        void withFailedToVerifyCertificate() {
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "Get \"https://mr-connection-z9vl7alolx7.messaging.mymaas.net:943/SEMP/v2/config/msgVpns/moodi-test-dont-touch\": tls: failed to verify certificate: x509: certificate is not valid for any names, but wanted to match mr-connection-z9vl7alolx7.messaging.mymaas.net",
+                "SSL connection failed: certificate is not valid for hostname",
+                "x509: certificate signed by unknown authority",
+                "tls: failed to verify certificate chain",
+                "certificate verification failed: unable to verify the first certificate",
+                "PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target",
+                "unable to find valid certification path to requested target"
+        })
+        void shouldDetectSslCertificateErrors(String errorDetail) {
             // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "Get \"https://mr-connection-z9vl7alolx7.messaging.mymaas.net:943/SEMP/v2/config/msgVpns/moodi-test-dont-touch\": tls: failed to verify certificate: x509: certificate is not valid for any names, but wanted to match mr-connection-z9vl7alolx7.messaging.mymaas.net"
-            );
-
-            // Act & Assert
-            assertTrue(terraformManager.isSslCertificateError(logMap));
-        }
-
-        @Test
-        void withCertificateIsNotValid() {
-            // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "SSL connection failed: certificate is not valid for hostname"
-            );
-
-            // Act & Assert
-            assertTrue(terraformManager.isSslCertificateError(logMap));
-        }
-
-        @Test
-        void withX509Certificate() {
-            // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "x509: certificate signed by unknown authority"
-            );
-
-            // Act & Assert
-            assertTrue(terraformManager.isSslCertificateError(logMap));
-        }
-
-        @Test
-        void withTlsFailedToVerifyCertificate() {
-            // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "tls: failed to verify certificate chain"
-            );
-
-            // Act & Assert
-            assertTrue(terraformManager.isSslCertificateError(logMap));
-        }
-
-        @Test
-        void withCertificateVerificationFailed() {
-            // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "certificate verification failed: unable to verify the first certificate"
-            );
-
-            // Act & Assert
-            assertTrue(terraformManager.isSslCertificateError(logMap));
-        }
-
-        @Test
-        void withPKIXPathBuildingFailed() {
-            // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
-            );
-
-            // Act & Assert
-            assertTrue(terraformManager.isSslCertificateError(logMap));
-        }
-
-        @Test
-        void withUnableToFindValidCertificationPath() {
-            // Arrange
-            Map<String, Object> logMap = createTerraformLogMap(
-                    "error",
-                    "unable to find valid certification path to requested target"
-            );
+            Map<String, Object> logMap = createTerraformLogMap("error", errorDetail);
 
             // Act & Assert
             assertTrue(terraformManager.isSslCertificateError(logMap));
@@ -282,15 +219,34 @@ class TerraformManagerTest {
             assertFalse(terraformManager.isSslCertificateError(logMap));
         }
 
-        @Test
-        void withNoDiagnostic() {
-            // Arrange
-            Map<String, Object> logMap = new HashMap<>();
-            logMap.put("@level", "error");
-            logMap.put("@message", "Some error message");
-
+        @ParameterizedTest
+        @MethodSource("invalidDiagnosticScenarios")
+        void shouldReturnFalseForInvalidDiagnosticScenarios(Map<String, Object> logMap) {
             // Act & Assert
             assertFalse(terraformManager.isSslCertificateError(logMap));
+        }
+
+        static Stream<Arguments> invalidDiagnosticScenarios() {
+            // No diagnostic
+            Map<String, Object> noDiagnostic = new HashMap<>();
+            noDiagnostic.put("@level", "error");
+            noDiagnostic.put("@message", "Some error message");
+
+            // Null diagnostic
+            Map<String, Object> nullDiagnostic = new HashMap<>();
+            nullDiagnostic.put("@level", "error");
+            nullDiagnostic.put("diagnostic", null);
+
+            // Invalid diagnostic structure
+            Map<String, Object> invalidDiagnostic = new HashMap<>();
+            invalidDiagnostic.put("@level", "error");
+            invalidDiagnostic.put("diagnostic", "invalid structure"); // Should be a Map
+
+            return Stream.of(
+                    Arguments.of(noDiagnostic),
+                    Arguments.of(nullDiagnostic),
+                    Arguments.of(invalidDiagnostic)
+            );
         }
 
         @Test

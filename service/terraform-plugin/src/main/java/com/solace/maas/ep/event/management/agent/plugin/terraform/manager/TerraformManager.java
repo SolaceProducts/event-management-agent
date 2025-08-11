@@ -200,13 +200,13 @@ public class TerraformManager {
 
         Map<String, Object> logMop = objectMapper.readValue(tfLog, Map.class);
         String logLevel = (String) logMop.get("@level");
-        
+
         // Check if this is a "no such host" error or SSL certificate error and downgrade to warning
         if ("error".equals(logLevel) && (isNoSuchHostError(logMop) || isSslCertificateError(logMop))) {
             log.warn(logMessage);
             return;
         }
-        
+
         switch (logLevel) {
             case "trace" -> log.trace(logMessage);
             case "debug" -> log.debug(logMessage);
@@ -227,8 +227,7 @@ public class TerraformManager {
             if (diagnostic instanceof Map) {
                 Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
                 Object detail = diagnosticMap.get("detail");
-                if (detail instanceof String) {
-                    String detailStr = (String) detail;
+                if (detail instanceof String detailStr) {
                     return detailStr.contains("no such host");
                 }
             }
@@ -249,15 +248,14 @@ public class TerraformManager {
             if (diagnostic instanceof Map) {
                 Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
                 Object detail = diagnosticMap.get("detail");
-                if (detail instanceof String) {
-                    String detailStr = (String) detail;
+                if (detail instanceof String detailStr) {
                     return detailStr.contains("failed to verify certificate") ||
-                           detailStr.contains("certificate is not valid") ||
-                           detailStr.contains("x509: certificate") ||
-                           detailStr.contains("tls: failed to verify certificate") ||
-                           detailStr.contains("certificate verification failed") ||
-                           detailStr.contains("PKIX path building failed") ||
-                           detailStr.contains("unable to find valid certification path");
+                            detailStr.contains("certificate is not valid") ||
+                            detailStr.contains("x509: certificate") ||
+                            detailStr.contains("tls: failed to verify certificate") ||
+                            detailStr.contains("certificate verification failed") ||
+                            detailStr.contains("PKIX path building failed") ||
+                            detailStr.contains("unable to find valid certification path");
                 }
             }
             return false;

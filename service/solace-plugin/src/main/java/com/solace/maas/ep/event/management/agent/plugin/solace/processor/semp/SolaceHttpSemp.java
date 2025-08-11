@@ -37,6 +37,10 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @Slf4j
 @Getter
 public class SolaceHttpSemp {
+    private static final String FAILED_TO_RESOLVE = "Failed to resolve";
+    private static final String ERROR_CONNECTING_HOSTNAME = "Error connecting to messaging service. Check that the hostname is correct.";
+    private static final String ERROR_CONNECTING_PORT = "Error connecting to messaging service. Check that the port is correct";
+    private static final String ERROR_CONNECTING_SSL = "Error connecting to messaging service. SSL certificate validation failed.";
     private final static String GET_SYSTEM_INFORMATION = "/SEMP/v2/config/about/api";
     private final static String GET_QUEUES_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues";
     private final static String GET_TOPIC_SUBSCRIPTIONS_FOR_QUEUE_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues/{queuename}/subscriptions";
@@ -115,10 +119,12 @@ public class SolaceHttpSemp {
             log.error("Error during SEMP Data Collection. The format of the collected data is unexpected.", ioException);
             throw new PluginClientException(ioException);
         } catch (WebClientRequestException requestException) {
-            if (requestException.getMessage().startsWith("Failed to resolve")) {
-                log.warn("Error connecting to messaging service. Check that the hostname is correct.", requestException);
+            if (requestException.getMessage().startsWith(FAILED_TO_RESOLVE)) {
+                log.warn(ERROR_CONNECTING_HOSTNAME, requestException);
+            } else if (isSslCertificateError(requestException)) {
+                log.warn(ERROR_CONNECTING_SSL, requestException);
             } else {
-                log.warn("Error connecting to messaging service. Check that the port is correct", requestException);
+                log.warn(ERROR_CONNECTING_PORT, requestException);
             }
             throw new PluginClientException(requestException);
         }
@@ -213,12 +219,12 @@ public class SolaceHttpSemp {
                     new TypeReference<>() {
                     });
         } catch (WebClientRequestException requestException) {
-            if (requestException.getMessage().contains("Failed to resolve")) {
-                log.warn("Error connecting to messaging service. Check that the hostname is correct.", requestException);
+            if (requestException.getMessage().contains(FAILED_TO_RESOLVE)) {
+                log.warn(ERROR_CONNECTING_HOSTNAME, requestException);
             } else if (isSslCertificateError(requestException)) {
-                log.warn("Error connecting to messaging service. SSL certificate validation failed.", requestException);
+                log.warn(ERROR_CONNECTING_SSL, requestException);
             } else {
-                log.warn("Error connecting to messaging service. Check that the port is correct", requestException);
+                log.warn(ERROR_CONNECTING_PORT, requestException);
             }
             throw requestException;
         }
@@ -245,12 +251,12 @@ public class SolaceHttpSemp {
             }
             return null;
         } catch (WebClientRequestException requestException) {
-            if (requestException.getMessage().contains("Failed to resolve")) {
-                log.warn("Error connecting to messaging service. Check that the hostname is correct.", requestException);
+            if (requestException.getMessage().contains(FAILED_TO_RESOLVE)) {
+                log.warn(ERROR_CONNECTING_HOSTNAME, requestException);
             } else if (isSslCertificateError(requestException)) {
-                log.warn("Error connecting to messaging service. SSL certificate validation failed.", requestException);
+                log.warn(ERROR_CONNECTING_SSL, requestException);
             } else {
-                log.warn("Error connecting to messaging service. Check that the port is correct", requestException);
+                log.warn(ERROR_CONNECTING_PORT, requestException);
             }
             throw requestException;
         }

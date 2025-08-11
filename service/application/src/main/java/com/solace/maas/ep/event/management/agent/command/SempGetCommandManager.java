@@ -26,6 +26,8 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Service
 @Slf4j
 public class SempGetCommandManager extends AbstractSempCommandManager {
+    private static final String SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY = "SEMP {} command not executed successfully";
+
     private final ObjectMapper objectMapper;
 
     public SempGetCommandManager(ObjectMapper objectMapper) {
@@ -65,18 +67,18 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                     isResourceNotFoundError(e)) {
                 handleClientProfileNotFound(command);
             } else if (isConnectTimeoutError(e)) {
-                log.warn("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             } else {
-                log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                log.error(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             }
         } catch (Exception e) {
             if (isConnectTimeoutError(e)) {
-                log.warn("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             } else {
-                log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                log.error(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             }
         }
