@@ -66,7 +66,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
             if (SempEntityType.solaceClientProfileName.name().equals(entityType) &&
                     isResourceNotFoundError(e)) {
                 handleClientProfileNotFound(command);
-            } else if (isConnectTimeoutError(e)) {
+            } else if (isConnectTimeoutError(e) || isNameResolutionError(e)) {
                 log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             } else {
@@ -74,7 +74,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                 setCommandError(command, e);
             }
         } catch (Exception e) {
-            if (isConnectTimeoutError(e)) {
+            if (isConnectTimeoutError(e) || isNameResolutionError(e)) {
                 log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             } else {
@@ -106,6 +106,32 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
             if (cause instanceof java.net.SocketTimeoutException) {
                 String causeMessage = cause.getMessage();
                 if (causeMessage != null && causeMessage.contains("Connect timed out")) {
+                    return true;
+                }
+            }
+            cause = cause.getCause();
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the exception represents a name resolution error.
+     * This method examines the exception message and cause chain for DNS resolution failures.
+     */
+    private boolean isNameResolutionError(Exception e) {
+        // Check the exception message for name resolution indicators
+        String message = e.getMessage();
+        if (message != null && message.contains("Name does not resolve")) {
+            return true;
+        }
+
+        // Check the cause chain for UnknownHostException with name resolution errors
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof java.net.UnknownHostException) {
+                String causeMessage = cause.getMessage();
+                if (causeMessage != null && causeMessage.contains("Name does not resolve")) {
                     return true;
                 }
             }

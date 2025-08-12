@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -285,6 +286,50 @@ class SempGetCommandManagerTest {
     void withGeneralExceptionConnectTimeout() throws ApiException {
         // Create a general Exception (not ApiException) with connect timeout
         RuntimeException generalException = new RuntimeException("Connect timed out");
+
+        executeTestWithException(generalException);
+    }
+
+    @Test
+    void withNameResolutionApiException() throws ApiException {
+        // Create an ApiException with UnknownHostException as cause containing "Name does not resolve"
+        UnknownHostException nameResolutionException = new UnknownHostException("msg-solace-test.lcag-cmlz-n.lhgroup.de: Name does not resolve");
+        ApiException apiException = new ApiException(nameResolutionException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNameResolutionExceptionMessage() throws ApiException {
+        // Create an ApiException with "Name does not resolve" in the message
+        ApiException apiException = new ApiException("java.net.UnknownHostException: msg-solace-test.lcag-cmlz-n.lhgroup.de: Name does not resolve");
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNestedNameResolutionException() throws ApiException {
+        // Create nested exception with UnknownHostException deep in the cause chain
+        UnknownHostException nameResolutionException = new UnknownHostException("host.example.com: Name does not resolve");
+        RuntimeException wrapperException = new RuntimeException("Wrapper exception", nameResolutionException);
+        ApiException apiException = new ApiException(wrapperException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNonNameResolutionUnknownHostException() throws ApiException {
+        // Create UnknownHostException with different message (not name resolution)
+        UnknownHostException unknownHostException = new UnknownHostException("No route to host");
+        ApiException apiException = new ApiException(unknownHostException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withGeneralExceptionNameResolution() throws ApiException {
+        // Create a general Exception (not ApiException) with name resolution error
+        RuntimeException generalException = new RuntimeException("Connection failed: Name does not resolve");
 
         executeTestWithException(generalException);
     }
