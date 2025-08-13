@@ -26,6 +26,8 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Service
 @Slf4j
 public class SempGetCommandManager extends AbstractSempCommandManager {
+    private static final String SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY = "SEMP {} command not executed successfully";
+
     private final ObjectMapper objectMapper;
 
     public SempGetCommandManager(ObjectMapper objectMapper) {
@@ -64,19 +66,79 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
             if (SempEntityType.solaceClientProfileName.name().equals(entityType) &&
                     isResourceNotFoundError(e)) {
                 handleClientProfileNotFound(command);
+            } else if (isConnectTimeoutError(e) || isNameResolutionError(e)) {
+                log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
+                setCommandError(command, e);
             } else {
-                log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
+                log.error(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             }
         } catch (Exception e) {
-            log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
-            setCommandError(command, e);
+            if (isConnectTimeoutError(e) || isNameResolutionError(e)) {
+                log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
+                setCommandError(command, e);
+            } else {
+                log.error(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
+                setCommandError(command, e);
+            }
         }
     }
 
     private boolean isResourceNotFoundError(ApiException e) {
         return e.getCode() == 404 ||
                 (e.getCode() == 400 && StringUtils.contains(e.getResponseBody(), "NOT_FOUND"));
+    }
+
+    /**
+     * Checks if the exception represents a connection timeout error.
+     * This method examines the exception message and cause chain for timeout-related errors.
+     */
+    private boolean isConnectTimeoutError(Exception e) {
+        // Check the exception message and cause chain for timeout indicators
+        String message = e.getMessage();
+        if (message != null && message.contains("Connect timed out")) {
+            return true;
+        }
+
+        // Check the cause chain for SocketTimeoutException
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof java.net.SocketTimeoutException) {
+                String causeMessage = cause.getMessage();
+                if (causeMessage != null && causeMessage.contains("Connect timed out")) {
+                    return true;
+                }
+            }
+            cause = cause.getCause();
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the exception represents a name resolution error.
+     * This method examines the exception message and cause chain for DNS resolution failures.
+     */
+    private boolean isNameResolutionError(Exception e) {
+        // Check the exception message for name resolution indicators
+        String message = e.getMessage();
+        if (message != null && message.contains("Name does not resolve")) {
+            return true;
+        }
+
+        // Check the cause chain for UnknownHostException with name resolution errors
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof java.net.UnknownHostException) {
+                String causeMessage = cause.getMessage();
+                if (causeMessage != null && causeMessage.contains("Name does not resolve")) {
+                    return true;
+                }
+            }
+            cause = cause.getCause();
+        }
+
+        return false;
     }
 
     private void handleClientProfileNotFound(Command command) {

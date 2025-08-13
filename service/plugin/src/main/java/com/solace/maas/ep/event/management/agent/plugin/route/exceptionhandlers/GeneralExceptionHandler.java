@@ -16,7 +16,7 @@ public class GeneralExceptionHandler implements Processor {
     public void process(Exchange exchange) throws Exception {
         Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 
-        log.error("Oops! Something went wrong: {}", cause.toString());
+        log.warn("Oops! Something went wrong: {}", cause.toString());
 
         exchange.getIn().setHeader(ErrorConstants.GENERAL_ERROR, constant(true));
         exchange.getIn().setHeader(RouteConstants.SCAN_STATUS, ScanStatus.FAILED);

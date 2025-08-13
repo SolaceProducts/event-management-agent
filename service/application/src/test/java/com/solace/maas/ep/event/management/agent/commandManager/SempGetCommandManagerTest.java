@@ -20,6 +20,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -242,6 +244,113 @@ class SempGetCommandManagerTest {
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
         assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.validation_error);
+    }
+
+    @Test
+    void withConnectTimeoutApiException() throws ApiException {
+        // Create an ApiException with SocketTimeoutException as cause
+        SocketTimeoutException timeoutException = new SocketTimeoutException("Connect timed out");
+        ApiException apiException = new ApiException(timeoutException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withConnectTimeoutExceptionMessage() throws ApiException {
+        // Create an ApiException with "Connect timed out" in the message
+        ApiException apiException = new ApiException("Connect timed out");
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNestedConnectTimeoutException() throws ApiException {
+        // Create nested exception with SocketTimeoutException deep in the cause chain
+        SocketTimeoutException timeoutException = new SocketTimeoutException("Connect timed out");
+        RuntimeException wrapperException = new RuntimeException("Wrapper exception", timeoutException);
+        ApiException apiException = new ApiException(wrapperException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNonTimeoutSocketTimeoutException() throws ApiException {
+        // Create SocketTimeoutException with different message (not connect timeout)
+        SocketTimeoutException timeoutException = new SocketTimeoutException("Read timed out");
+        ApiException apiException = new ApiException(timeoutException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withGeneralExceptionConnectTimeout() throws ApiException {
+        // Create a general Exception (not ApiException) with connect timeout
+        RuntimeException generalException = new RuntimeException("Connect timed out");
+
+        executeTestWithException(generalException);
+    }
+
+    @Test
+    void withNameResolutionApiException() throws ApiException {
+        // Create an ApiException with UnknownHostException as cause containing "Name does not resolve"
+        UnknownHostException nameResolutionException = new UnknownHostException("msg-solace-test.lcag-cmlz-n.lhgroup.de: Name does not resolve");
+        ApiException apiException = new ApiException(nameResolutionException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNameResolutionExceptionMessage() throws ApiException {
+        // Create an ApiException with "Name does not resolve" in the message
+        ApiException apiException = new ApiException("java.net.UnknownHostException: msg-solace-test.lcag-cmlz-n.lhgroup.de: Name does not resolve");
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNestedNameResolutionException() throws ApiException {
+        // Create nested exception with UnknownHostException deep in the cause chain
+        UnknownHostException nameResolutionException = new UnknownHostException("host.example.com: Name does not resolve");
+        RuntimeException wrapperException = new RuntimeException("Wrapper exception", nameResolutionException);
+        ApiException apiException = new ApiException(wrapperException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withNonNameResolutionUnknownHostException() throws ApiException {
+        // Create UnknownHostException with different message (not name resolution)
+        UnknownHostException unknownHostException = new UnknownHostException("No route to host");
+        ApiException apiException = new ApiException(unknownHostException);
+
+        executeTestWithException(apiException);
+    }
+
+    @Test
+    void withGeneralExceptionNameResolution() throws ApiException {
+        // Create a general Exception (not ApiException) with name resolution error
+        RuntimeException generalException = new RuntimeException("Connection failed: Name does not resolve");
+
+        executeTestWithException(generalException);
+    }
+
+    private void executeTestWithException(Exception exception) throws ApiException {
+        ClientProfileApi clientProfileApi = Mockito.mock(ClientProfileApi.class);
+        when(sempApiProvider.getClientProfileApi()).thenReturn(clientProfileApi);
+
+        when(clientProfileApi.getMsgVpnClientProfile(any(), any(), any(), any()))
+                .thenThrow(exception);
+
+        Command cmd = Command.builder()
+                .commandType(CommandType.semp)
+                .command(SEMP_GET_OPERATION)
+                .parameters(createClientProfileGetParameters(true))
+                .build();
+
+        sempGetCommandManager.execute(cmd, sempApiProvider);
+
+        verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
     }
 
     private Map<String, Object> createClientProfileGetParameters(boolean valid) {
