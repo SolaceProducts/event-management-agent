@@ -12,7 +12,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <solace-messaging-client.version>1.4.0</solace-messaging-client.version>
         <solclientj.version>10.0.0</solclientj.version>
-        <spring-boot.version>3.4.7</spring-boot.version>
+        <spring-boot.version>3.4.8</spring-boot.version>
         <jupiter.version>5.12.2</jupiter.version>
         <camel.version>4.8.7</camel.version>
         <commons-collections4.version>4.4</commons-collections4.version>
@@ -28,6 +28,14 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- CVE-2025-55163: Override Netty versions to secure 4.1.124.Final -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.124.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

@@ -13,7 +13,7 @@
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
-        <spring-boot.version>3.4.7</spring-boot.version>
+        <spring-boot.version>3.4.8</spring-boot.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-security-rsa.version>1.1.3</spring-security-rsa.version>
         <spring-kafka.version>3.3.4</spring-kafka.version>
@@ -22,7 +22,6 @@
         <awaitility.version>4.2.0</awaitility.version>
         <dockerfile-maven.version>1.4.13</dockerfile-maven.version>
         <swagger-codegen-maven-plugin.version>2.4.43</swagger-codegen-maven-plugin.version>
-        <netty.version>4.1.118.Final</netty.version>
     </properties>
     <repositories>
         <repository>
@@ -35,7 +34,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.118.Final</version>
+                <version>4.1.124.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
