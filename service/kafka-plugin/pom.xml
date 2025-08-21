@@ -12,7 +12,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.3.4</spring-kafka.version>
         <kafka-clients.version>3.8.1</kafka-clients.version>
-        <spring-boot.version>3.4.7</spring-boot.version>
+        <spring-boot.version>3.4.8</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jupiter.version>5.10.2</jupiter.version>
         <camel.version>4.8.7</camel.version>
@@ -26,6 +26,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Netty BOM for security fix CVE-2025-55163 -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.124.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>

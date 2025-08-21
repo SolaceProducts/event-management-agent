@@ -10,7 +10,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot.version>3.4.7</spring-boot.version>
+        <spring-boot.version>3.4.8</spring-boot.version>
         <jupiter.version>5.10.2</jupiter.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>
@@ -19,6 +19,20 @@
         <maas.jobs.version>2.0.11</maas.jobs.version>
         <jackson.version>2.16.1</jackson.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- CVE-2025-55163: Override Netty versions to secure 4.1.124.Final -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.124.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
