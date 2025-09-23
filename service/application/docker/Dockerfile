@@ -14,14 +14,14 @@ RUN adduser -D $USER && \
     mkdir -p /opt/ema/terraform && \
     chmod 777 /opt/ema/terraform && \
     chown -R $USER:$USER $HOME && \
-    chown -R $USER:$USER /opt/ema/    
+    chown -R $USER:$USER /opt/ema/
 
 WORKDIR /opt/ema
 
 ARG PLATFORM=linux_amd64
 
-COPY tofu_1.10.2_amd64.apk /opt/ema/terraform
-RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.10.2_amd64.apk
+COPY tofu_1.10.6_amd64.apk /opt/ema/terraform
+RUN apk --update add --allow-untrusted /opt/ema/terraform/tofu_1.10.6_amd64.apk
 
 COPY .terraformrc $HOME/.terraformrc
 RUN printf '#!/bin/ash\ntofu $*' > /opt/ema/terraform/terraform
