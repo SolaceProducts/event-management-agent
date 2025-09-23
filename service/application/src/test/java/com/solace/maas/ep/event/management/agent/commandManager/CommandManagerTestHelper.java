@@ -84,6 +84,7 @@ public final class CommandManagerTestHelper {
         message.setServiceId(targetMessagingServiceId);
         message.setActorId("myActorId");
         message.setOrgId(targetOrgId);
+        message.setOriginOrgId(targetOrgId);
         message.setTraceId("myTraceId");
         message.setCommandCorrelationId("myCorrelationIdabc");
         message.setCommandBundles(List.of(
