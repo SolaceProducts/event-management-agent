@@ -214,6 +214,7 @@ class ScanJobPersistentMessageHandlerTests {
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
         scanCommandMessage.setOrgId("orgId");
+        scanCommandMessage.setOriginOrgId("orgId");
         when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanCommandMessage.class.getCanonicalName()
@@ -248,6 +249,7 @@ class ScanJobPersistentMessageHandlerTests {
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
         scanCommandMessage.setOrgId("orgId");
+        scanCommandMessage.setOriginOrgId("orgId");
         when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanCommandMessage.class.getCanonicalName()
@@ -261,6 +263,7 @@ class ScanJobPersistentMessageHandlerTests {
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
         scanCommandMessage.setOrgId("orgId");
+        scanCommandMessage.setOriginOrgId("orgId");
         when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanCommandMessage.class.getCanonicalName()

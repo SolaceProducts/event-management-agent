@@ -65,6 +65,7 @@ class CommandMessageProcessorTests {
         message.setActorId("myActorId");
         message.setResources(resources);
         message.setOrgId("someOrgId");
+        message.setOriginOrgId("someOrgId");
         message.setTraceId("myTraceId");
         message.setCommandCorrelationId("someId");
         message.setCommandBundles(List.of(
@@ -74,6 +75,6 @@ class CommandMessageProcessorTests {
                         .commands(List.of())
                         .build()));
 
-       return message;
+        return message;
     }
 }

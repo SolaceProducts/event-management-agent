@@ -143,6 +143,7 @@ public class PersistentMessageHandlerTests {
                 new ScanCommandMessage("messagingServiceId",
                         "scanId", List.of(SOLACE_ALL), List.of(EVENT_PORTAL));
         scanCommandMessage.setOrgId(eventPortalProperties.getOrganizationId());
+        scanCommandMessage.setOriginOrgId(eventPortalProperties.getOrganizationId());
         when(inboundMessage.getPayloadAsString()).thenReturn(jsonString(scanCommandMessage));
         when(inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER)).thenReturn(
                 ScanCommandMessage.class.getCanonicalName()

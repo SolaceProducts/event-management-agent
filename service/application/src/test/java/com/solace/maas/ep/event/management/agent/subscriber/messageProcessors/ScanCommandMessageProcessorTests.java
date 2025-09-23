@@ -108,6 +108,7 @@ class ScanCommandMessageProcessorTests {
                 List.of(ScanDestination.EVENT_PORTAL),
                 resources);
         msg.setOrgId("orgId");
+        msg.setOriginOrgId("orgId");
         msg.setTraceId("traceId");
         msg.setActorId("actorId");
         return msg;
