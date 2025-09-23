@@ -6,14 +6,12 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.Command;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClientFactory;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.Validate;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
@@ -61,8 +59,6 @@ public class TerraformManager {
     }
 
     public Path execute(CommandRequest request, Command command, Map<String, String> envVars) {
-        MDC.put(RouteConstants.COMMAND_CORRELATION_ID, request.getCommandCorrelationId());
-        MDC.put(RouteConstants.MESSAGING_SERVICE_ID, request.getServiceId());
         setEnvVarsFromParameters(command, envVars);
         PrintWriter executionLogWriter = null;
         Path executionLogFilePath = null;

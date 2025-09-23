@@ -1,6 +1,7 @@
 package com.solace.maas.ep.event.management.agent.plugin.processor.logging;
 
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.MDC;
@@ -36,5 +37,9 @@ public class MDCProcessor implements Processor {
 
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID,
                 exchange.getIn().getHeader(RouteConstants.MESSAGING_SERVICE_ID, String.class));
+
+        MDC.put(RouteConstants.IS_LINKED,
+                MdcUtil.isLinked(exchange.getIn().getHeader(RouteConstants.ORG_ID, String.class),
+                        exchange.getIn().getHeader(RouteConstants.ORIGIN_ORG_ID, String.class)) ? "true" : "false");
     }
 }

@@ -14,6 +14,7 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.Se
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformLogProcessingService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -33,8 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.IS_LINKED_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORIGIN_ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 import static com.solace.maas.ep.event.management.agent.constants.Command.COMMAND_CORRELATION_ID;
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType.semp;
@@ -231,8 +234,12 @@ public class CommandManager {
         response.setActorId(MDC.get(ACTOR_ID));
         response.setOriginOrgId(requestBO.getOriginOrgId());
         commandPublisher.sendCommandResponse(response, topicVars);
-        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT, ORG_ID_TAG, response.getOrgId(),
-                STATUS_TAG, response.getStatus().name()).increment();
+        meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT,
+                        ORG_ID_TAG, response.getOrgId(),
+                        STATUS_TAG, response.getStatus().name(),
+                        ORIGIN_ORG_ID_TAG, requestBO.getOriginOrgId(),
+                        IS_LINKED_TAG, MdcUtil.isLinked(requestBO.getOrgId(), requestBO.getOriginOrgId()) ? "true" : "false")
+                .increment();
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {

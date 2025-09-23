@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 
 import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import com.solace.maas.ep.event.management.agent.scanManager.ScanManager;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanRequestBO;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -21,9 +22,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.IS_LINKED_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_CYCLE_TIME;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORIGIN_ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -56,7 +59,12 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         MDC.clear();
         Validate.notBlank(message.getOrgId(), NULL_ORG_ID_ERROR_MSG);
         String scanId = StringUtils.isEmpty(message.getScanId()) ? UUID.randomUUID().toString() : message.getScanId();
-        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED, SCAN_ID_TAG, scanId).increment();
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED,
+                        SCAN_ID_TAG, scanId,
+                        ORG_ID_TAG, message.getOrgId(),
+                        ORIGIN_ORG_ID_TAG, message.getOriginOrgId(),
+                        IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
+                .increment();
 
         List<String> destinations = new ArrayList<>();
         List<String> entityTypes = new ArrayList<>();
@@ -153,6 +161,8 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_SCAN_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, message.getOrgId())
+                .tag(ORIGIN_ORG_ID_TAG, message.getOriginOrgId())
+                .tag(IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
                 .tag(STATUS_TAG, status)
                 .register(meterRegistry);
         jobCycleTime.record(duration, TimeUnit.MILLISECONDS);

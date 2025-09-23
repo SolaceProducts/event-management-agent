@@ -13,7 +13,10 @@ public class ObservabilityConstants {
 
     public static final String STATUS_TAG = "status";
     public static final String ORG_ID_TAG = "org_id";
+    public static final String ORIGIN_ORG_ID_TAG = "origin_org_id";
+    public static final String IS_LINKED_TAG = "is_linked";
     public static final String SCAN_ID_TAG = "scan_id";
 
-    private ObservabilityConstants() {}
+    private ObservabilityConstants() {
+    }
 }

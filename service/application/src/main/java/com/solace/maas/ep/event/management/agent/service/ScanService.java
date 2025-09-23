@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerConst
 import com.solace.maas.ep.event.management.agent.plugin.constants.SchedulerType;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundleHierarchyStore;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.route.RouteEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.scan.ScanDestinationEntity;
@@ -46,7 +47,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.IS_LINKED_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORIGIN_ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 
@@ -281,7 +285,13 @@ public class ScanService {
             exchange.getIn().setHeader(RouteConstants.SCAN_STATUS_DESC, "");
             exchange.getIn().setHeader(RouteConstants.ORIGIN_ORG_ID, originOrgId);
         });
-        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status.name(), SCAN_ID_TAG, scanId).increment();
+        meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
+                        STATUS_TAG, status.name(),
+                        SCAN_ID_TAG, scanId,
+                        ORG_ID_TAG, orgId,
+                        ORIGIN_ORG_ID_TAG, originOrgId,
+                        IS_LINKED_TAG, MdcUtil.isLinked(orgId, originOrgId) ? "true" : "false")
+                .increment();
     }
 
     protected CompletableFuture<Exchange> scanAsync(String orgId,

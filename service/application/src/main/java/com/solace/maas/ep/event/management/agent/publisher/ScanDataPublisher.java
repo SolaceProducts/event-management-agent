@@ -56,8 +56,9 @@ public class ScanDataPublisher {
         boolean isSuccessful = solacePublisher.publish(message, topicString);
 
         meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
-                STATUS_TAG, isSuccessful ? ScanStatus.COMPLETE.name() : ScanStatus.FAILED.name(),
-                SCAN_ID_TAG, topicDetails.get("scanId"),
-                ORG_ID_TAG, message.getOrgId()).increment();
+                        STATUS_TAG, isSuccessful ? ScanStatus.COMPLETE.name() : ScanStatus.FAILED.name(),
+                        SCAN_ID_TAG, topicDetails.get("scanId"),
+                        ORG_ID_TAG, message.getOrgId())
+                .increment();
     }
 }
