@@ -2,12 +2,15 @@ package com.solace.maas.ep.event.management.agent.subscriber.messageProcessors;
 
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +20,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.IS_LINKED_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_RECEIVED;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
-import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORIGIN_ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 
 @Slf4j
@@ -42,6 +47,11 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
 
     @Override
     public void processMessage(CommandMessage message) {
+        MDC.put(RouteConstants.COMMAND_CORRELATION_ID, message.getCommandCorrelationId());
+        MDC.put(RouteConstants.MESSAGING_SERVICE_ID, message.getServiceId());
+        MDC.put(RouteConstants.ORG_ID, message.getOrgId());
+        MDC.put(RouteConstants.ORIGIN_ORG_ID, message.getOriginOrgId());
+        MDC.put(RouteConstants.IS_LINKED, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false");
         log.info("Config push command processor started. context={} orgId={} actorId={} ",
                 message.getContext(), message.getOrgId(), message.getActorId());
         logConfigPushMetric(message);
@@ -59,6 +69,8 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
         if (StringUtils.isNotBlank(message.getOrgId())) {
             tags.add(Tag.of(ORG_ID_TAG, message.getOrgId()));
         }
+        tags.add(Tag.of(ORIGIN_ORG_ID_TAG, message.getOriginOrgId()));
+        tags.add(Tag.of(IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false"));
         meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_RECEIVED, tags).increment();
     }
 
@@ -84,6 +96,8 @@ public class CommandMessageProcessor implements MessageProcessor<CommandMessage>
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_CONFIG_PUSH_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, message.getOrgId())
+                .tag(ORIGIN_ORG_ID_TAG, message.getOriginOrgId())
+                .tag(IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
                 .tag(STATUS_TAG, status)
                 .register(meterRegistry);
         jobCycleTime.record(duration, TimeUnit.MILLISECONDS);

@@ -6,6 +6,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.publisher.SolacePublisher;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanOverallStatusException;
 import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanStatusException;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,8 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.IS_LINKED_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.MAAS_EMA_SCAN_EVENT_SENT;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORG_ID_TAG;
+import static com.solace.maas.ep.common.metrics.ObservabilityConstants.ORIGIN_ORG_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.SCAN_ID_TAG;
 import static com.solace.maas.ep.common.metrics.ObservabilityConstants.STATUS_TAG;
 
@@ -55,8 +58,13 @@ public class ScanStatusPublisher {
             throw new ScanOverallStatusException("Over all status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Overall status", Arrays.asList(scanType.split(",")), ScanStatus.valueOf(status));
         } finally {
-            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status, SCAN_ID_TAG, scanId,
-                    ORG_ID_TAG, topicDetails.get("orgId")).increment();
+            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
+                            STATUS_TAG, status,
+                            SCAN_ID_TAG, scanId,
+                            ORG_ID_TAG, message.getOrgId(),
+                            ORIGIN_ORG_ID_TAG, message.getOriginOrgId(),
+                            IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
+                    .increment();
         }
     }
 
@@ -83,9 +91,14 @@ public class ScanStatusPublisher {
         } catch (Exception e) {
             throw new ScanStatusException("Route status exception: " + e.getMessage(),
                     Map.of(scanId, List.of(e)), "Route status", List.of(scanType), ScanStatus.valueOf(status));
-        }  finally {
-            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT, STATUS_TAG, status, SCAN_ID_TAG, scanId,
-                    ORG_ID_TAG, topicDetails.get("orgId")).increment();
+        } finally {
+            meterRegistry.counter(MAAS_EMA_SCAN_EVENT_SENT,
+                            STATUS_TAG, status,
+                            SCAN_ID_TAG, scanId,
+                            ORG_ID_TAG, topicDetails.get("orgId"),
+                            ORIGIN_ORG_ID_TAG, message.getOriginOrgId(),
+                            IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
+                    .increment();
         }
     }
 }

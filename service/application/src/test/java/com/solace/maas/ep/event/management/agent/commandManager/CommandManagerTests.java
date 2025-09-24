@@ -432,6 +432,7 @@ class CommandManagerTests {
         message.setServiceId(MESSAGING_SERVICE_ID);
         message.setActorId("myActorId");
         message.setOrgId(eventPortalProperties.getOrganizationId());
+        message.setOriginOrgId(eventPortalProperties.getOrganizationId());
         message.setTraceId("myTraceId");
         message.setCommandCorrelationId("myCorrelationId" + correlationIdSuffix);
         message.setCommandBundles(List.of(

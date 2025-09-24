@@ -9,6 +9,7 @@ import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
 import com.solace.maas.ep.event.management.agent.plugin.route.RouteBundle;
 import com.solace.maas.ep.event.management.agent.plugin.route.handler.base.MessagingServiceRouteDelegate;
+import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.scanManager.model.ScanItemBO;
@@ -73,6 +74,7 @@ public class ScanManager {
         MDC.put(RouteConstants.ORG_ID, scanRequestBO.getOrgId());
         MDC.put(RouteConstants.ORIGIN_ORG_ID, scanRequestBO.getOriginOrgId());
         MDC.put(RouteConstants.MESSAGING_SERVICE_ID, messagingServiceId);
+        MDC.put(RouteConstants.IS_LINKED, MdcUtil.isLinked(scanRequestBO.getOrgId(), scanRequestBO.getOriginOrgId()) ? "true" : "false");
 
         MessagingServiceEntity messagingServiceEntity = retrieveMessagingServiceEntity(messagingServiceId);
 
