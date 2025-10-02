@@ -129,6 +129,7 @@ public class ScanService {
         log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
                 scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
+
         sendScanStatus(orgId,
                 originOrgId,
                 groupId,
@@ -289,7 +290,7 @@ public class ScanService {
                         STATUS_TAG, status.name(),
                         SCAN_ID_TAG, scanId,
                         ORG_ID_TAG, orgId,
-                        ORIGIN_ORG_ID_TAG, originOrgId,
+                        ORIGIN_ORG_ID_TAG, ObjectUtils.isEmpty(originOrgId) ? orgId : originOrgId,
                         IS_LINKED_TAG, MdcUtil.isLinked(orgId, originOrgId) ? "true" : "false")
                 .increment();
     }
