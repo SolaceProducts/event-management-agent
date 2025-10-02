@@ -31,6 +31,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -78,6 +79,9 @@ public class ScanService {
     private final IDGenerator idGenerator;
 
     private final MeterRegistry meterRegistry;
+
+    @Value("${event-portal.gateway.messaging.standalone:true}")
+    private boolean standaloneMode;
 
     public ScanService(ScanRepository repository,
                        ScanRecipientHierarchyRepository scanRecipientHierarchyRepository,
@@ -129,15 +133,17 @@ public class ScanService {
         log.info("Scan request [{}], trace ID [{}]: Total of {} scan types to be retrieved: [{}].",
                 scanId, traceId, scanTypes.size(), StringUtils.join(scanTypes, ", "));
 
-        sendScanStatus(orgId,
-                originOrgId,
-                groupId,
-                scanId,
-                traceId,
-                actorId,
-                routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
-                StringUtils.join(scanTypes, ","),
-                ScanStatus.IN_PROGRESS);
+        if (!standaloneMode) {
+            sendScanStatus(orgId,
+                    originOrgId,
+                    groupId,
+                    scanId,
+                    traceId,
+                    actorId,
+                    routeBundles.stream().findFirst().orElseThrow().getMessagingServiceId(),
+                    StringUtils.join(scanTypes, ","),
+                    ScanStatus.IN_PROGRESS);
+        }
 
         log.trace("RouteBundles to be processed: {}", routeBundles);
 
