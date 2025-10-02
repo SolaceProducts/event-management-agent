@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.h2.H2ConsoleProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Slf4j
 @Configuration
+@Profile("!TEST")
 public class H2ConsoleSecurityConfig {
 
     @PostConstruct
