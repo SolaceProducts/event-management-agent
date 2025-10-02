@@ -10,6 +10,7 @@ import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.Validate;
 import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.MDC;
@@ -62,7 +63,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         meterRegistry.counter(MAAS_EMA_SCAN_EVENT_RECEIVED,
                         SCAN_ID_TAG, scanId,
                         ORG_ID_TAG, message.getOrgId(),
-                        ORIGIN_ORG_ID_TAG, message.getOriginOrgId(),
+                        ORIGIN_ORG_ID_TAG, ObjectUtils.isEmpty(message.getOriginOrgId()) ? message.getOrgId() : message.getOriginOrgId(),
                         IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
                 .increment();
 
@@ -161,7 +162,7 @@ public class ScanCommandMessageProcessor implements MessageProcessor<ScanCommand
         Timer jobCycleTime = Timer
                 .builder(MAAS_EMA_SCAN_EVENT_CYCLE_TIME)
                 .tag(ORG_ID_TAG, message.getOrgId())
-                .tag(ORIGIN_ORG_ID_TAG, message.getOriginOrgId())
+                .tag(ORIGIN_ORG_ID_TAG, ObjectUtils.isEmpty(message.getOriginOrgId()) ? message.getOrgId() : message.getOriginOrgId())
                 .tag(IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
                 .tag(STATUS_TAG, status)
                 .register(meterRegistry);

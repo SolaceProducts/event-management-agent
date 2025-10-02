@@ -9,6 +9,7 @@ import com.solace.maas.ep.event.management.agent.plugin.route.exceptions.ScanSta
 import com.solace.maas.ep.event.management.agent.plugin.util.MdcUtil;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -62,7 +63,7 @@ public class ScanStatusPublisher {
                             STATUS_TAG, status,
                             SCAN_ID_TAG, scanId,
                             ORG_ID_TAG, message.getOrgId(),
-                            ORIGIN_ORG_ID_TAG, message.getOriginOrgId(),
+                            ORIGIN_ORG_ID_TAG, ObjectUtils.isEmpty(message.getOriginOrgId()) ? message.getOrgId() : message.getOriginOrgId(),
                             IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
                     .increment();
         }
@@ -96,7 +97,7 @@ public class ScanStatusPublisher {
                             STATUS_TAG, status,
                             SCAN_ID_TAG, scanId,
                             ORG_ID_TAG, topicDetails.get("orgId"),
-                            ORIGIN_ORG_ID_TAG, message.getOriginOrgId(),
+                            ORIGIN_ORG_ID_TAG, ObjectUtils.isEmpty(message.getOriginOrgId()) ? topicDetails.get("orgId") : message.getOriginOrgId(),
                             IS_LINKED_TAG, MdcUtil.isLinked(message.getOrgId(), message.getOriginOrgId()) ? "true" : "false")
                     .increment();
         }

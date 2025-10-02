@@ -2,7 +2,7 @@ package com.solace.maas.ep.event.management.agent.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.h2.H2ConsoleProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Slf4j
 @Configuration
 @Profile("!TEST")
-@ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
+@ConditionalOnExpression("!'none'.equals('${spring.main.web-application-type:}')")
 public class H2ConsoleSecurityConfig {
 
     @PostConstruct
