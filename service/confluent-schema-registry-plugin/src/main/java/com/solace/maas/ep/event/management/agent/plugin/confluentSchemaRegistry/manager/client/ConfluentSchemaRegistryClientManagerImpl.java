@@ -10,7 +10,7 @@ import com.solace.maas.ep.event.management.agent.plugin.util.MessagingServiceCon
 import com.solace.maas.ep.event.management.agent.plugin.util.UriUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;

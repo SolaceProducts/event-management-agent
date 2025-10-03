@@ -8,7 +8,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

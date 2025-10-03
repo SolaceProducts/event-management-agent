@@ -19,7 +19,7 @@ import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingPr
 import com.solace.maas.ep.event.management.agent.publisher.CommandPublisher;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
