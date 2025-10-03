@@ -11,7 +11,7 @@ import com.solace.maas.ep.event.management.agent.plugin.terraform.client.Terrafo
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;

@@ -14,7 +14,7 @@ import com.solace.maas.ep.event.management.agent.service.ScanTypeService;
 import com.solace.maas.ep.event.management.agent.util.IDGenerator;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;

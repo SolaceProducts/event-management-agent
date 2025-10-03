@@ -11,7 +11,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.C
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.CredentialDetailsEvent;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.event.EventProperty;
 import jakarta.validation.Valid;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 

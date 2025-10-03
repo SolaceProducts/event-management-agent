@@ -3,7 +3,7 @@ package com.solace.maas.ep.event.management.agent.util;
 import com.solace.maas.ep.event.management.agent.util.config.idgenerator.IDGeneratorProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

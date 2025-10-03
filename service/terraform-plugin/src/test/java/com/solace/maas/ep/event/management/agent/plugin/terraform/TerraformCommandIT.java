@@ -10,7 +10,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.client.TerraformClient;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.configuration.TerraformProperties;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
