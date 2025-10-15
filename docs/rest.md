@@ -5,9 +5,9 @@ The Event Management Agent includes a REST API that allows the user to initiate 
 Each plugin requires its own custom set of authentication and identification attributes that must be supplied by the
 user.
 
-## Solace PubSub+
+## Solace
 
-The PubSub+ plugin uses the SEMP API to collect configured and dynamic broker data such as information on queues,
+The Solace plugin uses the SEMP API to collect configured and dynamic broker data such as information on queues,
 clients and subscriptions.
 
 ## Kafka
@@ -505,13 +505,13 @@ data to Event Portal.
 
 ## Scanning
 
-To scan a Solace PubSub+ broker:
+To scan a Solace broker:
 
 ```
 curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/{resource id}/scan -d '{"scanTypes": ["SOLACE_ALL"], "destinations":["FILE_WRITER"]}'
 ```
 
-* PubSub+ event broker with id 'y80bvdnyokl'
+* Solace event broker with id 'y80bvdnyokl'
 
 To scan an Apache Kafka broker:
 

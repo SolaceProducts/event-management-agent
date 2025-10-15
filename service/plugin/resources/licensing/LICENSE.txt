@@ -34,7 +34,7 @@ AGREEMENT AND PERFORM ITS OBLIGATIONS HEREUNDER.
 meanings:
 
 "Core" means (i) a single physical processor core or hyper-thread when
-Solace PubSub+ software is deployed on either a bare-metal server or a cloud or
+Solace Cloud software is deployed on either a bare-metal server or a cloud or
 virtualization environment that presents physical cores to the software, and
 (ii) a single virtual core when deployed in a cloud or virtualization
 environment that presents virtual cores to the VMR.
