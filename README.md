@@ -2,7 +2,7 @@
 
 The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related event broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
 
-* As the Event Management Agent component of Solace Cloud Event Portal to:
+* As the Event Management Agent component of Solace Event Portal to:
     - discover runtime event data from event brokers and schema registries
     - populate Event Portal with the discovered runtime data to enable the management and reuse of EDA assets
     - audit the runtime data and flag discrepancies between the runtime and the design time intent for event data governance purposes, and to ensure that the runtime and design time configurations stay in-sync
