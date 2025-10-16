@@ -505,7 +505,7 @@ data to Event Portal.
 
 ## Scanning
 
-To scan a Solace broker:
+To scan a Solace event broker:
 
 ```
 curl -H "Content-Type: application/json" -X POST http://localhost:8180/api/v2/ema/resources/{resource id}/scan -d '{"scanTypes": ["SOLACE_ALL"], "destinations":["FILE_WRITER"]}'

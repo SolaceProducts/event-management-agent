@@ -27,7 +27,7 @@ Our plan is to open source the Event Management Agent to enable architects and d
 
 * The Event Management Agent has an open source plugin framework
 * Support additional Solace and Apache Kafka event broker authentication types in the form of plugins such as Kerberos, etc.
-* Collection of topics from events flowing though Solace brokers
+* Collection of topics from events flowing though Solace event brokers
 * Export discovered data as AsyncAPI specifications
 * Addition of the infrastructure needed for the Event Management Agent to be a true open source project
 * Discovery of Apache Kafka connectors
@@ -37,7 +37,7 @@ Our plan is to open source the Event Management Agent to enable architects and d
 
 # Running the Event Management Agent in connected mode
 
-In this mode, the Event Management Agent connects to the Solace Event Portal. Scans are initiated from Event Portal and are automatically uploaded.
+In this mode, the Event Management Agent connects to Solace Event Portal. Scans are initiated from Event Portal and are automatically uploaded.
 
 ## Minimum hardware requirements
 
@@ -113,7 +113,7 @@ docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
 
 ## Running a Discovery Scan
 
-The Event Management Agent is now connected to the Solace Cloud Console.
+The Event Management Agent is now connected to the Cloud Console.
 Follow the steps in the documentation to run a discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
 
 # Running the Event Management Agent in Standalone Mode
@@ -301,7 +301,7 @@ curl -X 'POST' \
 
 # Solace Event Broker Configuration Push
 
-The Event Management Agent enables the Solace Cloud Event Portal to directly deploy configuration to Solace event brokers. This functionality is available when the Event Management Agent is deployed as a Docker container or (for development purposes) executed from the jar file. Configuration push utilizes [OpenTofu](https://opentofu.org/) (a fork of the [Terraform](https://developer.hashicorp.com/terraform/) infrastructure management tool) along with the [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker).
+The Event Management Agent enables Event Portal to directly deploy configuration to Solace event brokers. This functionality is available when the Event Management Agent is deployed as a Docker container or (for development purposes) executed from the jar file. Configuration push utilizes [OpenTofu](https://opentofu.org/) (a fork of the [Terraform](https://developer.hashicorp.com/terraform/) infrastructure management tool) along with the [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker).
 
 ## Configuration Push With Docker (Recommended)
 
@@ -601,7 +601,7 @@ There are several interesting scenarios to test the Event Management Agent. Thes
 categories according to the deployment mode.
 
 * Testing the Event Management Agent as standalone service (stand-alone deployment).
-* Testing the end-to-end flow in Solace Console connected mode (From the frontend to the Event Portal, then to
+* Testing the end-to-end flow in Cloud Console connected mode (From the frontend to the Event Portal, then to
   the Event Management Agent)
 
 ### Testing the Event Management Agent in Standalone Mode

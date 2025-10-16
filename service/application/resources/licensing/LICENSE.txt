@@ -33,11 +33,10 @@ AGREEMENT AND PERFORM ITS OBLIGATIONS HEREUNDER.
 1.1 Definitions. In this Agreement the following terms shall have the following
 meanings:
 
-"Core" means (i) a single physical processor core or hyper-thread when
-Solace Cloud software is deployed on either a bare-metal server or a cloud or
-virtualization environment that presents physical cores to the software, and
-(ii) a single virtual core when deployed in a cloud or virtualization
-environment that presents virtual cores to the VMR.
+"Core" means a single processor core or hyper-thread when Solace Cloud 
+software is deployed in a Kubernetes environment, whether in public cloud 
+regions managed by Solace or in customer-controlled regions deployed to 
+Kubernetes clusters.
 
 "Documentation" means the documentation  made accessible by SOLACE via a
 URL provided to Licensee.
