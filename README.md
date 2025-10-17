@@ -2,7 +2,7 @@
 
 The Event Management Agent is a tool for architects and developers working with event-driven architectures (EDAs) to discover event streams flowing through event brokers as well as the related event broker configuration information. It can also discover schemas from registries. The Event Management Agent can be used in two different ways:
 
-* As the Event Management Agent component of Solace PubSub+ Cloud Event Portal to:
+* As the Event Management Agent component of Solace Event Portal to:
     - discover runtime event data from event brokers and schema registries
     - populate Event Portal with the discovered runtime data to enable the management and reuse of EDA assets
     - audit the runtime data and flag discrepancies between the runtime and the design time intent for event data governance purposes, and to ensure that the runtime and design time configurations stay in-sync
@@ -16,8 +16,8 @@ Our plan is to open source the Event Management Agent to enable architects and d
 
 ## Available today
 
-* Users can discover Solace PubSub+ and Apache and Confluent Kafka brokers event flow data:
-    - Users can discover Solace PubSub+ queues and subscriptions
+* Users can discover Solace and Apache and Confluent Kafka brokers event flow data:
+    - Users can discover Solace queues and subscriptions
     - Users can discover Apache and Confluent Kafka topics and consumer groups
 * Users can discover Confluent Schema Registry schemas
 * Users get discovered data in the form of JSON files separated by entity types
@@ -26,8 +26,8 @@ Our plan is to open source the Event Management Agent to enable architects and d
 ## On the roadmap
 
 * The Event Management Agent has an open source plugin framework
-* Support additional Solace PubSub+ and Apache Kafka event broker authentication types in the form of plugins such as Kerberos, etc.
-* Collection of topics from events flowing though Solace PubSub+ brokers
+* Support additional Solace and Apache Kafka event broker authentication types in the form of plugins such as Kerberos, etc.
+* Collection of topics from events flowing though Solace event brokers
 * Export discovered data as AsyncAPI specifications
 * Addition of the infrastructure needed for the Event Management Agent to be a true open source project
 * Discovery of Apache Kafka connectors
@@ -37,7 +37,7 @@ Our plan is to open source the Event Management Agent to enable architects and d
 
 # Running the Event Management Agent in connected mode
 
-In this mode, the Event Management Agent connects to the Solace PubSub+ Event Portal. Scans are initiated from Event Portal and are automatically uploaded.
+In this mode, the Event Management Agent connects to Solace Event Portal. Scans are initiated from Event Portal and are automatically uploaded.
 
 ## Minimum hardware requirements
 
@@ -113,7 +113,7 @@ docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
 
 ## Running a Discovery Scan
 
-The Event Management Agent is now connected to the Solace Cloud Console.
+The Event Management Agent is now connected to the Cloud Console.
 Follow the steps in the documentation to run a discovery scan: https://docs.solace.com/Cloud/Event-Portal/event-portal-collect-runtime-data.htm#collecting_runtime_data
 
 # Running the Event Management Agent in Standalone Mode
@@ -299,13 +299,13 @@ curl -X 'POST' \
   -F 'file=@scan.zip;type=application/zip'
 ```
 
-# Solace PubSub+ Event Broker Configuration Push
+# Solace Event Broker Configuration Push
 
-The Event Management Agent enables the Solace PubSub+ Cloud Event Portal to directly deploy configuration to Solace PubSub+ Event Brokers. This functionality is available when the Event Management Agent is deployed as a Docker container or (for development purposes) executed from the jar file. Configuration push utilizes [OpenTofu](https://opentofu.org/) (a fork of the [Terraform](https://developer.hashicorp.com/terraform/) infrastructure management tool) along with the [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker).
+The Event Management Agent enables Event Portal to directly deploy configuration to Solace event brokers. This functionality is available when the Event Management Agent is deployed as a Docker container or (for development purposes) executed from the jar file. Configuration push utilizes [OpenTofu](https://opentofu.org/) (a fork of the [Terraform](https://developer.hashicorp.com/terraform/) infrastructure management tool) along with the [Solace Terraform Provider](https://github.com/SolaceProducts/terraform-provider-solacebroker).
 
 ## Configuration Push With Docker (Recommended)
 
-The Docker image of the Event Management Agent includes all necessary library dependencies for deploying configurations to Solace PubSub+ Event Brokers and is the recommended option for performing configuration push. Set up the agent by following the instructions for [running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode).
+The Docker image of the Event Management Agent includes all necessary library dependencies for deploying configurations to Solace event brokers and is the recommended option for performing configuration push. Set up the agent by following the instructions for [running the Event Management Agent in connected mode](#running-the-event-management-agent-in-connected-mode).
 
 ## Configuration Push With The Jar File (Development)
 
@@ -568,7 +568,7 @@ If users wish to run the EMA in offline mode, they will need to create a service
 The Event Management Agent comes with the following event or message broker plugins included:
 
 * Apache and Confluent Kafka
-* Solace PubSub+
+* Solace
 * Confluent Schema Registry
 * MSK
 
@@ -601,7 +601,7 @@ There are several interesting scenarios to test the Event Management Agent. Thes
 categories according to the deployment mode.
 
 * Testing the Event Management Agent as standalone service (stand-alone deployment).
-* Testing the end-to-end flow in Solace PubSub+ Console connected mode (From the frontend to the Event Portal, then to
+* Testing the end-to-end flow in Cloud Console connected mode (From the frontend to the Event Portal, then to
   the Event Management Agent)
 
 ### Testing the Event Management Agent in Standalone Mode
