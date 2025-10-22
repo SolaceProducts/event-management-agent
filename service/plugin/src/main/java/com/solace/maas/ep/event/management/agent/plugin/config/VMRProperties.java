@@ -122,6 +122,19 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
 
+        // Configure SSL trust store if set via JAVA_TOOL_OPTIONS (from __cacert_entrypoint.sh script)
+        // The script creates a temporary JKS truststore with default CAs + custom certificates
+        String trustStorePath = System.getProperty("javax.net.ssl.trustStore");
+        String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+
+        if (trustStorePath != null && !trustStorePath.isEmpty()) {
+            log.info("Configuring Solace JCSMP with SSL truststore from system properties: {}", trustStorePath);
+            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, trustStorePath);
+            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD,
+                    trustStorePassword != null ? trustStorePassword : "changeit");
+            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE, "JKS");
+        }
+
         return properties;
     }
 
