@@ -122,20 +122,33 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
 
-        // Configure SSL trust store if set via JAVA_TOOL_OPTIONS (from __cacert_entrypoint.sh script)
-        // The script creates a temporary JKS truststore with default CAs + custom certificates
-        String trustStorePath = System.getProperty("javax.net.ssl.trustStore");
-        String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-
-        if (trustStorePath != null && !trustStorePath.isEmpty()) {
-            log.info("Configuring Solace JCSMP with SSL truststore from system properties: {}", trustStorePath);
-            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, trustStorePath);
-            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD,
-                    trustStorePassword != null ? trustStorePassword : "changeit");
-            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE, "JKS");
-        }
+        //We will always use the default jks truststore for connecting to the EVMR
+        configureDefaultTrustStore(properties);
 
         return properties;
+    }
+
+    private void configureDefaultTrustStore(Properties properties) {
+        String javaHome = System.getProperty("java.home");
+        if (StringUtils.isBlank(javaHome)) {
+            log.warn("java.home system property is not set. Cannot configure default truststore for JCSMP.");
+            return;
+        }
+
+        String defaultTrustStorePath = javaHome + "/lib/security/cacerts";
+        java.io.File trustStoreFile = new java.io.File(defaultTrustStorePath);
+
+        if (!trustStoreFile.exists()) {
+            log.warn("Default truststore not found at expected location: {}. JCSMP connection may fail.", defaultTrustStorePath);
+            return;
+        }
+        if (!trustStoreFile.canRead()) {
+            log.warn("Default truststore exists but is not readable: {}. JCSMP connection may fail.", defaultTrustStorePath);
+            return;
+        }
+
+        log.debug("Configuring to use default truststore: {}", defaultTrustStorePath);
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, defaultTrustStorePath);
     }
 
     public List<String> getRTOSessionProperties() {
