@@ -23,6 +23,23 @@ Our plan is to open source the Event Management Agent to enable architects and d
 * Users get discovered data in the form of JSON files separated by entity types
 * The Event Management Agent architecture is currently in the form of Java packages
 
+### Supported Kafka Versions
+
+The Event Management Agent has been tested and verified to work with the following Kafka and Confluent Platform versions:
+
+#### Confluent Platform Versions
+* **Confluent Platform 7.3.0** (includes Apache Kafka 3.3.2)
+* **Confluent Platform 5.5.1** (includes Apache Kafka 2.5.1)
+
+#### Apache Kafka Versions
+* **Apache Kafka 3.9.1** (tested using official Docker images from [kafka.apache.org](https://kafka.apache.org/downloads))
+* **Apache Kafka 4.1.0** (tested using official Docker images from [kafka.apache.org](https://kafka.apache.org/downloads))
+
+#### Confluent Schema Registry
+Testing has been performed with Confluent Schema Registry versions that are bundled with the supported Confluent Platform versions listed above. For specific Schema Registry version compatibility, please refer to the [Confluent Platform compatibility matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html).
+
+> **Note**: While these are the versions that have been explicitly tested, the Event Management Agent may work with other Kafka versions. However, for production deployments, we recommend using the tested versions listed above.
+
 ## On the roadmap
 
 * The Event Management Agent has an open source plugin framework
