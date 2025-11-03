@@ -16,8 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -129,26 +132,42 @@ public class VMRProperties {
     }
 
     private void configureDefaultTrustStore(Properties properties) {
+        if (properties == null) {
+            log.warn("Properties object is null");
+            return;
+        }
+
+        String customCaCertsPresent = getCustomCaCertsPresentEnv();
+        if (!"1".equals(customCaCertsPresent)) {
+            log.debug("Custom CA certificates not present (CUSTOM_CA_CERTS_PRESENT={}). Skipping explicit default truststore configuration.",
+                    customCaCertsPresent);
+            return;
+        }
+
+        setDefaultTrustStore(properties);
+    }
+
+
+    String getCustomCaCertsPresentEnv() {
+        return System.getenv("CUSTOM_CA_CERTS_PRESENT");
+    }
+
+    void setDefaultTrustStore(Properties properties) {
         String javaHome = System.getProperty("java.home");
         if (StringUtils.isBlank(javaHome)) {
             log.warn("java.home system property is not set. Cannot configure default truststore for JCSMP.");
             return;
         }
+        Path defaultTrustStorePath = Paths.get(javaHome, "lib", "security", "cacerts");
+        File trustStoreFile = defaultTrustStorePath.toFile();
 
-        String defaultTrustStorePath = javaHome + "/lib/security/cacerts";
-        java.io.File trustStoreFile = new java.io.File(defaultTrustStorePath);
-
-        if (!trustStoreFile.exists()) {
-            log.warn("Default truststore not found at expected location: {}. JCSMP connection may fail.", defaultTrustStorePath);
-            return;
-        }
-        if (!trustStoreFile.canRead()) {
-            log.warn("Default truststore exists but is not readable: {}. JCSMP connection may fail.", defaultTrustStorePath);
+        if (!trustStoreFile.exists() || !trustStoreFile.canRead()) {
+            log.warn("Default truststore not found or not readable at: {}. JCSMP connection may fail.", defaultTrustStorePath);
             return;
         }
 
-        log.debug("Configuring to use default truststore: {}", defaultTrustStorePath);
-        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, defaultTrustStorePath);
+        log.debug("Custom CA certificates present. Explicitly configuring EVMR connection to use default truststore: {}", defaultTrustStorePath);
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, defaultTrustStorePath.toString());
     }
 
     public List<String> getRTOSessionProperties() {

@@ -1,9 +1,8 @@
-package com.solace.maas.ep.event.management.agent.webProxy;
+package com.solace.maas.ep.event.management.agent.plugin.config;
 
-import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
-import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayMessagingProperties;
+import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
 import lombok.SneakyThrows;
@@ -22,6 +21,11 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -256,4 +260,38 @@ class VMRPropertiesTests {
                 .hasCauseExactlyInstanceOf(NoSuchElementException.class)
                 .hasRootCauseMessage("Event Portal gateway connection properties not found.");
     }
+
+    @Test
+    @SneakyThrows
+    void testSetDefaultTrustStoreCalledWhenCustomCaCertsPresent() {
+        // Spy on vmrProperties to mock getCustomCaCertsPresentEnv and verify setDefaultTrustStore is called
+        VMRProperties spyVmrProperties = spy(vmrProperties);
+        when(spyVmrProperties.getCustomCaCertsPresentEnv()).thenReturn("1");
+        doNothing().when(spyVmrProperties).setDefaultTrustStore(any(Properties.class));
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        spyVmrProperties.getVmrProperties();
+
+        // Verify setDefaultTrustStore was called
+        verify(spyVmrProperties).setDefaultTrustStore(any(Properties.class));
+    }
+
+    @Test
+    @SneakyThrows
+    void testSetDefaultTrustStoreNotCalledWhenCustomCaCertsNotPresent() {
+        // Spy on vmrProperties to mock getCustomCaCertsPresentEnv and verify setDefaultTrustStore is NOT called
+        VMRProperties spyVmrProperties = spy(vmrProperties);
+        when(spyVmrProperties.getCustomCaCertsPresentEnv()).thenReturn(null);
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        spyVmrProperties.getVmrProperties();
+
+        // Verify setDefaultTrustStore was NOT called
+        verify(spyVmrProperties, never()).setDefaultTrustStore(any(Properties.class));
+    }
+
 }
