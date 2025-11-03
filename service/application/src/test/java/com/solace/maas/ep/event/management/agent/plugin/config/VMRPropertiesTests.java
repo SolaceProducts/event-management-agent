@@ -266,7 +266,7 @@ class VMRPropertiesTests {
     void testSetDefaultTrustStoreCalledWhenCustomCaCertsPresent() {
         // Spy on vmrProperties to mock getCustomCaCertsPresentEnv and verify setDefaultTrustStore is called
         VMRProperties spyVmrProperties = spy(vmrProperties);
-        when(spyVmrProperties.getCustomCaCertsPresentEnv()).thenReturn("1");
+        when(spyVmrProperties.isCustomCACertConfigured()).thenReturn(true);
         doNothing().when(spyVmrProperties).setDefaultTrustStore(any(Properties.class));
 
         MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
@@ -283,7 +283,7 @@ class VMRPropertiesTests {
     void testSetDefaultTrustStoreNotCalledWhenCustomCaCertsNotPresent() {
         // Spy on vmrProperties to mock getCustomCaCertsPresentEnv and verify setDefaultTrustStore is NOT called
         VMRProperties spyVmrProperties = spy(vmrProperties);
-        when(spyVmrProperties.getCustomCaCertsPresentEnv()).thenReturn(null);
+        when(spyVmrProperties.isCustomCACertConfigured()).thenReturn(false);
 
         MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
         when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));

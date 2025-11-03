@@ -137,10 +137,8 @@ public class VMRProperties {
             return;
         }
 
-        String customCaCertsPresent = getCustomCaCertsPresentEnv();
-        if (!"1".equals(customCaCertsPresent)) {
-            log.debug("Custom CA certificates not present (CUSTOM_CA_CERTS_PRESENT={}). Skipping explicit default truststore configuration.",
-                    customCaCertsPresent);
+        if (!isCustomCACertConfigured()) {
+            log.debug("Custom CA certificates not present. Skipping explicit default truststore configuration.");
             return;
         }
 
@@ -148,8 +146,10 @@ public class VMRProperties {
     }
 
 
-    String getCustomCaCertsPresentEnv() {
-        return System.getenv("CUSTOM_CA_CERTS_PRESENT");
+    boolean isCustomCACertConfigured() {
+        String customCaCertsPresent = System.getenv("CUSTOM_CA_CERTS_PRESENT");
+
+        return ("1".equals(customCaCertsPresent));
     }
 
     void setDefaultTrustStore(Properties properties) {
