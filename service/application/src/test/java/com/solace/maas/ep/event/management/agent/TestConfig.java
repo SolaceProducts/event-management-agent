@@ -19,6 +19,7 @@ import com.solace.maas.ep.event.management.agent.plugin.messagingService.RtoMess
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformLogProcessingService;
 import com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformManager;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.vmr.VmrProcessor;
 import com.solace.maas.ep.event.management.agent.processor.CommandLogStreamingProcessor;
 import com.solace.maas.ep.event.management.agent.publisher.CommandLogsPublisher;
@@ -70,8 +71,15 @@ public class TestConfig {
 
     @Bean
     @Primary
-    public VMRProperties vmrProperties(EventPortalPluginProperties eventPortalPluginProperties) {
-        return new VMRProperties(eventPortalPluginProperties);
+    public EnvironmentUtil environmentUtil() {
+        return mock(EnvironmentUtil.class);
+    }
+
+    @Bean
+    @Primary
+    public VMRProperties vmrProperties(EventPortalPluginProperties eventPortalPluginProperties,
+                                       EnvironmentUtil environmentUtil) {
+        return new VMRProperties(eventPortalPluginProperties,  environmentUtil);
     }
 
     @Bean
@@ -177,7 +185,8 @@ public class TestConfig {
                                             SempDeleteCommandManager sempDeleteCommandManager,
                                             TerraformLogProcessingService terraformLogProcessingService,
                                             SempPatchCommandManager sempPatchCommandManager,
-                                            SempGetCommandManager sempGetCommandManager) {
+                                            SempGetCommandManager sempGetCommandManager,
+                                            EnvironmentUtil environmentUtil) {
         return new CommandManager(
                 terraformManager,
                 commandMapper,
@@ -189,7 +198,8 @@ public class TestConfig {
                 sempDeleteCommandManager,
                 terraformLogProcessingService,
                 sempPatchCommandManager,
-                sempGetCommandManager
+                sempGetCommandManager,
+                environmentUtil
         );
     }
 

@@ -4,6 +4,7 @@ import com.solace.maas.ep.common.messages.ScanCommandMessage;
 import com.solace.maas.ep.common.messages.ScanStatusMessage;
 import com.solace.maas.ep.common.model.ScanType;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.constants.RouteConstants;
 import com.solace.maas.ep.event.management.agent.plugin.constants.ScanStatus;
 import com.solace.maas.ep.event.management.agent.plugin.manager.loader.PluginLoader;
@@ -46,19 +47,25 @@ public class ScanManager {
     // This is an optional dependency since it is not available in standalone mode.
     // If the bean is not present, the publisher will not be used.
     private final Optional<ScanStatusPublisher> scanStatusPublisherOpt;
+    private final EnvironmentUtil environmentUtil;
 
     @Autowired
     public ScanManager(MessagingServiceDelegateServiceImpl messagingServiceDelegateService,
                        ScanService scanService,
                        EventPortalProperties eventPortalProperties,
-                       Optional<ScanStatusPublisher> scanStatusPublisher) {
+                       Optional<ScanStatusPublisher> scanStatusPublisher,
+                       EnvironmentUtil environmentUtil) {
         this.messagingServiceDelegateService = messagingServiceDelegateService;
         this.scanService = scanService;
         this.scanStatusPublisherOpt = scanStatusPublisher;
         runtimeAgentId = eventPortalProperties.getRuntimeAgentId();
+        this.environmentUtil = environmentUtil;
     }
 
     public String scan(ScanRequestBO scanRequestBO) {
+        if (environmentUtil.isCustomCACertPresent()) {
+            log.info("Custom CA certificates present. Using combined truststore with default and custom CA certificates for scan operation.");
+        }
         Validate.notBlank(scanRequestBO.getOrgId(), " Organization ID cannot be null or empty");
         String messagingServiceId = scanRequestBO.getMessagingServiceId();
         String scanId = scanRequestBO.getScanId();

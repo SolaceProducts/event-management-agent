@@ -9,6 +9,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBun
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
@@ -53,6 +54,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "event-portal.gateway.messaging.standalone", havingValue = "false")
+@SuppressWarnings({"PMD.GodClass"})
 public class CommandManager {
     public static final String ERROR_EXECUTING_COMMAND = "Error executing command";
     private final TerraformManager terraformManager;
@@ -66,6 +68,7 @@ public class CommandManager {
     private final SempPatchCommandManager sempPatchCommandManager;
     private final SempGetCommandManager sempGetCommandManager;
     private final TerraformLogProcessingService terraformLoggingService;
+    private final EnvironmentUtil environmentUtil;
 
     public CommandManager(TerraformManager terraformManager,
                           CommandMapper commandMapper,
@@ -77,7 +80,8 @@ public class CommandManager {
                           final SempDeleteCommandManager sempDeleteCommandManager,
                           TerraformLogProcessingService terraformLoggingService,
                           SempPatchCommandManager sempPatchCommandManager,
-                          SempGetCommandManager sempGetCommandManager) {
+                          SempGetCommandManager sempGetCommandManager,
+                          EnvironmentUtil environmentUtil) {
         this.terraformManager = terraformManager;
         this.commandMapper = commandMapper;
         this.commandPublisher = commandPublisher;
@@ -90,6 +94,7 @@ public class CommandManager {
         this.terraformLoggingService = terraformLoggingService;
         this.sempPatchCommandManager = sempPatchCommandManager;
         this.sempGetCommandManager = sempGetCommandManager;
+        this.environmentUtil = environmentUtil;
     }
 
     public void execute(CommandMessage request) {
@@ -116,6 +121,10 @@ public class CommandManager {
 
     @SuppressWarnings("PMD")
     private void configPush(CommandRequest request) {
+
+        if (environmentUtil.isCustomCACertPresent()) {
+            log.info("Custom CA certificates present. Using combined truststore with default and custom CA certificates for configPush operation.");
+        }
         List<Path> executionLogFilesToClean = new ArrayList<>();
         boolean attachErrorToTerraformCommand = false;
         try {
@@ -135,6 +144,7 @@ public class CommandManager {
             if (Boolean.TRUE.equals(eventPortalProperties.getSkipTlsVerify())) {
                 log.info("Skipping TLS verification for config push to serviceId {}.", request.getServiceId());
             }
+
 
             for (CommandBundle bundle : request.getCommandBundles()) {
                 boolean exitEarlyOnFailedCommand = bundle.getExitOnFailure();

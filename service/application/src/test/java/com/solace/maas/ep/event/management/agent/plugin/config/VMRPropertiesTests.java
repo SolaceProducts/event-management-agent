@@ -5,6 +5,8 @@ import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.Gatew
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
+import com.solace.messaging.config.SolaceProperties;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,11 +23,6 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -41,6 +38,9 @@ class VMRPropertiesTests {
     @Mock
     private GatewayMessagingProperties gatewayMessagingProperties;
 
+    @Mock
+    private EnvironmentUtil environmentUtil;
+
     // Class under test
     private VMRProperties vmrProperties;
 
@@ -51,7 +51,8 @@ class VMRPropertiesTests {
         // MockitoExtension handles mock initialization
         when(eventPortalPluginProperties.getGateway()).thenReturn(gatewayProperties);
         when(gatewayProperties.getMessaging()).thenReturn(gatewayMessagingProperties);
-        vmrProperties = new VMRProperties(eventPortalPluginProperties);
+
+        vmrProperties = new VMRProperties(eventPortalPluginProperties, environmentUtil);
 
         // Backup system properties
         systemPropertiesBackup = new Properties();
@@ -263,35 +264,35 @@ class VMRPropertiesTests {
 
     @Test
     @SneakyThrows
-    void testSetDefaultTrustStoreCalledWhenCustomCaCertsPresent() {
-        // Spy on vmrProperties to mock getCustomCaCertsPresentEnv and verify setDefaultTrustStore is called
-        VMRProperties spyVmrProperties = spy(vmrProperties);
-        when(spyVmrProperties.isCustomCACertConfigured()).thenReturn(true);
-        doNothing().when(spyVmrProperties).setDefaultTrustStore(any(Properties.class));
+    void testConfigureDefaultTrustStoreWhenCustomCaCertsPresent() {
+        // Mock environmentUtil to return true (custom CA certs are configured)
+        when(environmentUtil.isCustomCACertPresent()).thenReturn(true);
 
         MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
         when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
 
-        spyVmrProperties.getVmrProperties();
+        Properties properties = vmrProperties.getVmrProperties();
 
-        // Verify setDefaultTrustStore was called
-        verify(spyVmrProperties).setDefaultTrustStore(any(Properties.class));
+        // Verify that truststore path is set when custom CA certs are present
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
+                .isNotNull()
+                .endsWith("cacerts");
     }
 
     @Test
     @SneakyThrows
-    void testSetDefaultTrustStoreNotCalledWhenCustomCaCertsNotPresent() {
-        // Spy on vmrProperties to mock getCustomCaCertsPresentEnv and verify setDefaultTrustStore is NOT called
-        VMRProperties spyVmrProperties = spy(vmrProperties);
-        when(spyVmrProperties.isCustomCACertConfigured()).thenReturn(false);
+    void testConfigureDefaultTrustStoreWhenCustomCaCertsNotPresent() {
+        // Mock environmentUtil to return false (custom CA certs NOT configured)
+        when(environmentUtil.isCustomCACertPresent()).thenReturn(false);
 
         MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
         when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
 
-        spyVmrProperties.getVmrProperties();
+        Properties properties = vmrProperties.getVmrProperties();
 
-        // Verify setDefaultTrustStore was NOT called
-        verify(spyVmrProperties, never()).setDefaultTrustStore(any(Properties.class));
+        // Verify that truststore path is NOT set when custom CA certs are not present
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
+                .isNull();
     }
 
 }

@@ -5,6 +5,7 @@ import com.solace.maas.ep.common.model.ScanDestination;
 import com.solace.maas.ep.common.model.ScanType;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.publisher.ScanStatusPublisher;
 import com.solace.maas.ep.event.management.agent.service.MessagingServiceDelegateServiceImpl;
 import com.solace.maas.ep.event.management.agent.service.ScanService;
@@ -38,6 +39,9 @@ class ScanManagerHandleErrorTest {
     @Mock
     private ScanStatusPublisher scanStatusPublisher;
 
+    @Mock
+    private EnvironmentUtil environmentUtil;
+
     @Test
     void testScanManagerConnectedHandleError(){
         when(eventPortalProperties.getOrganizationId()).thenReturn("orgId");
@@ -49,7 +53,8 @@ class ScanManagerHandleErrorTest {
                 messagingServiceDelegateService,
                 scanService,
                 eventPortalProperties,
-                Optional.of(scanStatusPublisher)
+                Optional.of(scanStatusPublisher),
+                environmentUtil
         );
         scanManagerUnderTest.handleError(mockEx,createScanCommandMessage());
         verify(scanStatusPublisher, times(1)).sendOverallScanStatus(any(),any());
@@ -66,7 +71,8 @@ class ScanManagerHandleErrorTest {
                 messagingServiceDelegateService,
                 scanService,
                 eventPortalProperties,
-                Optional.empty()
+                Optional.empty(),
+                environmentUtil
         );
         // should just do "nothing" and not throw an exception when scanStatusPublisher is not present
         assertDoesNotThrow(() ->

@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.Event
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.messaging.config.SolaceConstants;
 import com.solace.messaging.config.SolaceProperties;
 import com.solacesystems.solclientj.core.handle.SessionHandle;
@@ -41,6 +42,7 @@ public class VMRProperties {
     private static final String SOLACE_PROXY_PASSWORD = "solace.proxy.password";
 
     private final EventPortalPluginProperties eventPortalPluginProperties;
+    private final EnvironmentUtil environmentUtil;
 
     /**
      * The host used to connect to the VMR
@@ -77,8 +79,9 @@ public class VMRProperties {
      */
 
     @Autowired
-    public VMRProperties(EventPortalPluginProperties eventPortalPluginProperties) {
+    public VMRProperties(EventPortalPluginProperties eventPortalPluginProperties, EnvironmentUtil environmentUtil) {
         this.eventPortalPluginProperties = eventPortalPluginProperties;
+        this.environmentUtil = environmentUtil;
     }
 
     public void parseVmrProperties() {
@@ -137,19 +140,12 @@ public class VMRProperties {
             return;
         }
 
-        if (!isCustomCACertConfigured()) {
+        if (!environmentUtil.isCustomCACertPresent()) {
             log.debug("Custom CA certificates not present. Skipping explicit default truststore configuration.");
             return;
         }
 
         setDefaultTrustStore(properties);
-    }
-
-
-    boolean isCustomCACertConfigured() {
-        String customCaCertsPresent = System.getenv("CUSTOM_CA_CERTS_PRESENT");
-
-        return ("1".equals(customCaCertsPresent));
     }
 
     void setDefaultTrustStore(Properties properties) {
