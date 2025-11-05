@@ -54,6 +54,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Bouncy Castle security fix CVE-2025-8916 -->
+            <!-- Override transitive dependency from spring-security-rsa:1.1.3 -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.79</version>
+            </dependency>
             <!-- logback/logstash integration -->
             <dependency>
                 <groupId>net.logstash.logback</groupId>
