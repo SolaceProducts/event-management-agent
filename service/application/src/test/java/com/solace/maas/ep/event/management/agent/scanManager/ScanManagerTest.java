@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.scanManager;
 
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.confluentSchemaRegistry.route.delegate.ConfluentSchemaRegistryRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.kafka.route.delegate.KafkaRouteDelegateImpl;
 import com.solace.maas.ep.event.management.agent.plugin.localstorage.route.delegate.DataCollectionFileWriterDelegateImpl;
@@ -15,19 +16,20 @@ import com.solace.maas.ep.event.management.agent.service.ScanService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,20 +37,23 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 class ScanManagerTest {
 
-    @Mock
+    @MockitoBean
     MessagingServiceDelegateServiceImpl messagingServiceDelegateService;
 
-    @Mock
+    @MockitoBean
     private EventPortalProperties eventPortalProperties;
 
-    @InjectMocks
+    @MockitoSpyBean
     ScanManager scanManager;
 
     @Autowired
     ConfluentSchemaRegistryRouteDelegateImpl confluentSchemaRegistryRouteDelegate;
 
-    @Mock
+    @MockitoBean
     private ScanService scanService;
+
+    @Autowired
+    private EnvironmentUtil environmentUtil;
 
 
     @Test
@@ -177,7 +182,7 @@ class ScanManagerTest {
             when(kafkaRouteDelegate.generateRouteList(destinations, List.of(), "KAFKA_ALL", messagingServiceId))
                     .thenReturn(routes);
 
-            when(scanService.singleScan(
+            when(scanService.singleScan(eq(
                     SingleScanSpecification
                             .builder()
                             .orgId("orgId")
@@ -189,7 +194,7 @@ class ScanManagerTest {
                             .runtimeAgentId("runtimeAgent1")
                             .routeBundles(List.of())
                             .build()
-            )).thenReturn(Mockito.anyString());
+            ))).thenReturn(Mockito.anyString());
             scanManager.scan(scanRequestBO);
 
             assertThatNoException();

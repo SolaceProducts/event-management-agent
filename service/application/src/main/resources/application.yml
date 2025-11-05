@@ -4,393 +4,72 @@ springdoc:
     path: /docs/event-management-agent
   swagger-ui:
     path: /event-management-agent/swagger-ui.html
-
-logging:
-  log-in-json-format: false
-  level:
-    root: INFO
-  file:
-    name: /tmp/EMA.log
-  logback:
-    rolling-policy:
-      file-name-pattern: '${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz'
-      max-file-size: 10MB
-      max-history: 7
-      total-size-cap: 1GB
-
-# micrometer / statsd
-management:
-  metrics:
-    tags:
-      # key - value pairs
-      maas_id: my-maas-id
-    enable:
-      # enable / disable specific metrics
-      all: false
-      # sample metrics to be exposed
-      application:
-        started:
-          time: true
-      jvm:
-        info: true
-  statsd:
-    metrics:
-      export:
-        # enable / disable shipping metrics to StatsD endpoint
-        enabled: false
-        flavor: datadog
-        host: 127.0.0.1
-        port: 8125
-        protocol: udp
-
 server:
   port: 8180
-
-idGenerator:
-  originId: event_management_agent_${EP_EVENT_MANAGEMENT_AGENT_ID}
-
 spring:
-  datasource:
-    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: password
-    driver-class-name: org.h2.Driver
-
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop
-    defer-datasource-initialization: true
-  h2:
-    console:
-      path: /h2
-      enabled: true
-      settings:
-        web-allow-others: true
+  main:
+    allow-bean-definition-overriding: true
   servlet:
     multipart:
       max-request-size: ${MAX_REQUEST_SIZE:5MB}
       max-file-size: ${MAX_FILE_SIZE:5MB}
-  main:
-    allow-bean-definition-overriding: true
-
+  datasource:
+    url: jdbc:h2:file:./data/cache;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    driver-class-name: org.h2.Driver
+    password: mn5UAIl0lD
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
 camel:
-  errorHandling:
-    maximumRedeliveries: 10
-    maximumRedeliveryDelay: 60000
-    redeliveryDelay: 1000
   main:
     use-mdc-logging: true
-
 kafka:
   client:
     config:
-      connections:
-        timeout:
-          value: 60_000
-          unit: milliseconds
-        max-idle:
-          value: 10_000
-          unit: milliseconds
-        request-timeout:
-          value: 5_000
-          unit: milliseconds
       reconnections:
-        backoff:
-          value: 50
-          unit: milliseconds
         max-backoff:
-          value: 1_000
           unit: milliseconds
-
+          value: 1000
+        backoff:
+          unit: milliseconds
+          value: 50
+      connections:
+        max-idle:
+          unit: milliseconds
+          value: 10000
+        request-timeout:
+          unit: milliseconds
+          value: 5000
+        timeout:
+          unit: milliseconds
+          value: 60000
 eventPortal:
-  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:defaultAgentId}
-  organizationId: ${EP_ORGANIZATION_ID:defaultOrgId}
+  runtimeAgentId: ${EP_RUNTIME_AGENT_ID:unlivc38v58}
+  organizationId: ${EP_ORGANIZATION_ID:bol333}
   topicPrefix: ${EP_TOPIC_PREFIX:sc/ep/runtime}
   gateway:
-    id: gateway
-    name: evmr1
+    id: ok3901eq18j
+    name: test-evmr
     messaging:
-      standalone: true
+      standalone: false
       rtoSession: false
-      enableHeartbeats: false
-      testHeartbeats: false
+      enableHeartbeats: true
+      testHeartbeats: true
       connections:
         - name: eventPortalGateway
-          authenticationType: ${EP_GATEWAY_AUTH}
-          url: ${EP_GATEWAY_URL}
-          msgVpn: ${EP_GATEWAY_MSGVPN}
-          trustStoreDir: ${SSL_STORE_DIR}
+          authenticationType: ${EP_GATEWAY_AUTH:basicAuthentication}
+          msgVpn: ${EP_GATEWAY_MSGVPN:test-evmr}
+          url: ${EP_GATEWAY_URL:tcps://mr-connection-jufrhsq41cr.messaging.mymaas.net:55443}
           users:
-            - name: messaging1
-              username: ${EP_GATEWAY_USERNAME}
-              password: ${EP_GATEWAY_PASSWORD}
-              clientName: runtime_agent_${EP_RUNTIME_AGENT_ID}  # 'client_' + runtimeAgentId
-
-# Below is an example of how to set up messaging service configuration in the application.yml file.
-
-#plugins:
-#  resources:
-#    # Confluent Schema Registry No Auth example
-#    - id: someConfluentId
-#      name: no auth confluent example
-#      type: confluent_schema_registry
-#      relatedServices:
-#        - id1
-#        - id2
-#        - id3
-#      connections:
-#        - name: myConfluentNoAuth
-#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
-#    # Confluent Schema Registry Basic Auth example
-#    - id: someConfluentId
-#      name: no auth confluent example
-#      type: confluent_schema_registry
-#      relatedServices:
-#        - id1
-#      connections:
-#        - name: myConfluentBasicAuth
-#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
-#          authentication:
-#            - protocol: BASIC
-#              credentials:
-#                - properties:
-#                    - name: username
-#                      value: ${CONFLUENT_USERNAME}
-#                    - name: password
-#                      value: ${CONFLUENT_PASSWORD}
-#                  source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#    # Confluent Schema Registry Basic Auth With SSL example
-#    - id: someConfluentId
-#      name: no auth confluent example
-#      type: confluent_schema_registry
-#      relatedServices:
-#        - id1
-#      connections:
-#        - name: myConfluentBasicAuthWithSSL
-#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
-#          authentication:
-#            - protocol: BASIC_SSL
-#              credentials:
-#                - properties:
-#                    - name: username
-#                      value: ${CONFLUENT_USERNAME}
-#                    - name: password
-#                      value: ${CONFLUENT_PASSWORD}
-#                    - name: ssl.truststore.location
-#                      value: ${TRUSTSTORE_LOCATION}
-#                    - name: ssl.truststore.password
-#                      value: ${TRUSTSTORE_PASSWORD}
-#                  source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#    # Confluent Schema Registry Basic Auth With mTLS example
-#    - id: someConfluentId
-#      name: Basic Auth With mTLS example
-#      type: confluent_schema_registry
-#      relatedServices:
-#        - id1
-#      connections:
-#        - name: myConfluentBasicAuthWithMTLS
-#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
-#          authentication:
-#            - protocol: BASIC_MTLS
-#              credentials:
-#                - properties:
-#                    - name: username
-#                      value: ${CONFLUENT_USERNAME}
-#                    - name: password
-#                      value: ${CONFLUENT_PASSWORD}
-#                    - name: ssl.truststore.location
-#                      value: ${TRUSTSTORE_LOCATION}
-#                    - name: ssl.truststore.password
-#                      value: ${TRUSTSTORE_PASSWORD}
-#                    - name: ssl.keystore.location
-#                      value: ${KEYSTORE_LOCATION}
-#                    - name: ssl.keystore.password
-#                      value: ${KEYSTORE_PASSWORD}
-#                    - name: ssl.key.password
-#                      value: ${KEY_PASSWORD}
-#                  source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#    # Confluent Schema Registry TLS example
-#    - id: someConfluentId
-#      name: no auth confluent example
-#      type: confluent_schema_registry
-#      relatedServices:
-#        - id1
-#      connections:
-#        - name: myConfluentTLS
-#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
-#          authentication:
-#            - protocol: TLS
-#              credentials:
-#                - properties:
-#                    - name: ssl.truststore.location
-#                      value: ${TRUSTSTORE_LOCATION}
-#                    - name: ssl.truststore.password
-#                      value: ${TRUSTSTORE_PASSWORD}
-#                  source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#    # Confluent Schema Registry MTLS example
-#    - id: someConfluentId
-#      name: no auth confluent example
-#      type: confluent_schema_registry
-#      relatedServices:
-#        - id1
-#      connections:
-#        - name: myConfluentMTLS
-#          url: ${CONFLUENT_SCHEMA_REGISTRY_URL}
-#          authentication:
-#            - protocol: MTLS
-#              credentials:
-#                - properties:
-#                    - name: ssl.truststore.location
-#                      value: ${TRUSTSTORE_LOCATION}
-#                    - name: ssl.truststore.password
-#                      value: ${TRUSTSTORE_PASSWORD}
-#                    - name: ssl.keystore.password
-#                      value: ${KEYSTORE_PASSWORD}
-#                    - name: ssl.keystore.location
-#                      value: ${KEYSTORE_LOCATION}
-#                    - name: ssl.key.password
-#                      value: ${KEY_PASSWORD}
-#                  source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#    # Solace example
-#    - id: solaceDefaultService
-#      type: SOLACE
-#      name: staging service
-#      connections:
-#        - name: mySolaceServiceSemp
-#          url: ${SOLACE_SEMP_URL}
-#          authentication:
-#            - protocol: SEMP
-#              credentials:
-#                - source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#                  properties:
-#                    - name: username
-#                      value: ${SOLACE_SEMP_USERNAME}
-#                    - name: password
-#                      value: ${SOLACE_SEMP_PASSWORD}
-#          properties:
-#            - name: msgVpn
-#              value: ${SOLACE_VPN_NAME}
-#            - name: sempPageSize
-#              value: 100
-#    # MTLS example
-#    - id: kafkaMTLSServiceExample
-#      name: mtls kafka cluster example
-#      type: KAFKA
-#      connections:
-#        - name: kafkaMTLSConnection
-#          url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:11091,kafka2:11092}
-#          authentication:
-#            - protocol: SSL
-#              credentials:
-#                - source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#                  properties:
-#                    - name: ssl.truststore.location
-#                      value: ${TRUSTSTORE_LOCATION}
-#                    - name: ssl.truststore.password
-#                      value: ${TRUSTSTORE_PASSWORD}
-#                    - name: ssl.keystore.password
-#                      value: ${KEYSTORE_PASSWORD}
-#                    - name: ssl.keystore.location
-#                      value: ${KEYSTORE_LOCATION}
-#                    - name: ssl.key.password
-#                      value: ${KEY_PASSWORD}
-#    # SASL SCRAM
-#    - id: kafkaSASLSCRAMServiceExample
-#      name: sasl scram kafka cluster example
-#      type: KAFKA
-#      connections:
-#        - name: kafkaSASLSCRAMConnection
-#          url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:14091,kafka2:14092}
-#          authentication:
-#            - protocol: SASL_SSL
-#              credentials:
-#                - source: ENVIRONMENT_VARIABLE
-#                  operations:
-#                    - name: ALL
-#                  properties:
-#                    - name: ssl.truststore.location
-#                      value: ${TRUSTSTORE_LOCATION}
-#                    - name: ssl.truststore.password
-#                      value: ${TRUSTSTORE_PASSWORD}
-#                    - name: sasl.jaas.config
-#                      value: org.apache.kafka.common.security.scram.ScramLoginModule required username=<username> password=<password>;
-#                    - name: sasl.mechanism
-#                      value: SCRAM-SHA-256
-#      # SASL Plain example
-#      - id: saslplain
-#        name: saslplain
-#        type: KAFKA
-#        connections:
-#          - name: saslplainconn
-#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9091,kafka2:9092}
-#            authentication:
-#              - protocol: SASL_PLAINTEXT
-#                credentials:
-#                  - source: ENVIRONMENT_VARIABLE
-#                    operations:
-#                      - name: ALL
-#                    properties:
-#                      - name: sasl.mechanism
-#                        value: PLAIN
-#                      - name: sasl.jaas.config
-#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
-#      # SASL Plain over SSL
-#      - id: saslplainssl
-#        name: saslplainssl
-#        type: KAFKA
-#        connections:
-#          - name: saslplainsslconn
-#            url: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:13091,kafka2:13092}
-#            authentication:
-#              - protocol: SASL_SSL
-#                credentials:
-#                  - source: ENVIRONMENT_VARIABLE
-#                    operations:
-#                      - name: ALL
-#                    properties:
-#                      - name: ssl.truststore.location
-#                        value: ${TRUSTSTORE_LOCATION}
-#                      - name: sasl.mechanism
-#                        value: PLAIN
-#                      - name: sasl.jaas.config
-#                        value: org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>>" password="<password>";
-#      # AWS IAM Example.
-#      # NOTE: Remember to set the aws access id and password in the environment or credentials!
-#      - id: iam
-#        name: iam
-#        type: KAFKA
-#        connections:
-#          - name: iamConn
-#            url: ${KAFKA_BOOTSTRAP_SERVERS:awsservers:9098}
-#            authentication:
-#              - protocol: SASL_SSL
-#                credentials:
-#                  - source: ENVIRONMENT_VARIABLE
-#                    operations:
-#                      - name: ALL
-#                    properties:
-#                      - name: ssl.truststore.location
-#                        value: ${TRUSTSTORE_LOCATION}
-#                      - name: security.protocol
-#                        value: SASL_SSL
-#                      - name: sasl.mechanism
-#                        value: AWS_MSK_IAM
-#                      - name: sasl.jaas.config
-#                        value: software.amazon.msk.auth.iam.IAMLoginModule required;
-#                      - name: sasl.client.callback.handler.class
-#                        value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+            - clientName: client_unlivc38v58
+              username: ${EP_GATEWAY_USERNAME:org-bol333-p3052prtc5w-unlivc38v58}
+              password: 1@7oqhZFcc@Drr-p@YOUasV9
+              name: messaging1
+          proxyEnabled: ${SOLACE_PROXY_ENABLED:false}
+          proxyType: ${SOLACE_PROXY_TYPE:http}
+          proxyHost: ${SOLACE_PROXY_HOST:localhost}
+          proxyPort: ${SOLACE_PROXY_PORT:8443}
+          proxyUsername: ${SOLACE_PROXY_USERNAME:}
+          proxyPassword: ${SOLACE_PROXY_PASSWORD:}
