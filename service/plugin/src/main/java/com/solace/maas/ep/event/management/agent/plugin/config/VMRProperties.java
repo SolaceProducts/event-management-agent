@@ -141,7 +141,7 @@ public class VMRProperties {
         }
 
         if (!environmentUtil.isCustomCACertPresent()) {
-            log.debug("Custom CA certificates not present. Skipping explicit default truststore configuration.");
+            log.info("Custom CA certificates not present. Skipping explicit default truststore configuration.");
             return;
         }
 
@@ -162,7 +162,7 @@ public class VMRProperties {
             return;
         }
 
-        log.debug("Custom CA certificates present. Explicitly configuring EVMR connection to use default truststore: {}", defaultTrustStorePath);
+        log.info("Custom CA certificates present. Explicitly configuring EVMR connection to use default truststore: {}", defaultTrustStorePath);
         properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, defaultTrustStorePath.toString());
     }
 
