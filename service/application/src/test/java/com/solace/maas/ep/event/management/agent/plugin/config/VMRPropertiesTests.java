@@ -1,11 +1,12 @@
-package com.solace.maas.ep.event.management.agent.webProxy;
+package com.solace.maas.ep.event.management.agent.plugin.config;
 
-import com.solace.maas.ep.event.management.agent.plugin.config.VMRProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
-import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayMessagingProperties;
+import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
+import com.solace.messaging.config.SolaceProperties;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,9 @@ class VMRPropertiesTests {
     @Mock
     private GatewayMessagingProperties gatewayMessagingProperties;
 
+    @Mock
+    private EnvironmentUtil environmentUtil;
+
     // Class under test
     private VMRProperties vmrProperties;
 
@@ -47,7 +51,8 @@ class VMRPropertiesTests {
         // MockitoExtension handles mock initialization
         when(eventPortalPluginProperties.getGateway()).thenReturn(gatewayProperties);
         when(gatewayProperties.getMessaging()).thenReturn(gatewayMessagingProperties);
-        vmrProperties = new VMRProperties(eventPortalPluginProperties);
+
+        vmrProperties = new VMRProperties(eventPortalPluginProperties, environmentUtil);
 
         // Backup system properties
         systemPropertiesBackup = new Properties();
@@ -256,4 +261,38 @@ class VMRPropertiesTests {
                 .hasCauseExactlyInstanceOf(NoSuchElementException.class)
                 .hasRootCauseMessage("Event Portal gateway connection properties not found.");
     }
+
+    @Test
+    @SneakyThrows
+    void testConfigureDefaultTrustStoreWhenCustomCaCertsPresent() {
+        // Mock environmentUtil to return true (custom CA certs are configured)
+        when(environmentUtil.isCustomCACertPresent()).thenReturn(true);
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        Properties properties = vmrProperties.getVmrProperties();
+
+        // Verify that truststore path is set when custom CA certs are present
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
+                .isNotNull()
+                .endsWith("cacerts");
+    }
+
+    @Test
+    @SneakyThrows
+    void testConfigureDefaultTrustStoreWhenCustomCaCertsNotPresent() {
+        // Mock environmentUtil to return false (custom CA certs NOT configured)
+        when(environmentUtil.isCustomCACertPresent()).thenReturn(false);
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        Properties properties = vmrProperties.getVmrProperties();
+
+        // Verify that truststore path is NOT set when custom CA certs are not present
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
+                .isNull();
+    }
+
 }

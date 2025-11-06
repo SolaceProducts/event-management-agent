@@ -4,6 +4,7 @@ import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.Event
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.messaging.config.SolaceConstants;
 import com.solace.messaging.config.SolaceProperties;
 import com.solacesystems.solclientj.core.handle.SessionHandle;
@@ -16,8 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -38,6 +42,7 @@ public class VMRProperties {
     private static final String SOLACE_PROXY_PASSWORD = "solace.proxy.password";
 
     private final EventPortalPluginProperties eventPortalPluginProperties;
+    private final EnvironmentUtil environmentUtil;
 
     /**
      * The host used to connect to the VMR
@@ -74,8 +79,9 @@ public class VMRProperties {
      */
 
     @Autowired
-    public VMRProperties(EventPortalPluginProperties eventPortalPluginProperties) {
+    public VMRProperties(EventPortalPluginProperties eventPortalPluginProperties, EnvironmentUtil environmentUtil) {
         this.eventPortalPluginProperties = eventPortalPluginProperties;
+        this.environmentUtil = environmentUtil;
     }
 
     public void parseVmrProperties() {
@@ -122,7 +128,42 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
 
+        //We will always use the default jks truststore for connecting to the EVMR
+        configureDefaultTrustStore(properties);
+
         return properties;
+    }
+
+    private void configureDefaultTrustStore(Properties properties) {
+        if (properties == null) {
+            log.warn("Properties object is null");
+            return;
+        }
+
+        if (!environmentUtil.isCustomCACertPresent()) {
+            log.info("Custom CA certificates not present. Skipping explicit default truststore configuration.");
+            return;
+        }
+
+        setDefaultTrustStore(properties);
+    }
+
+    void setDefaultTrustStore(Properties properties) {
+        String javaHome = System.getProperty("java.home");
+        if (StringUtils.isBlank(javaHome)) {
+            log.warn("java.home system property is not set. Cannot configure default truststore for JCSMP.");
+            return;
+        }
+        Path defaultTrustStorePath = Paths.get(javaHome, "lib", "security", "cacerts");
+        File trustStoreFile = defaultTrustStorePath.toFile();
+
+        if (!trustStoreFile.exists() || !trustStoreFile.canRead()) {
+            log.warn("Default truststore not found or not readable at: {}. JCSMP connection may fail.", defaultTrustStorePath);
+            return;
+        }
+
+        log.info("Custom CA certificates present. Explicitly configuring EVMR connection to use default truststore: {}", defaultTrustStorePath);
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, defaultTrustStorePath.toString());
     }
 
     public List<String> getRTOSessionProperties() {
