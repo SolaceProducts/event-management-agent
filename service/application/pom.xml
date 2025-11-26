@@ -31,10 +31,11 @@
     </repositories>
     <dependencyManagement>
         <dependencies>
+            <!-- Netty BOM for security fixes CVE-2025-55163, CVE-2025-58056, CVE-2025-58057 -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.124.Final</version>
+                <version>4.1.125.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
