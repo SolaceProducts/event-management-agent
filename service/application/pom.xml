@@ -39,6 +39,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Fix CVE-2025-12183: Out-of-bounds memory operations in lz4-java -->
+            <dependency>
+                <groupId>org.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>1.8.1</version>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
