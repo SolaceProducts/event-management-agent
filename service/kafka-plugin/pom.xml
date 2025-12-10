@@ -10,9 +10,9 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-kafka.version>3.3.4</spring-kafka.version>
-        <kafka-clients.version>3.8.1</kafka-clients.version>
-        <spring-boot.version>3.4.10</spring-boot.version>
+        <spring-kafka.version>3.3.6</spring-kafka.version>
+        <kafka-clients.version>3.9.1</kafka-clients.version>
+        <spring-boot.version>3.5.0</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jupiter.version>5.10.2</jupiter.version>
         <camel.version>4.8.7</camel.version>
