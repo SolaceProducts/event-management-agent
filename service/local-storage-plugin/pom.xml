@@ -53,10 +53,6 @@
             <version>${camel.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.yaml</groupId>
                     <artifactId>snakeyaml</artifactId>
                 </exclusion>
@@ -103,10 +99,6 @@
             <artifactId>spring-boot-starter</artifactId>
             <version>${spring-boot.version}</version>
             <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>org.yaml</groupId>
                     <artifactId>snakeyaml</artifactId>
