@@ -15,19 +15,28 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read        # For checkout
+  packages: write       # For package publishing
+  pull-requests: write  # For PR comments and FOSSA
+  actions: write        # For workflow operations and FOSSA
+  statuses: write       # For commit status and FOSSA
+  checks: write         # For status checks and FOSSA
+
 jobs:
+  fossa_scan:
+    name: FOSSA Scan
+    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
+    with:
+      use_vault: false
+      config_file: '.github/workflow-config.json'
+    secrets:
+      FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
   Test_Build:
     name: Run Tests and Deploy
     runs-on: ubuntu-latest
     environment: ${{ github.ref=='refs/heads/main' && 'build_main' || 'build_pr' }}
     timeout-minutes: 20
-    permissions:
-       contents: read
-       packages: write
-       pull-requests: write
-       actions: write
-       statuses: write
-       checks: write
     steps:
       - uses: actions/checkout@v3
         with:
