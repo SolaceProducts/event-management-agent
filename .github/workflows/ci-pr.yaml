@@ -1,0 +1,28 @@
+name: CI - Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read        # For checkout
+  pull-requests: write  # For PR comments
+  actions: read         # For sca-scan-and-guard
+  issues: write         # For PR comments
+  checks: write         # For FOSSA status checks
+  statuses: write       # For FOSSA commit status
+  packages: write       # For build workflows
+
+jobs:
+  fossa_scan:
+    name: FOSSA Scan
+    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
+    with:
+      use_vault: false
+      config_file: '.github/workflow-config.json'
+    secrets:
+      FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}

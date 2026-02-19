@@ -1,0 +1,24 @@
+{
+  "sca_scanning": {
+    "enabled": true,
+    "fossa": {
+      "policy": {
+        "mode": "REPORT",
+        "block_on": ["policy_conflict", "unlicensed_dependency"]
+      },
+      "vulnerability": {
+        "mode": "REPORT",
+        "block_on": ["critical", "high"]
+      },
+      "project_id": "SolaceProducts_event-management-agent",
+      "team": null,
+      "labels": ["event-portal", "agent"]
+    }
+  },
+  "build": {
+    "squad": "event-portal",
+    "service_name": "event-management-agent",
+    "java_environment": "temurin",
+    "jre_version": "17"
+  }
+}

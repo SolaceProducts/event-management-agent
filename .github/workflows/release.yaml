@@ -10,10 +10,24 @@ on:
         description: "Default version to use for new local working copy (the next version after version A.B.C)."
         required: true
         default: "X.Y.Z-SNAPSHOT"
+
+permissions:
+  contents: write              # For git commits/tags
+  packages: write              # For package publishing
+  pull-requests: write         # For PR comments
+  actions: write               # For workflow operations
+  issues: write                # For issue comments
+  checks: write                # For FOSSA status checks
+  statuses: write              # For FOSSA commit status
+
 jobs:
-  release:
+  maven_release:
+    name: Maven Release
     runs-on: ubuntu-latest
     environment: prod
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+      tag: ${{ steps.set_version.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v3
@@ -92,6 +106,37 @@ jobs:
         run: mvn clean --file service/pom.xml
       - name: Maven Release
         run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+
+      - name: Set Version Output
+        id: set_version
+        run: |
+          echo "version=${{ github.event.inputs.releaseVersion }}" >> $GITHUB_OUTPUT
+          echo "tag=v${{ github.event.inputs.releaseVersion }}" >> $GITHUB_OUTPUT
+
+  fossa_scan:
+    name: FOSSA Scan
+    needs: [maven_release]
+    if: needs.maven_release.result == 'success'
+    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
+    with:
+      git_ref: ${{ needs.maven_release.outputs.tag }}
+      use_vault: false
+      config_file: '.github/workflow-config.json'
+    secrets:
+      FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+
+  publish:
+    name: Publish Release
+    needs: [maven_release, fossa_scan]
+    if: needs.fossa_scan.result == 'success'
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.maven_release.outputs.tag }}
       - name: Changelog
         uses: Bullrich/generate-release-changelog@master
         id: Changelog
@@ -104,8 +149,8 @@ jobs:
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "v${{ github.event.inputs.releaseVersion }}"
-          artifacts: "**/application/target/event-management-agent-${{ github.event.inputs.releaseVersion }}.jar"
+          tag: "${{ needs.maven_release.outputs.tag }}"
+          artifacts: "**/application/target/event-management-agent-${{ needs.maven_release.outputs.version }}.jar"
           generateReleaseNotes: true
           makeLatest: true
           body: ${{ steps.Changelog.outputs.changelog }}
@@ -125,16 +170,16 @@ jobs:
           | jq --raw-output '.images[].imageManifest')
 
           aws ecr put-image --repository-name ${{ github.event.repository.name }} \
-            --image-tag ${{ github.event.inputs.releaseVersion }} \
+            --image-tag ${{ needs.maven_release.outputs.version }} \
             --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
       - name: Update Release Manifest DB
         run: | 
           export squad="event-portal"
           export repository="event-management-agent"
           export release_tag=production
-          export version=${{ github.event.inputs.releaseVersion }}
-          export release_version=${{ github.event.inputs.releaseVersion }}
-          export image_tag=${{ github.event.inputs.releaseVersion }}
+          export version=${{ needs.maven_release.outputs.version }}
+          export release_version=${{ needs.maven_release.outputs.version }}
+          export image_tag=${{ needs.maven_release.outputs.version }}
           export chart_version="n/a"
           export sha=${{ github.sha }}
           ./.github/workflows/release_scripts/update_release_manifest.sh

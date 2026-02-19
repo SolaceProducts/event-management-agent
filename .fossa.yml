@@ -1,0 +1,30 @@
+version: 3
+
+project:
+  locator: SolaceProducts_event-management-agent
+  id: SolaceProducts_event-management-agent
+  name: event-management-agent
+  teams: []
+  labels:
+    - event-portal
+    - agent
+
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+      - "./service/target"
+      - "./docs"
+
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+    - ./service/target
+    - ./docs
+
+telemetry:
+  scope: full
