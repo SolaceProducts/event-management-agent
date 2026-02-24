@@ -12,7 +12,7 @@
       },
       "project_id": "SolaceProducts_event-management-agent",
       "team": null,
-      "labels": ["event-portal", "agent"]
+      "labels": [""]
     }
   },
   "build": {
