@@ -19,7 +19,6 @@ permissions:
   contents: read        # For checkout
   packages: write       # For package publishing
   pull-requests: write  # For PR comments and FOSSA
-  actions: write        # For workflow operations and FOSSA
   statuses: write       # For commit status and FOSSA
   checks: write         # For status checks and FOSSA
   id-token: write       # Required by sca-scan-and-guard reusable workflow
