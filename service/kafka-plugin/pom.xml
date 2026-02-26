@@ -33,6 +33,19 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- kafka-plugin has no Spring Boot parent, so Spring Boot does not manage Netty here.
+                 software.amazon.awssdk:netty-nio-client bundles its own Netty version (4.1.118.Final
+                 as of awssdk 2.30.17), which would be used without this pin.
+                 This BOM pin forces Netty to match the version Spring Boot 3.5.11 manages in all
+                 other EMA modules (via reactor-netty 1.2.15).
+                 Review when upgrading awssdk:netty-nio-client or when kafka-plugin gains a Spring Boot parent. -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.131.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
