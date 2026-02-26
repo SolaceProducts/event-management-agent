@@ -11,20 +11,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
-        <spring-boot.version>3.5.8</spring-boot.version>
+        <spring-boot.version>3.5.11</spring-boot.version>
     </properties>
-    <dependencyManagement>
-        <dependencies>
-            <!-- Netty BOM to override vulnerable versions -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-bom</artifactId>
-                <version>4.1.124.Final</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.rabbitmq</groupId>
