@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.8</version>
+        <version>3.5.11</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
@@ -46,14 +46,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Netty BOM for security fixes CVE-2025-55163, CVE-2025-58056, CVE-2025-58057 -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-bom</artifactId>
-                <version>4.1.125.Final</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <!-- logback/logstash integration -->
             <dependency>
                 <groupId>net.logstash.logback</groupId>
