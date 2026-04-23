@@ -42,6 +42,8 @@
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>4.8.7</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
+        <!-- CVE-2026-22732: spring-security-web 6.5.8 (HTTP headers not written); Spring Boot 3.5.11 BOM manages 6.5.8, override to 6.5.9 -->
+        <spring-security.version>6.5.9</spring-security.version>
     </properties>
 
     <dependencyManagement>
