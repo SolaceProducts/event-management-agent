@@ -38,6 +38,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- CVE-2023-3635: okio < 1.17.6 GzipSource DoS; transitive via okhttp 2.7.5 -->
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio</artifactId>
+                <version>1.17.6</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
