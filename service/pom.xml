@@ -46,6 +46,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Fix CVE-2025-48924: commons-lang3 uncontrolled recursion (override Spring Boot BOM 3.17.0) -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.18.0</version>
+            </dependency>
             <!-- logback/logstash integration -->
             <dependency>
                 <groupId>net.logstash.logback</groupId>
