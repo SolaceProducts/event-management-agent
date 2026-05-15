@@ -38,11 +38,12 @@
                  as of awssdk 2.30.17), which would be used without this pin.
                  This BOM pin forces Netty to match the version Spring Boot 3.5.14 manages in all
                  other EMA modules (via reactor-netty).
-                 Review when upgrading awssdk:netty-nio-client or when kafka-plugin gains a Spring Boot parent. -->
+                 Review when upgrading awssdk:netty-nio-client or when kafka-plugin gains a Spring Boot parent.
+                 Fix CVE-2026-42579/42583/42584/42585/42580/42581/41417/42587: upgraded 4.1.132 → 4.1.133. -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.132.Final</version>
+                <version>4.1.133.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

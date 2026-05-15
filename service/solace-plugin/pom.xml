@@ -31,6 +31,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- solace-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
+                 This BOM pin fixes CVE-2026-42579/42583/42584/42585/42580/42581/41417/42587 (Netty 4.1.132 batch). -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.133.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

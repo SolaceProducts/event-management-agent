@@ -42,6 +42,10 @@
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>4.8.7</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
+        <!-- Fix CVE-2026-42579 (CVSS 8.7), CVE-2026-42583/42584/42585/42580/42581/41417/42587: Netty 4.1.132 batch vulnerabilities.
+             Spring Boot BOM uses this property to manage all io.netty:* versions.
+             Applies to plugin and application modules (inheritors of this parent). -->
+        <netty.version>4.1.133.Final</netty.version>
     </properties>
 
     <dependencyManagement>
