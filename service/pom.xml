@@ -46,10 +46,16 @@
              Spring Boot BOM uses this property to manage all io.netty:* versions.
              Applies to plugin and application modules (inheritors of this parent). -->
         <netty.version>4.1.133.Final</netty.version>
+        <tomcat.version>10.1.55</tomcat.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.84</version>
+            </dependency>
             <!-- Fix CVE-2025-48924: commons-lang3 uncontrolled recursion (override Spring Boot BOM 3.17.0) -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
