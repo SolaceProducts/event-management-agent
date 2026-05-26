@@ -11,6 +11,7 @@ public enum SempEntityType {
     solaceRdpOauthJwtClaim("solaceRdpOauthJwtClaim"),
     solaceAclSubscribeTopicException("solaceAclSubscribeTopicException"),
     solaceAclPublishTopicException("solaceAclPublishTopicException"),
+    solaceAclClientConnectException("solaceAclClientConnectException"),
     solaceClientUsername("solaceClientUsername"),
     solaceClientCertificateUsername("solaceClientCertificateUsername"),
     solaceClientProfileName("solaceClientProfileName"),

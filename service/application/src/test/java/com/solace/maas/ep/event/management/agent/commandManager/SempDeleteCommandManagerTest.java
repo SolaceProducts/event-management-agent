@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.solace.maas.ep.common.model.SempEntityType.solaceAclClientConnectException;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAclProfile;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAclPublishTopicException;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAclSubscribeTopicException;
@@ -263,6 +264,72 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException("default", "aclProfileName", "smf", "a/b/c");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        }
+
+    }
+
+    @Nested
+    class ClientConnectException {
+        @Test
+        void happyPath() throws ApiException {
+            AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
+            when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
+            when((aclProfileApi).deleteMsgVpnAclProfileClientConnectException(any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteAclClientConnectExceptionParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        }
+
+        @Test
+        void withValidationException() throws ApiException {
+            AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
+            when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
+            when((aclProfileApi).deleteMsgVpnAclProfileClientConnectException(any(), any(), any())).thenReturn(new SempMetaOnlyResponse());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteAclClientConnectExceptionParameters(false))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verifyNoInteractions(aclProfileApi);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        }
+
+        @Test
+        void withNotFoundException() throws ApiException {
+            AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
+            when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
+            when((aclProfileApi).deleteMsgVpnAclProfileClientConnectException(any(), any(), any()))
+                    .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteAclClientConnectExceptionParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        }
+
+        @Test
+        void withException() throws ApiException {
+            AclProfileApi aclProfileApi = Mockito.mock(AclProfileApi.class);
+            when(sempApiProvider.getAclProfileApi()).thenReturn(aclProfileApi);
+            when((aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32"))
+                    .thenThrow(createaServerErrorApiException());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteAclClientConnectExceptionParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32");
             assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
         }
 
@@ -1132,6 +1199,20 @@ public class SempDeleteCommandManagerTest {
             data.put("aclProfileName", "aclProfileName");
         }
         data.put("publishTopic", "a/b/c");
+        parameters.put(SEMP_COMMAND_DATA, data);
+        return parameters;
+    }
+
+    private Map<String, Object> createDeleteAclClientConnectExceptionParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, solaceAclClientConnectException.name());
+
+        Map<String, String> data = new HashMap<>();
+        data.put("msgVpn", "default");
+        if (valid) {
+            data.put("aclProfileName", "aclProfileName");
+        }
+        data.put("clientConnectExceptionAddress", "1.2.3.4/32");
         parameters.put(SEMP_COMMAND_DATA, data);
         return parameters;
     }

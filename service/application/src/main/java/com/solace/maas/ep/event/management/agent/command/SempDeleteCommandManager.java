@@ -8,6 +8,7 @@ import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
 import com.solace.client.sempv2.api.QueueApi;
 import com.solace.client.sempv2.api.RestDeliveryPointApi;
+import com.solace.maas.ep.common.model.SempAclClientConnectExceptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclProfileDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclPublishTopicExceptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempAclSubscribeTopicExceptionDeletionRequest;
@@ -93,6 +94,9 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
             case solaceAclPublishTopicException:
                 executeDeleteAclPublishTopicException(command, sempApiProvider);
                 break;
+            case solaceAclClientConnectException:
+                executeDeleteAclClientConnectException(command, sempApiProvider);
+                break;
             case solaceRdpOauthJwtClaim:
                 executeDeleteRdpOauthJwtClaims(command, sempApiProvider);
                 break;
@@ -150,6 +154,25 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
             aclProfileApi.deleteMsgVpnAclProfileSubscribeTopicException(request.getMsgVpn(), request.getAclProfileName(), "smf", request.getSubscribeTopic());
         } catch (ApiException e) {
             handleSempOperationException(e, "ACL subscribe topic exception", supportedSempCommand());
+        }
+    }
+
+    private void executeDeleteAclClientConnectException(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        AclProfileApi aclProfileApi = sempApiProvider.getAclProfileApi();
+        SempAclClientConnectExceptionDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SempCommandConstants.SEMP_COMMAND_DATA)),
+                SempAclClientConnectExceptionDeletionRequest.class);
+
+        Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
+        Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
+        Validate.notEmpty(request.getClientConnectExceptionAddress(), "Client connect exception address must not be empty");
+
+        log.info("SEMP delete: Deleting ACL client connect exception");
+        try {
+            aclProfileApi.deleteMsgVpnAclProfileClientConnectException(
+                    request.getMsgVpn(), request.getAclProfileName(), request.getClientConnectExceptionAddress());
+        } catch (ApiException e) {
+            handleSempOperationException(e, "ACL client connect exception", supportedSempCommand());
         }
     }
 
