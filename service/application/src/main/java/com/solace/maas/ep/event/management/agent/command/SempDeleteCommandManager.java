@@ -112,7 +112,7 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
                 objectMapper.writeValueAsString(command.getParameters().get(SempCommandConstants.SEMP_COMMAND_DATA)),
                 SempAclProfileDeletionRequest.class);
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
-        Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
+        Validate.notEmpty(request.getAclProfileName(), ACL_PROFILE_NAME_EMPTY_ERROR_MSG);
 
         log.info("SEMP delete: Deleting ACL profile");
         try {
@@ -129,7 +129,7 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
                 SempAclPublishTopicExceptionDeletionRequest.class);
 
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
-        Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
+        Validate.notEmpty(request.getAclProfileName(), ACL_PROFILE_NAME_EMPTY_ERROR_MSG);
         Validate.notEmpty(request.getPublishTopic(), "Publish topic must not be empty");
         log.info("SEMP delete: Deleting ACL publish topic exception");
         try {
@@ -146,7 +146,7 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
                 SempAclSubscribeTopicExceptionDeletionRequest.class);
 
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
-        Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
+        Validate.notEmpty(request.getAclProfileName(), ACL_PROFILE_NAME_EMPTY_ERROR_MSG);
         Validate.notEmpty(request.getSubscribeTopic(), "Subscribe topic must not be empty");
 
         log.info("SEMP delete: Deleting ACL subscribe topic exception");
@@ -164,7 +164,7 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
                 SempAclClientConnectExceptionDeletionRequest.class);
 
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
-        Validate.notEmpty(request.getAclProfileName(), "ACL profile name must not be empty");
+        Validate.notEmpty(request.getAclProfileName(), ACL_PROFILE_NAME_EMPTY_ERROR_MSG);
         Validate.notEmpty(request.getClientConnectExceptionAddress(), "Client connect exception address must not be empty");
 
         log.info("SEMP delete: Deleting ACL client connect exception");

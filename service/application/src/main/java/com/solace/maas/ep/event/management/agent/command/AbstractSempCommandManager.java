@@ -17,6 +17,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager
 @Slf4j
 public abstract class AbstractSempCommandManager {
     public static final String MSG_VPN_EMPTY_ERROR_MSG = "Msg VPN must not be empty";
+    public static final String ACL_PROFILE_NAME_EMPTY_ERROR_MSG = "ACL profile name must not be empty";
 
     public abstract String supportedSempCommand();
 
