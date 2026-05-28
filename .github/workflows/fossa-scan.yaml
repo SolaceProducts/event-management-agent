@@ -16,6 +16,7 @@ permissions:
   checks: write         # For FOSSA status checks
   statuses: write       # For FOSSA commit status
   packages: read        # required to pull ghcr.io image in fossa-guard composite action
+  id-token: write       # required by sca-scan-and-guard reusable workflow
 
 jobs:
   fossa_scan:

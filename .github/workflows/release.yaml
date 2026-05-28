@@ -19,6 +19,7 @@ permissions:
   issues: write                # For issue comments
   checks: write                # For FOSSA status checks
   statuses: write              # For FOSSA commit status
+  id-token: write              # Required by sca-scan-and-guard reusable workflow
 
 jobs:
   maven_release:
