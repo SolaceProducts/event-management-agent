@@ -4,6 +4,11 @@ run-name: "Release Readiness Check on ${{ github.ref_name }} @ ${{ github.sha }}
 on:
   workflow_call:
     inputs:
+      git_ref:
+        description: "Branch, tag, or SHA to scan. Leave empty to use github.sha (the trigger ref). Useful when the workflow runs on main but you want to validate against a different commit."
+        type: string
+        required: false
+        default: ""
       check_only:
         description: "Check-only mode: do not rerun FOSSA/Prisma scans."
         type: boolean
@@ -34,6 +39,11 @@ on:
         value: ${{ jobs.release-readiness-status.outputs.guardian_status }}
   workflow_dispatch:
     inputs:
+      git_ref:
+        description: "Branch, tag, or SHA to scan. Leave empty to use github.sha (the 'Use workflow from' ref). Useful when you want to run the workflow logic from main but validate against a different commit."
+        type: string
+        required: false
+        default: ""
       check_only:
         description: "Check-only mode: do not rerun FOSSA/Prisma scans."
         type: boolean
@@ -69,16 +79,33 @@ jobs:
       short_sha: ${{ steps.resolve.outputs.short_sha }}
       image_tag: ${{ steps.resolve.outputs.image_tag }}
     steps:
+      # Only check out when git_ref override is provided — needed to
+      # resolve a branch/tag name to a full SHA. Default path uses
+      # github.sha directly with no checkout (faster, less I/O).
+      - name: Checkout override ref
+        if: ${{ inputs.git_ref != '' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.git_ref }}
+          fetch-depth: 1
+          persist-credentials: false
+
       - name: Normalize release inputs
         id: resolve
         env:
           TRIGGER_SHA: ${{ github.sha }}
+          INPUT_GIT_REF: ${{ inputs.git_ref }}
         run: |
           set -euo pipefail
-          # The SHA being checked is the workflow's trigger SHA. For
-          # workflow_dispatch this is the ref selected in the UI; for
-          # workflow_call it's inherited from the calling workflow.
-          COMMIT_SHA="$TRIGGER_SHA"
+          # If git_ref override was provided, the checkout above resolved
+          # it; read the SHA from the working tree. Otherwise fall back
+          # to the workflow's trigger SHA.
+          if [[ -n "$INPUT_GIT_REF" ]]; then
+            COMMIT_SHA=$(git rev-parse HEAD)
+            echo "::notice::git_ref override active — '$INPUT_GIT_REF' resolved to $COMMIT_SHA"
+          else
+            COMMIT_SHA="$TRIGGER_SHA"
+          fi
           SHORT_SHA="${COMMIT_SHA:0:10}"
           # Deterministic image tag — must match the main-<shortSha> tag
           # that build.yaml publishes for every main commit. If the tag

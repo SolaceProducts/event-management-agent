@@ -15,6 +15,11 @@ on:
         type: boolean
         required: false
         default: false
+      git_ref:
+        description: "Branch / tag / SHA the readiness check should scan. Leave empty to scan github.sha (the ref this workflow runs on). Set to 'main' to always validate against the latest main HEAD, regardless of which ref triggered the workflow. Only affects the readiness scans — maven_release and publish always use github.sha."
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: write              # For git commits/tags created by maven-release-plugin
@@ -34,6 +39,8 @@ jobs:
     # reusable workflow's prisma-scan job carries `environment: prod`,
     # so the first manual approval happens there.
     uses: ./.github/workflows/release-readiness-check.yaml
+    with:
+      git_ref: ${{ inputs.git_ref }}
     secrets: inherit
 
   maven_release:
