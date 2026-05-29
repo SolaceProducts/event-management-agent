@@ -133,7 +133,7 @@ jobs:
       git_ref: ${{ needs.resolve-context.outputs.commit_sha }}
       use_vault: false
       config_file: ".github/workflow-config.json"
-      guardian_url: ${{ secrets.GUARDIAN_API_URL }}
+      guardian_url: ${{ vars.GUARDIAN_API_URL }}
       additional_scan_params: |
         fossa.revision=${{ needs.resolve-context.outputs.commit_sha }}
         fossa.branch=main
