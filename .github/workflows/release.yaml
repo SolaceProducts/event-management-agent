@@ -12,18 +12,28 @@ on:
         default: "X.Y.Z-SNAPSHOT"
 
 permissions:
-  contents: write              # For git commits/tags
+  contents: write              # For git commits/tags created by maven-release-plugin
   packages: write              # For package publishing
-  pull-requests: write         # For PR comments
-  actions: write               # For workflow operations
-  issues: write                # For issue comments
-  checks: write                # For FOSSA status checks
-  statuses: write              # For FOSSA commit status
-  id-token: write              # Required by sca-scan-and-guard reusable workflow
+  pull-requests: write         # For FOSSA PR comments (via release-readiness-check)
+  actions: read                # Required by release-readiness-check reusable workflow
+  issues: write                # For github-script admin-bypass check (via release-readiness-check)
+  checks: write                # For FOSSA/Guardian status checks (via release-readiness-check)
+  statuses: write              # For FOSSA/Guardian commit status (via release-readiness-check)
+  id-token: write              # OIDC token for Guardian/FOSSA/Prisma (via release-readiness-check)
 
 jobs:
+  release_readiness:
+    name: Release Readiness
+    # Runs FOSSA + Prisma + SonarQube hotspots + Guardian gate against
+    # the current commit before we let Maven cut the release. The
+    # reusable workflow's prisma-scan job carries `environment: prod`,
+    # so the first manual approval happens there.
+    uses: ./.github/workflows/release-readiness-check.yaml
+    secrets: inherit
+
   maven_release:
     name: Maven Release
+    needs: release_readiness
     runs-on: ubuntu-latest
     environment: prod
     outputs:
@@ -53,32 +63,6 @@ jobs:
           else
                 echo "New version: ${{ github.event.inputs.releaseVersion }} going to be released!"
           fi
-      - name: Set up Python 3.8
-        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
-        with:
-          python-version: 3.8
-          cache: 'pip'
-      - name: Pre-Release Check - SonarQube Hotspots
-        env:
-          SONARQUBE_HOTSPOTS_API_URL: ${{ secrets.SONARQUBE_HOTSPOTS_API_URL }}
-          SONARQUBE_QUERY_TOKEN: ${{ secrets.SONARQUBE_QUERY_TOKEN }}
-        run: |
-          export VIRTUAL_ENV=./venv
-          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
-          cd ./.github/workflows/release_scripts/  && python3.8 sonarqube_vulnurability_checker.py
-      - name: Pre-Release Check - Prisma vulnurabilities
-        env:
-          PRISMA_ROOT_API_URL: ${{ secrets.PRISMA_ROOT_API_URL }}
-          DOCKER_IMAGE_TO_CHECK: ${{ secrets.PRISMA_DOCKER_IMAGE_TO_CHECK }}
-          PRISMA_ACCESS_KEY: ${{ secrets.PRISMA_ACCESS_KEY }}
-          PRISMA_ACCESS_KEY_SECRET: ${{ secrets.PRISMA_ACCESS_KEY_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
-        run: |
-          export VIRTUAL_ENV=./venv
-          python3.8 -m venv $VIRTUAL_ENV && source $VIRTUAL_ENV/bin/activate
-          cd ./.github/workflows/release_scripts/  && python3.8 prisma_vulnurability_checker.py
       - name: Prepare Maven Settings
         env:
           MAVEN_REPO_SERVER_USERNAME: "${{ github.actor }}"
@@ -102,22 +86,10 @@ jobs:
           echo "version=${{ github.event.inputs.releaseVersion }}" >> $GITHUB_OUTPUT
           echo "tag=v${{ github.event.inputs.releaseVersion }}" >> $GITHUB_OUTPUT
 
-  fossa_scan:
-    name: FOSSA Scan
-    needs: [maven_release]
-    if: needs.maven_release.result == 'success'
-    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
-    with:
-      git_ref: ${{ needs.maven_release.outputs.tag }}
-      use_vault: false
-      config_file: '.github/workflow-config.json'
-    secrets:
-      FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-
   publish:
     name: Publish Release
-    needs: [maven_release, fossa_scan]
-    if: needs.fossa_scan.result == 'success'
+    needs: maven_release
+    if: needs.maven_release.result == 'success'
     runs-on: ubuntu-latest
     environment: prod
 
