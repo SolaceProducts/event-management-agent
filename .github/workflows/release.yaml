@@ -10,6 +10,11 @@ on:
         description: "Default version to use for new local working copy (the next version after version A.B.C)."
         required: true
         default: "X.Y.Z-SNAPSHOT"
+      dry_run:
+        description: "Dry run: run the readiness check end-to-end, skip the actual mvn release commit/push and the entire publish job (no GitHub Release, no ECR retag, no manifest DB write). Use for validating the workflow without altering the repo or registries."
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write              # For git commits/tags created by maven-release-plugin
@@ -78,7 +83,20 @@ jobs:
       - name: Clean before release
         run: mvn clean --file service/pom.xml
       - name: Maven Release
+        if: ${{ !fromJSON(inputs.dry_run) }}
         run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+      - name: Maven Release (DRY RUN — skipped)
+        if: ${{ fromJSON(inputs.dry_run) }}
+        run: |
+          echo "::warning::DRY RUN — Maven release skipped. Would have executed:"
+          echo "  mvn release:prepare release:perform -B --file service/pom.xml \\"
+          echo "    -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \\"
+          echo "    -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}"
+          echo ""
+          echo "Side effects that would have occurred:"
+          echo "  - Commit pom.xml version bumps to ${{ github.event.inputs.releaseVersion }} (release) and ${{ github.event.inputs.developmentVersion }} (next snapshot)"
+          echo "  - Create + push tag v${{ github.event.inputs.releaseVersion }} to origin"
+          echo "  - Deploy artifacts via mvn deploy"
 
       - name: Set Version Output
         id: set_version
@@ -89,7 +107,11 @@ jobs:
   publish:
     name: Publish Release
     needs: maven_release
-    if: needs.maven_release.result == 'success'
+    # Skip the entire publish job on a dry run — the publish job is where
+    # the GitHub release, ECR retag, and manifest DB write happen, and the
+    # checkout step depends on the tag that maven_release would have pushed
+    # (which doesn't exist on a dry run).
+    if: ${{ needs.maven_release.result == 'success' && !fromJSON(inputs.dry_run) }}
     runs-on: ubuntu-latest
     environment: prod
 
@@ -134,7 +156,7 @@ jobs:
             --image-tag ${{ needs.maven_release.outputs.version }} \
             --image-manifest "$MANIFEST" --region ${{ secrets.EMA_AWS_DEFAULT_REGION }}
       - name: Update Release Manifest DB
-        run: | 
+        run: |
           export squad="event-portal"
           export repository="event-management-agent"
           export release_tag=production
@@ -144,3 +166,31 @@ jobs:
           export chart_version="n/a"
           export sha=${{ github.sha }}
           ./.github/workflows/release_scripts/update_release_manifest.sh
+
+  dry-run-summary:
+    name: Dry Run Summary
+    needs: maven_release
+    # Replaces the publish job on a dry run so the user gets a clear
+    # readable summary of what would have happened in a real release.
+    if: ${{ needs.maven_release.result == 'success' && fromJSON(inputs.dry_run) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report skipped publish steps
+        env:
+          VERSION: ${{ github.event.inputs.releaseVersion }}
+          TAG: v${{ github.event.inputs.releaseVersion }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          {
+            echo "## Dry Run Summary"
+            echo ""
+            echo "Readiness checks ran against \`${{ github.sha }}\`."
+            echo "Maven release was **stubbed** — no commits, tags, or artifact deploys."
+            echo ""
+            echo "### Publish steps that would have run for version \`$VERSION\`:"
+            echo ""
+            echo "1. **Create GitHub Release** \`$TAG\` with generated changelog + JAR artifact"
+            echo "2. **ECR retag** \`$REPO_NAME:main\` → \`$REPO_NAME:$VERSION\`"
+            echo "3. **Update Release Manifest DB** with squad=event-portal, version=$VERSION, sha=${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::DRY RUN — publish job skipped. See workflow run summary for details."
