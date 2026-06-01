@@ -79,14 +79,10 @@ jobs:
       short_sha: ${{ steps.resolve.outputs.short_sha }}
       image_tag: ${{ steps.resolve.outputs.image_tag }}
     steps:
-      # Only check out when git_ref override is provided — needed to
-      # resolve a branch/tag name to a full SHA. Default path uses
-      # github.sha directly with no checkout (faster, less I/O).
-      - name: Checkout override ref
-        if: ${{ inputs.git_ref != '' }}
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ inputs.git_ref }}
+          ref: ${{ inputs.git_ref || github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -97,9 +93,6 @@ jobs:
           INPUT_GIT_REF: ${{ inputs.git_ref }}
         run: |
           set -euo pipefail
-          # If git_ref override was provided, the checkout above resolved
-          # it; read the SHA from the working tree. Otherwise fall back
-          # to the workflow's trigger SHA.
           if [[ -n "$INPUT_GIT_REF" ]]; then
             COMMIT_SHA=$(git rev-parse HEAD)
             echo "::notice::git_ref override active — '$INPUT_GIT_REF' resolved to $COMMIT_SHA"
@@ -107,11 +100,15 @@ jobs:
             COMMIT_SHA="$TRIGGER_SHA"
           fi
           SHORT_SHA="${COMMIT_SHA:0:10}"
-          # Deterministic image tag — must match the main-<shortSha> tag
-          # that build.yaml publishes for every main commit. If the tag
-          # does not exist in ECR the prisma-scan pre-check will fail
-          # with a clear message rather than a confusing twistcli error.
-          IMAGE_TAG="main-${SHORT_SHA}"
+          JAR_VERSION=$(xmllint --xpath "string(/*[local-name()='project']/*[local-name()='version'])" service/pom.xml 2>/dev/null)
+          if [[ -z "$JAR_VERSION" ]]; then
+            JAR_VERSION=$(xmllint --xpath "string(/*[local-name()='project']/*[local-name()='parent']/*[local-name()='version'])" service/pom.xml 2>/dev/null)
+          fi
+          if [[ -z "$JAR_VERSION" ]]; then
+            echo "::error::Could not extract project version from service/pom.xml"
+            exit 1
+          fi
+          IMAGE_TAG="main-${JAR_VERSION}-${SHORT_SHA}"
           echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
           echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"

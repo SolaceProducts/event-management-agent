@@ -104,11 +104,9 @@ jobs:
 
           # Apply all ECR tags to the freshly built local image:
           #   main                                — floating latest-on-main
-          #   main-<jarVersion>-<shortSha>        — human-readable version trail
-          #   main-<shortSha>                     — deterministic per-commit (release-readiness-check uses this)
+          #   main-<jarVersion>-<shortSha>        — per-commit, used by release-readiness-check
           docker tag "$LOCAL_IMAGE" "$ECR_REPO:main"
           docker tag "$LOCAL_IMAGE" "$ECR_REPO:main-$JAR_VERSION-$SHORT_GIT_SHA"
-          docker tag "$LOCAL_IMAGE" "$ECR_REPO:main-$SHORT_GIT_SHA"
 
           # Single push for all tags applied above
           docker push --all-tags "$ECR_REPO"
