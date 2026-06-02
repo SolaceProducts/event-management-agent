@@ -9,6 +9,11 @@ on:
         type: string
         required: false
         default: ""
+      image_tag:
+        description: "ECR image tag for Prisma to scan. Defaults to 'main' (the floating tag build.yaml publishes on every main build). Override with a specific tag like 'main-1.9.9-SNAPSHOT-abc1234567' to pin to a single commit's image."
+        type: string
+        required: false
+        default: "main"
       check_only:
         description: "Check-only mode: do not rerun FOSSA/Prisma scans."
         type: boolean
@@ -44,6 +49,11 @@ on:
         type: string
         required: false
         default: ""
+      image_tag:
+        description: "ECR image tag for Prisma to scan. Defaults to 'main' (the floating tag build.yaml publishes on every main build). Override with a specific tag like 'main-1.9.9-SNAPSHOT-abc1234567' to pin to a single commit's image."
+        type: string
+        required: false
+        default: "main"
       check_only:
         description: "Check-only mode: do not rerun FOSSA/Prisma scans."
         type: boolean
@@ -79,25 +89,20 @@ jobs:
       short_sha: ${{ steps.resolve.outputs.short_sha }}
       image_tag: ${{ steps.resolve.outputs.image_tag }}
     steps:
-      - name: Checkout
+      - name: Checkout override ref
+        if: ${{ inputs.git_ref != '' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ inputs.git_ref || github.sha }}
+          ref: ${{ inputs.git_ref }}
           fetch-depth: 1
           persist-credentials: false
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
-        with:
-          java-version: 17
-          distribution: 'temurin'
-          cache: 'maven'
 
       - name: Normalize release inputs
         id: resolve
         env:
           TRIGGER_SHA: ${{ github.sha }}
           INPUT_GIT_REF: ${{ inputs.git_ref }}
+          INPUT_IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           set -euo pipefail
           if [[ -n "$INPUT_GIT_REF" ]]; then
@@ -107,12 +112,7 @@ jobs:
             COMMIT_SHA="$TRIGGER_SHA"
           fi
           SHORT_SHA="${COMMIT_SHA:0:10}"
-          JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file service/pom.xml)
-          if [[ -z "$JAR_VERSION" ]]; then
-            echo "::error::Could not extract project.version from service/pom.xml"
-            exit 1
-          fi
-          IMAGE_TAG="main-${JAR_VERSION}-${SHORT_SHA}"
+          IMAGE_TAG="$INPUT_IMAGE_TAG"
           echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
           echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
