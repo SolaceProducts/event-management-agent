@@ -15,11 +15,6 @@ on:
         type: boolean
         required: false
         default: false
-      git_ref:
-        description: "Branch / tag / SHA the readiness check should scan. Leave empty to scan github.sha (the ref this workflow runs on). Set to 'main' to always validate against the latest main HEAD, regardless of which ref triggered the workflow. Only affects the readiness scans — maven_release and publish always use github.sha."
-        type: string
-        required: false
-        default: ""
 
 permissions:
   contents: write              # For git commits/tags created by maven-release-plugin
@@ -32,26 +27,13 @@ permissions:
   id-token: write              # OIDC token for Guardian/FOSSA/Prisma (via release-readiness-check)
 
 jobs:
-  validate-inputs:
-    name: Validate Inputs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Reject git_ref without dry_run
-        if: ${{ inputs.git_ref != '' && !fromJSON(inputs.dry_run) }}
-        run: |
-          echo "::error::'git_ref' is set ('${{ inputs.git_ref }}') but 'dry_run' is false. This combination is unsafe: readiness scans would validate the override ref while maven_release / publish operate on github.sha. Re-run with dry_run=true (for testing) or clear git_ref (for a real release from github.sha)."
-          exit 1
-
   release_readiness:
     name: Release Readiness
     # Runs FOSSA + Prisma + SonarQube hotspots + Guardian gate against
     # the current commit before we let Maven cut the release. The
     # reusable workflow's prisma-scan job carries `environment: prod`,
     # so the first manual approval happens there.
-    needs: validate-inputs
     uses: ./.github/workflows/release-readiness-check.yaml
-    with:
-      git_ref: ${{ inputs.git_ref }}
     secrets: inherit
 
   maven_release:
