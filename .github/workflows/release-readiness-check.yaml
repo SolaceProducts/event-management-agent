@@ -234,10 +234,16 @@ jobs:
         env:
           SONARQUBE_PROJECT_KEY: ${{ secrets.SONARQUBE_PROJECT_KEY }}
           SONARQUBE_PROJECT_MAIN_BRANCH: "main"
-          # SONAR_TOKEN is the existing repo-level secret (already used by build.yaml)
           SONARQUBE_QUERY_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONARQUBE_HOTSPOTS_API_URL: ${{ secrets.SONARQUBE_HOTSPOTS_API_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
+          set -euo pipefail
+          if [[ -z "$SONAR_HOST_URL" ]]; then
+            echo "::error::SONAR_HOST_URL repo secret is empty — required to build the SonarQube hotspots API URL"
+            exit 1
+          fi
+          SONARQUBE_HOTSPOTS_API_URL="${SONAR_HOST_URL%/}/api/hotspots/search"
+          export SONARQUBE_HOTSPOTS_API_URL
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           DOCKER_CONFIG=$(mktemp -d "${RUNNER_TEMP}/docker-config.XXXXXX")
           export DOCKER_CONFIG
