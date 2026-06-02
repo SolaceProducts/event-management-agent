@@ -32,12 +32,23 @@ permissions:
   id-token: write              # OIDC token for Guardian/FOSSA/Prisma (via release-readiness-check)
 
 jobs:
+  validate-inputs:
+    name: Validate Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject git_ref without dry_run
+        if: ${{ inputs.git_ref != '' && !fromJSON(inputs.dry_run) }}
+        run: |
+          echo "::error::'git_ref' is set ('${{ inputs.git_ref }}') but 'dry_run' is false. This combination is unsafe: readiness scans would validate the override ref while maven_release / publish operate on github.sha. Re-run with dry_run=true (for testing) or clear git_ref (for a real release from github.sha)."
+          exit 1
+
   release_readiness:
     name: Release Readiness
     # Runs FOSSA + Prisma + SonarQube hotspots + Guardian gate against
     # the current commit before we let Maven cut the release. The
     # reusable workflow's prisma-scan job carries `environment: prod`,
     # so the first manual approval happens there.
+    needs: validate-inputs
     uses: ./.github/workflows/release-readiness-check.yaml
     with:
       git_ref: ${{ inputs.git_ref }}
@@ -176,23 +187,41 @@ jobs:
 
   dry-run-summary:
     name: Dry Run Summary
-    needs: maven_release
+    needs: [release_readiness, maven_release]
     # Replaces the publish job on a dry run so the user gets a clear
     # readable summary of what would have happened in a real release.
-    if: ${{ needs.maven_release.result == 'success' && fromJSON(inputs.dry_run) }}
+    # Runs even if maven_release failed for non-Maven reasons (checkout,
+    # version-already-released check, etc.) so the summary is still
+    # produced.
+    if: ${{ !cancelled() && fromJSON(inputs.dry_run) }}
     runs-on: ubuntu-latest
     steps:
-      - name: Report skipped publish steps
+      - name: Report dry-run results
         env:
           VERSION: ${{ github.event.inputs.releaseVersion }}
           TAG: v${{ github.event.inputs.releaseVersion }}
           REPO_NAME: ${{ github.event.repository.name }}
+          READINESS_RESULT: ${{ needs.release_readiness.result }}
+          FOSSA_STATUS: ${{ needs.release_readiness.outputs.fossa_status }}
+          PRISMA_STATUS: ${{ needs.release_readiness.outputs.prisma_status }}
+          SONAR_STATUS: ${{ needs.release_readiness.outputs.sonarqube_hotspots_status }}
+          GUARDIAN_STATUS: ${{ needs.release_readiness.outputs.guardian_status }}
+          MAVEN_RELEASE_RESULT: ${{ needs.maven_release.result }}
         run: |
           {
             echo "## Dry Run Summary"
             echo ""
-            echo "Readiness checks ran against \`${{ github.sha }}\`."
-            echo "Maven release was **stubbed** — no commits, tags, or artifact deploys."
+            echo "Scanned commit: \`${{ github.sha }}\`"
+            echo "Target release version: \`$VERSION\`"
+            echo ""
+            echo "### Readiness gates (overall: \`$READINESS_RESULT\`)"
+            echo ""
+            echo "- FOSSA: \`$FOSSA_STATUS\`"
+            echo "- Prisma: \`$PRISMA_STATUS\`"
+            echo "- SonarQube Hotspots: \`$SONAR_STATUS\`"
+            echo "- Guardian: \`$GUARDIAN_STATUS\`"
+            echo ""
+            echo "### Maven Release: \`$MAVEN_RELEASE_RESULT\` (actual release commands stubbed)"
             echo ""
             echo "### Publish steps that would have run for version \`$VERSION\`:"
             echo ""
