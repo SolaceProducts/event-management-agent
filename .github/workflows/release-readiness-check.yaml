@@ -198,8 +198,6 @@ jobs:
           echo "Confirmed ECR image: ${REPO_NAME}:${IMAGE_TAG}"
 
       - name: Run Prisma Cloud scan
-        id: prisma
-        continue-on-error: true
         uses: SolaceDev/solace-public-workflows/prisma-cloud-scan@main
         with:
           image_registry: ${{ steps.login-ecr.outputs.registry }}
@@ -312,6 +310,7 @@ jobs:
           guardian-key: ${{ secrets.GUARDIAN_API_TOKEN || secrets.GUARDIAN_API_KEY }}
           # product-version = branch line ('main'); accepted exceptions
           # accumulate across commits on this line, so the gate has history.
+          product-name: event-management-agent
           product-version: main
           fail-on-blocked: "true"
 
