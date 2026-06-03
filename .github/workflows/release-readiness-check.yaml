@@ -311,7 +311,6 @@ jobs:
           # product-version = branch line ('main'); accepted exceptions
           # accumulate across commits on this line, so the gate has history.
           product-name: event-management-agent
-          product-version: main
           fail-on-blocked: "true"
 
       - name: Capture Guardian status
