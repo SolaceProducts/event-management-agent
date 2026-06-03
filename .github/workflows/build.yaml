@@ -97,15 +97,19 @@ jobs:
         working-directory: service/application/docker
         run: |
           ./buildEventManagementAgentDocker.sh -t main
-          ECR_DOCKER_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:main"
-          docker tag "${{ github.event.repository.name }}:main" $ECR_DOCKER_IMAGE
-          docker push $ECR_DOCKER_IMAGE
-          #Tag/Push additional Docker image
           SHORT_GIT_SHA=${GITHUB_SHA:0:10}
           JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ../pom.xml)
-          ADDITIONAL_ECR_DOCKER_IMAGE_TAG="$ECR_DOCKER_IMAGE-$JAR_VERSION-$SHORT_GIT_SHA"
-          docker tag "${{ github.event.repository.name }}:main" $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
-          docker push $ADDITIONAL_ECR_DOCKER_IMAGE_TAG
+          ECR_REPO="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}"
+          LOCAL_IMAGE="${{ github.event.repository.name }}:main"
+
+          # Apply all ECR tags to the freshly built local image:
+          #   main                                — floating latest-on-main
+          #   main-<jarVersion>-<shortSha>        — per-commit, used by release-readiness-check
+          docker tag "$LOCAL_IMAGE" "$ECR_REPO:main"
+          docker tag "$LOCAL_IMAGE" "$ECR_REPO:main-$JAR_VERSION-$SHORT_GIT_SHA"
+
+          # Single push for all tags applied above
+          docker push --all-tags "$ECR_REPO"
       - name: Deploy Artifacts
         if: env.GITHUB_PACKAGES_DEPLOY=='true'
         env:

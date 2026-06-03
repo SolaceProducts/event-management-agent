@@ -3,7 +3,7 @@
     "enabled": true,
     "fossa": {
       "policy": {
-        "mode": "REPORT",
+        "mode": "BLOCK",
         "block_on": ["policy_conflict", "unlicensed_dependency"]
       },
       "vulnerability": {
@@ -17,8 +17,6 @@
   },
   "build": {
     "squad": "event-portal",
-    "service_name": "event-management-agent",
-    "java_environment": "temurin",
-    "jre_version": "17"
+    "service_name": "event-management-agent"
   }
 }
