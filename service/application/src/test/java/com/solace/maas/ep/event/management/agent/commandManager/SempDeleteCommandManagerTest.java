@@ -49,7 +49,6 @@ import static com.solace.maas.ep.event.management.agent.plugin.command.model.Sem
 import static com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants.SEMP_DELETE_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -61,6 +60,7 @@ public class SempDeleteCommandManagerTest {
 
     private final static String DIR_SEMP_RESOURCES = "src/test/resources/sempResponses/";
     private final static String SEMP_RESPONSE_MISSING_RESOURCE = "sempResponseMissingResource.json";
+    private final static String SEMP_RESPONSE_INVALID_PARAMETER = "sempResponseInvalidParameter.json";
 
     @MockitoSpyBean
     private SempDeleteCommandManager sempDeleteCommandManager;
@@ -1012,37 +1012,19 @@ public class SempDeleteCommandManagerTest {
         }
 
         @Test
-        void withPreFlightGetNotFound() throws ApiException {
+        void withInvalidParameterException() throws ApiException {
             RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
             when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-            when(rdpApi.getMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any(), any(), any()))
-                    .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+            when((rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any()))
+                    .thenThrow(createInvalidParameterApiException(SEMP_RESPONSE_INVALID_PARAMETER));
             Command cmd = Command.builder()
                     .commandType(CommandType.semp)
                     .command(SEMP_DELETE_OPERATION)
                     .parameters(createDeleteRdpQueueBindingRequestHeaderParameters(true, false))
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
-            verify(rdpApi).getMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName", null, null);
-            verify(rdpApi, never()).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any());
+            verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
             assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
-        }
-
-        @Test
-        void withPreFlightGetServerError() throws ApiException {
-            RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
-            when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-            when(rdpApi.getMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any(), any(), any()))
-                    .thenThrow(createaServerErrorApiException());
-            Command cmd = Command.builder()
-                    .commandType(CommandType.semp)
-                    .command(SEMP_DELETE_OPERATION)
-                    .parameters(createDeleteRdpQueueBindingRequestHeaderParameters(true, false))
-                    .build();
-            sempDeleteCommandManager.execute(cmd, sempApiProvider);
-            verify(rdpApi).getMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName", null, null);
-            verify(rdpApi, never()).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(any(), any(), any(), any());
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
         }
     }
 
@@ -1111,39 +1093,19 @@ public class SempDeleteCommandManagerTest {
         }
 
         @Test
-        void withPreFlightGetNotFound() throws ApiException {
+        void withInvalidParameterException() throws ApiException {
             RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
             when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-            when(rdpApi.getMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any(), any(), any()))
-                    .thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+            when((rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any()))
+                    .thenThrow(createInvalidParameterApiException(SEMP_RESPONSE_INVALID_PARAMETER));
             Command cmd = Command.builder()
                     .commandType(CommandType.semp)
                     .command(SEMP_DELETE_OPERATION)
                     .parameters(createDeleteRdpQueueBindingRequestHeaderParameters(true, true))
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
-            verify(rdpApi).getMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(
-                    "default", "someRdp", "someQueueBindingName", "someHeaderName", null, null);
-            verify(rdpApi, never()).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any());
+            verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
             assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
-        }
-
-        @Test
-        void withPreFlightGetServerError() throws ApiException {
-            RestDeliveryPointApi rdpApi = Mockito.mock(RestDeliveryPointApi.class);
-            when(sempApiProvider.getRestDeliveryPointApi()).thenReturn(rdpApi);
-            when(rdpApi.getMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any(), any(), any()))
-                    .thenThrow(createaServerErrorApiException());
-            Command cmd = Command.builder()
-                    .commandType(CommandType.semp)
-                    .command(SEMP_DELETE_OPERATION)
-                    .parameters(createDeleteRdpQueueBindingRequestHeaderParameters(true, true))
-                    .build();
-            sempDeleteCommandManager.execute(cmd, sempApiProvider);
-            verify(rdpApi).getMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(
-                    "default", "someRdp", "someQueueBindingName", "someHeaderName", null, null);
-            verify(rdpApi, never()).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(any(), any(), any(), any());
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
         }
     }
 
@@ -1345,6 +1307,10 @@ public class SempDeleteCommandManagerTest {
     }
 
     private ApiException createaNotFoundApiException(String resourceName) {
+        return new ApiException(400, "", new HashMap<>(), readSempResponseResource(resourceName));
+    }
+
+    private ApiException createInvalidParameterApiException(String resourceName) {
         return new ApiException(400, "", new HashMap<>(), readSempResponseResource(resourceName));
     }
 

@@ -325,45 +325,23 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
         Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
         Validate.notEmpty(request.getQueueBindingName(), "Queue binding name must not be empty");
 
-        // Pre-flight GET: skip the DELETE if the header is not on the broker.
-        // The broker can return INVALID_PARAMETER (not NOT_FOUND) when deleting a
-        // header that was recorded but never accepted on an earlier CREATE.
+        String entityType = request.isProtected() ? "Protected Request Header" : "Request Header";
         try {
             if (request.isProtected()) {
-                restDeliveryPointApi.getMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(
-                        request.getMsgVpn(), request.getRdpName(),
-                        request.getQueueBindingName(), request.getHeaderName(),
-                        null, null);
-            } else {
-                restDeliveryPointApi.getMsgVpnRestDeliveryPointQueueBindingRequestHeader(
-                        request.getMsgVpn(), request.getRdpName(),
-                        request.getQueueBindingName(), request.getHeaderName(),
-                        null, null);
-            }
-        } catch (ApiException e) {
-            handleSempOperationException(e,
-                    request.isProtected() ? "Protected Request Header" : "Request Header",
-                    supportedSempCommand());
-            return;
-        }
-
-        if (request.isProtected()) {
-            log.info("SEMP delete: Deleting protected request header");
-            try {
+                log.info("SEMP delete: Deleting protected request header");
                 restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(request.getMsgVpn(), request.getRdpName(),
                         request.getQueueBindingName(), request.getHeaderName());
-            } catch (ApiException e) {
-                handleSempOperationException(e, "Protected Request Header", supportedSempCommand());
-            }
-        } else {
-            log.info("SEMP delete: Deleting request header");
-            try {
+            } else {
+                log.info("SEMP delete: Deleting request header");
                 restDeliveryPointApi.deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader(request.getMsgVpn(), request.getRdpName(),
                         request.getQueueBindingName(), request.getHeaderName());
-            } catch (ApiException e) {
-                handleSempOperationException(e, "Request Header", supportedSempCommand());
             }
+        } catch (ApiException e) {
+            if (e.getCode() == 400 && e.getResponseBody() != null && e.getResponseBody().contains("INVALID_PARAMETER")) {
+                log.info("SEMP {}: broker rejected {} identifier as invalid; treating as not present", supportedSempCommand(), entityType);
+                return;
+            }
+            handleSempOperationException(e, entityType, supportedSempCommand());
         }
-
     }
 }
