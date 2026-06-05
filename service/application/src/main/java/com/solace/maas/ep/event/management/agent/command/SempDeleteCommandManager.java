@@ -324,6 +324,29 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
         Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
         Validate.notEmpty(request.getRdpName(), "RDP name must not be empty");
         Validate.notEmpty(request.getQueueBindingName(), "Queue binding name must not be empty");
+
+        // Pre-flight GET: skip the DELETE if the header is not on the broker.
+        // The broker can return INVALID_PARAMETER (not NOT_FOUND) when deleting a
+        // header that was recorded but never accepted on an earlier CREATE.
+        try {
+            if (request.isProtected()) {
+                restDeliveryPointApi.getMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader(
+                        request.getMsgVpn(), request.getRdpName(),
+                        request.getQueueBindingName(), request.getHeaderName(),
+                        null, null);
+            } else {
+                restDeliveryPointApi.getMsgVpnRestDeliveryPointQueueBindingRequestHeader(
+                        request.getMsgVpn(), request.getRdpName(),
+                        request.getQueueBindingName(), request.getHeaderName(),
+                        null, null);
+            }
+        } catch (ApiException e) {
+            handleSempOperationException(e,
+                    request.isProtected() ? "Protected Request Header" : "Request Header",
+                    supportedSempCommand());
+            return;
+        }
+
         if (request.isProtected()) {
             log.info("SEMP delete: Deleting protected request header");
             try {
