@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "error": {
+      "code": 11,
+      "description": "'headerName' validation failed: Please use the HTTP header authentication scheme for the Authorization header, where the header value will be better protected.",
+      "status": "INVALID_PARAMETER"
+    },
+    "request": {
+      "method": "DELETE",
+      "uri": "https://some.url.pointing.to.solace.broker"
+    },
+    "responseCode": 400
+  }
+}
