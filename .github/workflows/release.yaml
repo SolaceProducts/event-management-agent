@@ -120,15 +120,24 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ needs.maven_release.outputs.tag }}
+      - name: Download release JAR from GitHub Packages
+        # publish runs on a separate runner from maven_release, so target/ is empty.
+        # mvn release:perform already deployed the JAR to GitHub Packages — fetch it
+        # so Create GitHub Release has an artifact to attach.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.maven_release.outputs.version }}
+        run: |
+          mkdir -p service/application/target
+          curl -sSfL -u "${{ github.actor }}:$GH_TOKEN" \
+            "https://maven.pkg.github.com/SolaceProducts/event-management-agent/com/solace/maas/event-management-agent/$VERSION/event-management-agent-$VERSION.jar" \
+            -o "service/application/target/event-management-agent-$VERSION.jar"
+          ls -la "service/application/target/event-management-agent-$VERSION.jar"
       - name: Changelog
         uses: Bullrich/generate-release-changelog@master
         id: Changelog
         env:
           REPO: ${{ github.repository }}
-      - name: Debug - List JAR files
-        run: |
-          echo "Listing all JAR files in target directories:"
-          find . -name "*.jar" | grep "target"
       - name: Create GitHub Release
         uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
