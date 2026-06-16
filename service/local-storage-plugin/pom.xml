@@ -62,6 +62,25 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Fix CVE-2026-43515/43512/41293/41284/43513/42498 (Tomcat 10.1.54 batch).
+                 This module has no Spring Boot <parent>, so the <tomcat.version> override in the
+                 parent pom does not reach it. Pin tomcat-embed-* to 10.1.55 to match what the
+                 application/plugin modules resolve via Spring Boot 3.5.14 + the parent override. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>10.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>10.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>10.1.55</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
