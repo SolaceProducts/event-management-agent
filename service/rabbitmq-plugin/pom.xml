@@ -15,6 +15,17 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+            <!-- rabbitmq-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
+                 com.rabbitmq:http-client:4.2.0 bundles jackson-databind 2.14.0, which leaks through
+                 without this pin. Fix CVE-2025-52999 (HIGH 8.7, jackson-core stack overflow on deeply
+                 nested JSON). 2.16.1 matches the jackson version every other EMA module uses. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.16.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- rabbitmq-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
                  This BOM pin fixes CVE-2026-42579/42583/42584/42585/42580/42581/41417/42587 (Netty 4.1.132 batch). -->
             <dependency>
