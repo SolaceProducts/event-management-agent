@@ -17,7 +17,9 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-security-rsa.version>1.1.3</spring-security-rsa.version>
         <spring-kafka.version>3.3.6</spring-kafka.version>
-        <kafka-clients.version>3.9.1</kafka-clients.version>
+        <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
+             Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
+        <kafka-clients.version>3.9.2</kafka-clients.version>
         <jackson.version>2.16.1</jackson.version>
         <awaitility.version>4.2.0</awaitility.version>
         <dockerfile-maven.version>1.4.13</dockerfile-maven.version>
