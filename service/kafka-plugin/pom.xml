@@ -11,7 +11,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.3.6</spring-kafka.version>
-        <kafka-clients.version>3.9.1</kafka-clients.version>
+        <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
+             Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
+        <kafka-clients.version>3.9.2</kafka-clients.version>
         <spring-boot.version>3.5.14</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jupiter.version>5.10.2</jupiter.version>
@@ -32,6 +34,27 @@
                 <version>${jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- kafka-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
+                 spring-boot-starter-web (pulled via the plugin module) brings tomcat-embed-* transitively,
+                 and the <tomcat.version>10.1.55</tomcat.version> override in service/pom.xml does NOT
+                 reach this pom. Each artifact must be pinned explicitly.
+                 Fix CVE-2026-43515/43512/41293 (Critical) + CVE-2026-41284/43513/42498 (High):
+                 tomcat 10.1.54 → 10.1.55. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>10.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>10.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>10.1.55</version>
             </dependency>
             <!-- kafka-plugin has no Spring Boot parent, so Spring Boot does not manage Netty here.
                  software.amazon.awssdk:netty-nio-client bundles its own Netty version (4.1.118.Final
