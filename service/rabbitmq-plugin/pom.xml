@@ -16,7 +16,17 @@
     <dependencyManagement>
         <dependencies>
             <!-- rabbitmq-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
-                 spring-boot-starter-web (pulled via the plugin module) brings tomcat-embed-* transitively,
+                 com.rabbitmq:http-client:4.2.0 bundles jackson-databind 2.14.0, which leaks through
+                 without this pin. Fix CVE-2025-52999 (HIGH 8.7, jackson-core stack overflow on deeply
+                 nested JSON). 2.16.1 matches the jackson version every other EMA module uses. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.16.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- spring-boot-starter-web (pulled via the plugin module) brings tomcat-embed-* transitively,
                  and the <tomcat.version>10.1.55</tomcat.version> override in service/pom.xml does NOT
                  reach this pom. Each artifact must be pinned explicitly.
                  Fix CVE-2026-43515/43512/41293 (Critical) + CVE-2026-41284/43513/42498 (High):
