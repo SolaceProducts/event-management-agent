@@ -22,6 +22,27 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- terraform-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
+                 spring-boot-starter-web brings tomcat-embed-* transitively, and the
+                 <tomcat.version>10.1.55</tomcat.version> override in service/pom.xml does NOT reach
+                 this pom. Each artifact must be pinned explicitly.
+                 Fix CVE-2026-43515/43512/41293 (Critical) + CVE-2026-41284/43513/42498 (High):
+                 tomcat 10.1.54 → 10.1.55. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>10.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>10.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>10.1.55</version>
+            </dependency>
             <!-- terraform-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
                  This BOM pin fixes CVE-2026-42579/42583/42584/42585/42580/42581/41417/42587 (Netty 4.1.132 batch). -->
             <dependency>
