@@ -1,0 +1,162 @@
+name: Publish EMA to DockerHub
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Released version to publish (must already exist as ECR :<version>)."
+        required: true
+        default: "A.B.C"
+      pushLatest:
+        description: "Also overwrite the :latest tag. Only enable for stable releases."
+        type: boolean
+        default: false
+
+# Prevent two operators (or one double-click) from racing to publish the same
+# version. cancel-in-progress: false is deliberate — cancelling a docker push
+# mid-flight can leave a corrupt layer upload on DockerHub. The second run
+# queues, waits for the first to finish, then fails when the tag already
+# exists.
+concurrency:
+  group: publish-dockerhub-${{ inputs.releaseVersion }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: prod          # manual approval gate, identical to deploy-managed-ema-image.yaml
+
+    steps:
+      # Two-step version validation. Step A always runs and catches typos
+      # early (before any AWS or DockerHub calls). Step B enforces the
+      # "stable release = no suffix" invariant when pushLatest is set.
+      - name: Validate releaseVersion shape
+        run: |
+          VERSION="${{ inputs.releaseVersion }}"
+          # Step A: strict semver. Allow A.B.C or A.B.C-<alphanumeric suffix>.
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?$ ]]; then
+            echo "::error::releaseVersion '$VERSION' is not a valid semver (expected A.B.C or A.B.C-<suffix>)."
+            exit 1
+          fi
+          # Step B: any suffix disqualifies the version from updating :latest.
+          # This is intentionally stricter than an allowlist of suffixes — it
+          # avoids the maintenance burden of keeping the list current as new
+          # release flavours (e.g. -hotfix, -cr, -customer1) are introduced.
+          if [[ "${{ inputs.pushLatest }}" == "true" ]] && [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+            echo "::error::Refusing to push :latest for pre-release version '$VERSION'. Stable releases have no suffix."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355  # v2.2.0
+        with:
+          aws-access-key-id: ${{ secrets.EMA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EMA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@2f9f10ea3fa2eed41ac443fee8bfbd059af2d0a4  # v1.6.0
+
+      # Pre-flight: surface "ECR tag missing" as a human-readable error
+      # before we attempt the docker pull (whose 'manifest unknown' failure
+      # is opaque). The most likely cause of a missing tag is that the
+      # Release workflow's publish job hasn't run yet for this version.
+      - name: Verify ECR tag exists
+        env:
+          REGION: ${{ secrets.EMA_AWS_DEFAULT_REGION }}
+          REPO: ${{ github.event.repository.name }}
+          VERSION: ${{ inputs.releaseVersion }}
+        run: |
+          if ! aws ecr describe-images \
+               --repository-name "$REPO" \
+               --image-ids imageTag="$VERSION" \
+               --region "$REGION" \
+               > /dev/null 2>&1; then
+            echo "::error::ECR tag '$REPO:$VERSION' not found in region $REGION."
+            echo "::error::The Release workflow's publish job must run successfully first to create this tag."
+            echo "::error::See: code_bases/ema/deployment/concepts/image-flow.md"
+            exit 1
+          fi
+          echo "::notice::Confirmed ECR tag '$REPO:$VERSION' exists."
+
+      - name: Pull image from ECR
+        run: |
+          ECR_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}:${{ inputs.releaseVersion }}"
+          docker pull "$ECR_IMAGE"
+          echo "ECR_IMAGE=$ECR_IMAGE" >> $GITHUB_ENV
+
+      - name: Login to DockerHub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Idempotency observability: warn (don't block) if the :version tag
+      # already exists on DockerHub. Re-push is safe because ECR is the source
+      # of truth and release tags are immutable there. We log the overwrite
+      # so the audit summary makes the situation legible to operators.
+      #
+      # NOTE on coupling: every "DEST=" line below assumes the DockerHub image
+      # name equals the GitHub repo name (`event-management-agent`). If this
+      # repo is ever renamed, these pushes will silently retarget. If renaming,
+      # update this workflow and verify the destination still resolves to
+      # `solace/event-management-agent`.
+      - name: Check if :version already published on DockerHub
+        id: check-version-exists
+        continue-on-error: true
+        run: |
+          DEST="solace/${{ github.event.repository.name }}:${{ inputs.releaseVersion }}"
+          if docker manifest inspect "$DEST" > /dev/null 2>&1; then
+            echo "::warning::Tag '$DEST' already exists on DockerHub — this push will overwrite the existing manifest. Bits are expected to be identical (same ECR source); re-push is idempotent. Proceeding."
+            echo "already_existed=true"  >> $GITHUB_OUTPUT
+          else
+            echo "already_existed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Tag and push versioned tag
+        id: push-version
+        run: |
+          DEST="solace/${{ github.event.repository.name }}:${{ inputs.releaseVersion }}"
+          docker tag  "$ECR_IMAGE" "$DEST"
+          docker push "$DEST"
+
+      - name: Tag and push :latest
+        id: push-latest
+        if: ${{ inputs.pushLatest }}
+        run: |
+          DEST="solace/${{ github.event.repository.name }}:latest"
+          docker tag  "$ECR_IMAGE" "$DEST"
+          docker push "$DEST"
+
+      # `if: always()` ensures the audit summary is written even when earlier
+      # steps failed (e.g. ECR pull, validation guard). Step outcomes ("success"
+      # / "failure" / "skipped") report what actually happened rather than what
+      # we intended to do — important to avoid the trap of conflating "we
+      # intended to push :latest" with "we successfully pushed :latest".
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## DockerHub publish summary"
+            echo ""
+            echo "- Requested version: \`${{ inputs.releaseVersion }}\`"
+            if [[ -n "$ECR_IMAGE" ]]; then
+              echo "- ECR source: \`$ECR_IMAGE\`"
+            else
+              echo "- ECR source: (ECR pull did not complete — see step logs)"
+            fi
+            echo "- Versioned tag push: \`${{ steps.push-version.outcome || 'not-reached' }}\`"
+            if [[ "${{ steps.check-version-exists.outputs.already_existed }}" == "true" ]]; then
+              echo "  - **NOTE:** This was an overwrite — \`:${{ inputs.releaseVersion }}\` already existed on DockerHub."
+            fi
+            if [[ "${{ inputs.pushLatest }}" == "true" ]]; then
+              echo "- :latest tag push: \`${{ steps.push-latest.outcome || 'not-reached' }}\`"
+            else
+              echo "- :latest tag: skipped (pushLatest=false)"
+            fi
+            echo ""
+            echo "Verify: https://hub.docker.com/r/solace/${{ github.event.repository.name }}"
+          } >> "$GITHUB_STEP_SUMMARY"
