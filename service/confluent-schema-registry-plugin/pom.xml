@@ -10,7 +10,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot.version>3.5.14</spring-boot.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
         <httpclient.version>4.5.14</httpclient.version>
         <mockwebserver.version>4.9.0</mockwebserver.version>
         <jupiter.version>5.10.2</jupiter.version>
@@ -30,17 +30,17 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-el</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <!-- confluent-schema-registry-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
                  Current bump 4.1.133 → 4.1.135 fixes CVE-2026-44249/45416 (netty-handler) +

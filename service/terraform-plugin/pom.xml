@@ -10,7 +10,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot.version>3.5.14</spring-boot.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
         <jupiter.version>5.10.2</jupiter.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <snakeyaml.version>2.0</snakeyaml.version>
@@ -31,17 +31,17 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-el</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <!-- terraform-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
                  Current bump 4.1.133 → 4.1.135 fixes CVE-2026-44249/45416 (netty-handler) +
@@ -108,7 +108,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
             <version>${spring-boot.version}</version>
             <exclusions>
                 <exclusion>
