@@ -5,6 +5,6 @@ spring:
     password: example
     driver-class-name: com.mysql.jdbc.Driver
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: create

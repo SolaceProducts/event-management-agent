@@ -61,6 +61,13 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
+        <!-- ParameterNamesModule: lets the J2 compat-bridge ObjectMapper deserialize Lombok
+             @Builder models (all-args ctor + -parameters) that lack a no-arg constructor, matching
+             Spring Boot 3.x's default Jackson module discovery. Not transitive under SB4. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-parameter-names</artifactId>
+        </dependency>
         <!-- commons-codec was transitive under SB3; SB4 BOM reshuffle dropped it from the
              compile classpath. VMRProperties uses org.apache.commons.codec.digest. -->
         <dependency>

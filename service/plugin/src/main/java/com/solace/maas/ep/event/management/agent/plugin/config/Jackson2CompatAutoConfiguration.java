@@ -3,7 +3,6 @@ package com.solace.maas.ep.event.management.agent.plugin.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -35,8 +34,13 @@ public class Jackson2CompatAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ObjectMapper.class)
     public ObjectMapper jackson2ObjectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
+        ObjectMapper objectMapper = new ObjectMapper();
+        // Discover every Jackson module on the classpath (JavaTimeModule, ParameterNamesModule, ...),
+        // matching Spring Boot 3.x's default Jackson auto-config. ParameterNamesModule is what lets
+        // Jackson use Lombok @Builder all-args constructors (compiled with -parameters) as creators;
+        // without it, @Data @Builder models with no no-arg constructor fail with "no Creators".
+        objectMapper.findAndRegisterModules();
+        return objectMapper
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
