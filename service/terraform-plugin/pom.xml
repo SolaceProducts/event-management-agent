@@ -17,7 +17,7 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <maas.jobs.version>2.0.11</maas.jobs.version>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.21.2</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -53,6 +53,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Jackson 2 BOM aligned with the SB4-managed line (jackson-2-bom 2.21.2 → annotations
+                 2.21). This module has no SB parent, so it imports the BOM directly and lets the
+                 explicit jackson deps below inherit their versions. (DATAGO-142260) -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -84,12 +94,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

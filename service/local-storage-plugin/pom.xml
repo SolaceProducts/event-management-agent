@@ -20,7 +20,7 @@
         <jupiter.version>6.0.3</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.21.2</jackson.version>
     </properties>
     <dependencyManagement>
         <dependencies>

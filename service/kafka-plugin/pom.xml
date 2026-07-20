@@ -20,10 +20,10 @@
         <camel.version>4.19.0</camel.version>
         <aws-msk-iam-auth.version>2.0.3</aws-msk-iam-auth.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
+        <jackson-dataformat-cbor.version>2.21.2</jackson-dataformat-cbor.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.21.2</jackson.version>
     </properties>
 
     <dependencyManagement>
