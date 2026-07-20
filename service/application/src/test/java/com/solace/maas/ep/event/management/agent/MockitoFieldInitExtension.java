@@ -24,8 +24,10 @@ public class MockitoFieldInitExtension implements BeforeEachCallback {
     @Override
     public void beforeEach(ExtensionContext context) {
         Class<?> testClass = context.getRequiredTestClass();
-        ExtendWith extendWith = testClass.getAnnotation(ExtendWith.class);
-        if (extendWith != null) {
+        // @ExtendWith is @Repeatable — getAnnotationsByType covers both a single and multiple
+        // separate @ExtendWith declarations. (A MockitoExtension hidden inside a composed
+        // meta-annotation is not detected; none exists today.)
+        for (ExtendWith extendWith : testClass.getAnnotationsByType(ExtendWith.class)) {
             for (Class<?> extension : extendWith.value()) {
                 if (extension.getName().contains("MockitoExtension")) {
                     return;

@@ -39,6 +39,9 @@ public class Jackson2CompatAutoConfiguration {
         // matching Spring Boot 3.x's default Jackson auto-config. ParameterNamesModule is what lets
         // Jackson use Lombok @Builder all-args constructors (compiled with -parameters) as creators;
         // without it, @Data @Builder models with no no-arg constructor fail with "no Creators".
+        // NOTE: this is a pragmatic subset of Spring Boot's Jackson auto-config — it does NOT apply
+        // spring.jackson.* properties or pick up Module / Jackson2ObjectMapperBuilderCustomizer beans
+        // from the context (EMA declares none today). Extend this bean if that ever changes.
         objectMapper.findAndRegisterModules();
         return objectMapper
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
