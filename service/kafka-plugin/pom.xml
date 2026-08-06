@@ -10,7 +10,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-kafka.version>3.3.6</spring-kafka.version>
+        <spring-kafka.version>3.3.16</spring-kafka.version>
         <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
              Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
         <kafka-clients.version>3.9.2</kafka-clients.version>
