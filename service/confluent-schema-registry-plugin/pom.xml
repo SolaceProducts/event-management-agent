@@ -52,6 +52,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- confluent-schema-registry-plugin has no Spring Boot parent; jackson-databind arrives
+                 transitively (resolves 2.16.1 without this pin). Pin the jackson BOM to the version every
+                 other EMA module uses so all modules ship a single jackson version. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.21.5</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
