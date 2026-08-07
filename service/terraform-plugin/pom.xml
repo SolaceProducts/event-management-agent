@@ -53,6 +53,17 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- terraform-plugin has no Spring Boot parent; import the jackson BOM so all jackson
+                 artifacts resolve consistently. jackson-annotations tracks its own version line
+                 (2.21, no patch) since Jackson 2.20, so it must be BOM-managed rather than pinned
+                 to ${jackson.version} (which would demand a non-existent jackson-annotations 2.21.4). -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -84,12 +95,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
