@@ -11,6 +11,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.3.6</spring-kafka.version>
+        <!-- spring-kafka 3.3.6 pulls micrometer-observation/commons 1.14.7 transitively, and the
+             maven-shade-plugin below bundles those classes into this plugin's uber-jar. On the
+             Spring Boot 4.1.0 app classpath the bundled old copy shadows micrometer-commons 1.17.0
+             and its WarnThenDebugLogger has no isEnabled(), so micrometer-core 1.17.0's
+             CompositeMeterRegistry.add throws NoSuchMethodError at startup. Pin micrometer to the
+             app's 1.17.0 so the shaded copy matches the runtime host. -->
+        <micrometer.version>1.17.0</micrometer.version>
         <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
              Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
         <kafka-clients.version>3.9.2</kafka-clients.version>
@@ -84,6 +91,18 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
             <version>${spring-kafka.version}</version>
+        </dependency>
+        <!-- Override spring-kafka 3.3.6's transitive micrometer 1.14.7 so the shaded jar bundles
+             the 1.17.0 classes (with WarnThenDebugLogger.isEnabled()) the SB 4.1.0 host expects. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
+            <version>${micrometer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-commons</artifactId>
+            <version>${micrometer.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>

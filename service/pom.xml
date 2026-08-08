@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>4.1.0</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
@@ -63,6 +63,34 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.18.0</version>
+            </dependency>
+            <!-- FOSSA: the Spring Boot 4.1.0 BOM ships netty 4.2.15 for the http3/QUIC line,
+                 which still carries CVE-2026-56816. Pin those artifacts to 4.2.16 (matches the
+                 ep-core fix). netty-codec-native-quic is pinned to the same version so the
+                 native binary stays in step with netty-codec-classes-quic. The rest of netty
+                 stays on the 4.1.135.Final property override above. -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-http3</artifactId>
+                <version>4.2.16.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-classes-quic</artifactId>
+                <version>4.2.16.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-native-quic</artifactId>
+                <version>4.2.16.Final</version>
+            </dependency>
+            <!-- FOSSA nested-BOM blind spot: the 4.1.0 BOM resolves spring-data-commons to
+                 4.1.0, but FOSSA's analyzer can misread the nested BOM as 4.0.5 and flag it.
+                 Pin it explicitly so the patched version is what FOSSA reads (matches ep-core). -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-commons</artifactId>
+                <version>4.1.0</version>
             </dependency>
             <!-- logback/logstash integration -->
             <dependency>
