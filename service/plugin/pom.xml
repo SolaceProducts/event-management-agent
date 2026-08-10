@@ -6,13 +6,13 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.9.9-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
     <groupId>com.solace.maas</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.9.9-SNAPSHOT</version>
+    <version>1.9.10-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Solace Event Management Agent - Plugin</name>
@@ -22,7 +22,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <jackson.version>2.21.2</jackson.version>
+        <jackson.version>2.21.5</jackson.version>
         <spring-boot.version>4.0.6</spring-boot.version>
     </properties>
 

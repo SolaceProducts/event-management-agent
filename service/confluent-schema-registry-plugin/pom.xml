@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
     <artifactId>confluent-schema-registry-plugin</artifactId>
-    <version>1.9.9-SNAPSHOT</version>
+    <version>1.9.10-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Confluent Schema Registry Plugin</name>
     <description>Solace Event Management Agent - Confluent Schema Registry Plugin</description>
@@ -52,6 +52,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- confluent-schema-registry-plugin has no Spring Boot parent; jackson-databind arrives
+                 transitively (resolves 2.16.1 without this pin). Pin the jackson BOM to the version every
+                 other EMA module uses so all modules ship a single jackson version. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.21.5</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -59,7 +69,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.9.9-SNAPSHOT</version>
+            <version>1.9.10-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

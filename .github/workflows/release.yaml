@@ -3,13 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: "Default version to use when preparing a release."
+        description: "Version to release, in X.Y.Z form (no -SNAPSHOT, no placeholder). The next development version on main is auto-derived as X.Y.(Z+1)-SNAPSHOT by maven-release-plugin."
         required: true
         default: "A.B.C"
-      developmentVersion:
-        description: "Default version to use for new local working copy (the next version after version A.B.C)."
-        required: true
-        default: "X.Y.Z-SNAPSHOT"
       dry_run:
         description: "Dry run: run the readiness check end-to-end, skip the actual mvn release commit/push and the entire publish job (no GitHub Release, no ECR retag, no manifest DB write). Use for validating the workflow without altering the repo or registries."
         type: boolean
@@ -56,6 +52,21 @@ jobs:
           java-version: 17
           distribution: 'temurin'
           cache: 'maven'
+      - name: Validate release version
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: |
+          if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::releaseVersion='$RELEASE_VERSION' is not a clean X.Y.Z semver. Reject reasons include: the 'A.B.C' placeholder default was not changed, a '-SNAPSHOT' suffix was included, or a pre-release suffix (e.g. '-rc1') was used."
+            exit 1
+          fi
+          major=$(echo "$RELEASE_VERSION" | cut -d. -f1)
+          minor=$(echo "$RELEASE_VERSION" | cut -d. -f2)
+          patch=$(echo "$RELEASE_VERSION" | cut -d. -f3)
+          derived_dev="$major.$minor.$((patch + 1))-SNAPSHOT"
+          echo "releaseVersion=$RELEASE_VERSION"
+          echo "derived developmentVersion=$derived_dev (auto-computed by maven-release-plugin; not an input)"
+          echo "DERIVED_DEVELOPMENT_VERSION=$derived_dev" >> "$GITHUB_ENV"
       - name: Pre-Release Check - Version
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,17 +95,16 @@ jobs:
         run: mvn clean --file service/pom.xml
       - name: Maven Release
         if: ${{ !fromJSON(inputs.dry_run) }}
-        run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        run: mvn release:prepare release:perform -B --file service/pom.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }}
       - name: Maven Release (DRY RUN — skipped)
         if: ${{ fromJSON(inputs.dry_run) }}
         run: |
           echo "::warning::DRY RUN — Maven release skipped. Would have executed:"
           echo "  mvn release:prepare release:perform -B --file service/pom.xml \\"
-          echo "    -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \\"
-          echo "    -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}"
+          echo "    -DreleaseVersion=${{ github.event.inputs.releaseVersion }}"
           echo ""
           echo "Side effects that would have occurred:"
-          echo "  - Commit pom.xml version bumps to ${{ github.event.inputs.releaseVersion }} (release) and ${{ github.event.inputs.developmentVersion }} (next snapshot)"
+          echo "  - Commit pom.xml version bumps to ${{ github.event.inputs.releaseVersion }} (release) and $DERIVED_DEVELOPMENT_VERSION (next snapshot, auto-derived)"
           echo "  - Create + push tag v${{ github.event.inputs.releaseVersion }} to origin"
           echo "  - Deploy artifacts via mvn deploy"
 
@@ -199,11 +209,17 @@ jobs:
           GUARDIAN_STATUS: ${{ needs.release_readiness.outputs.guardian_status }}
           MAVEN_RELEASE_RESULT: ${{ needs.maven_release.result }}
         run: |
+          if [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            derived_dev="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))-SNAPSHOT"
+          else
+            derived_dev="(N/A — releaseVersion did not pass validation)"
+          fi
           {
             echo "## Dry Run Summary"
             echo ""
             echo "Scanned commit: \`${{ github.sha }}\`"
             echo "Target release version: \`$VERSION\`"
+            echo "Auto-derived next development version: \`$derived_dev\`"
             echo ""
             echo "### Readiness gates (overall: \`$READINESS_RESULT\`)"
             echo ""

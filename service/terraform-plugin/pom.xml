@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.terraform</groupId>
     <artifactId>terraform-plugin</artifactId>
-    <version>1.9.9-SNAPSHOT</version>
+    <version>1.9.10-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Terraform Plugin</name>
     <description>Solace Event Management Agent - Terraform Plugin</description>
@@ -17,7 +17,7 @@
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <maas.jobs.version>2.0.11</maas.jobs.version>
-        <jackson.version>2.21.2</jackson.version>
+        <jackson.version>2.21.5</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -53,9 +53,10 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Jackson 2 BOM aligned with the SB4-managed line (jackson-2-bom 2.21.2 → annotations
-                 2.21). This module has no SB parent, so it imports the BOM directly and lets the
-                 explicit jackson deps below inherit their versions. (DATAGO-142260) -->
+            <!-- terraform-plugin has no Spring Boot parent; import the jackson BOM so all jackson
+                 artifacts resolve consistently. jackson-annotations tracks its own version line
+                 (2.21, no patch) since Jackson 2.20, so it must be BOM-managed rather than pinned
+                 to ${jackson.version} (which would demand a non-existent jackson-annotations 2.21.5). -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
@@ -107,7 +108,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.9.9-SNAPSHOT</version>
+            <version>1.9.10-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>

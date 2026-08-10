@@ -3,20 +3,20 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.kafka</groupId>
     <artifactId>kafka-plugin</artifactId>
-    <version>1.9.9-SNAPSHOT</version>
+    <version>1.9.10-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Kafka Plugin</name>
     <description>Solace Event Management Agent - Kafka Plugin</description>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-kafka.version>3.3.6</spring-kafka.version>
-        <!-- spring-kafka 3.3.6 pulls micrometer-observation/commons 1.14.7 transitively, and the
-             maven-shade-plugin below bundles those classes into this plugin's uber-jar. On the
-             Spring Boot 4.1.0 app classpath the bundled old copy shadows micrometer-commons 1.17.0
-             and its WarnThenDebugLogger has no isEnabled(), so micrometer-core 1.17.0's
-             CompositeMeterRegistry.add throws NoSuchMethodError at startup. Pin micrometer to the
-             app's 1.17.0 so the shaded copy matches the runtime host. -->
+        <spring-kafka.version>3.3.16</spring-kafka.version>
+        <!-- spring-kafka 3.3.16 (the 3.3.x line) pulls micrometer-observation/commons 1.14.x
+             transitively, and the maven-shade-plugin below bundles those classes into this plugin's
+             uber-jar. On the Spring Boot 4.1.0 app classpath the bundled old copy shadows
+             micrometer-commons 1.17.0 and its WarnThenDebugLogger has no isEnabled(), so
+             micrometer-core 1.17.0's CompositeMeterRegistry.add throws NoSuchMethodError at startup.
+             Pin micrometer to the app's 1.17.0 so the shaded copy matches the runtime host. -->
         <micrometer.version>1.17.0</micrometer.version>
         <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
              Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
@@ -30,7 +30,7 @@
         <jackson-dataformat-cbor.version>2.21.2</jackson-dataformat-cbor.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <jackson.version>2.21.2</jackson.version>
+        <jackson.version>2.21.5</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -66,7 +66,7 @@
             <!-- kafka-plugin has no Spring Boot parent, so Spring Boot does not manage Netty here.
                  software.amazon.awssdk:netty-nio-client bundles its own Netty version (4.1.118.Final
                  as of awssdk 2.30.17), which would be used without this pin.
-                 This BOM pin forces Netty to match the version Spring Boot 3.5.14 manages in all
+                 This BOM pin forces Netty to match the version Spring Boot 3.5.15 manages in all
                  other EMA modules (via reactor-netty).
                  Review when upgrading awssdk:netty-nio-client or when kafka-plugin gains a Spring Boot parent.
                  Current bump 4.1.133 → 4.1.135 fixes CVE-2026-44249/45416 (netty-handler) +
@@ -92,7 +92,7 @@
             <artifactId>spring-kafka</artifactId>
             <version>${spring-kafka.version}</version>
         </dependency>
-        <!-- Override spring-kafka 3.3.6's transitive micrometer 1.14.7 so the shaded jar bundles
+        <!-- Override spring-kafka 3.3.16's transitive micrometer 1.14.x so the shaded jar bundles
              the 1.17.0 classes (with WarnThenDebugLogger.isEnabled()) the SB 4.1.0 host expects. -->
         <dependency>
             <groupId>io.micrometer</groupId>
@@ -138,7 +138,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.9.9-SNAPSHOT</version>
+            <version>1.9.10-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
