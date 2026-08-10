@@ -49,7 +49,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.135.Final</version>
+                <version>4.2.16.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -61,6 +61,17 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Jackson 3 (tools.jackson) arrives via spring-boot-starter-jackson (spring-boot.version
+                 4.0.6 pins it to 3.1.2) and gets shaded into this plugin's uber-jar. 3.1.2 carries
+                 CVE-2026-54512/54513 (jackson-databind) + GHSA-r7wm-3cxj-wff9 (jackson-core). Import
+                 the Jackson 3 BOM at 3.1.4 (the version Spring Boot 4.1.0 ships) to override it. -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>3.1.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

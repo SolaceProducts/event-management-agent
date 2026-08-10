@@ -44,10 +44,12 @@
         <mockito-inline.version>5.2.0</mockito-inline.version>
         <!-- Spring Boot BOM uses this property to manage all io.netty:* versions.
              Applies to plugin and application modules (inheritors of this parent).
-             Prior bumps: 4.1.131 → 4.1.132 → 4.1.133 (CVE-2026-42579 + 4.1.132 batch).
-             Current: 4.1.133 → 4.1.135 fixes CVE-2026-44249/45416 (netty-handler) +
-             CVE-2026-45674/47691/45673 (netty-resolver-dns) + bonus CVE-2026-50010. -->
-        <netty.version>4.1.135.Final</netty.version>
+             Spring Boot 4.1.0 defaults netty to the 4.2.x line (4.2.15); bump one patch to 4.2.16
+             to clear the HIGH CVEs 4.2.15 still carries: CVE-2026-56816 (netty-codec-http3),
+             CVE-2026-59901 (netty-codec / netty-codec-compression), CVE-2026-55831/55833/56745
+             (netty-codec-http), CVE-2026-56819 (netty-codec-http2). Moving off the old 4.1.135
+             override also retires the mixed 4.1.x/4.2.x split the http3/QUIC pins had created. -->
+        <netty.version>4.2.16.Final</netty.version>
         <tomcat.version>11.0.24</tomcat.version>
     </properties>
 
@@ -63,26 +65,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.18.0</version>
-            </dependency>
-            <!-- FOSSA: the Spring Boot 4.1.0 BOM ships netty 4.2.15 for the http3/QUIC line,
-                 which still carries CVE-2026-56816. Pin those artifacts to 4.2.16 (matches the
-                 ep-core fix). netty-codec-native-quic is pinned to the same version so the
-                 native binary stays in step with netty-codec-classes-quic. The rest of netty
-                 stays on the 4.1.135.Final property override above. -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-http3</artifactId>
-                <version>4.2.16.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-classes-quic</artifactId>
-                <version>4.2.16.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-native-quic</artifactId>
-                <version>4.2.16.Final</version>
             </dependency>
             <!-- FOSSA nested-BOM blind spot: the 4.1.0 BOM resolves spring-data-commons to
                  4.1.0, but FOSSA's analyzer can misread the nested BOM as 4.0.5 and flag it.
