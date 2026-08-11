@@ -32,10 +32,11 @@
     </repositories>
     <dependencyManagement>
         <dependencies>
-            <!-- SB4 manages Jackson via jackson-2-bom (2.21.2) + jackson-bom (3.1.2). The former
-                 EMA jackson-bom 2.16.1 import pinned jackson-annotations to 2.16.1, which lacks
-                 JsonSerializeAs and broke Jackson 3's JsonMapper init at boot (DATAGO-142260).
-                 Let the SB4 BOM govern Jackson so the annotations are shared between J2 and J3. -->
+            <!-- SB4 manages Jackson via its bundled jackson-2-bom (com.fasterxml, 2.21.x) + jackson-3
+                 bom (tools.jackson, 3.1.x). The former EMA jackson-bom 2.16.1 import pinned
+                 jackson-annotations to 2.16.1, which lacks JsonSerializeAs and broke Jackson 3's
+                 JsonMapper init at boot (DATAGO-142260). Let the SB4 BOM govern Jackson so the
+                 annotations are shared between J2 and J3. -->
             <!-- CVE-2023-3635: okio < 1.17.6 GzipSource DoS; transitive via okhttp 2.7.5 -->
             <dependency>
                 <groupId>com.squareup.okio</groupId>
