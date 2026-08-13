@@ -32,11 +32,8 @@
     </repositories>
     <dependencyManagement>
         <dependencies>
-            <!-- SB4 manages Jackson via its bundled jackson-2-bom (com.fasterxml, 2.21.x) + jackson-3
-                 bom (tools.jackson, 3.1.x). The former EMA jackson-bom 2.16.1 import pinned
-                 jackson-annotations to 2.16.1, which lacks JsonSerializeAs and broke Jackson 3's
-                 JsonMapper init at boot (DATAGO-142260). Let the SB4 BOM govern Jackson so the
-                 annotations are shared between J2 and J3. -->
+            <!-- Let the SB4 BOM govern Jackson: a prior explicit jackson-bom pinned jackson-annotations
+                 to a version missing JsonSerializeAs, which broke Jackson 3's JsonMapper init at boot. -->
             <!-- CVE-2023-3635: okio < 1.17.6 GzipSource DoS; transitive via okhttp 2.7.5 -->
             <dependency>
                 <groupId>com.squareup.okio</groupId>
@@ -150,10 +147,6 @@
             <artifactId>camel-jackson</artifactId>
             <version>${camel.version}</version>
         </dependency>
-        <!-- camel-directvm-starter removed: the direct-vm component was dropped in Camel 4.19,
-             and EMA has zero direct-vm: endpoints (99 plain direct: endpoints are camel-core and
-             unaffected). Only one test referenced DirectVmEndpoint; it is repointed to
-             DirectEndpoint. (DATAGO-142260) -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-file</artifactId>
@@ -265,12 +258,8 @@
             <version>1.9.10-SNAPSHOT</version>
         </dependency>
 
-        <!-- SB4 moved the Micrometer tracing autoconfig out of actuator into the
-             spring-boot-micrometer-tracing modules. EMA previously relied on the actuator
-             autoconfig + the io.micrometer:micrometer-tracing-bridge-brave lib to get an
-             io.micrometer.tracing.Tracer bean (injected by DataImportControllerImpl). Under SB4
-             that bean is gone; use the SB4 brave tracing starter, which pulls the bridge plus its
-             autoconfiguration so the Tracer bean is created again. (DATAGO-142260) -->
+        <!-- SB4 brave tracing starter: restores the io.micrometer.tracing.Tracer bean (injected by
+             DataImportControllerImpl) that SB4 no longer auto-configures via actuator. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-micrometer-tracing-brave</artifactId>

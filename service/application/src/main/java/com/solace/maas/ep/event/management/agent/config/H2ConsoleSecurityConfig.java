@@ -21,15 +21,10 @@ public class H2ConsoleSecurityConfig {
         log.info("H2 Console has been forcibly disabled for security reasons");
     }
 
-    // NOTE (DATAGO-142260): the former @Bean @Primary H2ConsoleProperties override that
-    // force-set enabled=false was removed because Spring Boot 4 removed H2 console
-    // auto-configuration entirely — both H2ConsoleProperties and H2ConsoleAutoConfiguration are
-    // absent from the SB4 classpath. IMPORTANT: application.yml / application-TEST.yml DO set
-    // spring.h2.console.enabled=true (with web-allow-others=true) — that override existed
-    // specifically to neutralize it. With the auto-config gone that property has no consumer, so
-    // the console cannot start; the blocking SecurityFilterChain below is the active defense.
-    // Security-adjacent — MUST be verified live at Step 3f (GET /h2-console/ denied).
-    // See revisit/ema-h2-console-force-disable-removed.md.
+    // NOTE (DATAGO-142260): SB4 removed H2 console auto-configuration, so the former @Bean @Primary
+    // force-disable override is gone. The spring.h2.console.enabled=true in application*.yml now has
+    // no consumer, so the console can't start; the blocking SecurityFilterChain below is the active
+    // defense. Security-adjacent — verify live (GET /h2-console/ denied).
 
     /**
      * Security filter chain that explicitly denies all access to H2 console endpoints.

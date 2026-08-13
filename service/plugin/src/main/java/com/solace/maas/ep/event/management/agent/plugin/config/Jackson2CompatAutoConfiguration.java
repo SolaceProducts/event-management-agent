@@ -8,25 +8,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 
 /**
- * Spring Boot 4 J2 compat bridge (DATAGO-142260).
+ * Spring Boot 4 J2 compat bridge (DATAGO-142260): SB4 auto-configures only a Jackson 3
+ * ({@code tools.jackson}) {@code ObjectMapper}, but several EMA beans constructor-inject the Jackson 2
+ * {@code com.fasterxml.jackson.databind.ObjectMapper}. This restores a Jackson 2 mapper mirroring
+ * SB 3.x's defaults (JavaTimeModule, ISO-8601 dates, lenient on unknown properties) so they keep wiring.
  *
- * <p>Spring Boot 4 auto-configures only a Jackson 3 ({@code tools.jackson}) {@code ObjectMapper}
- * bean. Several EMA beans constructor-inject the Jackson 2
- * {@code com.fasterxml.jackson.databind.ObjectMapper} (e.g. {@code TerraformLogProcessingService},
- * {@code FileDataMergeAggregationStrategyImpl}, the {@code Semp*CommandManager}s,
- * {@code CommandLogStreamingProcessor}), which under Spring Boot 3.x resolved to the framework's
- * auto-configured Jackson 2 mapper. This restores a Jackson 2 {@code ObjectMapper} bean mirroring
- * Spring Boot 3.x's Jackson auto-config defaults (JavaTimeModule registered, ISO-8601 dates,
- * lenient on unknown properties) so those injection points keep wiring under Spring Boot 4.
- *
- * <p>Contributed as an {@code @AutoConfiguration} (registered via
- * {@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports}) rather
- * than a component-scanned {@code @Configuration} because the plugin modules each boot their own
- * Spring context with differing component-scan base packages; auto-configuration guarantees the
- * bean is present in every context that has this module on the classpath. Backs off via
- * {@code @ConditionalOnMissingBean} so tests can still supply their own primary mapper.
- *
- * <p>Remove if/when EMA migrates fully to Jackson 3.
+ * <p>An {@code @AutoConfiguration} (not a component-scanned {@code @Configuration}) so every plugin
+ * context gets it regardless of scan packages; backs off via {@code @ConditionalOnMissingBean}.
+ * Remove when EMA migrates fully to Jackson 3.
  */
 @AutoConfiguration
 public class Jackson2CompatAutoConfiguration {
@@ -35,13 +24,9 @@ public class Jackson2CompatAutoConfiguration {
     @ConditionalOnMissingBean(ObjectMapper.class)
     public ObjectMapper jackson2ObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        // Discover every Jackson module on the classpath (JavaTimeModule, ParameterNamesModule, ...),
-        // matching Spring Boot 3.x's default Jackson auto-config. ParameterNamesModule is what lets
-        // Jackson use Lombok @Builder all-args constructors (compiled with -parameters) as creators;
+        // findAndRegisterModules matches SB 3.x's default module discovery. ParameterNamesModule (so
+        // registered) is what lets Jackson use Lombok @Builder all-args constructors as creators;
         // without it, @Data @Builder models with no no-arg constructor fail with "no Creators".
-        // NOTE: this is a pragmatic subset of Spring Boot's Jackson auto-config — it does NOT apply
-        // spring.jackson.* properties or pick up Module / Jackson2ObjectMapperBuilderCustomizer beans
-        // from the context (EMA declares none today). Extend this bean if that ever changes.
         objectMapper.findAndRegisterModules();
         return objectMapper
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)

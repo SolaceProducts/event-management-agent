@@ -55,21 +55,18 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <!-- SB4 no longer pulls these transitively; EMA stays on Jackson 2 (J2 compat-bridge
-             approach, DATAGO-142260). Versions managed by the jackson-bom import above. -->
+        <!-- Re-added — not transitive under SB4 (EMA stays on Jackson 2 via the J2 compat bridge). -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
-        <!-- ParameterNamesModule: lets the J2 compat-bridge ObjectMapper deserialize Lombok
-             @Builder models (all-args ctor + -parameters) that lack a no-arg constructor, matching
-             Spring Boot 3.x's default Jackson module discovery. Not transitive under SB4. -->
+        <!-- ParameterNamesModule: lets the J2 bridge mapper use Lombok @Builder all-args
+             constructors as creators (else @Data @Builder models fail with "no Creators"). -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
         </dependency>
-        <!-- commons-codec was transitive under SB3; SB4 BOM reshuffle dropped it from the
-             compile classpath. VMRProperties uses org.apache.commons.codec.digest. -->
+        <!-- Not transitive under SB4; used by VMRProperties (org.apache.commons.codec.digest). -->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>

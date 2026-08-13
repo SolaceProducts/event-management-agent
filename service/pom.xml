@@ -42,13 +42,8 @@
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>4.19.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
-        <!-- Spring Boot BOM uses this property to manage all io.netty:* versions.
-             Applies to plugin and application modules (inheritors of this parent).
-             Spring Boot 4.1.0 defaults netty to the 4.2.x line (4.2.15); bump one patch to 4.2.16
-             to clear the HIGH CVEs 4.2.15 still carries: CVE-2026-56816 (netty-codec-http3),
-             CVE-2026-59901 (netty-codec / netty-codec-compression), CVE-2026-55831/55833/56745
-             (netty-codec-http), CVE-2026-56819 (netty-codec-http2). Moving off the old 4.1.135
-             override also retires the mixed 4.1.x/4.2.x split the http3/QUIC pins had created. -->
+        <!-- Override SB 4.1.0's default netty (4.2.15) — that patch still has HIGH netty CVEs
+             (http3 CVE-2026-56816 et al.). Manages netty for the inheriting app + plugin modules. -->
         <netty.version>4.2.16.Final</netty.version>
         <tomcat.version>11.0.24</tomcat.version>
     </properties>
@@ -66,9 +61,8 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.18.0</version>
             </dependency>
-            <!-- FOSSA nested-BOM blind spot: the 4.1.0 BOM resolves spring-data-commons to
-                 4.1.0, but FOSSA's analyzer can misread the nested BOM as 4.0.5 and flag it.
-                 Pin it explicitly so the patched version is what FOSSA reads (matches ep-core). -->
+            <!-- Explicit pin only because FOSSA's analyzer misreads the 4.1.0 BOM's nested
+                 spring-data-commons as 4.0.5; the resolved version is already 4.1.0. -->
             <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-commons</artifactId>

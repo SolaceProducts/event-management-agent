@@ -11,12 +11,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.3.16</spring-kafka.version>
-        <!-- spring-kafka 3.3.16 (the 3.3.x line) pulls micrometer-observation/commons 1.14.x
-             transitively, and the maven-shade-plugin below bundles those classes into this plugin's
-             uber-jar. On the Spring Boot 4.1.0 app classpath the bundled old copy shadows
-             micrometer-commons 1.17.0 and its WarnThenDebugLogger has no isEnabled(), so
-             micrometer-core 1.17.0's CompositeMeterRegistry.add throws NoSuchMethodError at startup.
-             Pin micrometer to the app's 1.17.0 so the shaded copy matches the runtime host. -->
+        <!-- spring-kafka 3.3.x drags micrometer 1.14.x, which this module's shade bundles; on the SB
+             4.1.0 classpath that old copy shadows micrometer 1.17.0 and boots fail with NoSuchMethodError
+             (WarnThenDebugLogger.isEnabled). Pin to the app's 1.17.0 so the shaded copy matches. -->
         <micrometer.version>1.17.0</micrometer.version>
         <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
              Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
@@ -42,11 +39,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- kafka-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
-                 spring-boot-starter-web (pulled via the plugin module) brings tomcat-embed-* transitively,
-                 and the <tomcat.version>11.0.24</tomcat.version> override in service/pom.xml does NOT
-                 reach this pom. Each artifact must be pinned explicitly.
-                 11.0.24 clears CVE-2026-59084/59083 over Spring Boot 4.1.0's managed 11.0.22. -->
+            <!-- No SB parent, so service/pom.xml's tomcat override doesn't reach here — pin
+                 tomcat-embed explicitly. 11.0.24 clears CVE-2026-59084/59083 over SB 4.1.0's 11.0.22. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
@@ -62,15 +56,9 @@
                 <artifactId>tomcat-embed-websocket</artifactId>
                 <version>11.0.24</version>
             </dependency>
-            <!-- kafka-plugin has no Spring Boot parent, so Spring Boot does not manage Netty here.
-                 software.amazon.awssdk:netty-nio-client bundles its own Netty version (4.1.118.Final
-                 as of awssdk 2.30.17), which would be used without this pin.
-                 This BOM pin forces Netty to match the 4.2.x line Spring Boot 4.1.0 manages in all
-                 other EMA modules (via reactor-netty).
-                 Review when upgrading awssdk:netty-nio-client or when kafka-plugin gains a Spring Boot parent.
-                 Pinned to 4.2.16 (Spring Boot 4.1.0's default netty is 4.2.15) to clear the HIGH CVEs
-                 4.2.15 still carries: CVE-2026-56816 (http3), CVE-2026-59901 (codec/compression),
-                 CVE-2026-55831/55833/56745 (http), CVE-2026-56819 (http2). -->
+            <!-- No SB parent, so netty isn't managed here; awssdk:netty-nio-client would otherwise pull
+                 its own older netty. Pin to 4.2.16 to match the app and clear the HIGH CVEs SB 4.1.0's
+                 default 4.2.15 carries (CVE-2026-56816 et al.). Review on awssdk upgrades. -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
@@ -92,8 +80,6 @@
             <artifactId>spring-kafka</artifactId>
             <version>${spring-kafka.version}</version>
         </dependency>
-        <!-- Override spring-kafka 3.3.16's transitive micrometer 1.14.x so the shaded jar bundles
-             the 1.17.0 classes (with WarnThenDebugLogger.isEnabled()) the SB 4.1.0 host expects. -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-observation</artifactId>

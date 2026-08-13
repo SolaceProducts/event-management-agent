@@ -26,10 +26,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- spring-boot-starter-web (pulled via the plugin module) brings tomcat-embed-* transitively,
-                 and the <tomcat.version>11.0.24</tomcat.version> override in service/pom.xml does NOT
-                 reach this pom. Each artifact must be pinned explicitly.
-                 11.0.24 clears CVE-2026-59084/59083 over Spring Boot 4.1.0's managed 11.0.22. -->
+            <!-- No SB parent, so service/pom.xml's tomcat override doesn't reach here — pin
+                 tomcat-embed explicitly. 11.0.24 clears CVE-2026-59084/59083 over SB 4.1.0's 11.0.22. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
@@ -46,9 +44,7 @@
                 <version>11.0.24</version>
             </dependency>
             <!-- rabbitmq-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
-                 Pinned to 4.2.16 (Spring Boot 4.1.0's default netty is 4.2.15) to clear the HIGH
-                 CVEs 4.2.15 still carries: CVE-2026-56816 (http3), CVE-2026-59901 (codec/
-                 compression), CVE-2026-55831/55833/56745 (http), CVE-2026-56819 (http2). -->
+                 Pinned to 4.2.16 — SB 4.1.0's default 4.2.15 still has HIGH netty CVEs (CVE-2026-56816 et al.). -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
