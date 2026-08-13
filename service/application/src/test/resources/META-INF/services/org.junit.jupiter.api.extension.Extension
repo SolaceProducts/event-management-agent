@@ -1,1 +1,2 @@
+# Registers MockitoFieldInitExtension globally so @Mock fields in @SpringBootTest classes get initialized, replacing the MockitoTestExecutionListener that SB4 removed (DATAGO-142260).
 com.solace.maas.ep.event.management.agent.MockitoFieldInitExtension
