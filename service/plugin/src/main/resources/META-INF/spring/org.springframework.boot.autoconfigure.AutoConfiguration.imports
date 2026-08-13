@@ -1,1 +1,2 @@
+# Registers the Jackson 2 compat-bridge ObjectMapper as an auto-configuration so it lands in every plugin's Spring context, which SB4 otherwise leaves without a Jackson 2 mapper (DATAGO-142260).
 com.solace.maas.ep.event.management.agent.plugin.config.Jackson2CompatAutoConfiguration
