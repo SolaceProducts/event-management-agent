@@ -12,12 +12,13 @@ import com.solace.maas.ep.event.management.agent.repository.messagingservice.Ser
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.MessagingServiceEntity;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsCompositeKey;
 import com.solace.maas.ep.event.management.agent.repository.model.mesagingservice.ServiceAssociationsEntity;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
     }
 
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Iterable<MessagingServiceEntity> upsertMessagingServiceEvents(List<MessagingServiceEvent> messagingServiceEvents) {
         if (CollectionUtils.isEmpty(messagingServiceEvents)) {
             return List.of();
@@ -90,7 +91,9 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
         List<MessagingServiceEntity> messagingServiceEntities = messagingServiceEvents.stream()
                 .map(toBeUpserted -> {
                     MessagingServiceEntity updated = eventToEntityConverter.convert(toBeUpserted);
-                    Optional<MessagingServiceEntity> existing = repository.findById(toBeUpserted.getId());
+                    // Lock the broker row so concurrent same-broker upserts don't both orphan-remove the same
+                    // cascaded child row, which would fail the second commit with an optimistic-lock error (DATAGO-149211).
+                    Optional<MessagingServiceEntity> existing = repository.findAndLockById(toBeUpserted.getId());
                     if (existing.isPresent()) {
                         MessagingServiceEntity existingEntity = existing.get();
                         updated.setScanEntities(existingEntity.getScanEntities());
