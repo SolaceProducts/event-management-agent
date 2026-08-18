@@ -91,7 +91,7 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
                 .map(toBeUpserted -> {
                     MessagingServiceEntity updated = eventToEntityConverter.convert(toBeUpserted);
                     // Lock the broker row so concurrent same-broker upserts don't both orphan-remove the same
-                    // cascaded child row, which would fail the second commit with an optimistic-lock error (DATAGO-149211).
+                    // cascaded child row, which would fail the second commit with an optimistic-lock error.
                     Optional<MessagingServiceEntity> existing = repository.findAndLockById(toBeUpserted.getId());
                     if (existing.isPresent()) {
                         MessagingServiceEntity existingEntity = existing.get();

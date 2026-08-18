@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface MessagingServiceRepository extends JpaRepository<MessagingServiceEntity, String> {
 
-    // Pessimistic write lock (SELECT ... FOR UPDATE) to serialize concurrent upserts of the same broker (DATAGO-149211).
+    // Pessimistic write lock (SELECT ... FOR UPDATE) to serialize concurrent upserts of the same broker.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT m FROM MessagingServiceEntity m WHERE m.id = :id")
     Optional<MessagingServiceEntity> findAndLockById(@Param("id") String id);

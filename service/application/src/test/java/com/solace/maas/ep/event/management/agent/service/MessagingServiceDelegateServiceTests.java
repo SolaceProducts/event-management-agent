@@ -113,7 +113,7 @@ public class MessagingServiceDelegateServiceTests {
     }
 
     @Test
-    public void testUpsertMessagingServiceEventsAcquiresPessimisticLock() {
+    void testUpsertMessagingServiceEventsAcquiresPessimisticLock() {
         MessagingServiceEvent messagingServiceEvent = MessagingServiceEvent.builder()
                 .id("testService")
                 .messagingServiceType(MessagingServiceType.SOLACE.name())
