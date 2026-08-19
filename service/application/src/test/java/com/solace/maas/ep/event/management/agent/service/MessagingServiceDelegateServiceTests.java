@@ -41,6 +41,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("TEST")
@@ -107,6 +110,33 @@ public class MessagingServiceDelegateServiceTests {
         messagingServiceDelegateService.addMessagingService(messagingServiceEvent);
 
         assertThatNoException();
+    }
+
+    @Test
+    void testUpsertMessagingServiceEventsAcquiresPessimisticLock() {
+        MessagingServiceEvent messagingServiceEvent = MessagingServiceEvent.builder()
+                .id("testService")
+                .messagingServiceType(MessagingServiceType.SOLACE.name())
+                .name("service1")
+                .connectionDetails(List.of())
+                .build();
+
+        MessagingServiceEntity existingEntity = MessagingServiceEntity.builder()
+                .id("testService")
+                .name("service1")
+                .type(MessagingServiceType.SOLACE.name())
+                .build();
+
+        when(repository.findAndLockById("testService"))
+                .thenReturn(Optional.of(existingEntity));
+        when(repository.saveAll(any()))
+                .thenReturn(List.of(existingEntity));
+
+        messagingServiceDelegateService.upsertMessagingServiceEvents(List.of(messagingServiceEvent));
+
+        verify(repository, times(1)).findAndLockById("testService");
+        verify(repository, never()).findById(any(String.class));
+        verify(repository, times(1)).saveAll(any());
     }
 
     @Test

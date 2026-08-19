@@ -39,13 +39,17 @@ public class MessagingServiceTestConfig {
                 .url("localhost:9090")
                 .build();
 
+        MessagingServiceEntity messagingServiceEntity = MessagingServiceEntity.builder()
+                .type(MessagingServiceType.SOLACE.name())
+                .name("service1")
+                .id(UUID.randomUUID().toString())
+                .connections(List.of(connectionDetailsEntity))
+                .build();
+
         when(repository.findById(any(String.class)))
-                .thenReturn(Optional.of(MessagingServiceEntity.builder()
-                        .type(MessagingServiceType.SOLACE.name())
-                        .name("service1")
-                        .id(UUID.randomUUID().toString())
-                        .connections(List.of(connectionDetailsEntity))
-                        .build()));
+                .thenReturn(Optional.of(messagingServiceEntity));
+        when(repository.findAndLockById(any(String.class)))
+                .thenReturn(Optional.of(messagingServiceEntity));
         return repository;
     }
 

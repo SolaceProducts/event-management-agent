@@ -90,7 +90,9 @@ public class MessagingServiceDelegateServiceImpl implements MessagingServiceDele
         List<MessagingServiceEntity> messagingServiceEntities = messagingServiceEvents.stream()
                 .map(toBeUpserted -> {
                     MessagingServiceEntity updated = eventToEntityConverter.convert(toBeUpserted);
-                    Optional<MessagingServiceEntity> existing = repository.findById(toBeUpserted.getId());
+                    // Lock the broker row so concurrent same-broker upserts don't both orphan-remove the same
+                    // cascaded child row, which would fail the second commit with an optimistic-lock error.
+                    Optional<MessagingServiceEntity> existing = repository.findAndLockById(toBeUpserted.getId());
                     if (existing.isPresent()) {
                         MessagingServiceEntity existingEntity = existing.get();
                         updated.setScanEntities(existingEntity.getScanEntities());
