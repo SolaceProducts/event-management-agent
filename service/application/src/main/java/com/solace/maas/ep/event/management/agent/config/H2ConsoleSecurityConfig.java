@@ -3,10 +3,8 @@ package com.solace.maas.ep.event.management.agent.config;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.h2.H2ConsoleProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,18 +21,10 @@ public class H2ConsoleSecurityConfig {
         log.info("H2 Console has been forcibly disabled for security reasons");
     }
 
-    /**
-     * Force H2 console to be disabled to ensures the H2 console cannot be enabled
-     * even if spring.h2.console.enabled=true is set in configuration files.
-     */
-    @Bean
-    @Primary
-    public H2ConsoleProperties h2ConsoleProperties() {
-        H2ConsoleProperties properties = new H2ConsoleProperties();
-        properties.setEnabled(false); // Force disabled
-        log.info("H2 Console: Programmatically disabled via H2ConsoleProperties override");
-        return properties;
-    }
+    // NOTE (DATAGO-142260): SB4 removed H2 console auto-configuration, so the former @Bean @Primary
+    // force-disable override is gone. The spring.h2.console.enabled=true in application*.yml now has
+    // no consumer, so the console can't start; the blocking SecurityFilterChain below is the active
+    // defense. Security-adjacent — verify live (GET /h2-console/ denied).
 
     /**
      * Security filter chain that explicitly denies all access to H2 console endpoints.

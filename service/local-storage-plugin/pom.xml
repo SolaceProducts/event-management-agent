@@ -11,13 +11,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <org.json.version>20231013</org.json.version>
-        <camel.version>4.8.7</camel.version>
+        <camel.version>4.19.0</camel.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jacksondatabind.version>2.13.4.2</jacksondatabind.version>
         <junit.version>4.13.2</junit.version>
-        <spring-boot.version>3.5.15</spring-boot.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
-        <jupiter.version>5.10.2</jupiter.version>
+        <jupiter.version>6.0.3</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <jackson.version>2.21.5</jackson.version>
@@ -31,34 +31,38 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- local-storage-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
-                 spring-boot-starter-web brings tomcat-embed-* transitively, and the
-                 <tomcat.version>10.1.55</tomcat.version> override in service/pom.xml does NOT reach
-                 this pom. Each artifact must be pinned explicitly.
-                 Fix CVE-2026-43515/43512/41293 (Critical) + CVE-2026-41284/43513/42498 (High):
-                 tomcat 10.1.54 → 10.1.55. -->
+            <!-- No SB parent, so service/pom.xml's tomcat override doesn't reach here — pin
+                 tomcat-embed explicitly. 11.0.24 clears CVE-2026-59084/59083 over SB 4.1.0's 11.0.22. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-el</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <!-- local-storage-plugin has no Spring Boot parent; Netty arrives transitively via plugin → reactor-netty.
-                 Current bump 4.1.133 → 4.1.135 fixes CVE-2026-44249/45416 (netty-handler) +
-                 CVE-2026-45674/47691/45673 (netty-resolver-dns). -->
+                 Pinned to 4.2.16 — SB 4.1.0's default 4.2.15 still has HIGH netty CVEs (CVE-2026-56816 et al.). -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.135.Final</version>
+                <version>4.2.16.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- camel-spring-boot-starter 4.19.0 drags spring-framework 7.0.6 (CVE-2026-41850) and
+                 wins mediation (no SB BOM here); force spring-* to SB 4.1.0's 7.0.8. -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>7.0.8</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -136,7 +140,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
         <dependency>

@@ -11,16 +11,20 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring-kafka.version>3.3.16</spring-kafka.version>
+        <!-- spring-kafka 3.3.x drags micrometer 1.14.x, which this module's shade bundles; on the SB
+             4.1.0 classpath that old copy shadows micrometer 1.17.0 and boots fail with NoSuchMethodError
+             (WarnThenDebugLogger.isEnabled). Pin to the app's 1.17.0 so the shaded copy matches. -->
+        <micrometer.version>1.17.0</micrometer.version>
         <!-- Fix CVE-2026-35554 (HIGH 8.7, producer race) + CVE-2026-33558 (MEDIUM 5.3, debug log info leak):
              Kafka 3.9.1 → 3.9.2. Patch release on the 3.9.x LTS line; no API changes. -->
         <kafka-clients.version>3.9.2</kafka-clients.version>
-        <spring-boot.version>3.5.15</spring-boot.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
         <commons-collections4.version>4.4</commons-collections4.version>
-        <jupiter.version>5.10.2</jupiter.version>
-        <camel.version>4.8.7</camel.version>
+        <jupiter.version>6.0.3</jupiter.version>
+        <camel.version>4.19.0</camel.version>
         <aws-msk-iam-auth.version>2.0.3</aws-msk-iam-auth.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <jackson-dataformat-cbor.version>2.13.4</jackson-dataformat-cbor.version>
+        <jackson-dataformat-cbor.version>2.21.2</jackson-dataformat-cbor.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <jackson.version>2.21.5</jackson.version>
@@ -35,39 +39,30 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- kafka-plugin has no Spring Boot parent and no spring-boot-dependencies BOM import.
-                 spring-boot-starter-web (pulled via the plugin module) brings tomcat-embed-* transitively,
-                 and the <tomcat.version>10.1.55</tomcat.version> override in service/pom.xml does NOT
-                 reach this pom. Each artifact must be pinned explicitly.
-                 Fix CVE-2026-43515/43512/41293 (Critical) + CVE-2026-41284/43513/42498 (High):
-                 tomcat 10.1.54 → 10.1.55. -->
+            <!-- No SB parent, so service/pom.xml's tomcat override doesn't reach here — pin
+                 tomcat-embed explicitly. 11.0.24 clears CVE-2026-59084/59083 over SB 4.1.0's 11.0.22. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-el</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>10.1.55</version>
+                <version>11.0.24</version>
             </dependency>
-            <!-- kafka-plugin has no Spring Boot parent, so Spring Boot does not manage Netty here.
-                 software.amazon.awssdk:netty-nio-client bundles its own Netty version (4.1.118.Final
-                 as of awssdk 2.30.17), which would be used without this pin.
-                 This BOM pin forces Netty to match the version Spring Boot 3.5.15 manages in all
-                 other EMA modules (via reactor-netty).
-                 Review when upgrading awssdk:netty-nio-client or when kafka-plugin gains a Spring Boot parent.
-                 Current bump 4.1.133 → 4.1.135 fixes CVE-2026-44249/45416 (netty-handler) +
-                 CVE-2026-45674/47691/45673 (netty-resolver-dns). -->
+            <!-- No SB parent, so netty isn't managed here; awssdk:netty-nio-client would otherwise pull
+                 its own older netty. Pin to 4.2.16 to match the app and clear the HIGH CVEs SB 4.1.0's
+                 default 4.2.15 carries (CVE-2026-56816 et al.). Review on awssdk upgrades. -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.135.Final</version>
+                <version>4.2.16.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -84,6 +79,16 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
             <version>${spring-kafka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
+            <version>${micrometer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-commons</artifactId>
+            <version>${micrometer.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>

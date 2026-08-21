@@ -12,7 +12,7 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.component.directvm.DirectVmEndpoint;
+import org.apache.camel.component.direct.DirectEndpoint;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ public class DataPublisherRouteBuilderTests {
 
     @Test
     public void testMockRoute() throws Exception {
-        try (DirectVmEndpoint ep = new DirectVmEndpoint("scanStatusPublisher", null)) {
+        try (DirectEndpoint ep = new DirectEndpoint("scanStatusPublisher", null)) {
             camelContext.addEndpoint("direct:scanStatusPublisher", ep);
 
             AdviceWith.adviceWith(camelContext, "dataPublisherRoute",
