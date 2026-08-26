@@ -40,6 +40,13 @@
                 <artifactId>okio</artifactId>
                 <version>1.17.6</version>
             </dependency>
+            <!-- CVE-2026-55153: mchange-commons-java < 0.6.0 JNDI dereferencing; transitive via
+                 camel-quartz-starter -> camel-quartz -> c3p0 -->
+            <dependency>
+                <groupId>com.mchange</groupId>
+                <artifactId>mchange-commons-java</artifactId>
+                <version>0.6.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
