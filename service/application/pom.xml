@@ -264,6 +264,11 @@
             <artifactId>terraform-plugin</artifactId>
             <version>1.9.10-SNAPSHOT</version>
         </dependency>
+       <dependency>
+            <groupId>com.solace.maas.plugin.ibmmq</groupId>
+            <artifactId>ibmmq-plugin</artifactId>
+            <version>1.6.6-SNAPSHOT</version>
+        </dependency>
 
         <!-- SB4 brave tracing starter: restores the io.micrometer.tracing.Tracer bean (injected by
              DataImportControllerImpl) that SB4 no longer auto-configures via actuator. -->
