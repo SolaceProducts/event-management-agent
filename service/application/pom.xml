@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.9.10-SNAPSHOT</version>
+        <version>1.9.10</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>event-management-agent</artifactId>
-    <version>1.9.10-SNAPSHOT</version>
+    <version>1.9.10</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
@@ -40,8 +40,7 @@
                 <artifactId>okio</artifactId>
                 <version>1.17.6</version>
             </dependency>
-            <!-- CVE-2026-55153: mchange-commons-java < 0.6.0 JNDI dereferencing; transitive via
-                 camel-quartz-starter -> camel-quartz -> c3p0 -->
+            <!-- CVE-2026-55153: mchange-commons-java < 0.6.0 JNDI dereferencing; transitive via camel-quartz-starter -> camel-quartz -> c3p0 -->
             <dependency>
                 <groupId>com.mchange</groupId>
                 <artifactId>mchange-commons-java</artifactId>
@@ -237,32 +236,32 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.9.10-SNAPSHOT</version>
+            <version>1.9.10</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>1.9.10-SNAPSHOT</version>
+            <version>1.9.10</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>1.9.10-SNAPSHOT</version>
+            <version>1.9.10</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>1.9.10-SNAPSHOT</version>
+            <version>1.9.10</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>1.9.10-SNAPSHOT</version>
+            <version>1.9.10</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.terraform</groupId>
             <artifactId>terraform-plugin</artifactId>
-            <version>1.9.10-SNAPSHOT</version>
+            <version>1.9.10</version>
         </dependency>
 
         <!-- SB4 brave tracing starter: restores the io.micrometer.tracing.Tracer bean (injected by
