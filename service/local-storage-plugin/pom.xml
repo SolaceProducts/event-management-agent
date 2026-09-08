@@ -8,8 +8,9 @@
     <name>Solace Event Management Agent - Local Storage Plugin</name>
     <description>Solace Event Management Agent - Local Storage Plugin</description>
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <lombok.version>1.18.46</lombok.version>
         <org.json.version>20231013</org.json.version>
         <camel.version>4.19.0</camel.version>
         <snakeyaml.version>2.0</snakeyaml.version>
@@ -173,6 +174,22 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- JDK 23+ no longer runs annotation processors found on the classpath
+                         (javac defaults to -proc:none for discovery). These modules have no
+                         parent POM, so Lombok must be declared explicitly here. -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

@@ -59,6 +59,12 @@
         <property name="message" value="Line has trailing spaces."/>
     </module>
 
+    <!-- Checks for Size Violations.                    -->
+    <!-- See http://checkstyle.sf.net/config_sizes.html -->
+    <module name="LineLength">
+        <property name="max" value="160"/>
+    </module>
+
     <module name="TreeWalker">
 
         <!-- required for SuppressWarningsFilter (and other Suppress* rules not used here) -->
@@ -114,12 +120,6 @@
         <module name="RedundantImport"/>
         <module name="UnusedImports">
             <property name="processJavadoc" value="false"/>
-        </module>
-
-        <!-- Checks for Size Violations.                    -->
-        <!-- See http://checkstyle.sf.net/config_sizes.html -->
-        <module name="LineLength">
-            <property name="max" value="160"/>
         </module>
 
         <!-- Checks for whitespace                               -->

@@ -41,9 +41,9 @@ public class SolaceHttpSemp {
     private static final String ERROR_CONNECTING_HOSTNAME = "Error connecting to messaging service. Check that the hostname is correct.";
     private static final String ERROR_CONNECTING_PORT = "Error connecting to messaging service. Check that the port is correct";
     private static final String ERROR_CONNECTING_SSL = "Error connecting to messaging service. SSL certificate validation failed.";
-    private final static String GET_SYSTEM_INFORMATION = "/SEMP/v2/config/about/api";
-    private final static String GET_QUEUES_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues";
-    private final static String GET_TOPIC_SUBSCRIPTIONS_FOR_QUEUE_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues/{queuename}/subscriptions";
+    private static final String GET_SYSTEM_INFORMATION = "/SEMP/v2/config/about/api";
+    private static final String GET_QUEUES_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues";
+    private static final String GET_TOPIC_SUBSCRIPTIONS_FOR_QUEUE_URI = "/SEMP/v2/config/msgVpns/{msgvpn}/queues/{queuename}/subscriptions";
     private final ObjectMapper objectMapper;
     private final SempClient sempClient;
     private final int SEMP_PAGE_SIZE = 100;

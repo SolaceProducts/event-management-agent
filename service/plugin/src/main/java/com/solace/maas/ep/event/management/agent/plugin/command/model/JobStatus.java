@@ -4,8 +4,5 @@ public enum JobStatus {
     in_progress,
     error,
     validation_error,
-    success;
-
-    JobStatus() {
-    }
+    success
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 
 @ExcludeFromJacocoGeneratedReport
 public class MessagingServiceTypeConfig {
-    private final static Map<String, MessagingServiceClientManager<?>> messagingServiceManagers =
+    private static final Map<String, MessagingServiceClientManager<?>> messagingServiceManagers =
             new LinkedCaseInsensitiveMap<>();
 
     public static void addMessagingServiceManager(String serviceName, MessagingServiceClientManager<?> clientManager) {

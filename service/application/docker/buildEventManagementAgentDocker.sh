@@ -80,7 +80,7 @@ setup_colors
 
 msg "${GREEN}Building image:${YELLOW} event-management-agent:${IMAGE_TAG}\n${NOFORMAT}"
 
-export BASE_IMAGE=eclipse-temurin:17.0.19_10-jre-alpine
+export BASE_IMAGE=eclipse-temurin:25.0.4_7-jre-alpine
 export GITHASH=$(git rev-parse HEAD)
 export GITBRANCH=$(git branch --show-current)
 export BUILD_TIMESTAMP=$(date -u)
