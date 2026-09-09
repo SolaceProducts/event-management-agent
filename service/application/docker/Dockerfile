@@ -7,6 +7,9 @@ ENV HOME /home/$USER
 
 VOLUME /tmp
 
+# Upgrade libexpat (the installed subpackage of expat) to patch expat CVEs
+RUN apk --no-cache upgrade libexpat
+
 # create user and directory setup
 RUN adduser -D $USER && \
     mkdir -p /opt/ema && \
