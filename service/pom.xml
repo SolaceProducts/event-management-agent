@@ -45,7 +45,7 @@
         <!-- Override SB 4.1.0's default netty (4.2.15) — that patch still has HIGH netty CVEs
              (http3 CVE-2026-56816 et al.). Manages netty for the inheriting app + plugin modules. -->
         <netty.version>4.2.16.Final</netty.version>
-        <tomcat.version>11.0.24</tomcat.version>
+        <tomcat.version>11.0.25</tomcat.version>
     </properties>
 
     <dependencyManagement>
