@@ -41,21 +41,21 @@
                 <scope>import</scope>
             </dependency>
             <!-- No SB parent, so service/pom.xml's tomcat override doesn't reach here — pin
-                 tomcat-embed explicitly. 11.0.24 clears CVE-2026-59084/59083 over SB 4.1.0's 11.0.22. -->
+                 tomcat-embed explicitly. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>11.0.24</version>
+                <version>11.0.25</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-el</artifactId>
-                <version>11.0.24</version>
+                <version>11.0.25</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>11.0.24</version>
+                <version>11.0.25</version>
             </dependency>
             <!-- No SB parent, so netty isn't managed here; awssdk:netty-nio-client would otherwise pull
                  its own older netty. Pin to 4.2.16 to match the app and clear the HIGH CVEs SB 4.1.0's
