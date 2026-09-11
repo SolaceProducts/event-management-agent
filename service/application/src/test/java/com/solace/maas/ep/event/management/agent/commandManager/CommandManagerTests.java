@@ -98,7 +98,6 @@ class CommandManagerTests {
     private EventPortalProperties eventPortalProperties;
 
     private static final String MESSAGING_SERVICE_ID = "myMessagingServiceId";
-    private static final ThreadPoolTaskExecutor testThreadPool = new ThreadPoolTaskExecutor();
 
     @BeforeEach
     public void cleanup() {

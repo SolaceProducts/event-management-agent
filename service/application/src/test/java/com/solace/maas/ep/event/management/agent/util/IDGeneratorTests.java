@@ -56,7 +56,7 @@ public class IDGeneratorTests {
 
         assertThat(nameId).hasSize(32);
 
-        String newNameId = idGenerator.generateDeterministicId(null);
+        String newNameId = idGenerator.generateDeterministicId((String[]) null);
         assertThat(newNameId).isEmpty();
     }
 

@@ -4,9 +4,25 @@
         Event Management agent custom rule set.
     </description>
 
-    <!-- PMD 7 (maven-pmd-plugin 3.28.0): rules renamed from their PMD 6 names, and
-         rules newly introduced by PMD 7 excluded to keep the pre-upgrade lint baseline.
-         Revisit the newly-excluded rules separately from the Java 25 upgrade. -->
+    <!-- PMD 7 (maven-pmd-plugin 3.28.0): the excludes below keep the pre-upgrade lint
+         baseline. They fall into three buckets:
+
+         1. Renames of rules already excluded under PMD 6 - no behavioural change
+            (NonExhaustiveSwitch, UnitTest*, TooFewBranchesForSwitch).
+
+         2. Rules introduced by PMD 7, deferred for now (LambdaCanBeMethodReference,
+            AvoidSynchronizedStatement, ImplicitFunctionalInterface,
+            UnnecessaryWarningSuppression, RelianceOnDefaultCharset,
+            TypeParameterNamingConventions, VariableCanBeInlined, UselessPureMethodCall).
+
+         3. Long-standing PMD 6 rules that only started reporting violations here because
+            PMD 7's reworked type resolution makes them fire where PMD 6 did not
+            (LooseCoupling, BooleanGetMethodName, UnnecessaryFullyQualifiedName,
+            SimplifyBooleanReturns, CouplingBetweenObjects, ExcessivePublicCount,
+            ExceptionAsFlowControl, ImmutableField, AvoidThrowingNewInstanceOfSameException,
+            DataClass). These are pre-existing checks being deferred, not new rules.
+
+         Revisit buckets 2 and 3 separately from the Java 25 upgrade. -->
 
     <rule ref="category/java/bestpractices.xml">
         <description>
@@ -96,20 +112,26 @@
         <description>
             Rules to detect constructs that are either broken, extremely confusing or prone to runtime errors.
         </description>
-        <exclude name="AssignmentInOperand"/>
+        <exclude name="AssignmentInOperand"/> <!-- re-added below, configured -->
         <exclude name="AvoidCatchingThrowable"/>
         <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="AvoidUsingOctalValues"/>
-        <exclude name="CloseResource"/>
-        <exclude name="ConstructorCallsOverridableMethod"/>
         <exclude name="DetachedTestCase"/>
         <exclude name="EmptyCatchBlock"/>
-        <exclude name="InvalidLogMessageFormat"/>
         <exclude name="MissingSerialVersionUID"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <exclude name="UselessPureMethodCall"/>
+    </rule>
+
+    <!-- AssignmentInOperand is enforced, but the canonical read loop
+         "while ((line = reader.readLine()) != null)" is idiomatic Java, not a defect,
+         so only assignments in if/return/ternary operands are reported. -->
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowWhile" value="true"/>
+        </properties>
     </rule>
 
     <rule ref="category/java/multithreading.xml">

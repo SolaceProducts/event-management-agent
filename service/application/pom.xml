@@ -508,6 +508,12 @@
                             <rulesets>
                                 <ruleset>../resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
+                            <!-- PMD runs after generate-sources, so the generated
+                                 source roots (swagger client, annotation processors) are
+                                 on the source path; they are not ours to lint. -->
+                            <excludeRoots>
+                                <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+                            </excludeRoots>
                             <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>

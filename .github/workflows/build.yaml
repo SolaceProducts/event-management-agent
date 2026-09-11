@@ -69,7 +69,9 @@ jobs:
           echo "DOCKER_PUSH=$DOCKER_PUSH" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
       - name: Static Code Analysis
-        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+        # process-test-classes (not compile) so PMD runs with main and test classes
+        # compiled: PMD 7 resolves types against them. See pmd.phase in service/pom.xml.
+        run: mvn -B process-test-classes -Pmaas-static-code-analysis --file service/pom.xml
       - name: Unit Tests
         run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
       - name: Generate Artifacts

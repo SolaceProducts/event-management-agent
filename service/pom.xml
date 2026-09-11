@@ -33,7 +33,11 @@
         <checkstyle.version>10.26.1</checkstyle.version>
         <checkstyle.phase>validate</checkstyle.phase>
         <pmd.plugin.version>3.28.0</pmd.plugin.version>
-        <pmd.phase>validate</pmd.phase>
+        <!-- PMD 7 resolves types against the compiled classes, so it must run after
+             compilation: at validate the type-resolution rules (CloseResource,
+             ConstructorCallsOverridableMethod, InvalidLogMessageFormat, ...) either find
+             nothing or report false positives on classes they cannot resolve. -->
+        <pmd.phase>process-test-classes</pmd.phase>
         <spotbugs.plugin.version>4.10.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
         <spotbugs.version>4.10.3</spotbugs.version>
@@ -374,6 +378,12 @@
                             <rulesets>
                                 <ruleset>resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
+                            <!-- PMD runs after generate-sources, so the generated
+                                 source roots (swagger client, annotation processors) are
+                                 on the source path; they are not ours to lint. -->
+                            <excludeRoots>
+                                <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+                            </excludeRoots>
                             <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>

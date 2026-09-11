@@ -89,6 +89,17 @@ public abstract class MOPMessage implements Serializable {
     // Strategies
     private AckStrategy ackStrategy;
 
+    // setTraceId/setActorId are declared explicitly (Lombok skips generating a setter that already
+    // exists) so that they are final: subclass constructors call them, and calling an overridable
+    // method during construction is a real init-order hazard (PMD ConstructorCallsOverridableMethod).
+    public final void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
+    public final void setActorId(String actorId) {
+        this.actorId = actorId;
+    }
+
     public MOPSvcType getOrigType() {
         return origSvcType;
     }
@@ -97,67 +108,67 @@ public abstract class MOPMessage implements Serializable {
         origSvcType = origType;
     }
 
-    public MOPMessage withCorrelationId(String correlationId) {
+    public final MOPMessage withCorrelationId(String correlationId) {
         this.correlationId = correlationId;
         return this;
     }
 
-    public MOPMessage isReplyMessage(Boolean isReplyMessage) {
+    public final MOPMessage isReplyMessage(Boolean isReplyMessage) {
         this.isReplyMessage = isReplyMessage;
         return this;
     }
 
-    public MOPMessage withPriority(int priority) {
+    public final MOPMessage withPriority(int priority) {
         msgPriority = priority;
         return this;
     }
 
-    public MOPMessage withVersion(String version) {
+    public final MOPMessage withVersion(String version) {
         mopVer = version;
         return this;
     }
 
-    public MOPMessage withProtocol(MOPProtocol protocol) {
+    public final MOPMessage withProtocol(MOPProtocol protocol) {
         mopProtocol = protocol;
         return this;
     }
 
-    public MOPMessage withMessageType(MOPMessageType messageType) {
+    public final MOPMessage withMessageType(MOPMessageType messageType) {
         mopMsgType = messageType;
         return this;
     }
 
-    public MOPMessage withUhFlag(MOPUHFlag uhFlag) {
+    public final MOPMessage withUhFlag(MOPUHFlag uhFlag) {
         msgUh = uhFlag;
         return this;
     }
 
-    public MOPMessage withOrigId(String origId) {
+    public final MOPMessage withOrigId(String origId) {
         origSvcId = origId;
         return this;
     }
 
-    public MOPMessage withOrigSvcType(MOPSvcType svcType) {
+    public final MOPMessage withOrigSvcType(MOPSvcType svcType) {
         origSvcType = svcType;
         return this;
     }
 
-    public MOPMessage withOrigSvcId(String origSvcId) {
+    public final MOPMessage withOrigSvcId(String origSvcId) {
         this.origSvcId = origSvcId;
         return this;
     }
 
-    public MOPMessage withOrigMailbox(String origMailbox) {
+    public final MOPMessage withOrigMailbox(String origMailbox) {
         origSvcMailbox = origMailbox;
         return this;
     }
 
-    public MOPMessage withOrigProvider(String origProvider) {
+    public final MOPMessage withOrigProvider(String origProvider) {
         this.origProvider = origProvider;
         return this;
     }
 
-    public MOPMessage withOrigDcId(String dcId) {
+    public final MOPMessage withOrigDcId(String dcId) {
         origDcId = dcId;
         return this;
     }
