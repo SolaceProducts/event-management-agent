@@ -33,10 +33,6 @@
         <checkstyle.version>10.26.1</checkstyle.version>
         <checkstyle.phase>validate</checkstyle.phase>
         <pmd.plugin.version>3.28.0</pmd.plugin.version>
-        <!-- PMD 7 resolves types against the compiled classes, so it must run after
-             compilation: at validate the type-resolution rules (CloseResource,
-             ConstructorCallsOverridableMethod, InvalidLogMessageFormat, ...) either find
-             nothing or report false positives on classes they cannot resolve. -->
         <pmd.phase>process-test-classes</pmd.phase>
         <spotbugs.plugin.version>4.10.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
