@@ -405,7 +405,7 @@ public class NegativeTerraformEVMRConnectedTests {
                 .flatMap(List::stream)
                 .toList();
         results.forEach(result -> {
-            if (result != JobStatus.success) {
+            if (result != JobStatus.SUCCESS) {
                 throw new RuntimeException("JobStatus was not success");
             }
         });
@@ -420,7 +420,7 @@ public class NegativeTerraformEVMRConnectedTests {
                 .flatMap(List::stream)
                 .toList();
         results.forEach(result -> {
-            if (result != JobStatus.error) {
+            if (result != JobStatus.ERROR) {
                 throw new RuntimeException("JobStatus was not success");
             }
         });

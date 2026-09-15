@@ -19,7 +19,7 @@ public class TerraformLogProcessingServiceTest {
         ObjectMapper objectMapper = new ObjectMapper();
         TerraformLogProcessingService terraformLogProcessingService = new TerraformLogProcessingService(objectMapper);
         CommandResult result = terraformLogProcessingService.buildTfStateFileDeletionFailureResult(rootCause);
-        assertThat(result.getStatus()).isEqualTo(JobStatus.error);
+        assertThat(result.getStatus()).isEqualTo(JobStatus.ERROR);
         assertThat(result.getLogs().size()).isEqualTo(1);
         Map<String, Object> log = result.getLogs().get(0);
         assertThat(log.get("message")).isEqualTo("Failed removing Terraform state: rootCause");

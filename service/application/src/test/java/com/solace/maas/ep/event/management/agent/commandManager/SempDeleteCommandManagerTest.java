@@ -89,7 +89,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfile("default", "aclProfileName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -104,7 +104,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(aclProfileApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -119,7 +119,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfile("default", "aclProfileName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -134,7 +134,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfile("default", "aclProfileName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
     }
@@ -153,7 +153,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfilePublishTopicException("default", "aclProfileName", "smf", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -168,7 +168,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(aclProfileApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -184,7 +184,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfilePublishTopicException("default", "aclProfileName", "smf", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -199,7 +199,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfilePublishTopicException("default", "aclProfileName", "smf", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
     }
@@ -218,7 +218,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException("default", "aclProfileName", "smf", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -233,7 +233,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(aclProfileApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -249,7 +249,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException("default", "aclProfileName", "smf", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -265,7 +265,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileSubscribeTopicException("default", "aclProfileName", "smf", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
     }
@@ -284,7 +284,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -299,7 +299,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(aclProfileApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -315,7 +315,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -331,7 +331,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(aclProfileApi).deleteMsgVpnAclProfileClientConnectException("default", "aclProfileName", "1.2.3.4/32");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
     }
@@ -350,7 +350,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -365,7 +365,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(clientUsernameApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -380,7 +380,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -395,7 +395,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -414,7 +414,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -429,7 +429,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(clientUsernameApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -444,7 +444,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -459,7 +459,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(clientUsernameApi).deleteMsgVpnClientUsername("default", "clientUsername");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -477,7 +477,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(authorizationGroupApi).deleteMsgVpnAuthorizationGroup("default", "authorizationGroupName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -492,7 +492,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(authorizationGroupApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -507,7 +507,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(authorizationGroupApi).deleteMsgVpnAuthorizationGroup("default", "authorizationGroupName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -522,7 +522,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(authorizationGroupApi).deleteMsgVpnAuthorizationGroup("default", "authorizationGroupName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
     }
@@ -541,7 +541,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(queueApi).deleteMsgVpnQueue("default", "someQueueName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -556,7 +556,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(queueApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -571,7 +571,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(queueApi).deleteMsgVpnQueue("default", "someQueueName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -586,7 +586,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(queueApi).deleteMsgVpnQueue("default", "someQueueName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -604,7 +604,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -619,7 +619,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -635,7 +635,7 @@ public class SempDeleteCommandManagerTest {
 
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(queueApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -650,7 +650,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(queueApi).deleteMsgVpnQueueSubscription("default", "someQueueName", "a/b/c");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
     }
@@ -669,7 +669,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPoint("default", "someRdp");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -684,7 +684,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -699,7 +699,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPoint("default", "someRdp");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -714,7 +714,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPoint("default", "someRdp");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -733,7 +733,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumer("default", "someRdp", "someRestConsumerName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -748,7 +748,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -763,7 +763,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumer("default", "someRdp", "someRestConsumerName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -779,7 +779,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointRestConsumer("default", "someRdp", "someRestConsumerName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -809,7 +809,7 @@ public class SempDeleteCommandManagerTest {
                     "someRestConsumerName",
                     "someOauthJwtClaimName"
             );
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -829,7 +829,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -854,7 +854,7 @@ public class SempDeleteCommandManagerTest {
                     "someRestConsumerName",
                     "someOauthJwtClaimName"
             );
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -879,7 +879,7 @@ public class SempDeleteCommandManagerTest {
                     "someRestConsumerName",
                     "someOauthJwtClaimName"
             );
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -897,7 +897,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBinding("default", "someRdp", "someQueueBindingName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -912,7 +912,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -927,7 +927,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBinding("default", "someRdp", "someQueueBindingName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -943,7 +943,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBinding("default", "someRdp", "someQueueBindingName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -962,7 +962,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -977,7 +977,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -992,7 +992,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -1008,7 +1008,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -1024,7 +1024,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 
@@ -1042,7 +1042,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -1057,7 +1057,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -1073,7 +1073,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         }
 
         @Test
@@ -1089,7 +1089,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
 
         @Test
@@ -1105,7 +1105,7 @@ public class SempDeleteCommandManagerTest {
                     .build();
             sempDeleteCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
         }
     }
 

@@ -87,7 +87,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
         String mopMessageSubclass = "";
         MessageProcessor processor = null;
         Object message = null;
-        String status = JobStatus.success.name();
+        String status = JobStatus.SUCCESS.name();
         Instant startTime = Instant.now();
         try {
             mopMessageSubclass = inboundMessage.getProperty(MOPConstants.MOP_MSG_META_DECODER);
@@ -106,7 +106,7 @@ public class SolacePersistentMessageHandler extends BaseSolaceMessageHandler imp
                 notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.PROCESSOR_COMPLETED,inboundMessage);
             }
         } catch (Exception e) {
-            status = JobStatus.error.name();
+            status = JobStatus.ERROR.name();
             handleProcessingError(mopMessageSubclass, processor, message, e);
             notifyPersistentMessageHandlerObserver(PersistentMessageHandlerObserverPhase.FAILED,inboundMessage);
         } finally {

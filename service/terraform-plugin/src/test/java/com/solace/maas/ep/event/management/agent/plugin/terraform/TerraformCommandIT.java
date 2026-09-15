@@ -179,7 +179,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.success, result.getStatus());
+                assertEquals(JobStatus.SUCCESS, result.getStatus());
                 assertTrue(result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
                 assertTrue(result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
                 assertAllLogsContainExpectedFields(result.getLogs());
@@ -224,7 +224,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.success, result.getStatus());
+                assertEquals(JobStatus.SUCCESS, result.getStatus());
                 assertTrue(result.getLogs().get(2).get("message").toString().contains("Creation complete after"));
                 assertTrue(result.getLogs().get(3).get("message").toString().contains("Creation complete after"));
                 assertAllLogsContainExpectedFields(result.getLogs());
@@ -286,7 +286,7 @@ public class TerraformCommandIT {
         // The first command should be failed, the second should not be executed
         // so the result is not set
         CommandResult result = terraformRequest.getCommandBundles().get(0).getCommands().get(0).getResult();
-        assertEquals(JobStatus.error, result.getStatus());
+        assertEquals(JobStatus.ERROR, result.getStatus());
         assertAllLogsContainExpectedFields(result.getLogs());
         verify(terraformClient, times(0)).apply(any());
 
@@ -320,7 +320,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.error, result.getStatus());
+                assertEquals(JobStatus.ERROR, result.getStatus());
                 List<Map<String, Object>> errorLogs = result.getLogs().stream()
                         .filter(log -> log.get("level").equals("ERROR"))
                         .toList();
@@ -346,7 +346,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.error, result.getStatus());
+                assertEquals(JobStatus.ERROR, result.getStatus());
                 assertTrue(result.getLogs().get(0).get("errorType").toString().contains("java.lang.IllegalArgumentException"));
                 assertTrue(result.getLogs().get(0).get("message").toString().contains("Missing Content-Encoding property in command parameters."));
                 assertAllLogsContainExpectedFields(result.getLogs());
@@ -378,7 +378,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.error, result.getStatus());
+                assertEquals(JobStatus.ERROR, result.getStatus());
                 assertTrue(result.getLogs().get(0).get("errorType").toString().contains("java.lang.IllegalArgumentException"));
                 assertTrue(result.getLogs().get(0).get("message").toString().contains("No terraform logs were collected. Unable to process response."));
                 assertAllLogsContainExpectedFields(result.getLogs());
@@ -401,7 +401,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.error, result.getStatus());
+                assertEquals(JobStatus.ERROR, result.getStatus());
                 assertTrue(result.getLogs().get(0).get("errorType").toString().contains("java.lang.IllegalArgumentException"));
                 assertTrue(result.getLogs().get(0).get("message").toString().contains("Unsupported command appply"));
                 assertAllLogsContainExpectedFields(result.getLogs());
@@ -464,7 +464,7 @@ public class TerraformCommandIT {
             for (Command tfCommand : commandBundle.getCommands()) {
 
                 CommandResult result = tfCommand.getResult();
-                assertEquals(JobStatus.success, result.getStatus());
+                assertEquals(JobStatus.SUCCESS, result.getStatus());
                 assertTrue(result.getLogs().get(2).get("message").toString().contains("Destruction complete after"));
                 assertTrue(result.getLogs().get(3).get("message").toString().contains("Destruction complete after"));
                 assertAllLogsContainExpectedFields(result.getLogs());

@@ -54,7 +54,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
             validate(command, sempApiProvider);
             executeSempCommand(command, sempApiProvider);
             command.setResult(CommandResult.builder()
-                    .status(JobStatus.success)
+                    .status(JobStatus.SUCCESS)
                     .logs(List.of(Map.of(
                             "message", "Resource found",
                             "level", "INFO",
@@ -150,7 +150,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
 
         command.setIgnoreResult(false);
         command.setResult(CommandResult.builder()
-                .status(JobStatus.validation_error)
+                .status(JobStatus.VALIDATION_ERROR)
                 .result(resultMap)
                 .logs(List.of(Map.of(
                         "message", errorMessage,

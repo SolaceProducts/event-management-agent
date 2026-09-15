@@ -73,7 +73,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
     }
 
     @Test
@@ -90,7 +90,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         verifyNoInteractions(clientProfileApi);
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
     }
 
     @Test
@@ -109,7 +109,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.validation_error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.VALIDATION_ERROR);
         assertThat(cmd.getResult().getResult()).containsKey(SempCommandConstants.VALIDATION_ERROR_MESSAGE);
     }
 
@@ -129,7 +129,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
     }
 
     @Test
@@ -150,7 +150,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         // Verify the command failed with error
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
     }
 
     @Test
@@ -171,7 +171,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         // Verify the command failed with error
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         // Check the logs for the error message
         assertThat(cmd.getResult().getLogs()).isNotEmpty();
         assertThat(cmd.getResult().getLogs().get(0).get("message"))
@@ -194,7 +194,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         // Verify the command failed with error
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         // Check the logs for the error message
         assertThat(cmd.getResult().getLogs()).isNotEmpty();
         assertThat(cmd.getResult().getLogs().get(0).get("message"))
@@ -221,7 +221,7 @@ class SempGetCommandManagerTest {
 
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
         assertThat(cmd.getResult().getLogs().get(0).get("message").toString())
                 .contains("Msg VPN must not be empty");
     }
@@ -243,7 +243,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.validation_error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.VALIDATION_ERROR);
     }
 
     @Test
@@ -350,7 +350,7 @@ class SempGetCommandManagerTest {
         sempGetCommandManager.execute(cmd, sempApiProvider);
 
         verify(clientProfileApi).getMsgVpnClientProfile(eq("default"), eq("testClientProfile"), any(), any());
-        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
     }
 
     private Map<String, Object> createClientProfileGetParameters(boolean valid) {

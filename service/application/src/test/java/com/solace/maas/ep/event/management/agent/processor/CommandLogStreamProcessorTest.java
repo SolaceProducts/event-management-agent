@@ -112,7 +112,7 @@ public class CommandLogStreamProcessorTest {
         ArgumentCaptor<CommandLogMessage> logMopCaptor = ArgumentCaptor.forClass(CommandLogMessage.class);
         applyCommand.setResult(
                 CommandResult.builder()
-                        .status(JobStatus.success)
+                        .status(JobStatus.SUCCESS)
                         .build()
         );
         realCommandLogStreamingProcessor.streamLogsToEP(
@@ -150,7 +150,7 @@ public class CommandLogStreamProcessorTest {
         ArgumentCaptor<CommandLogMessage> logMopCaptor = ArgumentCaptor.forClass(CommandLogMessage.class);
         applyCommand.setResult(
                 CommandResult.builder()
-                        .status(JobStatus.error)
+                        .status(JobStatus.ERROR)
                         .build()
         );
         realCommandLogStreamingProcessor.streamLogsToEP(

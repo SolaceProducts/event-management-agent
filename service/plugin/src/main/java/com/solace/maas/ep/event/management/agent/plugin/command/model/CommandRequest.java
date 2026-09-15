@@ -42,7 +42,7 @@ public class CommandRequest {
             hasAtLeastOneError = commandBundles.stream().anyMatch(bundle ->
                     bundle.getCommands().stream().anyMatch(Command::hasSignificantErrorResult));
         }
-        setStatus(hasAtLeastOneError ? JobStatus.error : JobStatus.success);
+        setStatus(hasAtLeastOneError ? JobStatus.ERROR : JobStatus.SUCCESS);
     }
 
 }

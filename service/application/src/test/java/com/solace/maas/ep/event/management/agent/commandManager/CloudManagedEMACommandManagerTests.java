@@ -97,7 +97,7 @@ class CloudManagedEMACommandManagerTests {
         eventPortalProperties.setOrganizationId(null);
         doAnswer((Answer<Path>) invocation -> {
             Command command = invocation.getArgument(1);
-            return CommandManagerTestHelper.setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
+            return CommandManagerTestHelper.setCommandStatusAndReturnExecutionLog(command, JobStatus.SUCCESS, true, basePath);
         }).when(terraformManager).execute(any(), any(), any());
 
         commandManager.execute(message);
@@ -117,7 +117,7 @@ class CloudManagedEMACommandManagerTests {
     void noLogsStreamingToEP(@TempDir Path basePath) {
         doAnswer((Answer<Path>) invocation -> {
             Command command = (Command) invocation.getArgument(1);
-            return CommandManagerTestHelper.setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
+            return CommandManagerTestHelper.setCommandStatusAndReturnExecutionLog(command, JobStatus.SUCCESS, true, basePath);
         }).when(terraformManager).execute(any(), any(), any());
 
         commandManager.execute(message);

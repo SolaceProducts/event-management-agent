@@ -22,7 +22,7 @@ public class Command {
 
     public boolean hasSignificantErrorResult() {
         if (!Boolean.TRUE.equals(ignoreResult) && result != null) {
-            return JobStatus.error.equals(result.getStatus());
+            return JobStatus.ERROR.equals(result.getStatus());
         }
         return false;
     }
