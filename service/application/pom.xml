@@ -13,7 +13,14 @@
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
     <properties>
-        <spring-boot.version>4.1.0</spring-boot.version>
+        <spring-boot.version>4.1.1</spring-boot.version>
+        <!-- SB 4.1.1 bumps logback 1.5.34 -> 1.5.38, which breaks the Janino <if>/<then>/<else>
+             conditional processing in logback-spring.xml (RollingFile's encoder never gets set,
+             failing every test that boots the Spring context). No CVE is fixed between 1.5.34 and
+             1.5.38 (checked GitHub security advisories — none exist for logback in this range), so
+             pinning back to the version SB 4.1.0 shipped is a safe compensating override until the
+             logback-spring.xml conditional is reworked to not rely on Janino. -->
+        <logback.version>1.5.34</logback.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spring-security-rsa.version>1.1.3</spring-security-rsa.version>
         <spring-kafka.version>3.3.16</spring-kafka.version>
@@ -45,6 +52,13 @@
                 <groupId>com.mchange</groupId>
                 <artifactId>mchange-commons-java</artifactId>
                 <version>0.6.1</version>
+            </dependency>
+            <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash);
+                 transitive via kafka-clients:3.9.2. DATAGO-147284. -->
+            <dependency>
+                <groupId>at.yawk.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>1.11.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -336,11 +350,9 @@
             <artifactId>okhttp</artifactId>
             <version>2.7.5</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.retry</groupId>
-            <artifactId>spring-retry</artifactId>
-            <version>2.0.5</version>
-        </dependency>
+        <!-- spring-retry: no explicit pin needed — spring-kafka:3.3.16 (below) already manages a fixed
+             2.0.13. A stale explicit 2.0.5 pin here was overriding that and reintroducing
+             CVE-2026-41710 (retry-cache exhaustion DoS, DATAGO-147287); removed. -->
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
