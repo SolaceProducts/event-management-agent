@@ -42,11 +42,6 @@
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>4.19.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
-        <!-- Override SB's default netty — SB 4.1.1 already manages 4.2.17.Final, so this pin is now
-             redundant with the parent BOM, but kept explicit (and bumped in lockstep) for clarity and
-             to match the hardcoded netty-bom pins in the 6 standalone plugin poms. Fixes CVE-2026-75595
-             (netty-handler, Critical) and CVE-2026-75596/CVE-2026-59903 (netty-handler/netty-codec-http,
-             Medium) — DATAGO-152127, DATAGO-147275. Manages netty for the inheriting app + plugin modules. -->
         <netty.version>4.2.17.Final</netty.version>
         <tomcat.version>11.0.25</tomcat.version>
     </properties>

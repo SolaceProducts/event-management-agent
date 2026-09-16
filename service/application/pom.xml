@@ -350,9 +350,6 @@
             <artifactId>okhttp</artifactId>
             <version>2.7.5</version>
         </dependency>
-        <!-- spring-retry: no explicit pin needed — spring-kafka:3.3.16 (below) already manages a fixed
-             2.0.13. A stale explicit 2.0.5 pin here was overriding that and reintroducing
-             CVE-2026-41710 (retry-cache exhaustion DoS, DATAGO-147287); removed. -->
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>

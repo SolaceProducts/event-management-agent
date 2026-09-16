@@ -58,8 +58,7 @@
                 <scope>import</scope>
             </dependency>
             <!-- camel-spring-boot-starter 4.19.0 drags an older spring-framework and wins mediation
-                 (no SB BOM here); force spring-* to SB 4.1.1's 7.0.9 (fixes the CVE-2026-478xx/-479xx/
-                 -59280-83/-59313 wave — DATAGO-151297/151298). -->
+                 (no SB BOM here); force spring-* to SB 4.1.1's 7.0.9 -->
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
