@@ -12,7 +12,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <lombok.version>1.18.46</lombok.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
-        <spring-boot.version>4.1.0</spring-boot.version>
+        <spring-boot.version>4.1.1</spring-boot.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -49,7 +49,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.2.16.Final</version>
+                <version>4.2.17.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
