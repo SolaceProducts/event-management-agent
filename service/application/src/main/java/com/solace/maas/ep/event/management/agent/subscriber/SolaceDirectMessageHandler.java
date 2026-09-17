@@ -21,7 +21,7 @@ public abstract class SolaceDirectMessageHandler<T extends MOPMessage> extends B
         solaceSubscriber.registerMessageHandler(this);
     }
 
-    public String getTopicString() {
+    public final String getTopicString() {
         return topicString;
     }
 

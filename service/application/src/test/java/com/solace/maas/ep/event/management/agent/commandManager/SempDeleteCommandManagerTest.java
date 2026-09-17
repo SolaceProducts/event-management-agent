@@ -58,9 +58,9 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestConfig.class)
 public class SempDeleteCommandManagerTest {
 
-    private final static String DIR_SEMP_RESOURCES = "src/test/resources/sempResponses/";
-    private final static String SEMP_RESPONSE_MISSING_RESOURCE = "sempResponseMissingResource.json";
-    private final static String SEMP_RESPONSE_INVALID_PARAMETER = "sempResponseInvalidParameter.json";
+    private static final String DIR_SEMP_RESOURCES = "src/test/resources/sempResponses/";
+    private static final String SEMP_RESPONSE_MISSING_RESOURCE = "sempResponseMissingResource.json";
+    private static final String SEMP_RESPONSE_INVALID_PARAMETER = "sempResponseInvalidParameter.json";
 
     @MockitoSpyBean
     private SempDeleteCommandManager sempDeleteCommandManager;

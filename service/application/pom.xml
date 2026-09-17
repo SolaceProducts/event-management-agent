@@ -495,6 +495,13 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
                         <version>${checkstyle.plugin.version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>${checkstyle.version}</version>
+                            </dependency>
+                        </dependencies>
                         <configuration>
                             <failOnViolation>true</failOnViolation>
                             <failsOnError>true</failsOnError>
@@ -510,6 +517,12 @@
                             <rulesets>
                                 <ruleset>../resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
+                            <!-- PMD runs after generate-sources, so the generated
+                                 source roots (swagger client, annotation processors) are
+                                 on the source path; they are not ours to lint. -->
+                            <excludeRoots>
+                                <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+                            </excludeRoots>
                             <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>

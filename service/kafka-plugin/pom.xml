@@ -8,8 +8,9 @@
     <name>Solace Event Management Agent - Kafka Plugin</name>
     <description>Solace Event Management Agent - Kafka Plugin</description>
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <lombok.version>1.18.46</lombok.version>
         <spring-kafka.version>3.3.16</spring-kafka.version>
         <!-- spring-kafka 3.3.x drags micrometer 1.14.x, which this module's shade bundles; on the SB
              4.1.0 classpath that old copy shadows micrometer 1.17.0 and boots fail with NoSuchMethodError
@@ -178,6 +179,22 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- JDK 23+ no longer runs annotation processors found on the classpath
+                         (javac defaults to -proc:none for discovery). These modules have no
+                         parent POM, so Lombok must be declared explicitly here. -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

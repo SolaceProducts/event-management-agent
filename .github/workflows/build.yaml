@@ -46,10 +46,10 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
           lfs: true
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
         with:
-          java-version: 17
+          java-version: 25
           distribution: 'temurin'
           cache: 'maven'
       - name: Set Build Params
@@ -69,7 +69,9 @@ jobs:
           echo "DOCKER_PUSH=$DOCKER_PUSH" >> $GITHUB_ENV
           echo "GITHUB_PACKAGES_DEPLOY=$GITHUB_PACKAGES_DEPLOY" >> $GITHUB_ENV
       - name: Static Code Analysis
-        run: mvn -B compile -Pmaas-static-code-analysis --file service/pom.xml
+        # process-test-classes (not compile) so PMD runs with main and test classes
+        # compiled: PMD 7 resolves types against them. See pmd.phase in service/pom.xml.
+        run: mvn -B process-test-classes -Pmaas-static-code-analysis --file service/pom.xml
       - name: Unit Tests
         run: mvn -B test $SKIP_FLAGS_NON_UNIT_TESTS --file service/pom.xml
       - name: Generate Artifacts

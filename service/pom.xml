@@ -24,22 +24,24 @@
         <module>application</module>
     </modules>
     <properties>
-        <java.version>17</java.version>
+        <java.version>25</java.version>
         <project.git.directory>${project.basedir}/../.git</project.git.directory>
         <dockerTimestamp>${maven.build.timestamp}</dockerTimestamp>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <docker.parent.version>1.2.1</docker.parent.version>
-        <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
+        <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
+        <checkstyle.version>10.26.1</checkstyle.version>
         <checkstyle.phase>validate</checkstyle.phase>
-        <pmd.plugin.version>3.21.0</pmd.plugin.version>
-        <pmd.phase>validate</pmd.phase>
-        <spotbugs.plugin.version>4.7.3.0</spotbugs.plugin.version>
+        <pmd.plugin.version>3.28.0</pmd.plugin.version>
+        <pmd.phase>process-test-classes</pmd.phase>
+        <spotbugs.plugin.version>4.10.3.0</spotbugs.plugin.version>
         <spotbugs.phase>compile</spotbugs.phase>
-        <spotbugs.version>4.7.3</spotbugs.version>
-        <findsecbugs.version>1.10.1</findsecbugs.version>
+        <spotbugs.version>4.10.3</spotbugs.version>
+        <findsecbugs.version>1.14.0</findsecbugs.version>
         <logstash.version>6.6</logstash.version>
         <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
+        <jacoco.plugin.version>0.8.13</jacoco.plugin.version>
         <camel.version>4.19.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
         <netty.version>4.2.17.Final</netty.version>
@@ -129,7 +131,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.10</version>
+                    <version>${jacoco.plugin.version}</version>
                     <configuration>
                         <excludes>
                             <exclude>**/com/solace/client/sempv2/**</exclude>
@@ -297,6 +299,13 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${checkstyle.plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${checkstyle.version}</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
                         <configLocation>resources/checkstyle/checkstyle.xml</configLocation>
                         <suppressionsLocation>resources/checkstyle/checkstyle-supressions.xml</suppressionsLocation>
@@ -341,6 +350,13 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
                         <version>${checkstyle.plugin.version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>${checkstyle.version}</version>
+                            </dependency>
+                        </dependencies>
                         <configuration>
                             <failOnViolation>true</failOnViolation>
                             <failsOnError>true</failsOnError>
@@ -356,6 +372,9 @@
                             <rulesets>
                                 <ruleset>resources/pmd/pmd-rules.xml</ruleset>
                             </rulesets>
+                            <excludeRoots>
+                                <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+                            </excludeRoots>
                             <failOnViolation>true</failOnViolation>
                             <includeTests>true</includeTests>
                         </configuration>

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PluginLoader {
-    private final static Map<String, MessagingServiceRouteDelegate> scanDelegates = new LinkedCaseInsensitiveMap<>();
+    private static final Map<String, MessagingServiceRouteDelegate> scanDelegates = new LinkedCaseInsensitiveMap<>();
 
     public static void addPlugin(String id, MessagingServiceRouteDelegate scanDelegate) {
         scanDelegates.put(id, scanDelegate);

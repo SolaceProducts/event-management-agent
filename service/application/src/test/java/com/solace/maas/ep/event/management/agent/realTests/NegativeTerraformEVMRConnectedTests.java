@@ -105,19 +105,20 @@ public class NegativeTerraformEVMRConnectedTests {
         // On the valid Solace broker, create a read-only user with username "admin2" and password the same as the "SOLACE_SEMP_PASSWORD" environment variable
         // This is required for the "createQueueReadOnlyUserTest" test
         log.info("Creating user admin2 with R/O privileges");
-        HttpClient httpClient = HttpClient.newBuilder()
+        try (HttpClient httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
-                .build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString("{\"globalAccessLevel\":\"read-only\",\"msgVpnDefaultAccessLevel\":\"none\",\"password\":\"" +
-                        System.getenv("SOLACE_SEMP_PASSWORD") + "\",\"userName\":\"admin2\"}"))
-                .setHeader("Accept", "application/json")
-                .setHeader("Content-Type", "application/json")
-                .setHeader("Authorization", getBasicAuthenticationHeader(System.getenv("SOLACE_SEMP_USERNAME"),
-                        System.getenv("SOLACE_SEMP_PASSWORD")))
-                .uri(java.net.URI.create(System.getenv("SOLACE_SEMP_URL") + "/SEMP/v2/__private_config__/usernames"))
-                .build();
-        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                .build()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"globalAccessLevel\":\"read-only\",\"msgVpnDefaultAccessLevel\":\"none\",\"password\":\"" +
+                            System.getenv("SOLACE_SEMP_PASSWORD") + "\",\"userName\":\"admin2\"}"))
+                    .setHeader("Accept", "application/json")
+                    .setHeader("Content-Type", "application/json")
+                    .setHeader("Authorization", getBasicAuthenticationHeader(System.getenv("SOLACE_SEMP_USERNAME"),
+                            System.getenv("SOLACE_SEMP_PASSWORD")))
+                    .uri(java.net.URI.create(System.getenv("SOLACE_SEMP_URL") + "/SEMP/v2/__private_config__/usernames"))
+                    .build();
+            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        }
     }
 
     private static String getBasicAuthenticationHeader(String username, String password) {

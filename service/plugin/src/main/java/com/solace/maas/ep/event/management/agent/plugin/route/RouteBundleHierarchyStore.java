@@ -4,11 +4,12 @@ import lombok.Data;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Data
 public class RouteBundleHierarchyStore {
-    private static int storeKey;
+    private static final AtomicInteger STORE_KEY = new AtomicInteger();
     private Map<String, String> store;
 
     public RouteBundleHierarchyStore() {
@@ -16,6 +17,6 @@ public class RouteBundleHierarchyStore {
     }
 
     public static int getStoreKey() {
-        return storeKey++;
+        return STORE_KEY.getAndIncrement();
     }
 }
