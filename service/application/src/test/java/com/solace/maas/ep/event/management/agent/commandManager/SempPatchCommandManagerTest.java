@@ -71,7 +71,7 @@ public class SempPatchCommandManagerTest {
                     .build();
             sempPatchCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).updateMsgVpnRestDeliveryPointRestConsumer(eq("default"), eq("someRdp"), eq("someRdp REST Consumer"), any(), any(), any());
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
         }
 
         @Test
@@ -87,7 +87,7 @@ public class SempPatchCommandManagerTest {
                     .build();
             sempPatchCommandManager.execute(cmd, sempApiProvider);
             verifyNoInteractions(rdpApi);
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
         }
 
         @Test
@@ -103,7 +103,7 @@ public class SempPatchCommandManagerTest {
                     .build();
             sempPatchCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).updateMsgVpnRestDeliveryPointRestConsumer(eq("default"), eq("someRdp"), eq("someRdp REST Consumer"), any(), any(), any());
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.ERROR);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
         }
 
         @Test
@@ -119,7 +119,7 @@ public class SempPatchCommandManagerTest {
                     .build();
             sempPatchCommandManager.execute(cmd, sempApiProvider);
             verify(rdpApi).updateMsgVpnRestDeliveryPointRestConsumer(eq("default"), eq("someRdp"), eq("someRdp REST Consumer"), any(), any(), any());
-            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.SUCCESS);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
         }
 
     }

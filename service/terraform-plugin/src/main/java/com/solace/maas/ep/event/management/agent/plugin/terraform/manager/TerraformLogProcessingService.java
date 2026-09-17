@@ -45,7 +45,7 @@ public class TerraformLogProcessingService {
 
         return CommandResult.builder()
                 .logs(logs)
-                .status(JobStatus.ERROR)
+                .status(JobStatus.error)
                 .build();
     }
 
@@ -68,7 +68,7 @@ public class TerraformLogProcessingService {
                 .filter(this::isErrorLog)
                 .map(this::simplifyApplyErroredLog)
                 .toList();
-        JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.SUCCESS : JobStatus.ERROR;
+        JobStatus status = CollectionUtils.isEmpty(errorLogs) ? JobStatus.success : JobStatus.error;
 
         return CommandResult.builder()
                 .logs(ListUtils.union(successLogs, errorLogs))

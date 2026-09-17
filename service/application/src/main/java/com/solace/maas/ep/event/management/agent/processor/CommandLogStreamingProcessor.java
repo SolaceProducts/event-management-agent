@@ -155,8 +155,8 @@ public class CommandLogStreamingProcessor {
     }
 
     private enum LogStreamingConfiguration {
-        ERROR_CASE(JobStatus.ERROR, Set.of(ANY), Set.of(ANY)),
-        SUCCESS_CASE(JobStatus.SUCCESS, Set.of("info"), Set.of("change_summary"));
+        ERROR_CASE(JobStatus.error, Set.of(ANY), Set.of(ANY)),
+        SUCCESS_CASE(JobStatus.success, Set.of("info"), Set.of("change_summary"));
 
         private static final Map<JobStatus, LogStreamingConfiguration> CONFIG_BY_JOB_STATUS;
 

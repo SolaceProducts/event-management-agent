@@ -182,7 +182,7 @@ public class TerraformManager {
                 command.setResult(terraformLogProcessingService.buildTfCommandResult(output));
             } else {
                 command.setResult(CommandResult.builder()
-                        .status(JobStatus.SUCCESS)
+                        .status(JobStatus.success)
                         .logs(List.of())
                         .build());
             }

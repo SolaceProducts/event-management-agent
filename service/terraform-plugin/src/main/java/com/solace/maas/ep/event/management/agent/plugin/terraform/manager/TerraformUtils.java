@@ -55,7 +55,7 @@ public class TerraformUtils {
 
     public static void setCommandError(Command command, Exception e) {
         command.setResult(CommandResult.builder()
-                .status(JobStatus.ERROR)
+                .status(JobStatus.error)
                 .logs(List.of(
                         Map.of("message", e.getMessage(),
                                 "errorType", e.getClass().getName(),

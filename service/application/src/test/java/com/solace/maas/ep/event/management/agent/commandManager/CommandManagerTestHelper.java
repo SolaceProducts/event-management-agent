@@ -33,9 +33,9 @@ public final class CommandManagerTestHelper {
                                                              boolean ignoreResult,
                                                              Path basePath) {
 
-        if (targetStatus == JobStatus.SUCCESS) {
+        if (targetStatus == JobStatus.success) {
             targetCommand.setResult(CommandResult.builder()
-                    .status(JobStatus.SUCCESS)
+                    .status(JobStatus.success)
                     .result(Map.of()).build());
             return basePath.resolve(targetCommand.getCommand());
         } else {

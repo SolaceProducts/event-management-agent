@@ -26,7 +26,7 @@ public abstract class AbstractSempCommandManager {
             validate(command, sempApiProvider);
             executeSempCommand(command, sempApiProvider);
             command.setResult(CommandResult.builder()
-                    .status(JobStatus.SUCCESS)
+                    .status(JobStatus.success)
                     .logs(List.of())
                     .build());
             // not found is not an error and is already handled in handleSempApiDeleteException

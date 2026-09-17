@@ -78,16 +78,16 @@ public class TerraformClientRealTests {
     void create2OfTheSameQueue() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Future<List<CommandBundle>> future1 = executorService.submit(() ->
-                executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.SUCCESS));
+                executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.success));
         Future<List<CommandBundle>> future2 = executorService.submit(() ->
-                executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.ERROR));
+                executeTerraformCommand("addQueue.tf", "apply", "app123-consumer", JobStatus.error));
         // wait for the futures to complete
         try {
             List<CommandBundle> command1Bundles = future1.get();
             List<CommandBundle> command2Bundles = future2.get();
             // We expect the first one to succeed and the second one to fail
-            assertEquals(JobStatus.SUCCESS, command1Bundles.get(0).getCommands().get(0).getResult().getStatus());
-            assertEquals(JobStatus.ERROR, command2Bundles.get(0).getCommands().get(0).getResult().getStatus());
+            assertEquals(JobStatus.success, command1Bundles.get(0).getCommands().get(0).getResult().getStatus());
+            assertEquals(JobStatus.error, command2Bundles.get(0).getCommands().get(0).getResult().getStatus());
         } catch (Exception e) {
             log.error("Error waiting for futures to complete", e);
             fail();
@@ -152,7 +152,7 @@ public class TerraformClientRealTests {
             for (Command command : commandBundle.getCommands()) {
                 CommandResult result = command.getResult();
                 System.out.println("Logs " + result.getLogs());
-                assertNotSame(JobStatus.ERROR, result.getStatus());
+                assertNotSame(JobStatus.error, result.getStatus());
             }
         }
 
@@ -163,7 +163,7 @@ public class TerraformClientRealTests {
     }
 
     private List<CommandBundle> executeTerraformCommand(String hclFileName, String tfVerb, String context) {
-        return executeTerraformCommand(hclFileName, tfVerb, context, JobStatus.SUCCESS);
+        return executeTerraformCommand(hclFileName, tfVerb, context, JobStatus.success);
     }
 
     private List<CommandBundle> executeTerraformCommand(String hclFileName, String tfVerb, String context, JobStatus expectedJobStatus) {

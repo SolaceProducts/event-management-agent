@@ -291,7 +291,7 @@ public class CommandManager {
 
     private void handleUnknownCommandType(Command command) {
         command.setResult(CommandResult.builder()
-                .status(JobStatus.ERROR)
+                .status(JobStatus.error)
                 .logs(List.of(
                         Map.of("message", "unknown command type " + command.getCommandType(),
                                 "errorType", "UnknownCommandType",
@@ -346,8 +346,8 @@ public class CommandManager {
         return Boolean.TRUE.equals(exitEarlyOnFailedCommand)
                 && Boolean.FALSE.equals(command.getIgnoreResult())
                 && (command.getResult() == null
-                || command.getResult().getStatus() == JobStatus.ERROR
-                || command.getResult().getStatus() == JobStatus.VALIDATION_ERROR);
+                || command.getResult().getStatus() == JobStatus.error
+                || command.getResult().getStatus() == JobStatus.validation_error);
     }
 
 

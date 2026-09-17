@@ -191,7 +191,7 @@ class CommandManagerTests {
         // Check that we attempted to set Error in the response message
         messageArgCaptor.getAllValues().forEach(commandMessage -> {
             assert commandMessage.getCommandCorrelationId().equals(message.getCommandCorrelationId());
-            assert commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus().equals(JobStatus.ERROR);
+            assert commandMessage.getCommandBundles().get(0).getCommands().get(0).getResult().getStatus().equals(JobStatus.error);
         });
     }
 
@@ -211,7 +211,7 @@ class CommandManagerTests {
         ArgumentCaptor<CommandMessage> messageArgCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(messageArgCaptor.capture(), any());
 
-        assertEquals(JobStatus.ERROR, messageArgCaptor.getValue().getStatus());
+        assertEquals(JobStatus.error, messageArgCaptor.getValue().getStatus());
     }
 
     /**
@@ -270,7 +270,7 @@ class CommandManagerTests {
         assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
         assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
 
-        assertEquals(JobStatus.SUCCESS, responseCaptor.getValue().getStatus());
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
     }
 
     // configPush tries to delete tf-state directory for the given context before executing the commands.
@@ -292,7 +292,7 @@ class CommandManagerTests {
         ArgumentCaptor<Map<String, String>> topicVarsCaptor = ArgumentCaptor.forClass(Map.class);
         ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicVarsCaptor.capture());
-        assertEquals(JobStatus.ERROR, responseCaptor.getValue().getStatus());
+        assertEquals(JobStatus.error, responseCaptor.getValue().getStatus());
         assertEquals("Failed removing Terraform state directory",
                 responseCaptor.getValue().getCommandBundles().get(0).getCommands().get(0).getResult().getLogs().get(0).get("message"));
     }
@@ -313,7 +313,7 @@ class CommandManagerTests {
         ArgumentCaptor<Map<String, String>> topicVarsCaptor = ArgumentCaptor.forClass(Map.class);
         ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicVarsCaptor.capture());
-        assertEquals(JobStatus.SUCCESS, responseCaptor.getValue().getStatus());
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
 
     }
 
@@ -328,10 +328,10 @@ class CommandManagerTests {
         CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
 
         // Check top level status
-        assertEquals(JobStatus.ERROR, commandMessage.getStatus());
+        assertEquals(JobStatus.error, commandMessage.getStatus());
         CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
         // The first command in the bundle should be marked with error
-        assertEquals(JobStatus.ERROR, commandBundle.getCommands().get(0).getResult().getStatus());
+        assertEquals(JobStatus.error, commandBundle.getCommands().get(0).getResult().getStatus());
         // The rest of the commands should not be executed and have null results
         assertNull(commandBundle.getCommands().get(1).getResult());
         assertNull(commandBundle.getCommands().get(2).getResult());
@@ -351,14 +351,14 @@ class CommandManagerTests {
         CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
 
         // top level status should be success since we are ignoring the result of each command
-        assertEquals(JobStatus.SUCCESS, commandMessage.getStatus());
+        assertEquals(JobStatus.success, commandMessage.getStatus());
         verifyAllCommandsHaveErrorState(commandMessage);
     }
 
     private static void verifyAllCommandsHaveErrorState(CommandMessage commandMessage) {
         CommandBundle commandBundle = commandMessage.getCommandBundles().get(0);
         commandBundle.getCommands().forEach(command -> {
-            assertEquals(JobStatus.ERROR, command.getResult().getStatus());
+            assertEquals(JobStatus.error, command.getResult().getStatus());
         });
     }
 
@@ -373,7 +373,7 @@ class CommandManagerTests {
         CommandMessage commandMessage = (CommandMessage) mopMessageCaptor.getValue();
 
         // Check top level status
-        assertEquals(JobStatus.ERROR, commandMessage.getStatus());
+        assertEquals(JobStatus.error, commandMessage.getStatus());
         verifyAllCommandsHaveErrorState(commandMessage);
     }
 
@@ -520,7 +520,7 @@ class CommandManagerTests {
 
             doAnswer((Answer<Path>) invocation -> {
                 Command command = (Command) invocation.getArgument(1);
-                return setCommandStatusAndReturnExecutionLog(command, JobStatus.SUCCESS, true, basePath);
+                return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
             }).when(terraformManager).execute(any(), any(), any());
 
 
@@ -544,10 +544,10 @@ class CommandManagerTests {
                 Command command = (Command) invocation.getArgument(1);
                 // intentionally making the sync command return null path to test graceful cleanup
                 if (StringUtils.equals(command.getCommand(), "sync")) {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.ERROR, true, basePath);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, true, basePath);
 
                 } else {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.SUCCESS, true, basePath);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
                 }
             }).when(terraformManager).execute(any(), any(), any());
 
@@ -576,9 +576,9 @@ class CommandManagerTests {
                 Command command = (Command) invocation.getArgument(1);
                 // intentionally making the sync command return null path to test graceful cleanup
                 if (StringUtils.equals(command.getCommand(), "sync")) {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.ERROR, false, basePath);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.error, false, basePath);
                 } else {
-                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.SUCCESS, true, basePath);
+                    return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
                 }
             }).when(terraformManager).execute(any(), any(), any());
 
@@ -605,7 +605,7 @@ class CommandManagerTests {
         void testExecutionLogCleanupWhenLogStreamingToEpFails(@TempDir Path basePath) {
             doAnswer((Answer<Path>) invocation -> {
                 Command command = invocation.getArgument(1);
-                return setCommandStatusAndReturnExecutionLog(command, JobStatus.SUCCESS, true, basePath);
+                return setCommandStatusAndReturnExecutionLog(command, JobStatus.success, true, basePath);
             }).when(terraformManager).execute(any(), any(), any());
 
             doThrow(new IllegalArgumentException("fake")).when(commandLogStreamingProcessor).streamLogsToEP(any(), any(), any());
@@ -697,9 +697,9 @@ class CommandManagerTests {
                                                            boolean ignoreResult,
                                                            Path basePath) {
 
-            if (targetStatus == JobStatus.SUCCESS) {
+            if (targetStatus == JobStatus.success) {
                 targetCommand.setResult(CommandResult.builder()
-                        .status(JobStatus.SUCCESS)
+                        .status(JobStatus.success)
                         .result(Map.of()).build());
                 return basePath.resolve(targetCommand.getCommand());
             } else {
