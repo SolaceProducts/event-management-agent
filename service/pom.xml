@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.solace.maas</groupId>
@@ -42,9 +42,7 @@
         <jacoco.line.percentage>0.8</jacoco.line.percentage>
         <camel.version>4.19.0</camel.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
-        <!-- Override SB 4.1.0's default netty (4.2.15) — that patch still has HIGH netty CVEs
-             (http3 CVE-2026-56816 et al.). Manages netty for the inheriting app + plugin modules. -->
-        <netty.version>4.2.16.Final</netty.version>
+        <netty.version>4.2.17.Final</netty.version>
         <tomcat.version>11.0.25</tomcat.version>
     </properties>
 
