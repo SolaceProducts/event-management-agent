@@ -53,6 +53,17 @@
                 <artifactId>mchange-commons-java</artifactId>
                 <version>0.6.1</version>
             </dependency>
+            <!-- CVE-2026-55223: com.mchange:c3p0 < 0.14.0; transitive via
+                 camel-quartz-starter -> camel-quartz -> c3p0 (compile scope, resolves 0.12.0).
+                 Not exploitable here — c3p0 is never instantiated (Quartz runs on the default
+                 RAM job store, no JDBC datasource configured) — pinned for defense in depth.
+                 0.14.2 depends on mchange-commons-java 0.6.1, matching the pin above.
+                 DATAGO-138702. -->
+            <dependency>
+                <groupId>com.mchange</groupId>
+                <artifactId>c3p0</artifactId>
+                <version>0.14.2</version>
+            </dependency>
             <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash);
                  transitive via kafka-clients:3.9.2. DATAGO-147284. -->
             <dependency>
