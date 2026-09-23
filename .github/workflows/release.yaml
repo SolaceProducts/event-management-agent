@@ -144,7 +144,7 @@ jobs:
             -o "service/application/target/event-management-agent-$VERSION.jar"
           ls -la "service/application/target/event-management-agent-$VERSION.jar"
       - name: Changelog
-        uses: Bullrich/generate-release-changelog@master
+        uses: Bullrich/generate-release-changelog@6b60f004b4bf12ff271603dc32dbd261965ad2f2 # master
         id: Changelog
         env:
           REPO: ${{ github.repository }}
