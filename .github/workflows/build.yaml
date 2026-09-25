@@ -27,7 +27,7 @@ permissions:
 jobs:
   fossa_scan:
     name: FOSSA Scan
-    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@55aba02b3ed20d1ec61684f19d660425362c2cf4 # main
+    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@39f5811c93047096a778232e065bcad666661dce # main
     with:
       use_vault: false
       config_file: '.github/workflow-config.json'
@@ -179,7 +179,7 @@ jobs:
 
       - name: Update solace-cloud-manifest
         if: needs.Test_Build.outputs.image_tag != ''
-        uses: SolaceDev/solace-public-workflows/.github/actions/cicd-helper@55aba02b3ed20d1ec61684f19d660425362c2cf4 # main
+        uses: SolaceDev/solace-public-workflows/.github/actions/cicd-helper@39f5811c93047096a778232e065bcad666661dce # main
         with:
           rc_step: add_item_from_json_to_dynamodb_table
           ddb_table_name: solace-cloud-manifest
