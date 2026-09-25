@@ -121,7 +121,7 @@ jobs:
     name: FOSSA Scan
     needs: resolve-context
     if: ${{ !fromJSON(inputs.check_only) }}
-    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@55aba02b3ed20d1ec61684f19d660425362c2cf4 # main
+    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@39f5811c93047096a778232e065bcad666661dce # main
     permissions:
       contents: read          # For checkout in reusable workflow
       packages: read          # To pull fossa-guard composite action image from ghcr.io
@@ -198,7 +198,7 @@ jobs:
           echo "Confirmed ECR image: ${REPO_NAME}:${IMAGE_TAG}"
 
       - name: Run Prisma Cloud scan
-        uses: SolaceDev/solace-public-workflows/prisma-cloud-scan@55aba02b3ed20d1ec61684f19d660425362c2cf4 # main
+        uses: SolaceDev/solace-public-workflows/prisma-cloud-scan@39f5811c93047096a778232e065bcad666661dce # main
         with:
           image_registry: ${{ steps.login-ecr.outputs.registry }}
           image_repo: ${{ github.event.repository.name }}
@@ -292,7 +292,7 @@ jobs:
     steps:
       - name: Synchronize Guardian DB
         if: ${{ !fromJSON(inputs.check_only) }}
-        uses: SolaceDev/solace-public-workflows/guardian-db-sync@55aba02b3ed20d1ec61684f19d660425362c2cf4 # main
+        uses: SolaceDev/solace-public-workflows/guardian-db-sync@39f5811c93047096a778232e065bcad666661dce # main
         with:
           guardian-url: ${{ secrets.GUARDIAN_API_URL }}
           guardian-key: ${{ secrets.GUARDIAN_API_TOKEN || secrets.GUARDIAN_API_KEY }}
@@ -304,7 +304,7 @@ jobs:
       - name: Evaluate Guardian vulnerability gate
         id: gate
         continue-on-error: true
-        uses: SolaceDev/solace-public-workflows/guardian-vulnerability-gate@55aba02b3ed20d1ec61684f19d660425362c2cf4 # main
+        uses: SolaceDev/solace-public-workflows/guardian-vulnerability-gate@39f5811c93047096a778232e065bcad666661dce # main
         with:
           guardian-url: ${{ secrets.GUARDIAN_API_URL }}
           guardian-key: ${{ secrets.GUARDIAN_API_TOKEN || secrets.GUARDIAN_API_KEY }}
