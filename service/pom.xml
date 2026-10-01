@@ -53,7 +53,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.84</version>
+                <version>1.85</version>
             </dependency>
             <!-- Fix CVE-2025-48924: commons-lang3 uncontrolled recursion (override Spring Boot BOM 3.17.0) -->
             <dependency>
