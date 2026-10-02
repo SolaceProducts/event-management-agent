@@ -27,7 +27,7 @@ permissions:
 jobs:
   fossa_scan:
     name: FOSSA Scan
-    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@668d31d070ebdbbb5d6f2bdd13d406697055ae3c # main
+    uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
     with:
       use_vault: false
       config_file: '.github/workflow-config.json'
