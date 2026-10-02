@@ -70,7 +70,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                 log.warn(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
                 setCommandError(command, e);
             } else {
-                log.error(SEMP_COMMAND_NOT_EXECUTED_SUCCESSFULLY, supportedSempCommand(), e);
+                logSempCommandError(e);
                 setCommandError(command, e);
             }
         } catch (Exception e) {
