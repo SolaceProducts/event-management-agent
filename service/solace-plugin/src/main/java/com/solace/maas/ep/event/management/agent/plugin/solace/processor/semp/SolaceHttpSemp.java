@@ -105,7 +105,8 @@ public class SolaceHttpSemp {
         } catch (WebClientResponseException ex) {
             if (ex.getStatusCode() == BAD_REQUEST) {
                 log.error("Error during SEMP Data Collection. Invalid path to data." +
-                        " Check that the SEMP URL and protocol are correct.", ex);
+                        " Check that the SEMP URL, protocol and message VPN are correct. SEMP response: {}",
+                        ex.getResponseBodyAsString(), ex);
                 throw new PluginClientException(ex);
             } else if (ex.getStatusCode() == UNAUTHORIZED) {
                 log.error("Error during SEMP Data Collection. Could not authenticate with the server." +
