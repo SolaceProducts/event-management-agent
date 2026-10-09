@@ -21,7 +21,7 @@
         <jupiter.version>6.0.3</jupiter.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <jackson.version>2.21.5</jackson.version>
+        <jackson.version>2.21.7</jackson.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -29,6 +29,15 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Jackson 3 arrives transitively via spring-boot-starter-jackson at 3.1.5; pin to 3.1.7
+                 (CVE-2026-68497/91776/91777/89407/89425, DATAGO-155015, 155429). -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>3.1.7</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
