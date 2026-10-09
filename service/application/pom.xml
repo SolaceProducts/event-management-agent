@@ -65,11 +65,11 @@
                 <version>0.14.2</version>
             </dependency>
             <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash);
-                 transitive via kafka-clients:3.9.2. DATAGO-147284. -->
+                 transitive via kafka-clients:3.9.2. DATAGO-147284, DATAGO-156208 (CVE-2026-106451/106450, fixed in 1.11.4). -->
             <dependency>
                 <groupId>at.yawk.lz4</groupId>
                 <artifactId>lz4-java</artifactId>
-                <version>1.11.3</version>
+                <version>1.11.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
