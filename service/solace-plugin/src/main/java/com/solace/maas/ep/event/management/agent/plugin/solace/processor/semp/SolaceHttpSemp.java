@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.solace.maas.ep.event.management.agent.plugin.exception.PluginClientException;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
@@ -83,6 +84,8 @@ public class SolaceHttpSemp {
     private Map<String, Object> getResultsFlatFromSemp(String uriPath) {
         try {
             return getSempFlatRequest(createFlatUriBuilderFunction(uriPath, Collections.emptyMap()));
+        } catch (WebClientResponseException ex) {
+            throw handleResponseException(ex);
         } catch (IOException ioException) {
             log.error("Error during SEMP Data Collection", ioException);
             throw new PluginClientException(ioException);
@@ -103,18 +106,7 @@ public class SolaceHttpSemp {
         try {
             getSempListRequest(sempObject, createUriBuilderFunction(uriPath, substitutionMap, selectFields));
         } catch (WebClientResponseException ex) {
-            if (ex.getStatusCode() == BAD_REQUEST) {
-                log.error("Error during SEMP Data Collection. Invalid path to data." +
-                        " Check that the SEMP URL and protocol are correct.", ex);
-                throw new PluginClientException(ex);
-            } else if (ex.getStatusCode() == UNAUTHORIZED) {
-                log.error("Error during SEMP Data Collection. Could not authenticate with the server." +
-                        "Check that the SEMP username and password are correct.", ex);
-                throw new PluginClientException(ex);
-            } else {
-                log.error("Error during SEMP Data Collection.", ex);
-                throw new PluginClientException(ex);
-            }
+            throw handleResponseException(ex);
         } catch (IOException ioException) {
             log.error("Error during SEMP Data Collection. The format of the collected data is unexpected.", ioException);
             throw new PluginClientException(ioException);
@@ -129,6 +121,48 @@ public class SolaceHttpSemp {
             throw new PluginClientException(requestException);
         }
         return sempObject;
+    }
+
+    private PluginClientException handleResponseException(WebClientResponseException ex) {
+        String sempError = describeSempError(ex);
+        if (ex.getStatusCode() == BAD_REQUEST) {
+            log.error("Error during SEMP Data Collection. The broker rejected the request with 400 Bad Request. {}", sempError, ex);
+            return new PluginClientException("SEMP request failed with 400 Bad Request. " + sempError, ex);
+        } else if (ex.getStatusCode() == UNAUTHORIZED) {
+            log.error("Error during SEMP Data Collection. Could not authenticate with the server. " +
+                    "Check that the SEMP username and password are correct. {}", sempError, ex);
+            return new PluginClientException(ex);
+        }
+        log.error("Error during SEMP Data Collection. {}", sempError, ex);
+        return new PluginClientException(ex);
+    }
+
+    /**
+     * Builds a description of a failed SEMP call from the response body (meta.error.code, status and description)
+     * and the full request URL including the query string, which WebClientResponseException's message omits.
+     */
+    public String describeSempError(WebClientResponseException ex) {
+        String url = ex.getRequest() != null ? ex.getRequest().getURI().toString() : null;
+        String error = null;
+        try {
+            JsonNode meta = objectMapper.readTree(ex.getResponseBodyAsString()).path("meta");
+            JsonNode errorNode = meta.path("error");
+            if (!errorNode.isMissingNode()) {
+                error = String.format("SEMP error %s (%s): %s.",
+                        errorNode.path("code").asText("unknown"),
+                        errorNode.path("status").asText("unknown"),
+                        errorNode.path("description").asText("no description"));
+            }
+            if (url == null) {
+                url = meta.path("request").path("uri").asText(null);
+            }
+        } catch (IOException | RuntimeException parseException) {
+            log.debug("Could not parse SEMP error response body", parseException);
+        }
+        if (error == null) {
+            error = "No SEMP error details in response body.";
+        }
+        return error + " URL: " + (url != null ? url : "unknown");
     }
 
     public Function<UriBuilder, URI> createUriBuilderFunction(String uriPath,

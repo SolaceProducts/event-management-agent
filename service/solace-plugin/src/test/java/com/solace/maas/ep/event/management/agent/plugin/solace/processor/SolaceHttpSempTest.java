@@ -8,12 +8,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertPathBuilderException;
 import java.util.Map;
 import java.util.function.Function;
@@ -22,6 +26,8 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SolaceHttpSempTest {
 
@@ -157,6 +163,46 @@ class SolaceHttpSempTest {
 
             // Act & Assert
             assertFalse(solaceHttpSemp.isSslCertificateError(exception));
+        }
+    }
+
+    @Nested
+    class DescribeSempError {
+
+        private static final String BODY = """
+                {"meta":{"error":{"code":6,"status":"NOT_FOUND","description":"Could not find match for queue q%2Fbad"},
+                "request":{"method":"GET","uri":"https://broker/SEMP/v2/config/msgVpns/vpn/queues?count=100"},
+                "responseCode":400}}""";
+
+        private WebClientResponseException badRequest(String body, HttpRequest request) {
+            return WebClientResponseException.create(
+                    400, "Bad Request", new HttpHeaders(), body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8, request);
+        }
+
+        @Test
+        void includesErrorDetailsAndFullRequestUrl() {
+            HttpRequest request = mock(HttpRequest.class);
+            when(request.getMethod()).thenReturn(HttpMethod.GET);
+            when(request.getURI()).thenReturn(URI.create("https://broker/SEMP/v2/config/msgVpns/vpn/queues?count=100"));
+
+            String result = createSolaceHttpSemp().describeSempError(badRequest(BODY, request));
+
+            assertEquals("SEMP error 6 (NOT_FOUND): Could not find match for queue q%2Fbad."
+                    + " URL: https://broker/SEMP/v2/config/msgVpns/vpn/queues?count=100", result);
+        }
+
+        @Test
+        void fallsBackToUriInBodyWhenRequestMissing() {
+            String result = createSolaceHttpSemp().describeSempError(badRequest(BODY, null));
+
+            assertTrue(result.endsWith("URL: https://broker/SEMP/v2/config/msgVpns/vpn/queues?count=100"));
+        }
+
+        @Test
+        void handlesNonJsonBody() {
+            String result = createSolaceHttpSemp().describeSempError(badRequest("<html>oops</html>", null));
+
+            assertEquals("No SEMP error details in response body. URL: unknown", result);
         }
     }
 
