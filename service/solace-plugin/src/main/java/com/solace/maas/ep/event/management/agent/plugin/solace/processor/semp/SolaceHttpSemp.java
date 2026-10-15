@@ -114,7 +114,9 @@ public class SolaceHttpSemp {
                         "Check that the SEMP username and password are correct.", ex);
                 throw new PluginClientException(ex);
             } else {
-                log.error("Error during SEMP Data Collection.", ex);
+                // SEMP normally reports errors as 400, so other statuses usually come from a proxy or load balancer
+                log.error("Error during SEMP Data Collection. SEMP error: {}",
+                        SempErrorUtil.getErrorSummary(ex.getResponseBodyAsString()), ex);
                 throw new PluginClientException(ex);
             }
         } catch (IOException ioException) {
