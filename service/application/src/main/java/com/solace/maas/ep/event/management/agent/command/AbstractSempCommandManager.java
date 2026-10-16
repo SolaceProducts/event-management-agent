@@ -7,6 +7,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.SempCommandConstants;
+import com.solace.maas.ep.event.management.agent.plugin.util.SempErrorUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
@@ -32,9 +33,19 @@ public abstract class AbstractSempCommandManager {
             // not found is not an error and is already handled in handleSempApiDeleteException
             // all other exceptions are considered errors and are (re)-thrown to be handled here
         } catch (Exception e) {
-            log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
+            logSempCommandError(e);
             // SEMP APIExceptions don't expose the response body via e.getMessage()
             setCommandError(command, e);
+        }
+    }
+
+    protected void logSempCommandError(Exception e) {
+        // SEMP reports many distinct failures as 400, so log the SEMP error status to tell them apart
+        if (e instanceof ApiException apiException && apiException.getCode() == 400) {
+            log.error("SEMP {} command not executed successfully. SEMP error: {}", supportedSempCommand(),
+                    SempErrorUtil.getErrorSummary(apiException.getResponseBody()), e);
+        } else {
+            log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
         }
     }
 
