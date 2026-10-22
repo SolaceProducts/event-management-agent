@@ -6,6 +6,7 @@ import com.solace.client.sempv2.ApiException;
 import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
+import com.solace.client.sempv2.api.JndiApi;
 import com.solace.client.sempv2.api.QueueApi;
 import com.solace.client.sempv2.api.RestDeliveryPointApi;
 import com.solace.maas.ep.common.model.SempAclClientConnectExceptionDeletionRequest;
@@ -15,6 +16,8 @@ import com.solace.maas.ep.common.model.SempAclSubscribeTopicExceptionDeletionReq
 import com.solace.maas.ep.common.model.SempAuthorizationGroupDeletionRequest;
 import com.solace.maas.ep.common.model.SempClientUsernameDeletionRequest;
 import com.solace.maas.ep.common.model.SempEntityType;
+import com.solace.maas.ep.common.model.SempJndiConnectionFactoryDeletionRequest;
+import com.solace.maas.ep.common.model.SempJndiQueueDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueDeletionRequest;
 import com.solace.maas.ep.common.model.SempQueueTopicSubscriptionDeletionRequest;
 import com.solace.maas.ep.common.model.SempRdpDeletionRequest;
@@ -99,6 +102,12 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
                 break;
             case solaceRdpOauthJwtClaim:
                 executeDeleteRdpOauthJwtClaims(command, sempApiProvider);
+                break;
+            case solaceJndiConnectionFactory:
+                executeDeleteJndiConnectionFactory(command, sempApiProvider);
+                break;
+            case solaceJndiQueue:
+                executeDeleteJndiQueue(command, sempApiProvider);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported entity type for deletion: " + deletionEntityType);
@@ -237,6 +246,37 @@ public class SempDeleteCommandManager extends AbstractSempCommandManager {
             queueApi.deleteMsgVpnQueueSubscription(request.getMsgVpn(), request.getQueueName(), request.getTopicName());
         } catch (ApiException e) {
             handleSempOperationException(e, "Subscription", supportedSempCommand());
+        }
+    }
+
+
+    private void executeDeleteJndiConnectionFactory(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        JndiApi jndiApi = sempApiProvider.getJndiApi();
+        SempJndiConnectionFactoryDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SempCommandConstants.SEMP_COMMAND_DATA)),
+                SempJndiConnectionFactoryDeletionRequest.class);
+        Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
+        Validate.notEmpty(request.getConnectionFactoryName(), "JNDI connection factory name must not be empty");
+        log.info("SEMP delete: Deleting JNDI connection factory");
+        try {
+            jndiApi.deleteMsgVpnJndiConnectionFactory(request.getMsgVpn(), request.getConnectionFactoryName());
+        } catch (ApiException e) {
+            handleSempOperationException(e, "JNDI connection factory", supportedSempCommand());
+        }
+    }
+
+    private void executeDeleteJndiQueue(Command command, SempApiProvider sempApiProvider) throws ApiException, JsonProcessingException {
+        JndiApi jndiApi = sempApiProvider.getJndiApi();
+        SempJndiQueueDeletionRequest request = objectMapper.readValue(
+                objectMapper.writeValueAsString(command.getParameters().get(SempCommandConstants.SEMP_COMMAND_DATA)),
+                SempJndiQueueDeletionRequest.class);
+        Validate.notEmpty(request.getMsgVpn(), MSG_VPN_EMPTY_ERROR_MSG);
+        Validate.notEmpty(request.getQueueName(), "JNDI queue name must not be empty");
+        log.info("SEMP delete: Deleting JNDI queue");
+        try {
+            jndiApi.deleteMsgVpnJndiQueue(request.getMsgVpn(), request.getQueueName());
+        } catch (ApiException e) {
+            handleSempOperationException(e, "JNDI queue", supportedSempCommand());
         }
     }
 

@@ -4,6 +4,7 @@ import com.solace.client.sempv2.ApiException;
 import com.solace.client.sempv2.api.AclProfileApi;
 import com.solace.client.sempv2.api.AuthorizationGroupApi;
 import com.solace.client.sempv2.api.ClientUsernameApi;
+import com.solace.client.sempv2.api.JndiApi;
 import com.solace.client.sempv2.api.QueueApi;
 import com.solace.client.sempv2.api.RestDeliveryPointApi;
 import com.solace.client.sempv2.model.SempMetaOnlyResponse;
@@ -36,6 +37,8 @@ import static com.solace.maas.ep.common.model.SempEntityType.solaceAclSubscribeT
 import static com.solace.maas.ep.common.model.SempEntityType.solaceAuthorizationGroup;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceClientCertificateUsername;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceClientUsername;
+import static com.solace.maas.ep.common.model.SempEntityType.solaceJndiConnectionFactory;
+import static com.solace.maas.ep.common.model.SempEntityType.solaceJndiQueue;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueue;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceQueueSubscriptionTopic;
 import static com.solace.maas.ep.common.model.SempEntityType.solaceRdp;
@@ -1107,6 +1110,158 @@ public class SempDeleteCommandManagerTest {
             verify(rdpApi).deleteMsgVpnRestDeliveryPointQueueBindingProtectedRequestHeader("default", "someRdp", "someQueueBindingName", "someHeaderName");
             assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
         }
+    }
+
+    @Nested
+    class JndiConnectionFactory {
+        @Test
+        void happyPath() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiConnectionFactory(any(), any())).thenReturn(new SempMetaOnlyResponse());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiConnectionFactoryParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(jndiApi).deleteMsgVpnJndiConnectionFactory("default", "/jms/cf/someConnectionFactory");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        }
+
+        @Test
+        void withValidationException() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiConnectionFactory(any(), any())).thenReturn(new SempMetaOnlyResponse());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiConnectionFactoryParameters(false))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verifyNoInteractions(jndiApi);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        }
+
+        @Test
+        void withException() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiConnectionFactory(any(), any())).thenThrow(createaServerErrorApiException());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiConnectionFactoryParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(jndiApi).deleteMsgVpnJndiConnectionFactory("default", "/jms/cf/someConnectionFactory");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        }
+
+        @Test
+        void withNotFoundException() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiConnectionFactory(any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiConnectionFactoryParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(jndiApi).deleteMsgVpnJndiConnectionFactory("default", "/jms/cf/someConnectionFactory");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        }
+    }
+
+    @Nested
+    class JndiQueue {
+        @Test
+        void happyPath() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiQueue(any(), any())).thenReturn(new SempMetaOnlyResponse());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiQueueParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(jndiApi).deleteMsgVpnJndiQueue("default", "/jms/queue/someQueue");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        }
+
+        @Test
+        void withValidationException() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiQueue(any(), any())).thenReturn(new SempMetaOnlyResponse());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiQueueParameters(false))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verifyNoInteractions(jndiApi);
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        }
+
+        @Test
+        void withException() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiQueue(any(), any())).thenThrow(createaServerErrorApiException());
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiQueueParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(jndiApi).deleteMsgVpnJndiQueue("default", "/jms/queue/someQueue");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.error);
+        }
+
+        @Test
+        void withNotFoundException() throws ApiException {
+            JndiApi jndiApi = Mockito.mock(JndiApi.class);
+            when(sempApiProvider.getJndiApi()).thenReturn(jndiApi);
+            when((jndiApi).deleteMsgVpnJndiQueue(any(), any())).thenThrow(createaNotFoundApiException(SEMP_RESPONSE_MISSING_RESOURCE));
+            Command cmd = Command.builder()
+                    .commandType(CommandType.semp)
+                    .command(SEMP_DELETE_OPERATION)
+                    .parameters(createDeleteJndiQueueParameters(true))
+                    .build();
+            sempDeleteCommandManager.execute(cmd, sempApiProvider);
+            verify(jndiApi).deleteMsgVpnJndiQueue("default", "/jms/queue/someQueue");
+            assertThat(cmd.getResult().getStatus()).isEqualTo(JobStatus.success);
+        }
+    }
+
+    private Map<String, Object> createDeleteJndiConnectionFactoryParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, solaceJndiConnectionFactory.name());
+
+        Map<String, String> data = new HashMap<>();
+        data.put("msgVpn", "default");
+        if (valid) {
+            data.put("connectionFactoryName", "/jms/cf/someConnectionFactory");
+        }
+        parameters.put(SEMP_COMMAND_DATA, data);
+        return parameters;
+    }
+
+    private Map<String, Object> createDeleteJndiQueueParameters(boolean valid) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(SEMP_COMMAND_ENTITY_TYPE, solaceJndiQueue.name());
+
+        Map<String, String> data = new HashMap<>();
+        data.put("msgVpn", "default");
+        if (valid) {
+            data.put("queueName", "/jms/queue/someQueue");
+        }
+        parameters.put(SEMP_COMMAND_DATA, data);
+        return parameters;
     }
 
     private Map<String, Object> createDeleteQueueSubscriptionParameters(boolean valid) {
