@@ -16,7 +16,9 @@ public enum SempEntityType {
     solaceClientCertificateUsername("solaceClientCertificateUsername"),
     solaceClientProfileName("solaceClientProfileName"),
     solaceAuthorizationGroup("solaceAuthorizationGroup"),
-    solaceQueueSubscriptionTopic("solaceQueueSubscriptionTopic");
+    solaceQueueSubscriptionTopic("solaceQueueSubscriptionTopic"),
+    solaceJndiConnectionFactory("solaceJndiConnectionFactory"),
+    solaceJndiQueue("solaceJndiQueue");
     private final String value;
 
     SempEntityType(String value) {
