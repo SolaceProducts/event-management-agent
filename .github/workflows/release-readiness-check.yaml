@@ -304,7 +304,7 @@ jobs:
       - name: Evaluate Guardian vulnerability gate
         id: gate
         continue-on-error: true
-        uses: SolaceDev/solace-public-workflows/guardian-vulnerability-gate@668d31d070ebdbbb5d6f2bdd13d406697055ae3c # main
+        uses: SolaceDev/solace-public-workflows/guardian-vulnerability-gate@d5f7fde8d5a1b5c382afd44d6fcadaaee936d80d # main
         with:
           guardian-url: ${{ secrets.GUARDIAN_API_URL }}
           guardian-key: ${{ secrets.GUARDIAN_API_TOKEN || secrets.GUARDIAN_API_KEY }}
