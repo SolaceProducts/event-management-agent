@@ -8,7 +8,9 @@ ENV HOME /home/$USER
 VOLUME /tmp
 
 # Upgrade libexpat (the installed subpackage of expat) to patch expat CVEs
-RUN apk --no-cache upgrade libexpat
+# DATAGO-158878: Upgrade brotli-libs to 1.2.1-r0+ (CVE-2026-111497, Node2Shell). The eclipse-temurin
+# Alpine 3.23 base image still ships 1.2.0-r0. Remove once the base image ships >= 1.2.1-r0.
+RUN apk --no-cache upgrade libexpat brotli-libs
 
 # create user and directory setup
 RUN adduser -D $USER && \
