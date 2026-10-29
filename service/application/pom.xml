@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.solace.maas</groupId>
         <artifactId>maas-event-management-agent-parent</artifactId>
-        <version>1.9.11-SNAPSHOT</version>
+        <version>1.9.11</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>event-management-agent</artifactId>
-    <version>1.9.11-SNAPSHOT</version>
+    <version>1.9.11</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Application</name>
     <description>Solace Event Management Agent - Application</description>
@@ -53,8 +53,7 @@
                 <artifactId>mchange-commons-java</artifactId>
                 <version>0.6.1</version>
             </dependency>
-            <!-- CVE-2026-55223: com.mchange:c3p0 < 0.14.0; transitive via
-                 camel-quartz-starter -> camel-quartz -> c3p0 (compile scope, resolves 0.12.0).
+            <!-- CVE-2026-55223: com.mchange:c3p0 < 0.14.0; transitive via camel-quartz-starter -> camel-quartz -> c3p0 (compile scope, resolves 0.12.0).
                  Not exploitable here — c3p0 is never instantiated (Quartz runs on the default
                  RAM job store, no JDBC datasource configured) — pinned for defense in depth.
                  0.14.2 depends on mchange-commons-java 0.6.1, matching the pin above.
@@ -64,8 +63,7 @@
                 <artifactId>c3p0</artifactId>
                 <version>0.14.2</version>
             </dependency>
-            <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash);
-                 transitive via kafka-clients:3.9.2. DATAGO-147284, DATAGO-156208 (CVE-2026-106451/106450, fixed in 1.11.4). -->
+            <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash); transitive via kafka-clients:3.9.2. DATAGO-147284, DATAGO-156208 (CVE-2026-106451/106450, fixed in 1.11.4). -->
             <dependency>
                 <groupId>at.yawk.lz4</groupId>
                 <artifactId>lz4-java</artifactId>
@@ -261,32 +259,32 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.kafka</groupId>
             <artifactId>kafka-plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.solace</groupId>
             <artifactId>solace-plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.localstorage</groupId>
             <artifactId>local-storage-plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.confluent-schema-registry</groupId>
             <artifactId>confluent-schema-registry-plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>com.solace.maas.plugin.terraform</groupId>
             <artifactId>terraform-plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
 
         <!-- SB4 brave tracing starter: restores the io.micrometer.tracing.Tracer bean (injected by

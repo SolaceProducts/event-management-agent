@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.solace.maas.plugin.kafka</groupId>
     <artifactId>kafka-plugin</artifactId>
-    <version>1.9.11-SNAPSHOT</version>
+    <version>1.9.11</version>
     <packaging>jar</packaging>
     <name>Solace Event Management Agent - Kafka Plugin</name>
     <description>Solace Event Management Agent - Kafka Plugin</description>
@@ -76,8 +76,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash);
-                 transitive via kafka-clients:3.9.2. DATAGO-147284, DATAGO-156208 (CVE-2026-106451/106450, fixed in 1.11.4). -->
+            <!-- CVE-2026-59949: at.yawk.lz4:lz4-java < 1.11.1 JNI XXHash OOB read (JVM crash); transitive via kafka-clients:3.9.2. DATAGO-147284, DATAGO-156208 (CVE-2026-106451/106450, fixed in 1.11.4). -->
             <dependency>
                 <groupId>at.yawk.lz4</groupId>
                 <artifactId>lz4-java</artifactId>
@@ -141,7 +140,7 @@
         <dependency>
             <groupId>com.solace.maas</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
