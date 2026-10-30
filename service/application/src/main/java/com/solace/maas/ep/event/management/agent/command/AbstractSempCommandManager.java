@@ -11,8 +11,11 @@ import com.solace.maas.ep.event.management.agent.plugin.util.SempErrorUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
+import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.LOG_LEVEL_ERROR;
 import static com.solace.maas.ep.event.management.agent.plugin.terraform.manager.TerraformUtils.setCommandError;
 
 @Slf4j
@@ -32,11 +35,28 @@ public abstract class AbstractSempCommandManager {
                     .build());
             // not found is not an error and is already handled in handleSempApiDeleteException
             // all other exceptions are considered errors and are (re)-thrown to be handled here
-        } catch (Exception e) {
+        } catch (ApiException e) {
             logSempCommandError(e);
-            // SEMP APIExceptions don't expose the response body via e.getMessage()
+            setSempCommandError(command, e);
+        } catch (Exception e) {
+            log.error("SEMP {} command not executed successfully", supportedSempCommand(), e);
             setCommandError(command, e);
         }
+    }
+
+    protected void setSempCommandError(Command command, ApiException e) {
+        String responseBody = e.getResponseBody();
+        command.setResult(CommandResult.builder()
+                .status(JobStatus.error)
+                .logs(List.of(Map.of(
+                        "message", e.getMessage() != null ? e.getMessage() : "SEMP error",
+                        "errorType", e.getClass().getName(),
+                        "level", LOG_LEVEL_ERROR,
+                        "timestamp", OffsetDateTime.now(),
+                        "sempResponseBody", responseBody != null ? responseBody : "",
+                        "userMessage", EmaErrorCode.SEMP_ERROR.getUserMessage()
+                )))
+                .build());
     }
 
     protected void logSempCommandError(Exception e) {

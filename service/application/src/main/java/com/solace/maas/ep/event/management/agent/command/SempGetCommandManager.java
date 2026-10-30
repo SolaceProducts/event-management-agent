@@ -71,7 +71,7 @@ public class SempGetCommandManager extends AbstractSempCommandManager {
                 setCommandError(command, e);
             } else {
                 logSempCommandError(e);
-                setCommandError(command, e);
+                setSempCommandError(command, e);
             }
         } catch (Exception e) {
             if (isConnectTimeoutError(e) || isNameResolutionError(e)) {
