@@ -39,7 +39,8 @@ public class TerraformLogProcessingService {
                 "address", "N/A",
                 "message", "Failed removing Terraform state: " + rootCause.getMessage(),
                 "level", "ERROR",
-                "timestamp", OffsetDateTime.now());
+                "timestamp", OffsetDateTime.now(),
+                "userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
 
         List<Map<String, Object>> logs = List.of(errorLog);
 
@@ -153,6 +154,26 @@ public class TerraformLogProcessingService {
         Map<String, Object> resource = (Map<String, Object>) (((Map<String, Object>) hook).get("resource"));
         return String.valueOf(resource.get("addr"));
 
+    }
+
+    /**
+     * Scans a list of log entries for the first non-blank {@code diagnosticDetail} value.
+     * Used by command handlers to surface a human-readable error message from Terraform error logs.
+     *
+     * @param logs the list of log entry maps (may be null or empty)
+     * @return the first non-blank diagnosticDetail value, or null if none is found
+     */
+    public String extractUserMessageFromErrorLogs(List<Map<String, Object>> logs) {
+        if (logs == null || logs.isEmpty()) {
+            return null;
+        }
+        for (Map<String, Object> entry : logs) {
+            Object detail = entry.get(KEY_DIAGNOSTIC_DETAIL);
+            if (detail != null && !String.valueOf(detail).isBlank()) {
+                return String.valueOf(detail);
+            }
+        }
+        return null;
     }
 
     private boolean isApplyCompleteLog(Map<String, Object> expandedLogMessage) {
