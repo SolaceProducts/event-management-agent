@@ -36,7 +36,7 @@ public abstract class AbstractSempCommandManager {
             // not found is not an error and is already handled in handleSempOperationException
         } catch (ApiException e) {
             // ApiException carries the broker's JSON error body in getResponseBody(); setSempCommandError
-            // extracts it so the structured SEMP error code can reach the caller via CommandResult.logs
+            // extracts it so CommandManager can populate userMessage and _internal on the outbound CommandMessage
             logSempCommandError(e);
             setSempCommandError(command, e);
         } catch (Exception e) {
