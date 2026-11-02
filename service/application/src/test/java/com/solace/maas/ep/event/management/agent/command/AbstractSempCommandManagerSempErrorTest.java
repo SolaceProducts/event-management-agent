@@ -87,8 +87,9 @@ class AbstractSempCommandManagerSempErrorTest {
 
         assertThat(result().getStatus()).isEqualTo(JobStatus.error);
         // setCommandError uses e.getMessage() — no sempResponseBody key
-        assertThat(result().getLogs().get(0)).doesNotContainKey("sempResponseBody");
-        assertThat(result().getLogs().get(0).get("message")).isEqualTo("Connection refused");
+        assertThat(result().getLogs().get(0))
+                .doesNotContainKey("sempResponseBody")
+                .containsEntry("message", "Connection refused");
     }
 
     private CommandResult result() {
