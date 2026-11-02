@@ -117,7 +117,7 @@ public class CommandManager {
     public void handleError(Exception e, CommandMessage message) {
         CommandRequest requestBO = commandMapper.map(message);
         attachErrorLogToCommand(false, e, requestBO);
-        finalizeAndSendResponse(requestBO, null, null);
+        finalizeAndSendResponse(requestBO, EmaErrorCode.INTERNAL_ERROR.getUserMessage(), EmaErrorCode.INTERNAL_ERROR);
     }
 
     @SuppressWarnings("PMD")

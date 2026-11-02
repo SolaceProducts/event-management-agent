@@ -35,6 +35,12 @@ public enum EmaErrorCode {
             "UNKNOWN_COMMAND_TYPE",
             "The Event Management Agent received an unrecognized command. " +
             "Contact support if the issue persists."
+    ),
+    INTERNAL_ERROR(
+            "ema",
+            "INTERNAL_ERROR",
+            "The Event Management Agent encountered an unexpected error. " +
+            "Contact support if the issue persists."
     );
 
     private final String serviceId;
