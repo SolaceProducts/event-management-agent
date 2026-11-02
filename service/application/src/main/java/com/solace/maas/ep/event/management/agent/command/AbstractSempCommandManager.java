@@ -33,9 +33,10 @@ public abstract class AbstractSempCommandManager {
                     .status(JobStatus.success)
                     .logs(List.of())
                     .build());
-            // not found is not an error and is already handled in handleSempApiDeleteException
-            // all other exceptions are considered errors and are (re)-thrown to be handled here
+            // not found is not an error and is already handled in handleSempOperationException
         } catch (ApiException e) {
+            // ApiException carries the broker's JSON error body in getResponseBody(); setSempCommandError
+            // extracts it so the structured SEMP error code can reach the caller via CommandResult.logs
             logSempCommandError(e);
             setSempCommandError(command, e);
         } catch (Exception e) {
