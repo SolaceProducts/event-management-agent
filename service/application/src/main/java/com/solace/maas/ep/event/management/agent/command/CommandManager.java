@@ -275,8 +275,11 @@ public class CommandManager {
             String effectiveUserMessage = emaUserMessageOverride != null ? emaUserMessageOverride : userMessage;
             if (effectiveUserMessage != null) {
                 EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride, isSempError);
+                String internalDetail = isSempError
+                        ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage)
+                        : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage);
                 response.setUserMessage(effectiveUserMessage);
-                response.setInternal(effectiveErrorCode.buildInternal(effectiveUserMessage));
+                response.setInternal(effectiveErrorCode.buildInternal(internalDetail));
             }
         }
 
