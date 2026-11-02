@@ -32,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Optional;
 
@@ -253,35 +254,27 @@ public class CommandManager {
         // The first non-blank value found is promoted into the response as a user-facing message.
         // An override set by the caller (e.g. messaging-service-not-found) takes priority.
         if (requestBO.getStatus() == JobStatus.error || emaUserMessageOverride != null) {
-            String userMessage = null;
-            boolean isSempError = false;
-            outer:
-            for (CommandBundle bundle : requestBO.getCommandBundles()) {
-                for (Command command : bundle.getCommands()) {
-                    CommandResult result = command.getResult();
-                    if (result != null && result.getLogs() != null) {
-                        for (Map<String, Object> logEntry : result.getLogs()) {
-                            if (logEntry.containsKey("sempResponseBody")) {
-                                isSempError = true;
-                            }
-                            String detail = extractNonBlank(logEntry, "diagnosticDetail");
-                            if (detail != null) {
-                                userMessage = detail;
-                                break outer;
-                            }
-                            String msg = extractNonBlank(logEntry, "userMessage");
-                            if (msg != null) {
-                                userMessage = msg;
-                                break outer;
-                            }
-                        }
-                    }
-                }
-            }
+            List<Map<String, Object>> allLogs = requestBO.getCommandBundles().stream()
+                    .flatMap(bundle -> bundle.getCommands().stream())
+                    .map(Command::getResult)
+                    .filter(result -> result != null && result.getLogs() != null)
+                    .flatMap(result -> result.getLogs().stream())
+                    .toList();
+
+            boolean isSempError = allLogs.stream().anyMatch(e -> e.containsKey("sempResponseBody"));
+
+            String userMessage = allLogs.stream()
+                    .map(e -> {
+                        String detail = extractNonBlank(e, "diagnosticDetail");
+                        return detail != null ? detail : extractNonBlank(e, "userMessage");
+                    })
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+
             String effectiveUserMessage = emaUserMessageOverride != null ? emaUserMessageOverride : userMessage;
-            EmaErrorCode effectiveErrorCode = emaErrorCodeOverride != null ? emaErrorCodeOverride :
-                    (isSempError ? EmaErrorCode.SEMP_ERROR : EmaErrorCode.TERRAFORM_APPLY_ERROR);
             if (effectiveUserMessage != null) {
+                EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride, isSempError);
                 response.setUserMessage(effectiveUserMessage);
                 response.setInternal(effectiveErrorCode.buildInternal(effectiveUserMessage));
             }
@@ -386,6 +379,13 @@ public class CommandManager {
         }
     }
 
+
+    private static EmaErrorCode resolveErrorCode(EmaErrorCode override, boolean isSempError) {
+        if (override != null) {
+            return override;
+        }
+        return isSempError ? EmaErrorCode.SEMP_ERROR : EmaErrorCode.TERRAFORM_APPLY_ERROR;
+    }
 
     private static String extractNonBlank(Map<String, Object> logEntry, String key) {
         Object val = logEntry.get(key);

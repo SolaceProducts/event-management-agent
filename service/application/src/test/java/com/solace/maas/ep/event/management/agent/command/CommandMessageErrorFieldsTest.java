@@ -16,8 +16,9 @@ class CommandMessageErrorFieldsTest {
         msg.setUserMessage("Broker rejected: ACL Profile limit reached.");
 
         String json = objectMapper.writeValueAsString(msg);
-        assertThat(json).contains("\"userMessage\"");
-        assertThat(json).contains("ACL Profile limit reached");
+        assertThat(json)
+                .contains("\"userMessage\"")
+                .contains("ACL Profile limit reached");
     }
 
     @Test
@@ -32,8 +33,9 @@ class CommandMessageErrorFieldsTest {
         msg.setInternal(internal);
 
         String json = objectMapper.writeValueAsString(msg);
-        assertThat(json).contains("\"_internal\"");
-        assertThat(json).contains("TERRAFORM_APPLY_ERROR");
+        assertThat(json)
+                .contains("\"_internal\"")
+                .contains("TERRAFORM_APPLY_ERROR");
     }
 
     @Test

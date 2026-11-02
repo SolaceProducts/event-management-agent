@@ -66,8 +66,7 @@ class AbstractSempCommandManagerSempErrorTest {
         CommandResult result = command.getResult();
         assertThat(result.getStatus()).isEqualTo(JobStatus.error);
         assertThat(result.getLogs()).isNotEmpty();
-        assertThat(result.getLogs().get(0)).containsKey("sempResponseBody");
-        assertThat(result.getLogs().get(0).get("sempResponseBody")).isEqualTo(responseBody);
+        assertThat(result.getLogs().get(0)).containsEntry("sempResponseBody", responseBody);
     }
 
     @Test
@@ -77,7 +76,6 @@ class AbstractSempCommandManagerSempErrorTest {
 
         manager.execute(command, null);
 
-        assertThat(result().getLogs().get(0)).containsKey("userMessage");
         assertThat((String) result().getLogs().get(0).get("userMessage")).isNotBlank();
     }
 

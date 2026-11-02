@@ -27,6 +27,7 @@ public class TerraformLogProcessingService {
     public static final String KEY_TIMESTAMP = "@timestamp";
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
+    public static final String KEY_RESULT_TIMESTAMP = "timestamp";
     private final ObjectMapper objectMapper;
 
     public TerraformLogProcessingService(ObjectMapper objectMapper) {
@@ -39,7 +40,7 @@ public class TerraformLogProcessingService {
                 "address", "N/A",
                 "message", "Failed removing Terraform state: " + rootCause.getMessage(),
                 "level", "ERROR",
-                "timestamp", OffsetDateTime.now(),
+                KEY_RESULT_TIMESTAMP, OffsetDateTime.now(),
                 "userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
 
         List<Map<String, Object>> logs = List.of(errorLog);
@@ -101,7 +102,7 @@ public class TerraformLogProcessingService {
                 "address", extractResourceAddressFromHook(expandedLogMessage.get("hook")),
                 "message", expandedLogMessage.get(KEY_MESSAGE),
                 "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
-                "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
+                KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP)
 
         );
 
@@ -118,7 +119,7 @@ public class TerraformLogProcessingService {
                 KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC)),
                 "message", expandedLogMessage.get(KEY_MESSAGE),
                 "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
-                "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
+                KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP)
         );
     }
 
