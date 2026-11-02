@@ -43,14 +43,14 @@ public enum EmaErrorCode {
             Msg.CONTACT_SUPPORT
     );
 
+    private final String serviceId;
+    private final String code;
+    private final String userMessage;
+
     static final class Msg {
         static final String CONTACT_SUPPORT = "Contact support if the issue persists.";
         private Msg() {}
     }
-
-    private final String serviceId;
-    private final String code;
-    private final String userMessage;
 
     EmaErrorCode(String serviceId, String code, String userMessage) {
         this.serviceId = serviceId;
