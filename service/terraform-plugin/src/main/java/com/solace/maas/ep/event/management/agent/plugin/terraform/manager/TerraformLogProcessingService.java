@@ -157,26 +157,6 @@ public class TerraformLogProcessingService {
 
     }
 
-    /**
-     * Scans a list of log entries for the first non-blank {@code diagnosticDetail} value.
-     * Used by command handlers to surface a human-readable error message from Terraform error logs.
-     *
-     * @param logs the list of log entry maps (may be null or empty)
-     * @return the first non-blank diagnosticDetail value, or null if none is found
-     */
-    public String extractUserMessageFromErrorLogs(List<Map<String, Object>> logs) {
-        if (logs == null || logs.isEmpty()) {
-            return null;
-        }
-        for (Map<String, Object> entry : logs) {
-            Object detail = entry.get(KEY_DIAGNOSTIC_DETAIL);
-            if (detail != null && !String.valueOf(detail).isBlank()) {
-                return String.valueOf(detail);
-            }
-        }
-        return null;
-    }
-
     private boolean isApplyCompleteLog(Map<String, Object> expandedLogMessage) {
         return StringUtils.equals(extractValueFromLog(expandedLogMessage, KEY_TYPE), VALUE_TYPE_APPLY_COMPLETE);
     }
