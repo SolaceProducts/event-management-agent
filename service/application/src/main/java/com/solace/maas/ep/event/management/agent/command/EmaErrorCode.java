@@ -28,20 +28,25 @@ public enum EmaErrorCode {
             "ema",
             "TERRAFORM_STATE_DELETION_FAILURE",
             "The Event Management Agent encountered an internal error preparing for deployment. " +
-            "Contact support if the issue persists."
+            Msg.CONTACT_SUPPORT
     ),
     UNKNOWN_COMMAND_TYPE(
             "ema",
             "UNKNOWN_COMMAND_TYPE",
             "The Event Management Agent received an unrecognized command. " +
-            "Contact support if the issue persists."
+            Msg.CONTACT_SUPPORT
     ),
     INTERNAL_ERROR(
             "ema",
             "INTERNAL_ERROR",
             "The Event Management Agent encountered an unexpected error. " +
-            "Contact support if the issue persists."
+            Msg.CONTACT_SUPPORT
     );
+
+    static final class Msg {
+        static final String CONTACT_SUPPORT = "Contact support if the issue persists.";
+        private Msg() {}
+    }
 
     private final String serviceId;
     private final String code;
