@@ -43,7 +43,8 @@ class EmaErrorCodeTest {
 
     @Test
     void buildInternalPayload_populatesAllFields() {
-        EmaInternalPayload payload = EmaErrorCode.TERRAFORM_APPLY_ERROR.buildInternal("exit status 1");
+        EmaInternalPayload payload = EmaErrorCode.TERRAFORM_APPLY_ERROR.buildInternal("corr-123", "exit status 1");
+        assertThat(payload.getCorrelationId()).isEqualTo("corr-123");
         assertThat(payload.getServiceId()).isEqualTo("ema");
         assertThat(payload.getCode()).isEqualTo("909");
         assertThat(payload.getResult()).isEqualTo("INTERNAL_ERROR");

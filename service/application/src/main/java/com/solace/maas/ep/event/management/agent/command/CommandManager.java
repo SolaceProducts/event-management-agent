@@ -279,7 +279,7 @@ public class CommandManager {
                         ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage)
                         : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage);
                 response.setUserMessage(effectiveUserMessage);
-                response.setInternal(effectiveErrorCode.buildInternal(internalDetail));
+                response.setInternal(effectiveErrorCode.buildInternal(requestBO.getCommandCorrelationId(), internalDetail));
             }
         }
 

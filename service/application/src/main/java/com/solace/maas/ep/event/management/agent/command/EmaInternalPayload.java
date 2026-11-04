@@ -19,6 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmaInternalPayload implements Serializable {
+    private String correlationId;
     private String serviceId;
     private String code;
     private String result;

@@ -86,8 +86,9 @@ public enum EmaErrorCode {
         return userMessage;
     }
 
-    public EmaInternalPayload buildInternal(String rawErrorMessage) {
+    public EmaInternalPayload buildInternal(String correlationId, String rawErrorMessage) {
         return EmaInternalPayload.builder()
+                .correlationId(correlationId)
                 .serviceId(serviceId)
                 .code(code)
                 .result(result)
