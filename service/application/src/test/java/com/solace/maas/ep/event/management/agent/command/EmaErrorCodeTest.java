@@ -20,9 +20,18 @@ class EmaErrorCodeTest {
     }
 
     @Test
-    void allCodesHaveCode() {
+    void allCodesHaveNumericCode() {
         for (EmaErrorCode code : EmaErrorCode.values()) {
-            assertThat(code.getCode()).isNotBlank();
+            assertThat(code.getCode())
+                    .isNotBlank()
+                    .matches("\\d+");
+        }
+    }
+
+    @Test
+    void allCodesHaveResult() {
+        for (EmaErrorCode code : EmaErrorCode.values()) {
+            assertThat(code.getResult()).isNotBlank();
         }
     }
 
@@ -36,8 +45,8 @@ class EmaErrorCodeTest {
     void buildInternalPayload_populatesAllFields() {
         EmaInternalPayload payload = EmaErrorCode.TERRAFORM_APPLY_ERROR.buildInternal("exit status 1");
         assertThat(payload.getServiceId()).isEqualTo("ema");
-        assertThat(payload.getCode()).isEqualTo("TERRAFORM_APPLY_ERROR");
-        assertThat(payload.getResult()).isEqualTo("error");
+        assertThat(payload.getCode()).isEqualTo("909");
+        assertThat(payload.getResult()).isEqualTo("INTERNAL_ERROR");
         assertThat(payload.getErrorMessage()).isEqualTo("exit status 1");
     }
 }
