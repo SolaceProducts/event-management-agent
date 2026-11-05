@@ -48,6 +48,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.EmaErrorCode;
 import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -488,6 +489,64 @@ class CommandManagerTests {
         // Wait for the command thread to complete
         await().atMost(10, TimeUnit.SECONDS).until(() -> CommandManagerTestHelper.verifyCommandPublisherIsInvoked(commandPublisher, 1));
         return mopMessageCaptor;
+    }
+
+    @Test
+    void messagingServiceClientReturnsNull_setsUserMessageOnResponse() {
+        CommandMessage message = getCommandMessage("1");
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(null);
+
+        commandManager.execute(message);
+
+        ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
+        Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
+        Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND.getCode());
+    }
+
+    @Test
+    void unknownCommandType_setsUserMessageOnResponse() {
+        CommandMessage message = new CommandMessage();
+        message.setOrigType(com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType.maasEventMgmt);
+        message.withMessageType(generic);
+        message.setContext("abc");
+        message.setServiceId(MESSAGING_SERVICE_ID);
+        message.setActorId("myActorId");
+        message.setOrgId(eventPortalProperties.getOrganizationId());
+        message.setOriginOrgId(eventPortalProperties.getOrganizationId());
+        message.setTraceId("myTraceId");
+        message.setCommandCorrelationId("myCorrelationIdUnknown");
+        // commandType null falls through to the else branch (handleUnknownCommandType)
+        Command unknownCmd = Command.builder()
+                .commandType(null)
+                .ignoreResult(false)
+                .body("body")
+                .command("unknownOp")
+                .build();
+        message.setCommandBundles(List.of(
+                CommandBundle.builder()
+                        .executionType(ExecutionType.serial)
+                        .exitOnFailure(false)
+                        .commands(List.of(unknownCmd))
+                        .build()));
+
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        commandManager.execute(message);
+
+        ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
+        Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
+        Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.UNKNOWN_COMMAND_TYPE.getCode());
     }
 
     @Nested

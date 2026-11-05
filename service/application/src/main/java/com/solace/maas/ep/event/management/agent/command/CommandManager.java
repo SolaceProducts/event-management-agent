@@ -32,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Optional;
 
@@ -116,7 +117,7 @@ public class CommandManager {
     public void handleError(Exception e, CommandMessage message) {
         CommandRequest requestBO = commandMapper.map(message);
         attachErrorLogToCommand(false, e, requestBO);
-        finalizeAndSendResponse(requestBO);
+        finalizeAndSendResponse(requestBO, EmaErrorCode.INTERNAL_ERROR.getUserMessage(), EmaErrorCode.INTERNAL_ERROR);
     }
 
     @SuppressWarnings("PMD")
@@ -127,12 +128,16 @@ public class CommandManager {
         }
         List<Path> executionLogFilesToClean = new ArrayList<>();
         boolean attachErrorToTerraformCommand = false;
+        String emaUserMessageOverride = null;
+        EmaErrorCode emaErrorCodeOverride = null;
         try {
             // if the serviceId is not found, messagingServiceDelegateService will most likely throw an exception (which is not guaranteed
             // based on the interface definition) and we need to catch it here.
             // We also need to check if the client is null if there is no exception thrown
             SolaceHttpSemp solaceClient = messagingServiceDelegateService.getMessagingServiceClient(request.getServiceId());
             if (solaceClient == null) {
+                emaUserMessageOverride = EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND.getUserMessage();
+                emaErrorCodeOverride = EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND;
                 throw new IllegalStateException("Messaging service client not found for serviceId " + request.getServiceId());
             }
             Map<String, String> envVars = setBrokerSpecificEnvVars(solaceClient);
@@ -178,7 +183,7 @@ public class CommandManager {
             attachErrorLogToCommand(attachErrorToTerraformCommand, e, request);
         } finally {
             try {
-                finalizeAndSendResponse(request);
+                finalizeAndSendResponse(request, emaUserMessageOverride, emaErrorCodeOverride);
                 // the response could also be an error log entry
                 // if we fail to send the response to EP, we can not do anything about it
                 // besides logging it
@@ -227,7 +232,8 @@ public class CommandManager {
         }
     }
 
-    private void finalizeAndSendResponse(CommandRequest requestBO) {
+    @SuppressWarnings("PMD.CognitiveComplexity")
+    private void finalizeAndSendResponse(CommandRequest requestBO, String emaUserMessageOverride, EmaErrorCode emaErrorCodeOverride) {
         requestBO.determineStatus();
         Map<String, String> topicVars = Map.of(
                 "orgId", requestBO.getOrgId(),
@@ -243,6 +249,47 @@ public class CommandManager {
         response.setTraceId(MDC.get(TRACE_ID));
         response.setActorId(MDC.get(ACTOR_ID));
         response.setOriginOrgId(requestBO.getOriginOrgId());
+
+        // Scan log entries for a diagnosticDetail (Terraform errors) or userMessage key.
+        // The first non-blank value found is promoted into the response as a user-facing message.
+        // An override set by the caller (e.g. messaging-service-not-found) takes priority.
+        if (requestBO.getStatus() == JobStatus.error || emaUserMessageOverride != null) {
+            List<Map<String, Object>> allLogs = requestBO.getCommandBundles().stream()
+                    .flatMap(bundle -> bundle.getCommands().stream())
+                    .map(Command::getResult)
+                    .filter(result -> result != null && result.getLogs() != null)
+                    .flatMap(result -> result.getLogs().stream())
+                    .toList();
+
+            boolean isSempError = allLogs.stream().anyMatch(e -> e.containsKey("sempResponseBody"));
+
+            String userMessage = allLogs.stream()
+                    .map(e -> {
+                        String detail = extractNonBlank(e, "diagnosticDetail");
+                        return detail != null ? detail : extractNonBlank(e, "userMessage");
+                    })
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+
+            String logEntryCode = allLogs.stream()
+                    .map(e -> extractNonBlank(e, "emaCode"))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+            EmaErrorCode logEntryErrorCode = logEntryCode != null ? EmaErrorCode.fromCode(logEntryCode) : null;
+
+            String effectiveUserMessage = emaUserMessageOverride != null ? emaUserMessageOverride : userMessage;
+            if (effectiveUserMessage != null) {
+                EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode, isSempError);
+                String internalDetail = isSempError
+                        ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage)
+                        : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage);
+                response.setUserMessage(effectiveUserMessage);
+                response.setInternal(effectiveErrorCode.buildInternal(requestBO.getCommandCorrelationId(), internalDetail));
+            }
+        }
+
         commandPublisher.sendCommandResponse(response, topicVars);
         meterRegistry.counter(MAAS_EMA_CONFIG_PUSH_EVENT_SENT,
                         ORG_ID_TAG, response.getOrgId(),
@@ -290,13 +337,16 @@ public class CommandManager {
     }
 
     private void handleUnknownCommandType(Command command) {
+        Map<String, Object> logEntry = new HashMap<>();
+        logEntry.put("message", "unknown command type " + command.getCommandType());
+        logEntry.put("errorType", "UnknownCommandType");
+        logEntry.put("level", LOG_LEVEL_ERROR);
+        logEntry.put("timestamp", OffsetDateTime.now());
+        logEntry.put("userMessage", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getUserMessage());
+        logEntry.put("emaCode", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getCode());
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)
-                .logs(List.of(
-                        Map.of("message", "unknown command type " + command.getCommandType(),
-                                "errorType", "UnknownCommandType",
-                                "level", LOG_LEVEL_ERROR,
-                                "timestamp", OffsetDateTime.now())))
+                .logs(List.of(logEntry))
                 .build());
     }
 
@@ -341,6 +391,22 @@ public class CommandManager {
         }
     }
 
+
+    private static EmaErrorCode resolveErrorCode(EmaErrorCode override, boolean isSempError) {
+        if (override != null) {
+            return override;
+        }
+        return isSempError ? EmaErrorCode.SEMP_ERROR : EmaErrorCode.TERRAFORM_APPLY_ERROR;
+    }
+
+    private static String extractNonBlank(Map<String, Object> logEntry, String key) {
+        Object val = logEntry.get(key);
+        if (val == null) {
+            return null;
+        }
+        String str = String.valueOf(val);
+        return (!str.isBlank() && !"null".equals(str)) ? str : null;
+    }
 
     private static boolean exitEarlyOnFailedCommand(boolean exitEarlyOnFailedCommand, Command command) {
         return Boolean.TRUE.equals(exitEarlyOnFailedCommand)

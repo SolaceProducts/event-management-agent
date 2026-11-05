@@ -25,5 +25,7 @@ public class TerraformLogProcessingServiceTest {
         assertThat(log.get("message")).isEqualTo("Failed removing Terraform state: rootCause");
         assertThat(log.get("level")).isEqualTo("ERROR");
         assertThat(log.get("timestamp")).isNotNull();
+        assertThat(log.get("userMessage")).isNotNull();
+        assertThat(log.get("emaCode")).isEqualTo("802");
     }
 }
