@@ -38,11 +38,7 @@ public class EMAApplication {
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
 
-        // If EMA_CA_BUNDLE is set, trust exactly that CA bundle. This must run before any TLS client is created.
-        try {
-            CaBundleTrustStore.installFromEnvironment();
-        } catch (IllegalStateException e) {
-            log.error("Cannot start: {}", e.getMessage());
+        if (!installCaBundleTrustStore(CaBundleTrustStore::installFromEnvironment)) {
             System.exit(1);
         }
 
@@ -53,6 +49,16 @@ public class EMAApplication {
                 .run(args);
 
         log.info(Markers.appendEntries(startupCompletedMarker), "Started event-management-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
+    }
+
+    static boolean installCaBundleTrustStore(Runnable install) {
+        try {
+            install.run();
+            return true;
+        } catch (IllegalStateException e) {
+            log.error("Cannot start: {}", e.getMessage());
+            return false;
+        }
     }
 
     public static Properties getDefault() {

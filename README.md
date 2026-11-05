@@ -130,7 +130,9 @@ docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
 
 ### Running the Event Management Agent with a Private Certificate Authority
 
-If the agent connects to servers whose certificates are signed by a private certificate authority (CA), mount a PEM file with every CA certificate the agent must trust and set `EMA_CA_BUNDLE` to its path. The agent then trusts only the CAs in that file, on all its connections, so include any public CAs it still needs. The file is read at startup.
+If the agent connects to servers whose certificates are signed by a private certificate authority (CA), mount a PEM file with every CA certificate the agent must trust and set `EMA_CA_BUNDLE` to its path. The agent then trusts only the CAs in that file, so include any public CAs it still needs. Trust settings on an individual connection (a schema registry trust store, SEMP `skipTlsVerify`, the RTO session's `trustStoreDir`) and an existing `SSL_CERT_FILE` or `SSL_CERT_DIR` take precedence. The agent stops at startup if the file is missing, empty or incomplete.
+
+The agent writes its trust store under the system temporary directory, or under `EMA_TRUSTSTORE_DIR` if set. With a read-only root filesystem, point `EMA_TRUSTSTORE_DIR` at a writable volume.
 
 ```
 docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \

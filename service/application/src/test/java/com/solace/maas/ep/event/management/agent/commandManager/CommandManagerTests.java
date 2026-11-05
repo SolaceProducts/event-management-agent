@@ -250,6 +250,7 @@ class CommandManagerTests {
         assert envVars.get("TF_VAR_username").equals("myUsername");
         assert envVars.get("TF_VAR_url").equals("myConnectionUrl");
         assertFalse(envVars.containsKey("SSL_CERT_FILE"));
+        assertFalse(envVars.containsKey("SSL_CERT_DIR"));
 
         ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
@@ -265,9 +266,11 @@ class CommandManagerTests {
     @Test
     void testCommandManagerPassesCaBundleToOpenTofu() {
         when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        when(environmentUtil.getCaBundleCertDirPath()).thenReturn("/tmp/ema-truststore-1/empty-cert-dir");
 
         Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
         assertEquals("/ca/bundle.pem", envVars.get("SSL_CERT_FILE"));
+        assertEquals("/tmp/ema-truststore-1/empty-cert-dir", envVars.get("SSL_CERT_DIR"));
     }
 
     @Test
@@ -277,6 +280,17 @@ class CommandManagerTests {
 
         Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
         assertFalse(envVars.containsKey("SSL_CERT_FILE"));
+        assertFalse(envVars.containsKey("SSL_CERT_DIR"));
+    }
+
+    @Test
+    void testCommandManagerKeepsExistingSslCertDir() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        when(environmentUtil.isSslCertDirSet()).thenReturn(true);
+
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
+        assertEquals("/ca/bundle.pem", envVars.get("SSL_CERT_FILE"));
+        assertFalse(envVars.containsKey("SSL_CERT_DIR"));
     }
 
     private Map<String, String> executeAndCaptureTerraformEnv(CommandMessage message) {

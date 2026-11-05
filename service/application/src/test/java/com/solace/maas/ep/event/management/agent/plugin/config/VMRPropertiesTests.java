@@ -297,7 +297,6 @@ class VMRPropertiesTests {
 
     @Test
     void testConfigureCaBundleTrustStoreForEvmr() {
-        // the trust store EMA built from EMA_CA_BUNDLE is passed to the EVMR link; CUSTOM_CA_CERTS_PRESENT is not consulted
         when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
         System.setProperty("javax.net.ssl.trustStore", "/tmp/ema-truststore/truststore.p12");
         System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
@@ -317,8 +316,20 @@ class VMRPropertiesTests {
     }
 
     @Test
+    void testCaBundleWithoutJvmTrustStoreFailsWithAClearMessage() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        System.clearProperty("javax.net.ssl.trustStore");
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        assertThatThrownBy(() -> vmrProperties.getVmrProperties())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("javax.net.ssl.trustStore");
+    }
+
+    @Test
     void testJvmTrustStoreWithoutCaBundleKeepsDefaultEvmrTrust() {
-        // no EMA_CA_BUNDLE: a JAVA_OPTS / JAVA_TOOL_OPTIONS trust store must not change the EVMR link (still cacerts)
         when(environmentUtil.isCustomCACertPresent()).thenReturn(true);
         System.setProperty("javax.net.ssl.trustStore", "/customer/truststore.jks");
 

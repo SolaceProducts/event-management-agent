@@ -128,7 +128,6 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
 
-        //Use the trust store built from EMA_CA_BUNDLE if set, otherwise the default jks truststore for connecting to the EVMR
         configureDefaultTrustStore(properties);
 
         return properties;
@@ -140,8 +139,6 @@ public class VMRProperties {
             return;
         }
 
-        // Only a trust store that EMA built from EMA_CA_BUNDLE is used for the EVMR link. A trust store passed in
-        // JAVA_OPTS without EMA_CA_BUNDLE keeps the behaviour below.
         if (environmentUtil.getCaBundlePath() != null) {
             setCaBundleTrustStore(properties);
             return;
@@ -155,18 +152,23 @@ public class VMRProperties {
         setDefaultTrustStore(properties);
     }
 
-    /**
-     * Uses the trust store that CaBundleTrustStore built from EMA_CA_BUNDLE at startup and set as the JVM
-     * trust store, so the EVMR link trusts the same CAs as every other connection.
-     */
     void setCaBundleTrustStore(Properties properties) {
-        String trustStore = System.getProperty("javax.net.ssl.trustStore");
+        String trustStore = requiredSystemProperty("javax.net.ssl.trustStore");
         log.info("Configuring EVMR connection to use the truststore built from EMA_CA_BUNDLE: {}", trustStore);
         properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, trustStore);
         properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD,
-                System.getProperty("javax.net.ssl.trustStorePassword"));
+                requiredSystemProperty("javax.net.ssl.trustStorePassword"));
         properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE,
-                System.getProperty("javax.net.ssl.trustStoreType"));
+                requiredSystemProperty("javax.net.ssl.trustStoreType"));
+    }
+
+    private static String requiredSystemProperty(String name) {
+        String value = System.getProperty(name);
+        if (value == null) {
+            throw new IllegalStateException("EMA_CA_BUNDLE trust store is installed but system property " + name
+                    + " is not set");
+        }
+        return value;
     }
 
     void setDefaultTrustStore(Properties properties) {
