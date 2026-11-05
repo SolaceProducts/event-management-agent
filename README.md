@@ -128,6 +128,27 @@ docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
 --name event-management-agent solace/event-management-agent:latest
 ```
 
+### Running the Event Management Agent with a Private Certificate Authority
+
+If your event brokers, schema registries or Event Portal connection use certificates signed by a private certificate authority (CA), give the Event Management Agent a CA bundle: one PEM file that holds every CA certificate the agent must trust.
+
+* Set `EMA_CA_BUNDLE` to the path of the PEM file inside the container.
+* At startup the agent builds a trust store from that file. All its TLS connections then trust exactly the CAs in the bundle: the Event Portal connection, SEMP, configuration push (OpenTofu), Kafka and schema registries (unless the connection file sets their own trust store).
+* Java trusts the bundle even if `JAVA_OPTS` sets another trust store. For configuration push, an `SSL_CERT_FILE` you set yourself wins over the bundle.
+* Include every CA the agent talks to, including public CAs if any connection uses a public certificate. The Java default CA list is not added.
+* If the file is missing, unreadable or holds no certificate, the agent stops at startup.
+* The bundle is read once. After you change it, restart the agent.
+* The trust store is written to `/tmp/ema-truststore`. If the container's root filesystem is read-only, mount a writable folder and set `EMA_TRUSTSTORE_DIR` to it.
+
+```
+docker run -d -p 8180:8180 -v /path/to/file/AcmeRetail.yml:/config/ema.yml \
+-v /path/to/ca-bundle.pem:/certificates/ca-bundle.pem:ro \
+--env EMA_CA_BUNDLE=/certificates/ca-bundle.pem \
+--name event-management-agent solace/event-management-agent:latest
+```
+
+When `EMA_CA_BUNDLE` is not set, nothing changes.
+
 ## Running a Discovery Scan
 
 The Event Management Agent is now connected to the Cloud Console.
@@ -575,6 +596,32 @@ spec:
           optional: true
         name: ema-example1
 ```
+
+## Private Certificate Authority Example
+
+To trust a private CA, put the CA bundle in a Secret (or ConfigMap), mount it, and set `EMA_CA_BUNDLE`. See [Running the Event Management Agent with a Private Certificate Authority](#running-the-event-management-agent-with-a-private-certificate-authority) for what the bundle must hold.
+
+```
+kubectl create secret generic ema-ca-bundle -n ema --from-file=ca-bundle.pem=/path/to/ca-bundle.pem
+```
+
+Add to the Deployment above:
+
+```yaml
+        env:
+            - name: EMA_CA_BUNDLE
+              value: /certificates/ca-bundle.pem
+        volumeMounts:
+        - mountPath: /certificates
+          name: ema-ca-bundle
+          readOnly: true
+      volumes:
+      - name: ema-ca-bundle
+        secret:
+          secretName: ema-ca-bundle
+```
+
+When the CA changes, update the Secret and restart the pod.
 
 ## Service Example
 

@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent;
 
+import com.solace.maas.ep.event.management.agent.plugin.common.util.CaBundleTrustStore;
 import net.logstash.logback.marker.Markers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,14 @@ public class EMAApplication {
         log.info(Markers.appendEntries(startupStartedMarker), "Starting event-management-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
+
+        // If EMA_CA_BUNDLE is set, trust exactly that CA bundle. This must run before any TLS client is created.
+        try {
+            CaBundleTrustStore.installFromEnvironment();
+        } catch (IllegalStateException e) {
+            log.error("Cannot start: {}", e.getMessage());
+            System.exit(2);
+        }
 
         new SpringApplicationBuilder()
                 .bannerMode(Banner.Mode.CONSOLE)
