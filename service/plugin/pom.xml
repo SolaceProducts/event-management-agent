@@ -24,6 +24,9 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <jackson.version>2.21.7</jackson.version>
         <spring-boot.version>4.1.1</spring-boot.version>
+        <!-- This module only started having its own tests with DATAGO-159398; most of it is still covered
+             through the application module, which JaCoCo does not credit here. -->
+        <jacoco.line.percentage>0.05</jacoco.line.percentage>
     </properties>
 
     <dependencyManagement>
@@ -170,9 +173,27 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <argLine>${jacocoSurefire}</argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -128,7 +128,6 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
 
-        //We will always use the default jks truststore for connecting to the EVMR
         configureDefaultTrustStore(properties);
 
         return properties;
@@ -140,12 +139,36 @@ public class VMRProperties {
             return;
         }
 
+        if (environmentUtil.getCaBundlePath() != null) {
+            setCaBundleTrustStore(properties);
+            return;
+        }
+
         if (!environmentUtil.isCustomCACertPresent()) {
             log.info("Custom CA certificates not present. Skipping explicit default truststore configuration.");
             return;
         }
 
         setDefaultTrustStore(properties);
+    }
+
+    void setCaBundleTrustStore(Properties properties) {
+        String trustStore = requiredSystemProperty("javax.net.ssl.trustStore");
+        log.info("Configuring EVMR connection to use the truststore built from EMA_CA_BUNDLE: {}", trustStore);
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, trustStore);
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD,
+                requiredSystemProperty("javax.net.ssl.trustStorePassword"));
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE,
+                requiredSystemProperty("javax.net.ssl.trustStoreType"));
+    }
+
+    private static String requiredSystemProperty(String name) {
+        String value = System.getProperty(name);
+        if (value == null) {
+            throw new IllegalStateException("EMA_CA_BUNDLE trust store is installed but system property " + name
+                    + " is not set");
+        }
+        return value;
     }
 
     void setDefaultTrustStore(Properties properties) {

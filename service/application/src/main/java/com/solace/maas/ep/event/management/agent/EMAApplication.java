@@ -1,5 +1,6 @@
 package com.solace.maas.ep.event.management.agent;
 
+import com.solace.maas.ep.event.management.agent.plugin.common.util.CaBundleTrustStore;
 import net.logstash.logback.marker.Markers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,10 @@ public class EMAApplication {
 
         MDC.put("pid", ManagementFactory.getRuntimeMXBean().getName());
 
+        if (!installCaBundleTrustStore(CaBundleTrustStore::installFromEnvironment)) {
+            System.exit(1);
+        }
+
         new SpringApplicationBuilder()
                 .bannerMode(Banner.Mode.CONSOLE)
                 .sources(EMAApplication.class)
@@ -44,6 +49,16 @@ public class EMAApplication {
                 .run(args);
 
         log.info(Markers.appendEntries(startupCompletedMarker), "Started event-management-agent --> {}", args.length > 0 ? "" : Arrays.toString(args));
+    }
+
+    static boolean installCaBundleTrustStore(Runnable install) {
+        try {
+            install.run();
+            return true;
+        } catch (IllegalStateException e) {
+            log.error("Cannot start: {}", e.getMessage());
+            return false;
+        }
     }
 
     public static Properties getDefault() {

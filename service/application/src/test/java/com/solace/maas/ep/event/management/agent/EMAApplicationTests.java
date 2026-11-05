@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 
 @ActiveProfiles("TEST")
@@ -19,5 +20,17 @@ class EMAApplicationTests {
         EMAApplication.getDefault();
 
         assertThatNoException();
+    }
+
+    @Test
+    void startupContinuesWhenTheCaBundleInstalls() {
+        assertThat(EMAApplication.installCaBundleTrustStore(() -> { })).isTrue();
+    }
+
+    @Test
+    void startupStopsWhenTheCaBundleCannotBeInstalled() {
+        assertThat(EMAApplication.installCaBundleTrustStore(() -> {
+            throw new IllegalStateException("EMA_CA_BUNDLE=/absent.pem is not a readable file");
+        })).isFalse();
     }
 }

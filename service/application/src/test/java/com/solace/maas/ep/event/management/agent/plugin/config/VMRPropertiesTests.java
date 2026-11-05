@@ -295,4 +295,51 @@ class VMRPropertiesTests {
                 .isNull();
     }
 
+    @Test
+    void testConfigureCaBundleTrustStoreForEvmr() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        System.setProperty("javax.net.ssl.trustStore", "/tmp/ema-truststore/truststore.p12");
+        System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
+        System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        Properties properties = vmrProperties.getVmrProperties();
+
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
+                .isEqualTo("/tmp/ema-truststore/truststore.p12");
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD))
+                .isEqualTo("changeit");
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE))
+                .isEqualTo("PKCS12");
+    }
+
+    @Test
+    void testCaBundleWithoutJvmTrustStoreFailsWithAClearMessage() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        System.clearProperty("javax.net.ssl.trustStore");
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        assertThatThrownBy(() -> vmrProperties.getVmrProperties())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("javax.net.ssl.trustStore");
+    }
+
+    @Test
+    void testJvmTrustStoreWithoutCaBundleKeepsDefaultEvmrTrust() {
+        when(environmentUtil.isCustomCACertPresent()).thenReturn(true);
+        System.setProperty("javax.net.ssl.trustStore", "/customer/truststore.jks");
+
+        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
+        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
+
+        Properties properties = vmrProperties.getVmrProperties();
+
+        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
+                .endsWith("cacerts");
+    }
+
 }

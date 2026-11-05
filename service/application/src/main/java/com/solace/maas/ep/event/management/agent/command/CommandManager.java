@@ -357,6 +357,17 @@ public class CommandManager {
         envVars.put("TF_VAR_username", sempClient.getUsername());
         envVars.put("TF_VAR_password", sempClient.getPassword());
         envVars.put("TF_VAR_url", sempClient.getConnectionUrl());
+        String caBundle = environmentUtil.getCaBundlePath();
+        if (caBundle != null) {
+            if (environmentUtil.isSslCertFileSet()) {
+                log.info("SSL_CERT_FILE is set, so OpenTofu uses it instead of EMA_CA_BUNDLE={}", caBundle);
+            } else {
+                envVars.put("SSL_CERT_FILE", caBundle);
+                if (!environmentUtil.isSslCertDirSet()) {
+                    envVars.put("SSL_CERT_DIR", environmentUtil.getCaBundleCertDirPath());
+                }
+            }
+        }
         return envVars;
     }
 

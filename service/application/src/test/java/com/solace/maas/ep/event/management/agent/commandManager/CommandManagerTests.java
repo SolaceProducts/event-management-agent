@@ -5,6 +5,7 @@ import static com.solace.maas.ep.event.management.agent.plugin.constants.RouteCo
 import static com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessageType.generic;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,6 +58,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -95,6 +97,9 @@ class CommandManagerTests {
     private MessagingServiceDelegateService messagingServiceDelegateService;
 
     @Autowired
+    private EnvironmentUtil environmentUtil;
+
+    @Autowired
     private EventPortalProperties eventPortalProperties;
 
     private static final String MESSAGING_SERVICE_ID = "myMessagingServiceId";
@@ -108,6 +113,7 @@ class CommandManagerTests {
         reset(sempDeleteCommandManager);
         reset(messagingServiceDelegateService);
         reset(commandLogStreamingProcessor);
+        reset(environmentUtil);
     }
 
     @Test
@@ -236,10 +242,59 @@ class CommandManagerTests {
     void testCommandManager() {
         // Create a command request message
         CommandMessage message = getCommandMessage("1");
-
-        doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
-
         ArgumentCaptor<Map<String, String>> topicArgCaptor = ArgumentCaptor.forClass(Map.class);
+
+        // Verify the env vars are set with the terraform manager is called
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(message);
+        assert envVars.get("TF_VAR_password").equals("myPassword");
+        assert envVars.get("TF_VAR_username").equals("myUsername");
+        assert envVars.get("TF_VAR_url").equals("myConnectionUrl");
+        assertFalse(envVars.containsKey("SSL_CERT_FILE"));
+        assertFalse(envVars.containsKey("SSL_CERT_DIR"));
+
+        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
+
+        Map<String, String> topicVars = topicArgCaptor.getValue();
+        assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
+        assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
+        assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
+
+        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+    }
+
+    @Test
+    void testCommandManagerPassesCaBundleToOpenTofu() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        when(environmentUtil.getCaBundleCertDirPath()).thenReturn("/tmp/ema-truststore-1/empty-cert-dir");
+
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
+        assertEquals("/ca/bundle.pem", envVars.get("SSL_CERT_FILE"));
+        assertEquals("/tmp/ema-truststore-1/empty-cert-dir", envVars.get("SSL_CERT_DIR"));
+    }
+
+    @Test
+    void testCommandManagerKeepsExistingSslCertFile() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        when(environmentUtil.isSslCertFileSet()).thenReturn(true);
+
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
+        assertFalse(envVars.containsKey("SSL_CERT_FILE"));
+        assertFalse(envVars.containsKey("SSL_CERT_DIR"));
+    }
+
+    @Test
+    void testCommandManagerKeepsExistingSslCertDir() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        when(environmentUtil.isSslCertDirSet()).thenReturn(true);
+
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
+        assertEquals("/ca/bundle.pem", envVars.get("SSL_CERT_FILE"));
+        assertFalse(envVars.containsKey("SSL_CERT_DIR"));
+    }
+
+    private Map<String, String> executeAndCaptureTerraformEnv(CommandMessage message) {
+        doReturn(Path.of("/some/path/on/disk")).when(terraformManager).execute(any(), any(), any());
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
         when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
                 new SolaceHttpSemp(SempClient.builder()
@@ -255,22 +310,7 @@ class CommandManagerTests {
         // Verify terraform manager is called
         ArgumentCaptor<Map<String, String>> envArgCaptor = ArgumentCaptor.forClass(Map.class);
         verify(terraformManager, times(1)).execute(any(), any(), envArgCaptor.capture());
-
-        // Verify the env vars are set with the terraform manager is called
-        Map<String, String> envVars = envArgCaptor.getValue();
-        assert envVars.get("TF_VAR_password").equals("myPassword");
-        assert envVars.get("TF_VAR_username").equals("myUsername");
-        assert envVars.get("TF_VAR_url").equals("myConnectionUrl");
-
-        ArgumentCaptor<CommandMessage> responseCaptor = ArgumentCaptor.forClass(CommandMessage.class);
-        verify(commandPublisher, times(1)).sendCommandResponse(responseCaptor.capture(), topicArgCaptor.capture());
-
-        Map<String, String> topicVars = topicArgCaptor.getValue();
-        assert topicVars.get("orgId").equals(eventPortalProperties.getOrganizationId());
-        assert topicVars.get("runtimeAgentId").equals(eventPortalProperties.getRuntimeAgentId());
-        assert topicVars.get(COMMAND_CORRELATION_ID).equals(message.getCommandCorrelationId());
-
-        assertEquals(JobStatus.success, responseCaptor.getValue().getStatus());
+        return envArgCaptor.getValue();
     }
 
     // configPush tries to delete tf-state directory for the given context before executing the commands.
