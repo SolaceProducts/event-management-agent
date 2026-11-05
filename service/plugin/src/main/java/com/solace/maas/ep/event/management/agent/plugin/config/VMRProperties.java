@@ -1,6 +1,5 @@
 package com.solace.maas.ep.event.management.agent.plugin.config;
 
-import com.solace.maas.ep.event.management.agent.plugin.common.util.CaBundleTrustStore;
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.EventPortalPluginProperties;
 import com.solace.maas.ep.event.management.agent.plugin.jacoco.ExcludeFromJacocoGeneratedReport;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
@@ -129,7 +128,7 @@ public class VMRProperties {
         properties.setProperty(SolaceProperties.AuthenticationProperties.SCHEME_BASIC_PASSWORD, password);
         properties.setProperty(SolaceProperties.ClientProperties.NAME, clientName);
 
-        //We will always use the default jks truststore for connecting to the EVMR
+        //Use the trust store built from EMA_CA_BUNDLE if set, otherwise the default jks truststore for connecting to the EVMR
         configureDefaultTrustStore(properties);
 
         return properties;
@@ -142,8 +141,9 @@ public class VMRProperties {
         }
 
         // Only a trust store that EMA built from EMA_CA_BUNDLE is used for the EVMR link. A trust store passed in
-        // JAVA_OPTS without EMA_CA_BUNDLE keeps today's behaviour below.
-        if (System.getProperty(CaBundleTrustStore.BUNDLE_PROPERTY) != null && setJvmTrustStore(properties)) {
+        // JAVA_OPTS without EMA_CA_BUNDLE keeps the behaviour below.
+        if (environmentUtil.getCaBundlePath() != null) {
+            setCaBundleTrustStore(properties);
             return;
         }
 
@@ -156,31 +156,17 @@ public class VMRProperties {
     }
 
     /**
-     * Uses the truststore the JVM was told to use (javax.net.ssl.trustStore), so the EVMR link trusts the
-     * same CAs as SEMP. Returns false if none is configured or the file can't be read.
+     * Uses the trust store that CaBundleTrustStore built from EMA_CA_BUNDLE at startup and set as the JVM
+     * trust store, so the EVMR link trusts the same CAs as every other connection.
      */
-    boolean setJvmTrustStore(Properties properties) {
+    void setCaBundleTrustStore(Properties properties) {
         String trustStore = System.getProperty("javax.net.ssl.trustStore");
-        if (StringUtils.isBlank(trustStore)) {
-            return false;
-        }
-        File trustStoreFile = new File(trustStore);
-        if (!trustStoreFile.isFile() || !trustStoreFile.canRead()) {
-            log.warn("javax.net.ssl.trustStore {} not found or not readable. Falling back to the default truststore.", trustStore);
-            return false;
-        }
-
-        log.info("Configuring EVMR connection to use javax.net.ssl.trustStore: {}", trustStore);
+        log.info("Configuring EVMR connection to use the truststore built from EMA_CA_BUNDLE: {}", trustStore);
         properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH, trustStore);
-        String password = System.getProperty("javax.net.ssl.trustStorePassword");
-        if (password != null) {
-            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD, password);
-        }
-        String type = System.getProperty("javax.net.ssl.trustStoreType");
-        if (StringUtils.isNotBlank(type)) {
-            properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE, type);
-        }
-        return true;
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD,
+                System.getProperty("javax.net.ssl.trustStorePassword"));
+        properties.setProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE,
+                System.getProperty("javax.net.ssl.trustStoreType"));
     }
 
     void setDefaultTrustStore(Properties properties) {

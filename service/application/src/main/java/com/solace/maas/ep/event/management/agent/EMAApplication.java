@@ -43,7 +43,7 @@ public class EMAApplication {
             CaBundleTrustStore.installFromEnvironment();
         } catch (IllegalStateException e) {
             log.error("Cannot start: {}", e.getMessage());
-            System.exit(2);
+            System.exit(1);
         }
 
         new SpringApplicationBuilder()

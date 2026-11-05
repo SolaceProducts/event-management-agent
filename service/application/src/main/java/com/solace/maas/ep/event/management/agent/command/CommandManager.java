@@ -9,7 +9,6 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBun
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRequest;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandResult;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.common.util.CaBundleTrustStore;
 import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
@@ -359,8 +358,8 @@ public class CommandManager {
         envVars.put("TF_VAR_password", sempClient.getPassword());
         envVars.put("TF_VAR_url", sempClient.getConnectionUrl());
         // OpenTofu and the Solace provider trust the same CA bundle as the JVM, unless SSL_CERT_FILE is already set.
-        String caBundle = System.getProperty(CaBundleTrustStore.BUNDLE_PROPERTY);
-        if (caBundle != null && System.getenv("SSL_CERT_FILE") == null) {
+        String caBundle = environmentUtil.getCaBundlePath();
+        if (caBundle != null && !environmentUtil.isSslCertFileSet()) {
             envVars.put("SSL_CERT_FILE", caBundle);
         }
         return envVars;

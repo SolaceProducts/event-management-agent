@@ -5,7 +5,6 @@ import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.Gatew
 import com.solace.maas.ep.event.management.agent.plugin.config.eventPortal.GatewayProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceConnectionProperties;
 import com.solace.maas.ep.event.management.agent.plugin.messagingService.MessagingServiceUsersProperties;
-import com.solace.maas.ep.event.management.agent.plugin.common.util.CaBundleTrustStore;
 import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.messaging.config.SolaceProperties;
 import lombok.SneakyThrows;
@@ -17,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -298,13 +296,10 @@ class VMRPropertiesTests {
     }
 
     @Test
-    @SneakyThrows
-    void testConfigureBundleTrustStoreForEvmr() {
+    void testConfigureCaBundleTrustStoreForEvmr() {
         // the trust store EMA built from EMA_CA_BUNDLE is passed to the EVMR link; CUSTOM_CA_CERTS_PRESENT is not consulted
-        File trustStore = File.createTempFile("bundle-truststore", ".p12");
-        trustStore.deleteOnExit();
-        System.setProperty(CaBundleTrustStore.BUNDLE_PROPERTY, "/ca/bundle.pem");
-        System.setProperty("javax.net.ssl.trustStore", trustStore.getAbsolutePath());
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        System.setProperty("javax.net.ssl.trustStore", "/tmp/ema-truststore/truststore.p12");
         System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
 
@@ -314,7 +309,7 @@ class VMRPropertiesTests {
         Properties properties = vmrProperties.getVmrProperties();
 
         assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
-                .isEqualTo(trustStore.getAbsolutePath());
+                .isEqualTo("/tmp/ema-truststore/truststore.p12");
         assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PASSWORD))
                 .isEqualTo("changeit");
         assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_TYPE))
@@ -322,29 +317,10 @@ class VMRPropertiesTests {
     }
 
     @Test
-    @SneakyThrows
-    void testConfigureDefaultTrustStoreWhenBundleTrustStoreMissing() {
-        when(environmentUtil.isCustomCACertPresent()).thenReturn(true);
-        System.setProperty(CaBundleTrustStore.BUNDLE_PROPERTY, "/ca/bundle.pem");
-        System.setProperty("javax.net.ssl.trustStore", "/does/not/exist.p12");
-
-        MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
-        when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));
-
-        Properties properties = vmrProperties.getVmrProperties();
-
-        assertThat(properties.getProperty(SolaceProperties.TransportLayerSecurityProperties.TRUST_STORE_PATH))
-                .endsWith("cacerts");
-    }
-
-    @Test
-    @SneakyThrows
-    void testJvmTrustStoreWithoutBundleKeepsTodaysEvmrTrust() {
+    void testJvmTrustStoreWithoutCaBundleKeepsDefaultEvmrTrust() {
         // no EMA_CA_BUNDLE: a JAVA_OPTS / JAVA_TOOL_OPTIONS trust store must not change the EVMR link (still cacerts)
         when(environmentUtil.isCustomCACertPresent()).thenReturn(true);
-        File trustStore = File.createTempFile("customer-truststore", ".jks");
-        trustStore.deleteOnExit();
-        System.setProperty("javax.net.ssl.trustStore", trustStore.getAbsolutePath());
+        System.setProperty("javax.net.ssl.trustStore", "/customer/truststore.jks");
 
         MessagingServiceConnectionProperties connectionProps = createConnectionProperties(false, null, null, null, null, null);
         when(gatewayMessagingProperties.getConnections()).thenReturn(Collections.singletonList(connectionProps));

@@ -15,4 +15,19 @@ public class EnvironmentUtil {
         String customCaCertsPresent = System.getenv("CUSTOM_CA_CERTS_PRESENT");
         return "1".equals(customCaCertsPresent);
     }
+
+    /**
+     * @return the path of the CA bundle EMA built its trust store from (see {@link CaBundleTrustStore}),
+     * or null if EMA_CA_BUNDLE is not set
+     */
+    public String getCaBundlePath() {
+        return System.getProperty(CaBundleTrustStore.BUNDLE_PROPERTY);
+    }
+
+    /**
+     * @return true if the SSL_CERT_FILE environment variable is set
+     */
+    public boolean isSslCertFileSet() {
+        return System.getenv("SSL_CERT_FILE") != null;
+    }
 }

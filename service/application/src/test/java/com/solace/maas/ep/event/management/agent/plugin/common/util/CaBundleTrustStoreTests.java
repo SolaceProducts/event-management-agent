@@ -2,6 +2,7 @@ package com.solace.maas.ep.event.management.agent.plugin.common.util;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -10,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.Collections;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,12 +21,21 @@ class CaBundleTrustStoreTests {
     @TempDir
     Path tmp;
 
-    @AfterEach
-    void clearProperties() {
+    private Properties systemPropertiesBackup;
+
+    @BeforeEach
+    void setUp() {
+        // Backup system properties
+        systemPropertiesBackup = new Properties();
+        systemPropertiesBackup.putAll(System.getProperties());
         System.clearProperty("javax.net.ssl.trustStore");
-        System.clearProperty("javax.net.ssl.trustStorePassword");
-        System.clearProperty("javax.net.ssl.trustStoreType");
         System.clearProperty(CaBundleTrustStore.BUNDLE_PROPERTY);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Restore system properties
+        System.setProperties(systemPropertiesBackup);
     }
 
     @Test

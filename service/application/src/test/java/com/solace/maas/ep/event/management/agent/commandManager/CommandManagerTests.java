@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -59,7 +58,7 @@ import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandRes
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.ExecutionType;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
-import com.solace.maas.ep.event.management.agent.plugin.common.util.CaBundleTrustStore;
+import com.solace.maas.ep.event.management.agent.plugin.common.util.EnvironmentUtil;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPSvcType;
 import com.solace.maas.ep.event.management.agent.plugin.service.MessagingServiceDelegateService;
@@ -98,6 +97,9 @@ class CommandManagerTests {
     private MessagingServiceDelegateService messagingServiceDelegateService;
 
     @Autowired
+    private EnvironmentUtil environmentUtil;
+
+    @Autowired
     private EventPortalProperties eventPortalProperties;
 
     private static final String MESSAGING_SERVICE_ID = "myMessagingServiceId";
@@ -111,6 +113,7 @@ class CommandManagerTests {
         reset(sempDeleteCommandManager);
         reset(messagingServiceDelegateService);
         reset(commandLogStreamingProcessor);
+        reset(environmentUtil);
     }
 
     @Test
@@ -261,14 +264,19 @@ class CommandManagerTests {
 
     @Test
     void testCommandManagerPassesCaBundleToOpenTofu() {
-        assumeTrue(System.getenv("SSL_CERT_FILE") == null, "SSL_CERT_FILE is set in the test environment");
-        System.setProperty(CaBundleTrustStore.BUNDLE_PROPERTY, "/ca/bundle.pem");
-        try {
-            Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
-            assertEquals("/ca/bundle.pem", envVars.get("SSL_CERT_FILE"));
-        } finally {
-            System.clearProperty(CaBundleTrustStore.BUNDLE_PROPERTY);
-        }
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
+        assertEquals("/ca/bundle.pem", envVars.get("SSL_CERT_FILE"));
+    }
+
+    @Test
+    void testCommandManagerKeepsExistingSslCertFile() {
+        when(environmentUtil.getCaBundlePath()).thenReturn("/ca/bundle.pem");
+        when(environmentUtil.isSslCertFileSet()).thenReturn(true);
+
+        Map<String, String> envVars = executeAndCaptureTerraformEnv(getCommandMessage("1"));
+        assertFalse(envVars.containsKey("SSL_CERT_FILE"));
     }
 
     private Map<String, String> executeAndCaptureTerraformEnv(CommandMessage message) {
