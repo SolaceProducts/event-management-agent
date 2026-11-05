@@ -87,6 +87,15 @@ public enum EmaErrorCode {
         return userMessage;
     }
 
+    public static EmaErrorCode fromCode(String code) {
+        for (EmaErrorCode entry : values()) {
+            if (entry.code.equals(code)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
     public EmaInternalPayload buildInternal(String correlationId, String rawErrorMessage) {
         return EmaInternalPayload.builder()
                 .correlationId(correlationId)

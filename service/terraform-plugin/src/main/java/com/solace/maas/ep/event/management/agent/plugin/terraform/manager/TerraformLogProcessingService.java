@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,12 +37,13 @@ public class TerraformLogProcessingService {
 
     public CommandResult buildTfStateFileDeletionFailureResult(RuntimeException rootCause) {
 
-        Map<String, Object> errorLog = Map.of(
-                "address", "N/A",
-                "message", "Failed removing Terraform state: " + rootCause.getMessage(),
-                "level", "ERROR",
-                KEY_RESULT_TIMESTAMP, OffsetDateTime.now(),
-                "userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
+        Map<String, Object> errorLog = new HashMap<>();
+        errorLog.put("address", "N/A");
+        errorLog.put("message", "Failed removing Terraform state: " + rootCause.getMessage());
+        errorLog.put("level", "ERROR");
+        errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
+        errorLog.put("userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
+        errorLog.put("emaCode", "802"); // EmaErrorCode.TERRAFORM_STATE_DELETION_FAILURE
 
         List<Map<String, Object>> logs = List.of(errorLog);
 

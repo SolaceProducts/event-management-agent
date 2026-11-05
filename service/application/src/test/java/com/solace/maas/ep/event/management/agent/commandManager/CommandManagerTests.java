@@ -48,6 +48,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
+import com.solace.maas.ep.event.management.agent.command.EmaErrorCode;
 import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -502,6 +503,7 @@ class CommandManagerTests {
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
         Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
         Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND.getCode());
     }
 
     @Test
@@ -544,6 +546,7 @@ class CommandManagerTests {
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
         Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
         Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.UNKNOWN_COMMAND_TYPE.getCode());
     }
 
     @Nested

@@ -272,9 +272,16 @@ public class CommandManager {
                     .findFirst()
                     .orElse(null);
 
+            String logEntryCode = allLogs.stream()
+                    .map(e -> extractNonBlank(e, "emaCode"))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+            EmaErrorCode logEntryErrorCode = logEntryCode != null ? EmaErrorCode.fromCode(logEntryCode) : null;
+
             String effectiveUserMessage = emaUserMessageOverride != null ? emaUserMessageOverride : userMessage;
             if (effectiveUserMessage != null) {
-                EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride, isSempError);
+                EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode, isSempError);
                 String internalDetail = isSempError
                         ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage)
                         : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage);
@@ -330,14 +337,16 @@ public class CommandManager {
     }
 
     private void handleUnknownCommandType(Command command) {
+        Map<String, Object> logEntry = new HashMap<>();
+        logEntry.put("message", "unknown command type " + command.getCommandType());
+        logEntry.put("errorType", "UnknownCommandType");
+        logEntry.put("level", LOG_LEVEL_ERROR);
+        logEntry.put("timestamp", OffsetDateTime.now());
+        logEntry.put("userMessage", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getUserMessage());
+        logEntry.put("emaCode", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getCode());
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)
-                .logs(List.of(
-                        Map.of("message", "unknown command type " + command.getCommandType(),
-                                "errorType", "UnknownCommandType",
-                                "level", LOG_LEVEL_ERROR,
-                                "timestamp", OffsetDateTime.now(),
-                                "userMessage", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getUserMessage())))
+                .logs(List.of(logEntry))
                 .build());
     }
 
