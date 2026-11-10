@@ -57,7 +57,7 @@ class AbstractSempCommandManagerSempErrorTest {
     }
 
     @Test
-    void execute_sempApiException_capturesResponseBodyInLogs() {
+    void execute_sempApiException_capturesResponseBodyAndUserMessageInLogs() {
         String responseBody = "{\"meta\":{\"error\":{\"code\":89,\"description\":\"Queue limit exceeded\",\"status\":\"MAX_NUM_EXCEEDED\"}}}";
         manager.sempException = new ApiException(400, Map.of(), responseBody);
 
@@ -67,16 +67,7 @@ class AbstractSempCommandManagerSempErrorTest {
         assertThat(result.getStatus()).isEqualTo(JobStatus.error);
         assertThat(result.getLogs()).isNotEmpty();
         assertThat(result.getLogs().get(0)).containsEntry("sempResponseBody", responseBody);
-    }
-
-    @Test
-    void execute_sempApiException_setsUserMessageInLogs() {
-        String responseBody = "{\"meta\":{\"error\":{\"code\":89,\"description\":\"Queue limit exceeded\",\"status\":\"MAX_NUM_EXCEEDED\"}}}";
-        manager.sempException = new ApiException(400, Map.of(), responseBody);
-
-        manager.execute(command, null);
-
-        assertThat((String) result().getLogs().get(0).get("userMessage")).isNotBlank();
+        assertThat((String) result.getLogs().get(0).get("userMessage")).isNotBlank();
     }
 
     @Test
