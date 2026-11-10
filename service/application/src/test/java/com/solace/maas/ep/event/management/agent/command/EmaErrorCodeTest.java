@@ -1,36 +1,20 @@
 package com.solace.maas.ep.event.management.agent.command;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EmaErrorCodeTest {
 
-    @Test
-    void allCodesHaveServiceId() {
-        for (EmaErrorCode code : EmaErrorCode.values()) {
-            assertThat(code.getServiceId()).isNotBlank();
-        }
-    }
-
-    @Test
-    void allCodesHaveUserMessage() {
-        for (EmaErrorCode code : EmaErrorCode.values()) {
-            assertThat(code.getUserMessage()).isNotBlank();
-        }
-    }
-
-    @Test
-    void allCodesHaveNumericCode() {
-        for (EmaErrorCode code : EmaErrorCode.values()) {
-            assertThat(code.getCode()).isGreaterThanOrEqualTo(0);
-        }
-    }
-
-    @Test
-    void allCodesHaveResult() {
-        for (EmaErrorCode code : EmaErrorCode.values()) {
-            assertThat(code.getResult()).isNotBlank();
-        }
+    @ParameterizedTest
+    @EnumSource(EmaErrorCode.class)
+    void allCodesHaveRequiredFields(EmaErrorCode code) {
+        assertThat(code.getServiceId()).isNotBlank();
+        assertThat(code.getUserMessage()).isNotBlank();
+        assertThat(code.getResult()).isNotBlank();
+        assertThat(code.getCode()).isGreaterThanOrEqualTo(0);
     }
 
     @Test
