@@ -47,7 +47,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("Not SEMP call failed", "solacebroker_msg_vpn_acl_profile.foo", "MAX_NUM_EXCEEDED in response")
             ));
-            assertThat((Map<?, ?>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
+            assertThat((Map<String, Object>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         @Test
@@ -55,7 +55,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_queue.foo", "MAX_NUM_EXCEEDED in response")
             ));
-            assertThat((Map<?, ?>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
+            assertThat((Map<String, Object>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         @Test
@@ -63,7 +63,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_acl_profile.foo", "some other error")
             ));
-            assertThat((Map<?, ?>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
+            assertThat((Map<String, Object>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         private String aclProfileErrorLog() {
