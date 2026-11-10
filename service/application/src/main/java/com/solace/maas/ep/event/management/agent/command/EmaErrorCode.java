@@ -12,7 +12,7 @@ public enum EmaErrorCode {
     // Catch-all Terraform apply failure — superseded by specific codes as error classes are targeted
     TERRAFORM_APPLY_ERROR(
             "ema",
-            "1",
+            1,
             Msg.INTERNAL_ERROR,
             "The Event Management Agent was unable to apply broker configuration. " +
             "Check the event broker's resource limits and state, then try again.",
@@ -21,7 +21,7 @@ public enum EmaErrorCode {
     // Catch-all direct SEMP command failure — superseded by specific codes as error classes are targeted
     SEMP_ERROR(
             "ema",
-            "1",
+            1,
             Msg.INTERNAL_ERROR,
             "The Event Management Agent received an error from the event broker. " +
             "Check the broker's configuration and try again.",
@@ -29,7 +29,7 @@ public enum EmaErrorCode {
     ),
     MESSAGING_SERVICE_NOT_FOUND(
             "ema",
-            "1",
+            1,
             Msg.INTERNAL_ERROR,
             "The Event Management Agent could not find a connection to the event broker. " +
             "Verify that the broker is registered and connected, then try again.",
@@ -37,7 +37,7 @@ public enum EmaErrorCode {
     ),
     TERRAFORM_STATE_DELETION_FAILURE(
             "ema",
-            "1",
+            1,
             Msg.INTERNAL_ERROR,
             "The Event Management Agent encountered an internal error preparing for deployment. " +
             Msg.CONTACT_SUPPORT,
@@ -45,7 +45,7 @@ public enum EmaErrorCode {
     ),
     UNKNOWN_COMMAND_TYPE(
             "ema",
-            "1",
+            1,
             Msg.INTERNAL_ERROR,
             "The Event Management Agent received an unrecognized command. " +
             Msg.CONTACT_SUPPORT,
@@ -53,7 +53,7 @@ public enum EmaErrorCode {
     ),
     ACL_PROFILE_LIMIT_EXCEEDED(
             "ema",
-            "1",
+            1,
             "LIMIT_EXCEEDED",
             "The event broker has reached its ACL profile limit. " +
             "Please contact Solace or remove unused ACL profiles to free capacity.",
@@ -61,7 +61,7 @@ public enum EmaErrorCode {
     ),
     INTERNAL_ERROR(
             "ema",
-            "1",
+            1,
             Msg.INTERNAL_ERROR,
             "The Event Management Agent encountered an unexpected error. " +
             Msg.CONTACT_SUPPORT,
@@ -69,7 +69,7 @@ public enum EmaErrorCode {
     );
 
     private final String serviceId;
-    private final String code;
+    private final int code;
     private final String result;
     private final String userMessage;
     private final LogLevel logLevel;
@@ -84,7 +84,7 @@ public enum EmaErrorCode {
         private Msg() {}
     }
 
-    EmaErrorCode(String serviceId, String code, String result, String userMessage, LogLevel logLevel) {
+    EmaErrorCode(String serviceId, int code, String result, String userMessage, LogLevel logLevel) {
         this.serviceId = serviceId;
         this.code = code;
         this.result = result;
@@ -96,7 +96,7 @@ public enum EmaErrorCode {
         return serviceId;
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 

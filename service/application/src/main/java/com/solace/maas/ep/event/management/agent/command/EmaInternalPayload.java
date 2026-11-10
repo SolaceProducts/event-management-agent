@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class EmaInternalPayload implements Serializable {
     private String correlationId;
     private String serviceId;
-    private String code;
+    private int code;
     private String result;
     private String errorMessage;
 }
