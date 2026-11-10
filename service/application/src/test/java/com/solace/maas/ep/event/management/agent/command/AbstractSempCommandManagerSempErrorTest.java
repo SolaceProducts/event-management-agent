@@ -71,6 +71,30 @@ class AbstractSempCommandManagerSempErrorTest {
     }
 
     @Test
+    void execute_sempApiException_non400_setsErrorStatus() {
+        manager.sempException = new ApiException(500, Map.of(), "{\"error\":\"internal\"}");
+
+        manager.execute(command, null);
+
+        assertThat(result().getStatus()).isEqualTo(JobStatus.error);
+        assertThat(result().getLogs().get(0)).containsEntry("sempResponseBody", "{\"error\":\"internal\"}");
+    }
+
+    @Test
+    void handleSempOperationException_notFoundBody_doesNotThrow() throws ApiException {
+        ApiException notFound = new ApiException(400, Map.of(), "{\"meta\":{\"error\":{\"status\":\"NOT_FOUND\"}}}");
+        manager.handleSempOperationException(notFound, "solaceQueue", "delete");
+        // no exception — passes silently
+    }
+
+    @Test
+    void handleSempOperationException_otherError_rethrows() {
+        ApiException other = new ApiException(400, Map.of(), "{\"meta\":{\"error\":{\"status\":\"MAX_NUM_EXCEEDED\"}}}");
+        org.junit.jupiter.api.Assertions.assertThrows(ApiException.class,
+                () -> manager.handleSempOperationException(other, "solaceQueue", "delete"));
+    }
+
+    @Test
     void execute_nonApiException_usesSetCommandErrorPath() {
         manager.nonSempException = new IllegalStateException("Connection refused");
 

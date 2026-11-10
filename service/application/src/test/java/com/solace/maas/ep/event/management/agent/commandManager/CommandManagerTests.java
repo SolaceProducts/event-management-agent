@@ -49,6 +49,7 @@ import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.EmaErrorCode;
+import com.solace.client.sempv2.ApiException;
 import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -539,6 +540,31 @@ class CommandManagerTests {
         commandManager.execute(message);
 
         assertErrorResponse(EmaErrorCode.UNKNOWN_COMMAND_TYPE);
+    }
+
+    @Test
+    void sempError_setsUserMessageAndInternalOnResponse() {
+        // A SEMP command that throws ApiException flows through applyErrorPayload's isSempError=true branch
+        CommandMessage message = getCommandMessage("1", 1, 0, false, false);
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        String responseBody = "{\"meta\":{\"error\":{\"code\":89,\"description\":\"Queue limit exceeded\",\"status\":\"MAX_NUM_EXCEEDED\"}}}";
+        doThrow(new ApiException(400, java.util.Map.of(), responseBody))
+                .when(sempDeleteCommandManager).execute(any(), any());
+
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername")
+                        .password("myPassword")
+                        .connectionUrl("myConnectionUrl")
+                        .build()));
+
+        commandManager.execute(message);
+
+        ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
+        Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
+        Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.SEMP_ERROR.getCode());
     }
 
     private void assertErrorResponse(EmaErrorCode expectedCode) {

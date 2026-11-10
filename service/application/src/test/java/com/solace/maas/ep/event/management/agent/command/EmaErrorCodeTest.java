@@ -18,6 +18,21 @@ class EmaErrorCodeTest {
     }
 
     @Test
+    void fromName_null_returnsNull() {
+        assertThat(EmaErrorCode.fromName(null)).isNull();
+    }
+
+    @Test
+    void fromName_unknownName_returnsNull() {
+        assertThat(EmaErrorCode.fromName("NOT_A_REAL_CODE")).isNull();
+    }
+
+    @Test
+    void fromName_validName_returnsCode() {
+        assertThat(EmaErrorCode.fromName("TERRAFORM_APPLY_ERROR")).isEqualTo(EmaErrorCode.TERRAFORM_APPLY_ERROR);
+    }
+
+    @Test
     void terraformApplyError_hasExpectedUserMessage() {
         assertThat(EmaErrorCode.TERRAFORM_APPLY_ERROR.getUserMessage())
                 .contains("configuration");
