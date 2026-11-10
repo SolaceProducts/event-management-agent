@@ -22,13 +22,13 @@ public class TerraformLogProcessingServiceTest {
         RuntimeException rootCause = new RuntimeException("rootCause");
         CommandResult result = service.buildTfStateFileDeletionFailureResult(rootCause);
         assertThat(result.getStatus()).isEqualTo(JobStatus.error);
-        assertThat(result.getLogs().size()).isEqualTo(1);
+        assertThat(result.getLogs()).hasSize(1);
         Map<String, Object> log = result.getLogs().get(0);
-        assertThat(log.get("message")).isEqualTo("Failed removing Terraform state: rootCause");
-        assertThat(log.get("level")).isEqualTo("ERROR");
-        assertThat(log.get("timestamp")).isNotNull();
-        assertThat(log.get("userMessage")).isNotNull();
-        assertThat(log.get("emaCode")).isEqualTo("TERRAFORM_STATE_DELETION_FAILURE");
+        assertThat(log).containsEntry("message", "Failed removing Terraform state: rootCause");
+        assertThat(log).containsEntry("level", "ERROR");
+        assertThat(log).containsKey("timestamp");
+        assertThat(log).containsKey("userMessage");
+        assertThat(log).containsEntry("emaCode", "TERRAFORM_STATE_DELETION_FAILURE");
     }
 
     @Nested
@@ -39,7 +39,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(aclProfileErrorLog()));
             assertThat(result.getStatus()).isEqualTo(JobStatus.error);
             Map<String, Object> log = result.getLogs().get(0);
-            assertThat(log.get("emaCode")).isEqualTo("ACL_PROFILE_LIMIT_EXCEEDED");
+            assertThat(log).containsEntry("emaCode", "ACL_PROFILE_LIMIT_EXCEEDED");
         }
 
         @Test
@@ -47,7 +47,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("Not SEMP call failed", "solacebroker_msg_vpn_acl_profile.foo", "MAX_NUM_EXCEEDED in response")
             ));
-            assertThat(((Map<?, ?>) result.getLogs().get(0)).get("emaCode")).isEqualTo("INTERNAL_ERROR");
+            assertThat((Map<?, ?>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         @Test
@@ -55,7 +55,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_queue.foo", "MAX_NUM_EXCEEDED in response")
             ));
-            assertThat(((Map<?, ?>) result.getLogs().get(0)).get("emaCode")).isEqualTo("INTERNAL_ERROR");
+            assertThat((Map<?, ?>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         @Test
@@ -63,7 +63,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_acl_profile.foo", "some other error")
             ));
-            assertThat(((Map<?, ?>) result.getLogs().get(0)).get("emaCode")).isEqualTo("INTERNAL_ERROR");
+            assertThat((Map<?, ?>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         private String aclProfileErrorLog() {

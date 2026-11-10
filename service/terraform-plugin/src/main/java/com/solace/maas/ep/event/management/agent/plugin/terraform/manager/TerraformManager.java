@@ -32,6 +32,8 @@ public class TerraformManager {
     public static final String SYNC_HCL_FILENAME = "sync.tf";
     public static final String ENVIRONMENT_KEY = "environment";
     public static final String EXECUTION_LOG_FILE = "commandExecution.log";
+    private static final String KEY_DIAGNOSTIC = "diagnostic";
+    private static final String KEY_DETAIL = "detail";
     private final TerraformLogProcessingService terraformLogProcessingService;
     private final TerraformProperties terraformProperties;
     private final TerraformClientFactory terraformClientFactory;
@@ -219,16 +221,16 @@ public class TerraformManager {
      */
     boolean isNoSuchHostError(Map<String, Object> logMap) {
         try {
-            Object diagnostic = logMap.get("diagnostic");
+            Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
             if (diagnostic instanceof Map) {
                 Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
-                Object detail = diagnosticMap.get("detail");
+                Object detail = diagnosticMap.get(KEY_DETAIL);
                 if (detail instanceof String detailStr) {
                     return detailStr.contains("no such host");
                 }
             }
             return false;
-        } catch (Exception e) {
+        } catch (Exception _) {
             // If we can't parse the structure, don't suppress the error
             return false;
         }
@@ -240,10 +242,10 @@ public class TerraformManager {
      */
     boolean isSslCertificateError(Map<String, Object> logMap) {
         try {
-            Object diagnostic = logMap.get("diagnostic");
+            Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
             if (diagnostic instanceof Map) {
                 Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
-                Object detail = diagnosticMap.get("detail");
+                Object detail = diagnosticMap.get(KEY_DETAIL);
                 if (detail instanceof String detailStr) {
                     return detailStr.contains("failed to verify certificate") ||
                             detailStr.contains("certificate is not valid") ||
@@ -255,7 +257,7 @@ public class TerraformManager {
                 }
             }
             return false;
-        } catch (Exception e) {
+        } catch (Exception _) {
             // If we can't parse the structure, don't suppress the error
             return false;
         }
@@ -263,18 +265,18 @@ public class TerraformManager {
 
     boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
         try {
-            Object diagnostic = logMap.get("diagnostic");
+            Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
             if (diagnostic instanceof Map) {
                 Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
                 Object summary = diagnosticMap.get("summary");
                 Object address = diagnosticMap.get("address");
-                Object detail = diagnosticMap.get("detail");
+                Object detail = diagnosticMap.get(KEY_DETAIL);
                 return "SEMP call failed".equals(summary)
                         && address instanceof String addrStr && addrStr.startsWith("solacebroker_msg_vpn_acl_profile")
                         && detail instanceof String detailStr && detailStr.contains("MAX_NUM_EXCEEDED");
             }
             return false;
-        } catch (Exception e) {
+        } catch (Exception _) {
             return false;
         }
     }

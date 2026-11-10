@@ -29,6 +29,9 @@ public class TerraformLogProcessingService {
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
     public static final String KEY_RESULT_TIMESTAMP = "timestamp";
+    public static final String KEY_ADDRESS = "address";
+    public static final String KEY_SIMPLE_MESSAGE = "message";
+    public static final String KEY_SIMPLE_LEVEL = "level";
     // EmaErrorCode enum names — kept as string literals to avoid a dependency on the application module
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
@@ -41,9 +44,9 @@ public class TerraformLogProcessingService {
     public CommandResult buildTfStateFileDeletionFailureResult(RuntimeException rootCause) {
 
         Map<String, Object> errorLog = new HashMap<>();
-        errorLog.put("address", "N/A");
-        errorLog.put("message", "Failed removing Terraform state: " + rootCause.getMessage());
-        errorLog.put("level", "ERROR");
+        errorLog.put(KEY_ADDRESS, "N/A");
+        errorLog.put(KEY_SIMPLE_MESSAGE, "Failed removing Terraform state: " + rootCause.getMessage());
+        errorLog.put(KEY_SIMPLE_LEVEL, "ERROR");
         errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
         errorLog.put("userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
         errorLog.put("emaCode", "TERRAFORM_STATE_DELETION_FAILURE");
@@ -104,11 +107,10 @@ public class TerraformLogProcessingService {
         }
 
         return Map.of(
-                "address", extractResourceAddressFromHook(expandedLogMessage.get("hook")),
-                "message", expandedLogMessage.get(KEY_MESSAGE),
-                "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
+                KEY_ADDRESS, extractResourceAddressFromHook(expandedLogMessage.get("hook")),
+                KEY_SIMPLE_MESSAGE, expandedLogMessage.get(KEY_MESSAGE),
+                KEY_SIMPLE_LEVEL, expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
                 KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP)
-
         );
 
     }
@@ -126,10 +128,10 @@ public class TerraformLogProcessingService {
         String emaCode = classifyTerraformDiagnostic(summary, address, detail);
 
         Map<String, Object> result = new java.util.HashMap<>();
-        result.put("address", address);
+        result.put(KEY_ADDRESS, address);
         result.put(KEY_DIAGNOSTIC_DETAIL, detail);
-        result.put("message", expandedLogMessage.get(KEY_MESSAGE));
-        result.put("level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase());
+        result.put(KEY_SIMPLE_MESSAGE, expandedLogMessage.get(KEY_MESSAGE));
+        result.put(KEY_SIMPLE_LEVEL, expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase());
         result.put(KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP));
         result.put("emaCode", emaCode);
         return result;

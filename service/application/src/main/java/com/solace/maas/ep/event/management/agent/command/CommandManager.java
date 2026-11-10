@@ -254,44 +254,8 @@ public class CommandManager {
         // The first non-blank value found is promoted into the response as a user-facing message.
         // An override set by the caller (e.g. messaging-service-not-found) takes priority.
         if (requestBO.getStatus() == JobStatus.error || emaUserMessageOverride != null) {
-            List<Map<String, Object>> allLogs = requestBO.getCommandBundles().stream()
-                    .flatMap(bundle -> bundle.getCommands().stream())
-                    .map(Command::getResult)
-                    .filter(result -> result != null && result.getLogs() != null)
-                    .flatMap(result -> result.getLogs().stream())
-                    .toList();
-
-            boolean isSempError = allLogs.stream().anyMatch(e -> e.containsKey("sempResponseBody"));
-
-            String userMessage = allLogs.stream()
-                    .map(e -> {
-                        String detail = extractNonBlank(e, "diagnosticDetail");
-                        return detail != null ? detail : extractNonBlank(e, "userMessage");
-                    })
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-
-            String logEntryCode = allLogs.stream()
-                    .map(e -> extractNonBlank(e, "emaCode"))
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-            EmaErrorCode logEntryErrorCode = EmaErrorCode.fromName(logEntryCode);
-
-            if (emaUserMessageOverride != null || userMessage != null) {
-                EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode, isSempError);
-                String internalDetail = isSempError
-                        ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
-                        : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
-                // Caller override wins; otherwise use the error code's curated message when it was explicitly
-                // classified (i.e. came from a log entry code), falling back to the raw log value for catch-all codes
-                String effectiveUserMessage = emaUserMessageOverride != null
-                        ? emaUserMessageOverride
-                        : logEntryErrorCode != null ? effectiveErrorCode.getUserMessage() : userMessage;
-                response.setUserMessage(effectiveUserMessage);
-                response.setInternal(effectiveErrorCode.buildInternal(requestBO.getCommandCorrelationId(), internalDetail));
-            }
+            List<Map<String, Object>> allLogs = collectAllLogs(requestBO);
+            applyErrorPayload(response, allLogs, emaUserMessageOverride, emaErrorCodeOverride, requestBO.getCommandCorrelationId());
         }
 
         commandPublisher.sendCommandResponse(response, topicVars);
@@ -301,6 +265,58 @@ public class CommandManager {
                         ORIGIN_ORG_ID_TAG, requestBO.getOriginOrgId(),
                         IS_LINKED_TAG, MdcUtil.isLinked(requestBO.getOrgId(), requestBO.getOriginOrgId()) ? "true" : "false")
                 .increment();
+    }
+
+    private static List<Map<String, Object>> collectAllLogs(CommandRequest requestBO) {
+        return requestBO.getCommandBundles().stream()
+                .flatMap(bundle -> bundle.getCommands().stream())
+                .map(Command::getResult)
+                .filter(result -> result != null && result.getLogs() != null)
+                .flatMap(result -> result.getLogs().stream())
+                .toList();
+    }
+
+    private void applyErrorPayload(CommandMessage response, List<Map<String, Object>> allLogs,
+                                   String emaUserMessageOverride, EmaErrorCode emaErrorCodeOverride,
+                                   String correlationId) {
+        boolean isSempError = allLogs.stream().anyMatch(e -> e.containsKey("sempResponseBody"));
+
+        String userMessage = allLogs.stream()
+                .map(e -> {
+                    String detail = extractNonBlank(e, "diagnosticDetail");
+                    return detail != null ? detail : extractNonBlank(e, "userMessage");
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
+        EmaErrorCode logEntryErrorCode = EmaErrorCode.fromName(
+                allLogs.stream().map(e -> extractNonBlank(e, "emaCode")).filter(Objects::nonNull).findFirst().orElse(null));
+
+        if (emaUserMessageOverride == null && userMessage == null) {
+            return;
+        }
+
+        EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode, isSempError);
+        String internalDetail = isSempError
+                ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
+                : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
+        // Caller override wins; otherwise use the error code's curated message when it was explicitly
+        // classified (i.e. came from a log entry code), falling back to the raw log value for catch-all codes
+        String effectiveUserMessage = resolveUserMessage(emaUserMessageOverride, logEntryErrorCode, effectiveErrorCode, userMessage);
+        response.setUserMessage(effectiveUserMessage);
+        response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
+    }
+
+    private static String resolveUserMessage(String emaUserMessageOverride, EmaErrorCode logEntryErrorCode,
+                                              EmaErrorCode effectiveErrorCode, String userMessage) {
+        if (emaUserMessageOverride != null) {
+            return emaUserMessageOverride;
+        }
+        if (logEntryErrorCode != null) {
+            return effectiveErrorCode.getUserMessage();
+        }
+        return userMessage;
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
