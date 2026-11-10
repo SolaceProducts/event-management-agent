@@ -277,14 +277,18 @@ public class CommandManager {
                     .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(null);
-            EmaErrorCode logEntryErrorCode = logEntryCode != null ? EmaErrorCode.fromCode(logEntryCode) : null;
+            EmaErrorCode logEntryErrorCode = EmaErrorCode.fromName(logEntryCode);
 
-            String effectiveUserMessage = emaUserMessageOverride != null ? emaUserMessageOverride : userMessage;
-            if (effectiveUserMessage != null) {
+            if (emaUserMessageOverride != null || userMessage != null) {
                 EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode, isSempError);
                 String internalDetail = isSempError
-                        ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage)
-                        : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(effectiveUserMessage);
+                        ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
+                        : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
+                // Caller override wins; otherwise use the error code's curated message when it was explicitly
+                // classified (i.e. came from a log entry code), falling back to the raw log value for catch-all codes
+                String effectiveUserMessage = emaUserMessageOverride != null
+                        ? emaUserMessageOverride
+                        : logEntryErrorCode != null ? effectiveErrorCode.getUserMessage() : userMessage;
                 response.setUserMessage(effectiveUserMessage);
                 response.setInternal(effectiveErrorCode.buildInternal(requestBO.getCommandCorrelationId(), internalDetail));
             }
@@ -343,7 +347,7 @@ public class CommandManager {
         logEntry.put("level", LOG_LEVEL_ERROR);
         logEntry.put("timestamp", OffsetDateTime.now());
         logEntry.put("userMessage", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getUserMessage());
-        logEntry.put("emaCode", EmaErrorCode.UNKNOWN_COMMAND_TYPE.getCode());
+        logEntry.put("emaCode", EmaErrorCode.UNKNOWN_COMMAND_TYPE.name());
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)
                 .logs(List.of(logEntry))

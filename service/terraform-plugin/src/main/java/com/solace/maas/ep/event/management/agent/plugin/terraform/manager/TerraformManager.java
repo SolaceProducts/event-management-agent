@@ -197,8 +197,8 @@ public class TerraformManager {
         Map<String, Object> logMop = objectMapper.readValue(tfLog, Map.class);
         String logLevel = (String) logMop.get("@level");
 
-        // Check if this is a "no such host" error or SSL certificate error and downgrade to warning
-        if ("error".equals(logLevel) && (isNoSuchHostError(logMop) || isSslCertificateError(logMop))) {
+        // Known, classified errors are logged at WARN; unclassified errors remain ERROR
+        if ("error".equals(logLevel) && (isNoSuchHostError(logMop) || isSslCertificateError(logMop) || isAclProfileLimitExceeded(logMop))) {
             log.warn(logMessage);
             return;
         }
@@ -257,6 +257,24 @@ public class TerraformManager {
             return false;
         } catch (Exception e) {
             // If we can't parse the structure, don't suppress the error
+            return false;
+        }
+    }
+
+    boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
+        try {
+            Object diagnostic = logMap.get("diagnostic");
+            if (diagnostic instanceof Map) {
+                Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
+                Object summary = diagnosticMap.get("summary");
+                Object address = diagnosticMap.get("address");
+                Object detail = diagnosticMap.get("detail");
+                return "SEMP call failed".equals(summary)
+                        && address instanceof String addrStr && addrStr.startsWith("solacebroker_msg_vpn_acl_profile")
+                        && detail instanceof String detailStr && detailStr.contains("MAX_NUM_EXCEEDED");
+            }
+            return false;
+        } catch (Exception e) {
             return false;
         }
     }

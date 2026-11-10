@@ -29,6 +29,9 @@ public class TerraformLogProcessingService {
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
     public static final String KEY_RESULT_TIMESTAMP = "timestamp";
+    // EmaErrorCode enum names — kept as string literals to avoid a dependency on the application module
+    static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
+    static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
     private final ObjectMapper objectMapper;
 
     public TerraformLogProcessingService(ObjectMapper objectMapper) {
@@ -43,7 +46,7 @@ public class TerraformLogProcessingService {
         errorLog.put("level", "ERROR");
         errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
         errorLog.put("userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
-        errorLog.put("emaCode", "802"); // EmaErrorCode.TERRAFORM_STATE_DELETION_FAILURE
+        errorLog.put("emaCode", "TERRAFORM_STATE_DELETION_FAILURE");
 
         List<Map<String, Object>> logs = List.of(errorLog);
 
@@ -116,13 +119,37 @@ public class TerraformLogProcessingService {
                     String.format("This method only handles logs of type %s", VALUE_TYPE_APPLY_ERRORED)
             );
         }
-        return Map.of(
-                "address", extractResourceAddressFromDiagnostic(expandedLogMessage.get(KEY_DIAGNOSTIC)),
-                KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC)),
-                "message", expandedLogMessage.get(KEY_MESSAGE),
-                "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
-                KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP)
-        );
+        Object diagnostic = expandedLogMessage.get(KEY_DIAGNOSTIC);
+        String address = extractResourceAddressFromDiagnostic(diagnostic);
+        String detail = extractDiagnosticDetailMessage(diagnostic);
+        String summary = extractDiagnosticSummary(diagnostic);
+        String emaCode = classifyTerraformDiagnostic(summary, address, detail);
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("address", address);
+        result.put(KEY_DIAGNOSTIC_DETAIL, detail);
+        result.put("message", expandedLogMessage.get(KEY_MESSAGE));
+        result.put("level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase());
+        result.put(KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP));
+        result.put("emaCode", emaCode);
+        return result;
+    }
+
+    private String classifyTerraformDiagnostic(String summary, String address, String detail) {
+        if ("SEMP call failed".equals(summary)
+                && address != null && address.startsWith("solacebroker_msg_vpn_acl_profile")
+                && detail != null && detail.contains("MAX_NUM_EXCEEDED")) {
+            return EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED;
+        }
+        return EMA_CODE_INTERNAL_ERROR;
+    }
+
+    private String extractDiagnosticSummary(Object diagnostic) {
+        if (diagnostic instanceof Map) {
+            Object summary = ((Map<?, ?>) diagnostic).get("summary");
+            return summary != null ? String.valueOf(summary) : null;
+        }
+        return null;
     }
 
     private String extractDiagnosticDetailMessage(Object diagnostic) {
