@@ -499,11 +499,7 @@ class CommandManagerTests {
 
         commandManager.execute(message);
 
-        ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
-        verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
-        Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
-        Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
-        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND.getCode());
+        assertErrorResponse(EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND);
     }
 
     @Test
@@ -542,11 +538,15 @@ class CommandManagerTests {
 
         commandManager.execute(message);
 
+        assertErrorResponse(EmaErrorCode.UNKNOWN_COMMAND_TYPE);
+    }
+
+    private void assertErrorResponse(EmaErrorCode expectedCode) {
         ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
         Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
         Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
-        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.UNKNOWN_COMMAND_TYPE.getCode());
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(expectedCode.getCode());
     }
 
     @Nested
