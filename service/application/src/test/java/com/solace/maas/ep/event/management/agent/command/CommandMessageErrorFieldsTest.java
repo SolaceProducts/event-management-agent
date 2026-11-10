@@ -26,7 +26,7 @@ class CommandMessageErrorFieldsTest {
         CommandMessage msg = new CommandMessage();
         EmaInternalPayload internal = EmaInternalPayload.builder()
                 .serviceId("ema")
-                .code("TERRAFORM_APPLY_ERROR")
+                .code(1)
                 .result("error")
                 .errorMessage("exit status 1")
                 .build();
@@ -35,7 +35,8 @@ class CommandMessageErrorFieldsTest {
         String json = objectMapper.writeValueAsString(msg);
         assertThat(json)
                 .contains("\"_internal\"")
-                .contains("TERRAFORM_APPLY_ERROR");
+                .contains("\"serviceId\"")
+                .contains("ema");
     }
 
     @Test

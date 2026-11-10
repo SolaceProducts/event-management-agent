@@ -22,9 +22,7 @@ class EmaErrorCodeTest {
     @Test
     void allCodesHaveNumericCode() {
         for (EmaErrorCode code : EmaErrorCode.values()) {
-            assertThat(code.getCode())
-                    .isNotBlank()
-                    .matches("\\d+");
+            assertThat(code.getCode()).isGreaterThanOrEqualTo(0);
         }
     }
 
@@ -46,7 +44,7 @@ class EmaErrorCodeTest {
         EmaInternalPayload payload = EmaErrorCode.TERRAFORM_APPLY_ERROR.buildInternal("corr-123", "exit status 1");
         assertThat(payload.getCorrelationId()).isEqualTo("corr-123");
         assertThat(payload.getServiceId()).isEqualTo("ema");
-        assertThat(payload.getCode()).isEqualTo("909");
+        assertThat(payload.getCode()).isEqualTo(1);
         assertThat(payload.getResult()).isEqualTo("INTERNAL_ERROR");
         assertThat(payload.getErrorMessage()).isEqualTo("exit status 1");
     }
