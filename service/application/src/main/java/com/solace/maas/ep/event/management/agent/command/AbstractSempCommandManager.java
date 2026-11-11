@@ -55,7 +55,7 @@ public abstract class AbstractSempCommandManager {
                         "level", LOG_LEVEL_ERROR,
                         "timestamp", OffsetDateTime.now(),
                         "sempResponseBody", responseBody != null ? responseBody : "",
-                        "userMessage", EmaErrorCode.SEMP_ERROR.getUserMessage()
+                        "userMessage", null
                 )))
                 .build());
     }

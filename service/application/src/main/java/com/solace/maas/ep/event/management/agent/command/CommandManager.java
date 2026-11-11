@@ -295,7 +295,7 @@ public class CommandManager {
             return;
         }
 
-        EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode, isSempError);
+        EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode);
         String internalDetail = isSempError
                 ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
                 : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
@@ -404,11 +404,8 @@ public class CommandManager {
     }
 
 
-    private static EmaErrorCode resolveErrorCode(EmaErrorCode override, boolean isSempError) {
-        if (override != null) {
-            return override;
-        }
-        return isSempError ? EmaErrorCode.SEMP_ERROR : EmaErrorCode.TERRAFORM_APPLY_ERROR;
+    private static EmaErrorCode resolveErrorCode(EmaErrorCode override) {
+        return override != null ? override : EmaErrorCode.INTERNAL_ERROR;
     }
 
     private static String extractNonBlank(Map<String, Object> logEntry, String key) {

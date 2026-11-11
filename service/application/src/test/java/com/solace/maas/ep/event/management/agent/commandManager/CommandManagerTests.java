@@ -574,7 +574,7 @@ class CommandManagerTests {
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
         Assertions.assertThat(captor.getValue().getUserMessage()).isNull();
         Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
-        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.SEMP_ERROR.getCode());
+        Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.INTERNAL_ERROR.getCode());
     }
 
     private void assertErrorResponse(EmaErrorCode expectedCode) {

@@ -12,24 +12,6 @@ package com.solace.maas.ep.event.management.agent.command;
  */
 public enum EmaErrorCode {
 
-    // Catch-all Terraform apply failure — superseded by specific codes as error classes are targeted
-    TERRAFORM_APPLY_ERROR(
-            "ema",
-            1,
-            Msg.INTERNAL_ERROR,
-            null,
-            false,
-            LogLevel.ERROR
-    ),
-    // Catch-all direct SEMP command failure — superseded by specific codes as error classes are targeted
-    SEMP_ERROR(
-            "ema",
-            1,
-            Msg.INTERNAL_ERROR,
-            null,
-            false,
-            LogLevel.ERROR
-    ),
     ACL_PROFILE_LIMIT_EXCEEDED(
             "ema",
             1,

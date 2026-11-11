@@ -29,18 +29,18 @@ class EmaErrorCodeTest {
 
     @Test
     void fromName_validName_returnsCode() {
-        assertThat(EmaErrorCode.fromName("TERRAFORM_APPLY_ERROR")).isEqualTo(EmaErrorCode.TERRAFORM_APPLY_ERROR);
+        assertThat(EmaErrorCode.fromName("INTERNAL_ERROR")).isEqualTo(EmaErrorCode.INTERNAL_ERROR);
     }
 
     @Test
     void terraformApplyError_hasExpectedUserMessage() {
-        assertThat(EmaErrorCode.TERRAFORM_APPLY_ERROR.getUserMessage())
-                .contains("configuration");
+        assertThat(EmaErrorCode.ACL_PROFILE_LIMIT_EXCEEDED.getUserMessage())
+                .contains("ACL profile");
     }
 
     @Test
     void buildInternalPayload_populatesAllFields() {
-        EmaInternalPayload payload = EmaErrorCode.TERRAFORM_APPLY_ERROR.buildInternal("corr-123", "exit status 1");
+        EmaInternalPayload payload = EmaErrorCode.INTERNAL_ERROR.buildInternal("corr-123", "exit status 1");
         assertThat(payload.getCorrelationId()).isEqualTo("corr-123");
         assertThat(payload.getServiceId()).isEqualTo("ema");
         assertThat(payload.getCode()).isEqualTo(1);
