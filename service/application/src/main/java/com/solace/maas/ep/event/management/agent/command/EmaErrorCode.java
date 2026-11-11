@@ -6,6 +6,9 @@ package com.solace.maas.ep.event.management.agent.command;
  * and the log level EMA should use when this error occurs.
  * Code is coarse-grained per protocol: 0 = success, 1 = failure. Consumers branch on result, not code.
  * See: https://sol-jira.atlassian.net/wiki/spaces/EventInteg/pages/6467813380
+ *
+ * userMessage: a null userMessage means the error is not user-actionable; the caller (ep-core) will
+ * fall back to its own canned message. Only set a non-null message when the user can take a specific action.
  */
 public enum EmaErrorCode {
 
@@ -15,6 +18,7 @@ public enum EmaErrorCode {
             1,
             Msg.INTERNAL_ERROR,
             null,
+            false,
             LogLevel.ERROR
     ),
     // Catch-all direct SEMP command failure — superseded by specific codes as error classes are targeted
@@ -23,6 +27,7 @@ public enum EmaErrorCode {
             1,
             Msg.INTERNAL_ERROR,
             null,
+            false,
             LogLevel.ERROR
     ),
     ACL_PROFILE_LIMIT_EXCEEDED(
@@ -31,6 +36,7 @@ public enum EmaErrorCode {
             "LIMIT_EXCEEDED",
             "The event broker has reached its ACL profile limit. " +
             "Remove unused ACL profiles to free capacity.",
+            true,
             LogLevel.WARN
     ),
     INTERNAL_ERROR(
@@ -38,6 +44,7 @@ public enum EmaErrorCode {
             1,
             Msg.INTERNAL_ERROR,
             null,
+            false,
             LogLevel.ERROR
     );
 
@@ -45,6 +52,7 @@ public enum EmaErrorCode {
     private final int code;
     private final String result;
     private final String userMessage;
+    private final boolean userActionable;
     private final LogLevel logLevel;
 
     public enum LogLevel {
@@ -56,11 +64,12 @@ public enum EmaErrorCode {
         private Msg() {}
     }
 
-    EmaErrorCode(String serviceId, int code, String result, String userMessage, LogLevel logLevel) {
+    EmaErrorCode(String serviceId, int code, String result, String userMessage, boolean userActionable, LogLevel logLevel) {
         this.serviceId = serviceId;
         this.code = code;
         this.result = result;
         this.userMessage = userMessage;
+        this.userActionable = userActionable;
         this.logLevel = logLevel;
     }
 
@@ -78,6 +87,10 @@ public enum EmaErrorCode {
 
     public String getUserMessage() {
         return userMessage;
+    }
+
+    public boolean isUserActionable() {
+        return userActionable;
     }
 
     public LogLevel getLogLevel() {
