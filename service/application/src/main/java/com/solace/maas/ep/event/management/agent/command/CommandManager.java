@@ -250,9 +250,7 @@ public class CommandManager {
         response.setActorId(MDC.get(ACTOR_ID));
         response.setOriginOrgId(requestBO.getOriginOrgId());
 
-        // Scan log entries for a diagnosticDetail (Terraform errors) or userMessage key.
-        // The first non-blank value found is promoted into the response as a user-facing message.
-        // An override set by the caller (e.g. messaging-service-not-found) takes priority.
+        // Caller override wins; otherwise the curated message for the effective error code is used.
         if (requestBO.getStatus() == JobStatus.error || emaUserMessageOverride != null) {
             List<Map<String, Object>> allLogs = collectAllLogs(requestBO);
             applyErrorPayload(response, allLogs, emaUserMessageOverride, emaErrorCodeOverride, requestBO.getCommandCorrelationId());
@@ -303,20 +301,16 @@ public class CommandManager {
                 : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
         // Caller override wins; otherwise use the error code's curated message when it was explicitly
         // classified (i.e. came from a log entry code), falling back to the raw log value for catch-all codes
-        String effectiveUserMessage = resolveUserMessage(emaUserMessageOverride, logEntryErrorCode, effectiveErrorCode, userMessage);
+        String effectiveUserMessage = resolveUserMessage(emaUserMessageOverride, effectiveErrorCode);
         response.setUserMessage(effectiveUserMessage);
         response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
     }
 
-    private static String resolveUserMessage(String emaUserMessageOverride, EmaErrorCode logEntryErrorCode,
-                                              EmaErrorCode effectiveErrorCode, String userMessage) {
+    private static String resolveUserMessage(String emaUserMessageOverride, EmaErrorCode effectiveErrorCode) {
         if (emaUserMessageOverride != null) {
             return emaUserMessageOverride;
         }
-        if (logEntryErrorCode != null) {
-            return effectiveErrorCode.getUserMessage();
-        }
-        return userMessage;
+        return effectiveErrorCode.getUserMessage();
     }
 
     private Path executeTerraformCommand(CommandRequest request, Command command, Map<String, String> envVars) {
