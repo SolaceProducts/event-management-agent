@@ -51,7 +51,7 @@ public class TerraformLogProcessingService {
         errorLog.put(KEY_SIMPLE_LEVEL, "ERROR");
         errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
         errorLog.put("userMessage", EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE);
-        errorLog.put("emaCode", "INTERNAL_ERROR");
+        errorLog.put("emaCode", EMA_CODE_INTERNAL_ERROR);
 
         List<Map<String, Object>> logs = List.of(errorLog);
 
