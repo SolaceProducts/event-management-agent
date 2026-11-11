@@ -32,7 +32,7 @@ public class TerraformLogProcessingServiceTest {
         assertThat(log).containsEntry("level", "ERROR");
         assertThat(log).containsKey("timestamp");
         assertThat(log).containsKey("userMessage");
-        assertThat(log).containsEntry("emaCode", "TERRAFORM_STATE_DELETION_FAILURE");
+        assertThat(log).containsEntry("emaCode", "INTERNAL_ERROR");
     }
 
     @Test

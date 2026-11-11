@@ -27,30 +27,6 @@ public enum EmaErrorCode {
             "Check the broker's configuration and try again.",
             LogLevel.ERROR
     ),
-    MESSAGING_SERVICE_NOT_FOUND(
-            "ema",
-            1,
-            Msg.INTERNAL_ERROR,
-            "The Event Management Agent could not find a connection to the event broker. " +
-            "Verify that the broker is registered and connected, then try again.",
-            LogLevel.ERROR
-    ),
-    TERRAFORM_STATE_DELETION_FAILURE(
-            "ema",
-            1,
-            Msg.INTERNAL_ERROR,
-            "The Event Management Agent encountered an internal error preparing for deployment. " +
-            Msg.CONTACT_SUPPORT,
-            LogLevel.ERROR
-    ),
-    UNKNOWN_COMMAND_TYPE(
-            "ema",
-            1,
-            Msg.INTERNAL_ERROR,
-            "The Event Management Agent received an unrecognized command. " +
-            Msg.CONTACT_SUPPORT,
-            LogLevel.ERROR
-    ),
     ACL_PROFILE_LIMIT_EXCEEDED(
             "ema",
             1,

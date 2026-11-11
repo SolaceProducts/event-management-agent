@@ -499,7 +499,7 @@ class CommandManagerTests {
 
         commandManager.execute(message);
 
-        assertErrorResponse(EmaErrorCode.MESSAGING_SERVICE_NOT_FOUND);
+        assertErrorResponse(EmaErrorCode.INTERNAL_ERROR);
     }
 
     @Test
@@ -538,7 +538,7 @@ class CommandManagerTests {
 
         commandManager.execute(message);
 
-        assertErrorResponse(EmaErrorCode.UNKNOWN_COMMAND_TYPE);
+        assertErrorResponse(EmaErrorCode.INTERNAL_ERROR);
     }
 
     @Test

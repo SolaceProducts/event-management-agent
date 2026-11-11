@@ -36,7 +36,7 @@ public class TerraformLogProcessingService {
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
     static final String EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE =
-            "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.";
+            "The Event Management Agent encountered an unexpected error. Contact support if the issue persists.";
     private final ObjectMapper objectMapper;
 
     public TerraformLogProcessingService(ObjectMapper objectMapper) {
@@ -51,7 +51,7 @@ public class TerraformLogProcessingService {
         errorLog.put(KEY_SIMPLE_LEVEL, "ERROR");
         errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
         errorLog.put("userMessage", EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE);
-        errorLog.put("emaCode", "TERRAFORM_STATE_DELETION_FAILURE");
+        errorLog.put("emaCode", "INTERNAL_ERROR");
 
         List<Map<String, Object>> logs = List.of(errorLog);
 
