@@ -291,17 +291,13 @@ public class CommandManager {
         EmaErrorCode logEntryErrorCode = EmaErrorCode.fromName(
                 allLogs.stream().map(e -> extractNonBlank(e, "emaCode")).filter(Objects::nonNull).findFirst().orElse(null));
 
-        if (emaUserMessageOverride == null && userMessage == null) {
-            return;
-        }
-
         EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode);
         String internalDetail = isSempError
                 ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
                 : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
+        response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
         String effectiveUserMessage = resolveUserMessage(emaUserMessageOverride, effectiveErrorCode);
         response.setUserMessage(effectiveUserMessage);
-        response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
     }
 
     private static String resolveUserMessage(String emaUserMessageOverride, EmaErrorCode effectiveErrorCode) {

@@ -67,7 +67,7 @@ class AbstractSempCommandManagerSempErrorTest {
         assertThat(result.getStatus()).isEqualTo(JobStatus.error);
         assertThat(result.getLogs()).isNotEmpty();
         assertThat(result.getLogs().get(0)).containsEntry("sempResponseBody", responseBody);
-        assertThat((String) result.getLogs().get(0).get("userMessage")).isNotBlank();
+        assertThat(result.getLogs().get(0)).doesNotContainKey("userMessage");
     }
 
     @Test
