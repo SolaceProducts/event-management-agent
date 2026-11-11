@@ -543,13 +543,14 @@ class CommandManagerTests {
     }
 
     @Test
-    void sempError_setsUserMessageAndInternalOnResponse() {
-        // A SEMP command that throws ApiException flows through applyErrorPayload's isSempError=true branch
+    void sempError_setsUserMessageAndInternalOnResponse() throws Exception {
+        // A SEMP command that throws ApiException flows through applyErrorPayload's isSempError=true branch.
+        // executeSempCommand declares throws ApiException so Mockito accepts the stub.
         CommandMessage message = getCommandMessage("1", 1, 0, false, false);
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
         String responseBody = "{\"meta\":{\"error\":{\"code\":89,\"description\":\"Queue limit exceeded\",\"status\":\"MAX_NUM_EXCEEDED\"}}}";
         doThrow(new ApiException(400, java.util.Map.of(), responseBody))
-                .when(sempDeleteCommandManager).execute(any(), any());
+                .when(sempDeleteCommandManager).executeSempCommand(any(), any());
 
         when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
                 new SolaceHttpSemp(SempClient.builder()
