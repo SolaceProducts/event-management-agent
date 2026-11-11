@@ -56,7 +56,7 @@ public enum EmaErrorCode {
             1,
             "LIMIT_EXCEEDED",
             "The event broker has reached its ACL profile limit. " +
-            "Please contact Solace or remove unused ACL profiles to free capacity.",
+            "Remove unused ACL profiles to free capacity.",
             LogLevel.WARN
     ),
     INTERNAL_ERROR(
