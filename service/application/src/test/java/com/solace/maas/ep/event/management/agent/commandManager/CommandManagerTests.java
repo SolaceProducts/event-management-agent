@@ -49,7 +49,6 @@ import com.solace.maas.ep.common.messages.CommandMessage;
 import com.solace.maas.ep.event.management.agent.TestConfig;
 import com.solace.maas.ep.event.management.agent.command.CommandManager;
 import com.solace.maas.ep.event.management.agent.command.EmaErrorCode;
-import com.solace.client.sempv2.ApiException;
 import com.solace.maas.ep.event.management.agent.command.SempDeleteCommandManager;
 import com.solace.maas.ep.event.management.agent.command.mapper.CommandMapper;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
@@ -543,14 +542,24 @@ class CommandManagerTests {
     }
 
     @Test
-    void sempError_setsUserMessageAndInternalOnResponse() throws Exception {
-        // A SEMP command that throws ApiException flows through applyErrorPayload's isSempError=true branch.
-        // executeSempCommand declares throws ApiException so Mockito accepts the stub.
+    void sempError_setsUserMessageAndInternalOnResponse() {
+        // Simulate a SEMP command that fails: inject a result with sempResponseBody directly via doAnswer
+        // so applyErrorPayload's isSempError=true branch is exercised in CommandManager.
         CommandMessage message = getCommandMessage("1", 1, 0, false, false);
         doNothing().when(commandPublisher).sendCommandResponse(any(), any());
         String responseBody = "{\"meta\":{\"error\":{\"code\":89,\"description\":\"Queue limit exceeded\",\"status\":\"MAX_NUM_EXCEEDED\"}}}";
-        doThrow(new ApiException(400, java.util.Map.of(), responseBody))
-                .when(sempDeleteCommandManager).executeSempCommand(any(), any());
+        doAnswer(invocation -> {
+            Command cmd = invocation.getArgument(0);
+            cmd.setResult(CommandResult.builder()
+                    .status(JobStatus.error)
+                    .logs(List.of(Map.of(
+                            "sempResponseBody", responseBody,
+                            "userMessage", EmaErrorCode.SEMP_ERROR.getUserMessage(),
+                            "level", "ERROR"
+                    )))
+                    .build());
+            return null;
+        }).when(sempDeleteCommandManager).execute(any(), any());
 
         when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
                 new SolaceHttpSemp(SempClient.builder()
