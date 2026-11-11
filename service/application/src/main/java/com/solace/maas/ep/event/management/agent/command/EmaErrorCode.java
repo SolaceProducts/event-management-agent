@@ -14,8 +14,7 @@ public enum EmaErrorCode {
             "ema",
             1,
             Msg.INTERNAL_ERROR,
-            "The Event Management Agent was unable to apply broker configuration. " +
-            "Check the event broker's resource limits and state, then try again.",
+            null,
             LogLevel.ERROR
     ),
     // Catch-all direct SEMP command failure — superseded by specific codes as error classes are targeted
@@ -23,8 +22,7 @@ public enum EmaErrorCode {
             "ema",
             1,
             Msg.INTERNAL_ERROR,
-            "The Event Management Agent received an error from the event broker. " +
-            "Check the broker's configuration and try again.",
+            null,
             LogLevel.ERROR
     ),
     ACL_PROFILE_LIMIT_EXCEEDED(
@@ -39,8 +37,7 @@ public enum EmaErrorCode {
             "ema",
             1,
             Msg.INTERNAL_ERROR,
-            "The Event Management Agent encountered an unexpected error. " +
-            Msg.CONTACT_SUPPORT,
+            null,
             LogLevel.ERROR
     );
 
@@ -56,7 +53,6 @@ public enum EmaErrorCode {
 
     static final class Msg {
         static final String INTERNAL_ERROR = "INTERNAL_ERROR";
-        static final String CONTACT_SUPPORT = "Contact support if the issue persists.";
         private Msg() {}
     }
 

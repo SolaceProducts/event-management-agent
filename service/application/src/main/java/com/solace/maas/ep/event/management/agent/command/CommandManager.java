@@ -117,7 +117,7 @@ public class CommandManager {
     public void handleError(Exception e, CommandMessage message) {
         CommandRequest requestBO = commandMapper.map(message);
         attachErrorLogToCommand(false, e, requestBO);
-        finalizeAndSendResponse(requestBO, EmaErrorCode.INTERNAL_ERROR.getUserMessage(), EmaErrorCode.INTERNAL_ERROR);
+        finalizeAndSendResponse(requestBO, null, EmaErrorCode.INTERNAL_ERROR);
     }
 
     @SuppressWarnings("PMD")
@@ -136,7 +136,7 @@ public class CommandManager {
             // We also need to check if the client is null if there is no exception thrown
             SolaceHttpSemp solaceClient = messagingServiceDelegateService.getMessagingServiceClient(request.getServiceId());
             if (solaceClient == null) {
-                emaUserMessageOverride = EmaErrorCode.INTERNAL_ERROR.getUserMessage();
+                emaUserMessageOverride = null;
                 emaErrorCodeOverride = EmaErrorCode.INTERNAL_ERROR;
                 throw new IllegalStateException("Messaging service client not found for serviceId " + request.getServiceId());
             }
@@ -354,7 +354,7 @@ public class CommandManager {
         logEntry.put("errorType", "UnknownCommandType");
         logEntry.put("level", LOG_LEVEL_ERROR);
         logEntry.put("timestamp", OffsetDateTime.now());
-        logEntry.put("userMessage", EmaErrorCode.INTERNAL_ERROR.getUserMessage());
+        logEntry.put("userMessage", null);
         logEntry.put("emaCode", EmaErrorCode.INTERNAL_ERROR.name());
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)

@@ -554,7 +554,7 @@ class CommandManagerTests {
                     .status(JobStatus.error)
                     .logs(List.of(Map.of(
                             "sempResponseBody", responseBody,
-                            "userMessage", EmaErrorCode.SEMP_ERROR.getUserMessage(),
+                            "userMessage", null,
                             "level", "ERROR"
                     )))
                     .build());
@@ -572,7 +572,7 @@ class CommandManagerTests {
 
         ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
-        Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
+        Assertions.assertThat(captor.getValue().getUserMessage()).isNull();
         Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
         Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.SEMP_ERROR.getCode());
     }
@@ -580,7 +580,7 @@ class CommandManagerTests {
     private void assertErrorResponse(EmaErrorCode expectedCode) {
         ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
-        Assertions.assertThat(captor.getValue().getUserMessage()).isNotBlank();
+        Assertions.assertThat(captor.getValue().getUserMessage()).isNull();
         Assertions.assertThat(captor.getValue().getInternal()).isNotNull();
         Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(expectedCode.getCode());
     }
