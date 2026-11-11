@@ -2,7 +2,7 @@ package com.solace.maas.ep.event.management.agent.command;
 
 /**
  * EMA error code registry per the inter-microservice error protocol.
- * Each entry maps a specific error condition to a numeric code, global result, safe user-facing message,
+ * Maps each error condition to a numeric code, global result, safe user-facing message,
  * and the log level EMA should use when this error occurs.
  * Code is coarse-grained per protocol: 0 = success, 1 = failure. Consumers branch on result, not code.
  * See: https://sol-jira.atlassian.net/wiki/spaces/EventInteg/pages/6467813380

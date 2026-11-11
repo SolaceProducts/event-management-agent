@@ -136,7 +136,6 @@ public class CommandManager {
             // We also need to check if the client is null if there is no exception thrown
             SolaceHttpSemp solaceClient = messagingServiceDelegateService.getMessagingServiceClient(request.getServiceId());
             if (solaceClient == null) {
-                emaUserMessageOverride = null;
                 emaErrorCodeOverride = EmaErrorCode.INTERNAL_ERROR;
                 throw new IllegalStateException("Messaging service client not found for serviceId " + request.getServiceId());
             }
