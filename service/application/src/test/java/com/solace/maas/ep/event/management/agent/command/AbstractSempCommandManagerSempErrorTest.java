@@ -81,10 +81,10 @@ class AbstractSempCommandManagerSempErrorTest {
     }
 
     @Test
-    void handleSempOperationException_notFoundBody_doesNotThrow() throws ApiException {
+    void handleSempOperationException_notFoundBody_doesNotThrow() {
         ApiException notFound = new ApiException(400, Map.of(), "{\"meta\":{\"error\":{\"status\":\"NOT_FOUND\"}}}");
-        manager.handleSempOperationException(notFound, "solaceQueue", "delete");
-        // no exception — passes silently
+        org.assertj.core.api.Assertions.assertThatNoException()
+                .isThrownBy(() -> manager.handleSempOperationException(notFound, "solaceQueue", "delete"));
     }
 
     @Test
