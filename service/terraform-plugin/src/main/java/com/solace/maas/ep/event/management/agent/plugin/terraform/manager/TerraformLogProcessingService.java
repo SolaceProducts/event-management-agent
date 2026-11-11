@@ -35,8 +35,8 @@ public class TerraformLogProcessingService {
     // EmaErrorCode enum names and messages — kept as string literals to avoid a dependency on the application module
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
-    // Presence of userMessage in a log entry is what breaks the early-return guard in CommandManager.applyErrorPayload;
-    // the actual message used on the wire comes from EmaErrorCode.getUserMessage() via the emaCode key, not this literal.
+    // userMessage must be present in the log entry to pass the null guard in the error payload builder;
+    // the actual wire message is sourced from the error code enum via the emaCode key, not this literal.
     static final String EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE =
             "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.";
     private final ObjectMapper objectMapper;
@@ -158,7 +158,7 @@ public class TerraformLogProcessingService {
                 return false;
             }
             String summary = diagnosticMap.get("summary") instanceof String s ? s : null;
-            String address = diagnosticMap.get("address") instanceof String s ? s : null;
+            String address = diagnosticMap.get(KEY_ADDRESS) instanceof String s ? s : null;
             String detail  = diagnosticMap.get("detail")  instanceof String s ? s : null;
             return isAclProfileLimitExceededDiagnostic(summary, address, detail);
         } catch (Exception _) {
