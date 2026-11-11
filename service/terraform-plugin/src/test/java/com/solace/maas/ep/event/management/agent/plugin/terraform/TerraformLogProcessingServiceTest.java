@@ -35,7 +35,8 @@ public class TerraformLogProcessingServiceTest {
 
     @Test
     void buildTfCommandResult_emptyList_throwsIllegalArgument() {
-        assertThrows(IllegalArgumentException.class, () -> service.buildTfCommandResult(List.of()));
+        List<String> emptyList = List.of();
+        assertThrows(IllegalArgumentException.class, () -> service.buildTfCommandResult(emptyList));
     }
 
     @Test
