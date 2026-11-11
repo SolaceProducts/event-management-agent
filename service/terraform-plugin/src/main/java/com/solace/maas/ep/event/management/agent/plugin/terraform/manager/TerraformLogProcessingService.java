@@ -32,9 +32,13 @@ public class TerraformLogProcessingService {
     public static final String KEY_ADDRESS = "address";
     public static final String KEY_SIMPLE_MESSAGE = "message";
     public static final String KEY_SIMPLE_LEVEL = "level";
-    // EmaErrorCode enum names — kept as string literals to avoid a dependency on the application module
+    // EmaErrorCode enum names and messages — kept as string literals to avoid a dependency on the application module
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
+    // Presence of userMessage in a log entry is what breaks the early-return guard in CommandManager.applyErrorPayload;
+    // the actual message used on the wire comes from EmaErrorCode.getUserMessage() via the emaCode key, not this literal.
+    static final String EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE =
+            "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.";
     private final ObjectMapper objectMapper;
 
     public TerraformLogProcessingService(ObjectMapper objectMapper) {
@@ -48,7 +52,7 @@ public class TerraformLogProcessingService {
         errorLog.put(KEY_SIMPLE_MESSAGE, "Failed removing Terraform state: " + rootCause.getMessage());
         errorLog.put(KEY_SIMPLE_LEVEL, "ERROR");
         errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
-        errorLog.put("userMessage", "The Event Management Agent encountered an internal error preparing for deployment. Contact support if the issue persists.");
+        errorLog.put("userMessage", EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE);
         errorLog.put("emaCode", "TERRAFORM_STATE_DELETION_FAILURE");
 
         List<Map<String, Object>> logs = List.of(errorLog);
@@ -138,12 +142,34 @@ public class TerraformLogProcessingService {
     }
 
     private String classifyTerraformDiagnostic(String summary, String address, String detail) {
-        if ("SEMP call failed".equals(summary)
-                && address != null && address.startsWith("solacebroker_msg_vpn_acl_profile")
-                && detail != null && detail.contains("MAX_NUM_EXCEEDED")) {
-            return EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED;
+        return isAclProfileLimitExceededDiagnostic(summary, address, detail)
+                ? EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED
+                : EMA_CODE_INTERNAL_ERROR;
+    }
+
+    /**
+     * Returns true when the log map represents an ACL profile limit-exceeded error.
+     * Used by TerraformManager to decide whether to downgrade the log level to WARN.
+     */
+    static boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
+        try {
+            Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
+            if (!(diagnostic instanceof Map<?, ?> diagnosticMap)) {
+                return false;
+            }
+            String summary = diagnosticMap.get("summary") instanceof String s ? s : null;
+            String address = diagnosticMap.get("address") instanceof String s ? s : null;
+            String detail  = diagnosticMap.get("detail")  instanceof String s ? s : null;
+            return isAclProfileLimitExceededDiagnostic(summary, address, detail);
+        } catch (Exception _) {
+            return false;
         }
-        return EMA_CODE_INTERNAL_ERROR;
+    }
+
+    private static boolean isAclProfileLimitExceededDiagnostic(String summary, String address, String detail) {
+        return "SEMP call failed".equals(summary)
+                && address != null && address.startsWith("solacebroker_msg_vpn_acl_profile")
+                && detail != null && detail.contains("MAX_NUM_EXCEEDED");
     }
 
     private String extractDiagnosticSummary(Object diagnostic) {

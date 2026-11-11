@@ -264,21 +264,7 @@ public class TerraformManager {
     }
 
     boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
-        try {
-            Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
-            if (diagnostic instanceof Map) {
-                Map<String, Object> diagnosticMap = (Map<String, Object>) diagnostic;
-                Object summary = diagnosticMap.get("summary");
-                Object address = diagnosticMap.get("address");
-                Object detail = diagnosticMap.get(KEY_DETAIL);
-                return "SEMP call failed".equals(summary)
-                        && address instanceof String addrStr && addrStr.startsWith("solacebroker_msg_vpn_acl_profile")
-                        && detail instanceof String detailStr && detailStr.contains("MAX_NUM_EXCEEDED");
-            }
-            return false;
-        } catch (Exception _) {
-            return false;
-        }
+        return TerraformLogProcessingService.isAclProfileLimitExceeded(logMap);
     }
 
     @SneakyThrows
