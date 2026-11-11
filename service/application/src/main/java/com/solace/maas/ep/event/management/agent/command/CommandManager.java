@@ -299,8 +299,6 @@ public class CommandManager {
         String internalDetail = isSempError
                 ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
                 : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
-        // Caller override wins; otherwise use the error code's curated message when it was explicitly
-        // classified (i.e. came from a log entry code), falling back to the raw log value for catch-all codes
         String effectiveUserMessage = resolveUserMessage(emaUserMessageOverride, effectiveErrorCode);
         response.setUserMessage(effectiveUserMessage);
         response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
