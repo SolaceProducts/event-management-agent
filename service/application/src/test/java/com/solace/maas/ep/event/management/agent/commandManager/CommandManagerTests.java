@@ -554,7 +554,6 @@ class CommandManagerTests {
                     .status(JobStatus.error)
                     .logs(List.of(Map.of(
                             "sempResponseBody", responseBody,
-                            "userMessage", null,
                             "level", "ERROR"
                     )))
                     .build());

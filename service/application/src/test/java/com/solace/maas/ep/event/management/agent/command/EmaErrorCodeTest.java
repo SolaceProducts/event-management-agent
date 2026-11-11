@@ -12,9 +12,13 @@ class EmaErrorCodeTest {
     @EnumSource(EmaErrorCode.class)
     void allCodesHaveRequiredFields(EmaErrorCode code) {
         assertThat(code.getServiceId()).isNotBlank();
-        assertThat(code.getUserMessage()).isNotBlank();
         assertThat(code.getResult()).isNotBlank();
         assertThat(code.getCode()).isGreaterThanOrEqualTo(0);
+        if (code.isUserActionable()) {
+            assertThat(code.getUserMessage()).isNotBlank();
+        } else {
+            assertThat(code.getUserMessage()).isNull();
+        }
     }
 
     @Test

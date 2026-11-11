@@ -354,7 +354,6 @@ public class CommandManager {
         logEntry.put("errorType", "UnknownCommandType");
         logEntry.put("level", LOG_LEVEL_ERROR);
         logEntry.put("timestamp", OffsetDateTime.now());
-        logEntry.put("userMessage", null);
         logEntry.put("emaCode", EmaErrorCode.INTERNAL_ERROR.name());
         command.setResult(CommandResult.builder()
                 .status(JobStatus.error)

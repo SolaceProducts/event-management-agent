@@ -54,8 +54,7 @@ public abstract class AbstractSempCommandManager {
                         "errorType", e.getClass().getName(),
                         "level", LOG_LEVEL_ERROR,
                         "timestamp", OffsetDateTime.now(),
-                        "sempResponseBody", responseBody != null ? responseBody : "",
-                        "userMessage", null
+                        "sempResponseBody", responseBody != null ? responseBody : ""
                 )))
                 .build());
     }
