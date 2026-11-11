@@ -249,8 +249,7 @@ public class CommandManager {
         response.setActorId(MDC.get(ACTOR_ID));
         response.setOriginOrgId(requestBO.getOriginOrgId());
 
-        // Caller override wins; otherwise the curated message for the effective error code is used.
-        if (requestBO.getStatus() == JobStatus.error || emaUserMessageOverride != null) {
+        if (requestBO.getStatus() == JobStatus.error) {
             List<Map<String, Object>> allLogs = collectAllLogs(requestBO);
             applyErrorPayload(response, allLogs, emaUserMessageOverride, emaErrorCodeOverride, requestBO.getCommandCorrelationId());
         }
