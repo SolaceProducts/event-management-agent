@@ -149,7 +149,7 @@ public class TerraformLogProcessingService {
      * Returns true when the log map represents an ACL profile limit-exceeded error.
      * Used by TerraformManager to decide whether to downgrade the log level to WARN.
      */
-    static boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
+    public static boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
         try {
             Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
             if (!(diagnostic instanceof Map<?, ?> diagnosticMap)) {
