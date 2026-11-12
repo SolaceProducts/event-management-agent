@@ -188,6 +188,86 @@ class TerraformManagerTest {
     }
 
     @Nested
+    class IsAclProfileLimitExceededTests {
+
+        @Test
+        void allConditionsMet_returnsTrue() {
+            Map<String, Object> logMap = createTerraformLogMap(
+                    "SEMP call failed",
+                    "solacebroker_msg_vpn_acl_profile.test-acl",
+                    "400 Bad Request — MAX_NUM_EXCEEDED for ACL profiles on this VPN"
+            );
+            assertTrue(terraformManager.isAclProfileLimitExceeded(logMap));
+        }
+
+        @Test
+        void wrongSummary_returnsFalse() {
+            Map<String, Object> logMap = createTerraformLogMap(
+                    "Not SEMP call failed",
+                    "solacebroker_msg_vpn_acl_profile.test-acl",
+                    "MAX_NUM_EXCEEDED"
+            );
+            assertFalse(terraformManager.isAclProfileLimitExceeded(logMap));
+        }
+
+        @Test
+        void addressDoesNotStartWithAclProfile_returnsFalse() {
+            Map<String, Object> logMap = createTerraformLogMap(
+                    "SEMP call failed",
+                    "solacebroker_msg_vpn_queue.test-queue",
+                    "MAX_NUM_EXCEEDED"
+            );
+            assertFalse(terraformManager.isAclProfileLimitExceeded(logMap));
+        }
+
+        @Test
+        void detailMissingMaxNumExceeded_returnsFalse() {
+            Map<String, Object> logMap = createTerraformLogMap(
+                    "SEMP call failed",
+                    "solacebroker_msg_vpn_acl_profile.test-acl",
+                    "some other SEMP error"
+            );
+            assertFalse(terraformManager.isAclProfileLimitExceeded(logMap));
+        }
+
+        @Test
+        void noDiagnostic_returnsFalse() {
+            Map<String, Object> logMap = new HashMap<>();
+            logMap.put("@level", "error");
+            assertFalse(terraformManager.isAclProfileLimitExceeded(logMap));
+        }
+
+        @Test
+        void exceptionDuringParsing_returnsFalse() {
+            Map<String, Object> logMap = new HashMap<>() {
+                @Override
+                public Object get(Object key) {
+                    if ("diagnostic".equals(key)) {
+                        throw new RuntimeException("Simulated parsing error");
+                    }
+                    return super.get(key);
+                }
+            };
+            logMap.put("@level", "error");
+            assertFalse(terraformManager.isAclProfileLimitExceeded(logMap));
+        }
+
+        private Map<String, Object> createTerraformLogMap(String summary, String address, String detail) {
+            Map<String, Object> diagnostic = new HashMap<>();
+            diagnostic.put("severity", "error");
+            diagnostic.put("summary", summary);
+            diagnostic.put("address", address);
+            diagnostic.put("detail", detail);
+
+            Map<String, Object> logMap = new HashMap<>();
+            logMap.put("@level", "error");
+            logMap.put("@message", "Error: Provider returned error");
+            logMap.put("diagnostic", diagnostic);
+            return logMap;
+        }
+    }
+
+    @Nested
     class IsSslCertificateErrorTests {
         @ParameterizedTest
         @ValueSource(strings = {

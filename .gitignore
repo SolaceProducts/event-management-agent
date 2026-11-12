@@ -51,4 +51,3 @@ application-mysql-*.yml
 
 # Local-only scratch / test notes (e.g. RELEASE-READINESS-CHECK.test.md)
 *.test.md
-

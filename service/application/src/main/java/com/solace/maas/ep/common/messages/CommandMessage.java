@@ -1,7 +1,10 @@
 package com.solace.maas.ep.common.messages;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.solace.maas.ep.common.model.CommandMessageWithResources;
 import com.solace.maas.ep.common.model.EventBrokerResourceConfiguration;
+import com.solace.maas.ep.event.management.agent.command.EmaInternalPayload;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.CommandBundle;
 import com.solace.maas.ep.event.management.agent.plugin.command.model.JobStatus;
 import com.solace.maas.ep.event.management.agent.plugin.mop.MOPMessage;
@@ -22,6 +25,20 @@ public class CommandMessage extends MOPMessage implements CommandMessageWithReso
     private List<CommandBundle> commandBundles;
     private List<EventBrokerResourceConfiguration> resources;
     private String originOrgId;
+
+    /**
+     * Safe, human-readable message. May be surfaced to users.
+     * Present only on failure paths.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String userMessage;
+
+    /**
+     * Structured internal error payload. For service-to-service use only.
+     */
+    @JsonProperty("_internal")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private EmaInternalPayload internal;
 
     public CommandMessage() {
         super();

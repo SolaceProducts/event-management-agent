@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,15 @@ public class TerraformLogProcessingService {
     public static final String KEY_TIMESTAMP = "@timestamp";
     public static final String KEY_DIAGNOSTIC_DETAIL = "diagnosticDetail";
     public static final String KEY_DIAGNOSTIC = "diagnostic";
+    public static final String KEY_RESULT_TIMESTAMP = "timestamp";
+    public static final String KEY_ADDRESS = "address";
+    public static final String KEY_SIMPLE_MESSAGE = "message";
+    public static final String KEY_SIMPLE_LEVEL = "level";
+    // EmaErrorCode enum names and messages — kept as string literals to avoid a dependency on the application module
+    static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
+    static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
+    static final String EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE =
+            "The Event Management Agent encountered an unexpected error. Contact support if the issue persists.";
     private final ObjectMapper objectMapper;
 
     public TerraformLogProcessingService(ObjectMapper objectMapper) {
@@ -35,11 +45,13 @@ public class TerraformLogProcessingService {
 
     public CommandResult buildTfStateFileDeletionFailureResult(RuntimeException rootCause) {
 
-        Map<String, Object> errorLog = Map.of(
-                "address", "N/A",
-                "message", "Failed removing Terraform state: " + rootCause.getMessage(),
-                "level", "ERROR",
-                "timestamp", OffsetDateTime.now());
+        Map<String, Object> errorLog = new HashMap<>();
+        errorLog.put(KEY_ADDRESS, "N/A");
+        errorLog.put(KEY_SIMPLE_MESSAGE, "Failed removing Terraform state: " + rootCause.getMessage());
+        errorLog.put(KEY_SIMPLE_LEVEL, "ERROR");
+        errorLog.put(KEY_RESULT_TIMESTAMP, OffsetDateTime.now());
+        errorLog.put("userMessage", EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE);
+        errorLog.put("emaCode", EMA_CODE_INTERNAL_ERROR);
 
         List<Map<String, Object>> logs = List.of(errorLog);
 
@@ -97,11 +109,10 @@ public class TerraformLogProcessingService {
         }
 
         return Map.of(
-                "address", extractResourceAddressFromHook(expandedLogMessage.get("hook")),
-                "message", expandedLogMessage.get(KEY_MESSAGE),
-                "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
-                "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
-
+                KEY_ADDRESS, extractResourceAddressFromHook(expandedLogMessage.get("hook")),
+                KEY_SIMPLE_MESSAGE, expandedLogMessage.get(KEY_MESSAGE),
+                KEY_SIMPLE_LEVEL, expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
+                KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP)
         );
 
     }
@@ -112,13 +123,59 @@ public class TerraformLogProcessingService {
                     String.format("This method only handles logs of type %s", VALUE_TYPE_APPLY_ERRORED)
             );
         }
-        return Map.of(
-                "address", extractResourceAddressFromDiagnostic(expandedLogMessage.get(KEY_DIAGNOSTIC)),
-                KEY_DIAGNOSTIC_DETAIL, extractDiagnosticDetailMessage(expandedLogMessage.get(KEY_DIAGNOSTIC)),
-                "message", expandedLogMessage.get(KEY_MESSAGE),
-                "level", expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase(),
-                "timestamp", expandedLogMessage.get(KEY_TIMESTAMP)
-        );
+        Object diagnostic = expandedLogMessage.get(KEY_DIAGNOSTIC);
+        String address = extractResourceAddressFromDiagnostic(diagnostic);
+        String detail = extractDiagnosticDetailMessage(diagnostic);
+        String summary = extractDiagnosticSummary(diagnostic);
+        String emaCode = classifyTerraformDiagnostic(summary, address, detail);
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put(KEY_ADDRESS, address);
+        result.put(KEY_DIAGNOSTIC_DETAIL, detail);
+        result.put(KEY_SIMPLE_MESSAGE, expandedLogMessage.get(KEY_MESSAGE));
+        result.put(KEY_SIMPLE_LEVEL, expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase());
+        result.put(KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP));
+        result.put("emaCode", emaCode);
+        return result;
+    }
+
+    private String classifyTerraformDiagnostic(String summary, String address, String detail) {
+        return isAclProfileLimitExceededDiagnostic(summary, address, detail)
+                ? EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED
+                : EMA_CODE_INTERNAL_ERROR;
+    }
+
+    /**
+     * Returns true when the log map represents an ACL profile limit-exceeded error.
+     * Used by TerraformManager to decide whether to downgrade the log level to WARN.
+     */
+    public static boolean isAclProfileLimitExceeded(Map<String, Object> logMap) {
+        try {
+            Object diagnostic = logMap.get(KEY_DIAGNOSTIC);
+            if (!(diagnostic instanceof Map<?, ?> diagnosticMap)) {
+                return false;
+            }
+            String summary = diagnosticMap.get("summary") instanceof String s ? s : null;
+            String address = diagnosticMap.get(KEY_ADDRESS) instanceof String s ? s : null;
+            String detail  = diagnosticMap.get("detail")  instanceof String s ? s : null;
+            return isAclProfileLimitExceededDiagnostic(summary, address, detail);
+        } catch (Exception _) {
+            return false;
+        }
+    }
+
+    private static boolean isAclProfileLimitExceededDiagnostic(String summary, String address, String detail) {
+        return "SEMP call failed".equals(summary)
+                && address != null && address.startsWith("solacebroker_msg_vpn_acl_profile")
+                && detail != null && detail.contains("MAX_NUM_EXCEEDED");
+    }
+
+    private String extractDiagnosticSummary(Object diagnostic) {
+        if (diagnostic instanceof Map) {
+            Object summary = ((Map<?, ?>) diagnostic).get("summary");
+            return summary != null ? String.valueOf(summary) : null;
+        }
+        return null;
     }
 
     private String extractDiagnosticDetailMessage(Object diagnostic) {
