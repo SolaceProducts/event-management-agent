@@ -14,7 +14,7 @@ class EmaErrorCodeTest {
         assertThat(code.getServiceId()).isNotBlank();
         assertThat(code.getResult()).isNotBlank();
         assertThat(code.getCode()).isGreaterThanOrEqualTo(0);
-        if (code.isUserActionable()) {
+        if (code.useEnumUserMessage()) {
             assertThat(code.getUserMessage()).isNotBlank();
         } else {
             assertThat(code.getUserMessage()).isNull();
