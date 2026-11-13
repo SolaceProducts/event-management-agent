@@ -15,18 +15,51 @@ public enum EmaErrorCode {
     ACL_PROFILE_LIMIT_EXCEEDED(
             "ema",
             1,
-            "LIMIT_EXCEEDED",
+            Msg.LIMIT_EXCEEDED,
             "The event broker has reached its ACL profile limit. " +
             "Remove unused ACL profiles to free capacity.",
-            true,
             LogLevel.WARN
+    ),
+    TERRAFORM_INVALID_PARAMETER(
+            "ema",
+            1,
+            Msg.VALIDATION_ERROR,
+            null,
+            LogLevel.ERROR
+    ),
+    TERRAFORM_INVALID_OPERATION(
+            "ema",
+            1,
+            Msg.VALIDATION_ERROR,
+            null,
+            LogLevel.ERROR
+    ),
+    TERRAFORM_PARSE_ERROR(
+            "ema",
+            1,
+            Msg.VALIDATION_ERROR,
+            null,
+            LogLevel.ERROR
+    ),
+    TERRAFORM_MAX_NUM_EXCEEDED(
+            "ema",
+            1,
+            Msg.LIMIT_EXCEEDED,
+            null,
+            LogLevel.ERROR
+    ),
+    TERRAFORM_FAIL(
+            "ema",
+            1,
+            Msg.VALIDATION_ERROR,
+            null,
+            LogLevel.ERROR
     ),
     INTERNAL_ERROR(
             "ema",
             1,
             Msg.INTERNAL_ERROR,
             null,
-            false,
             LogLevel.ERROR
     );
 
@@ -34,7 +67,6 @@ public enum EmaErrorCode {
     private final int code;
     private final String result;
     private final String userMessage;
-    private final boolean userActionable;
     private final LogLevel logLevel;
 
     public enum LogLevel {
@@ -43,15 +75,16 @@ public enum EmaErrorCode {
 
     static final class Msg {
         static final String INTERNAL_ERROR = "INTERNAL_ERROR";
+        static final String VALIDATION_ERROR = "VALIDATION_ERROR";
+        static final String LIMIT_EXCEEDED = "LIMIT_EXCEEDED";
         private Msg() {}
     }
 
-    EmaErrorCode(String serviceId, int code, String result, String userMessage, boolean userActionable, LogLevel logLevel) {
+    EmaErrorCode(String serviceId, int code, String result, String userMessage, LogLevel logLevel) {
         this.serviceId = serviceId;
         this.code = code;
         this.result = result;
         this.userMessage = userMessage;
-        this.userActionable = userActionable;
         this.logLevel = logLevel;
     }
 
@@ -71,8 +104,8 @@ public enum EmaErrorCode {
         return userMessage;
     }
 
-    public boolean isUserActionable() {
-        return userActionable;
+    public boolean useEnumUserMessage() {
+        return userMessage != null;
     }
 
     public LogLevel getLogLevel() {

@@ -277,7 +277,7 @@ public class CommandManager {
                                    String correlationId) {
         boolean isSempError = allLogs.stream().anyMatch(e -> e.containsKey("sempResponseBody"));
 
-        String userMessage = allLogs.stream()
+        String rawDetailForInternalLog = allLogs.stream()
                 .map(e -> {
                     String detail = extractNonBlank(e, "diagnosticDetail");
                     return detail != null ? detail : extractNonBlank(e, "userMessage");
@@ -289,12 +289,20 @@ public class CommandManager {
         EmaErrorCode logEntryErrorCode = EmaErrorCode.fromName(
                 allLogs.stream().map(e -> extractNonBlank(e, "emaCode")).filter(Objects::nonNull).findFirst().orElse(null));
 
+        String logEntryUserMessage = allLogs.stream()
+                .map(e -> extractNonBlank(e, "userMessage"))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
         EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode);
         String internalDetail = isSempError
-                ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(userMessage)
-                : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(userMessage);
+                ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(rawDetailForInternalLog)
+                : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(rawDetailForInternalLog);
         response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
-        String effectiveUserMessage = resolveUserMessage(emaUserMessageOverride, effectiveErrorCode);
+        String effectiveUserMessage = resolveUserMessage(
+                emaUserMessageOverride != null ? emaUserMessageOverride : logEntryUserMessage,
+                effectiveErrorCode);
         response.setUserMessage(effectiveUserMessage);
     }
 
