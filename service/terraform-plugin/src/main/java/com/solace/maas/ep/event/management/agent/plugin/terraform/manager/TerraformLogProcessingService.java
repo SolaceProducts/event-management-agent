@@ -43,6 +43,7 @@ public class TerraformLogProcessingService {
     static final String EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE = "TERRAFORM_INVALID_ATTRIBUTE_VALUE";
     private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE = "Invalid Attribute Value";
     private static final Pattern GOT_SUFFIX_PATTERN = Pattern.compile(",\\s*got:.*$");
+    private static final Pattern ATTRIBUTE_NAME_PATTERN = Pattern.compile("^(Attribute )(\\S+)( .*)$");
 
     private static final Map<String, String> SEMP_STATUS_TO_EMA_CODE = Map.of(
             "INVALID_PARAMETER", "TERRAFORM_INVALID_PARAMETER",
@@ -175,9 +176,13 @@ public class TerraformLogProcessingService {
             return new ClassificationResult(EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED, null);
         }
         if (SUMMARY_INVALID_ATTRIBUTE_VALUE.equals(summary)) {
-            String userMessage = detail != null ? GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("") : null;
-            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE,
-                    userMessage != null && !userMessage.equals(detail) ? userMessage : null);
+            String stripped = detail != null ? GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("") : null;
+            String userMessage = null;
+            if (stripped != null && !stripped.equals(detail)) {
+                Matcher m = ATTRIBUTE_NAME_PATTERN.matcher(stripped);
+                userMessage = m.matches() ? m.group(1) + snakeToCamel(m.group(2)) + m.group(3) : stripped;
+            }
+            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, userMessage);
         }
         if (!"SEMP call failed".equals(summary) || detail == null) {
             return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
@@ -270,5 +275,20 @@ public class TerraformLogProcessingService {
 
     private boolean isErrorLog(Map<String, Object> expandedLogMessage) {
         return StringUtils.equals(extractValueFromLog(expandedLogMessage, KEY_LOG_LEVEL), VALUE_LOG_LEVEL_ERROR);
+    }
+
+    private static String snakeToCamel(String snake) {
+        String[] parts = snake.split("_", -1);
+        if (parts.length == 1) {
+            return snake;
+        }
+        StringBuilder sb = new StringBuilder(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            if (!parts[i].isEmpty()) {
+                sb.append(Character.toUpperCase(parts[i].charAt(0)));
+                sb.append(parts[i].substring(1));
+            }
+        }
+        return sb.toString();
     }
 }

@@ -297,25 +297,35 @@ public class TerraformLogProcessingServiceTest {
         }
 
         @Test
-        void invalidAttributeValue_stripsGotSuffixAndSetsCorrectEmaCode() {
+        void invalidAttributeValue_stripsGotSuffixAndConvertsAttributeNameToCamelCase() {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_queue.q1",
                             "Attribute redelivery_delay_multiplier value must be between 100 and 500, got: 2")
             ));
             Map<String, Object> log = result.getLogs().get(0);
             assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_ATTRIBUTE_VALUE");
-            assertThat(log).containsEntry("userMessage", "Attribute redelivery_delay_multiplier value must be between 100 and 500");
+            assertThat(log).containsEntry("userMessage", "Attribute redeliveryDelayMultiplier value must be between 100 and 500");
         }
 
         @Test
-        void invalidAttributeValue_remoteHost_stripsGotSuffixContainingHostname() {
+        void invalidAttributeValue_remoteHost_stripsGotSuffixAndConvertsAttributeNameToCamelCase() {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_rest_delivery_point.rdp1",
                             "Attribute remote_host value must match regular expression '^([0-9a-zA-Z_\\-\\.]*)', got: \"my-internal-host.corp.example.com\"")
             ));
             Map<String, Object> log = result.getLogs().get(0);
             assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_ATTRIBUTE_VALUE");
-            assertThat(log).containsEntry("userMessage", "Attribute remote_host value must match regular expression '^([0-9a-zA-Z_\\-\\.]*)'");
+            assertThat(log).containsEntry("userMessage", "Attribute remoteHost value must match regular expression '^([0-9a-zA-Z_\\-\\.]*)'");
+        }
+
+        @Test
+        void invalidAttributeValue_singleWordAttributeName_notModified() {
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_queue.q1",
+                            "Attribute owner value must not be blank, got: \"\"")
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("userMessage", "Attribute owner value must not be blank");
         }
 
         @Test
