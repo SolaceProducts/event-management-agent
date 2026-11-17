@@ -117,7 +117,7 @@ public class CommandManager {
     public void handleError(Exception e, CommandMessage message) {
         CommandRequest requestBO = commandMapper.map(message);
         attachErrorLogToCommand(false, e, requestBO);
-        finalizeAndSendResponse(requestBO, null, EmaErrorCode.INTERNAL_ERROR);
+        finalizeAndSendResponse(requestBO, EmaErrorCode.INTERNAL_ERROR);
     }
 
     @SuppressWarnings("PMD")
@@ -128,7 +128,6 @@ public class CommandManager {
         }
         List<Path> executionLogFilesToClean = new ArrayList<>();
         boolean attachErrorToTerraformCommand = false;
-        String emaUserMessageOverride = null;
         EmaErrorCode emaErrorCodeOverride = null;
         try {
             // if the serviceId is not found, messagingServiceDelegateService will most likely throw an exception (which is not guaranteed
@@ -182,7 +181,7 @@ public class CommandManager {
             attachErrorLogToCommand(attachErrorToTerraformCommand, e, request);
         } finally {
             try {
-                finalizeAndSendResponse(request, emaUserMessageOverride, emaErrorCodeOverride);
+                finalizeAndSendResponse(request, emaErrorCodeOverride);
                 // the response could also be an error log entry
                 // if we fail to send the response to EP, we can not do anything about it
                 // besides logging it
@@ -232,7 +231,7 @@ public class CommandManager {
     }
 
     @SuppressWarnings("PMD.CognitiveComplexity")
-    private void finalizeAndSendResponse(CommandRequest requestBO, String emaUserMessageOverride, EmaErrorCode emaErrorCodeOverride) {
+    private void finalizeAndSendResponse(CommandRequest requestBO, EmaErrorCode emaErrorCodeOverride) {
         requestBO.determineStatus();
         Map<String, String> topicVars = Map.of(
                 "orgId", requestBO.getOrgId(),
@@ -251,7 +250,7 @@ public class CommandManager {
 
         if (requestBO.getStatus() == JobStatus.error) {
             List<Map<String, Object>> allLogs = collectAllLogs(requestBO);
-            applyErrorPayload(response, allLogs, emaUserMessageOverride, emaErrorCodeOverride, requestBO.getCommandCorrelationId());
+            applyErrorPayload(response, allLogs, emaErrorCodeOverride, requestBO.getCommandCorrelationId());
         }
 
         commandPublisher.sendCommandResponse(response, topicVars);
@@ -273,18 +272,9 @@ public class CommandManager {
     }
 
     private void applyErrorPayload(CommandMessage response, List<Map<String, Object>> allLogs,
-                                   String emaUserMessageOverride, EmaErrorCode emaErrorCodeOverride,
+                                   EmaErrorCode emaErrorCodeOverride,
                                    String correlationId) {
         boolean isSempError = allLogs.stream().anyMatch(e -> e.containsKey("sempResponseBody"));
-
-        String rawDetailForInternalLog = allLogs.stream()
-                .map(e -> {
-                    String detail = extractNonBlank(e, "diagnosticDetail");
-                    return detail != null ? detail : extractNonBlank(e, "userMessage");
-                })
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
 
         EmaErrorCode logEntryErrorCode = EmaErrorCode.fromName(
                 allLogs.stream().map(e -> extractNonBlank(e, "emaCode")).filter(Objects::nonNull).findFirst().orElse(null));
@@ -296,19 +286,21 @@ public class CommandManager {
                 .orElse(null);
 
         EmaErrorCode effectiveErrorCode = resolveErrorCode(emaErrorCodeOverride != null ? emaErrorCodeOverride : logEntryErrorCode);
+        String internalDetailFallback = allLogs.stream()
+                .map(e -> extractNonBlank(e, TerraformLogProcessingService.KEY_SIMPLE_MESSAGE))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
         String internalDetail = isSempError
-                ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(rawDetailForInternalLog)
-                : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(rawDetailForInternalLog);
+                ? allLogs.stream().map(e -> extractNonBlank(e, "sempResponseBody")).filter(Objects::nonNull).findFirst().orElse(internalDetailFallback)
+                : allLogs.stream().map(e -> extractNonBlank(e, "diagnosticDetail")).filter(Objects::nonNull).findFirst().orElse(internalDetailFallback);
         response.setInternal(effectiveErrorCode.buildInternal(correlationId, internalDetail));
-        String effectiveUserMessage = resolveUserMessage(
-                emaUserMessageOverride != null ? emaUserMessageOverride : logEntryUserMessage,
-                effectiveErrorCode);
-        response.setUserMessage(effectiveUserMessage);
+        response.setUserMessage(resolveUserMessage(logEntryUserMessage, effectiveErrorCode));
     }
 
-    private static String resolveUserMessage(String emaUserMessageOverride, EmaErrorCode effectiveErrorCode) {
-        if (emaUserMessageOverride != null) {
-            return emaUserMessageOverride;
+    private static String resolveUserMessage(String logEntryUserMessage, EmaErrorCode effectiveErrorCode) {
+        if (logEntryUserMessage != null) {
+            return logEntryUserMessage;
         }
         return effectiveErrorCode.getUserMessage();
     }
