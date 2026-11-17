@@ -42,6 +42,7 @@ public class TerraformLogProcessingService {
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
     static final String EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE = "TERRAFORM_INVALID_ATTRIBUTE_VALUE";
     private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE = "Invalid Attribute Value";
+    private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE_MATCH = "Invalid Attribute Value Match";
     private static final Pattern GOT_SUFFIX_PATTERN = Pattern.compile(",\\s*got:.*$");
     private static final Pattern ATTRIBUTE_NAME_PATTERN = Pattern.compile("^(Attribute )(\\S+)( .*)$");
 
@@ -175,7 +176,7 @@ public class TerraformLogProcessingService {
         if (isAclProfileLimitExceededDiagnostic(summary, address, detail)) {
             return new ClassificationResult(EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED, null);
         }
-        if (SUMMARY_INVALID_ATTRIBUTE_VALUE.equals(summary)) {
+        if (SUMMARY_INVALID_ATTRIBUTE_VALUE.equals(summary) || SUMMARY_INVALID_ATTRIBUTE_VALUE_MATCH.equals(summary)) {
             String stripped = detail != null ? GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("") : null;
             String userMessage = null;
             if (stripped != null && !stripped.equals(detail)) {

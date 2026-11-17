@@ -319,6 +319,17 @@ public class TerraformLogProcessingServiceTest {
         }
 
         @Test
+        void invalidAttributeValueMatch_classifiesCorrectlyAndConvertsAttributeNameToCamelCase() {
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("Invalid Attribute Value Match", "solacebroker_msg_vpn_queue.q1",
+                            "Attribute access_type value must be one of: [\"exclusive\" \"non-exclusive\"], got: \"Non-Exclusive\"")
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_ATTRIBUTE_VALUE");
+            assertThat(log).containsEntry("userMessage", "Attribute accessType value must be one of: [\"exclusive\" \"non-exclusive\"]");
+        }
+
+        @Test
         void invalidAttributeValue_singleWordAttributeName_notModified() {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_queue.q1",
