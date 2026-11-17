@@ -296,6 +296,49 @@ public class TerraformLogProcessingServiceTest {
             assertThat(log).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
+        @Test
+        void invalidAttributeValue_stripsGotSuffixAndSetsCorrectEmaCode() {
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_queue.q1",
+                            "Attribute redelivery_delay_multiplier value must be between 100 and 500, got: 2")
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_ATTRIBUTE_VALUE");
+            assertThat(log).containsEntry("userMessage", "Attribute redelivery_delay_multiplier value must be between 100 and 500");
+        }
+
+        @Test
+        void invalidAttributeValue_remoteHost_stripsGotSuffixContainingHostname() {
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_rest_delivery_point.rdp1",
+                            "Attribute remote_host value must match regular expression '^([0-9a-zA-Z_\\-\\.]*)', got: \"my-internal-host.corp.example.com\"")
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_ATTRIBUTE_VALUE");
+            assertThat(log).containsEntry("userMessage", "Attribute remote_host value must match regular expression '^([0-9a-zA-Z_\\-\\.]*)'");
+        }
+
+        @Test
+        void invalidAttributeValue_noGotSuffix_userMessageIsNull() {
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_queue.q1",
+                            "Attribute access_type value must be one of: [\"exclusive\" \"non-exclusive\"]")
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_ATTRIBUTE_VALUE");
+            assertThat(log).doesNotContainKey("userMessage");
+        }
+
+        @Test
+        void invalidAttributeValue_fullDetailPreservedInDiagnosticDetail() {
+            String fullDetail = "Attribute redelivery_delay_multiplier value must be between 100 and 500, got: 2";
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("Invalid Attribute Value", "solacebroker_msg_vpn_queue.q1", fullDetail)
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("diagnosticDetail", fullDetail);
+        }
+
         private String aclProfileErrorLog() {
             return errorLog("SEMP call failed", "solacebroker_msg_vpn_acl_profile.test-acl",
                     "SEMP response: 400 Bad Request — MAX_NUM_EXCEEDED for ACL profiles");

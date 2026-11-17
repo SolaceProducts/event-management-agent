@@ -40,6 +40,9 @@ public class TerraformLogProcessingService {
     // there is no build or test failure if these go out of sync.
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
+    static final String EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE = "TERRAFORM_INVALID_ATTRIBUTE_VALUE";
+    private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE = "Invalid Attribute Value";
+    private static final Pattern GOT_SUFFIX_PATTERN = Pattern.compile(",\\s*got:.*$");
 
     private static final Map<String, String> SEMP_STATUS_TO_EMA_CODE = Map.of(
             "INVALID_PARAMETER", "TERRAFORM_INVALID_PARAMETER",
@@ -170,6 +173,11 @@ public class TerraformLogProcessingService {
     private ClassificationResult classifyTerraformDiagnostic(String summary, String address, String detail) {
         if (isAclProfileLimitExceededDiagnostic(summary, address, detail)) {
             return new ClassificationResult(EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED, null);
+        }
+        if (SUMMARY_INVALID_ATTRIBUTE_VALUE.equals(summary)) {
+            String userMessage = detail != null ? GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("") : null;
+            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE,
+                    userMessage != null && !userMessage.equals(detail) ? userMessage : null);
         }
         if (!"SEMP call failed".equals(summary) || detail == null) {
             return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
