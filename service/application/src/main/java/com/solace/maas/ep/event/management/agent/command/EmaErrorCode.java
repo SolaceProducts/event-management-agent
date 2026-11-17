@@ -55,6 +55,13 @@ public enum EmaErrorCode {
             null,
             LogLevel.ERROR
     ),
+    TERRAFORM_ALREADY_EXISTS(
+            "ema",
+            1,
+            Msg.VALIDATION_ERROR,
+            null,
+            LogLevel.ERROR
+    ),
     INTERNAL_ERROR(
             "ema",
             1,

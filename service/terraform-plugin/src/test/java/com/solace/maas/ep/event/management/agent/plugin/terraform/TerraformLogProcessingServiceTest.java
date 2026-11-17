@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -229,7 +230,7 @@ public class TerraformLogProcessingServiceTest {
         }
 
         @Test
-        void sempCallFailed_maxNumExceeded_nonAclAddress_classifiesCorrectlyAndExtractsReason() {
+        void sempCallFailed_maxNumExceeded_nonAclAddress_classifiesCorrectlyAndStripsHttpMethodPrefix() {
             String detail = "request failed for https://broker.example.com:943/SEMP/v2/config/msgVpns/vpn1/queues/q1 " +
                     "using PUT, Problem with PUT: No more queues are allowed, MAX_NUM_EXCEEDED";
             CommandResult result = service.buildTfCommandResult(List.of(
@@ -237,7 +238,31 @@ public class TerraformLogProcessingServiceTest {
             ));
             Map<String, Object> log = result.getLogs().get(0);
             assertThat(log).containsEntry("emaCode", "TERRAFORM_MAX_NUM_EXCEEDED");
-            assertThat(log).containsEntry("userMessage", "Problem with PUT: No more queues are allowed");
+            assertThat(log).containsEntry("userMessage", "No more queues are allowed");
+        }
+
+        @Test
+        void sempCallFailed_alreadyExists_classifiesCorrectlyAndStripsHttpMethodPrefix() {
+            String detail = "request failed for https://broker.example.com:943/SEMP/v2/config/msgVpns/vpn1/queues/Consumer1/subscriptions " +
+                    "using POST, Problem with POST: Subscription a/b/c/> already exists., ALREADY_EXISTS";
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("SEMP call failed", "solacebroker_msg_vpn_queue_subscription.sub1", detail)
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("emaCode", "TERRAFORM_ALREADY_EXISTS");
+            assertThat(log).containsEntry("userMessage", "Subscription a/b/c/> already exists.");
+        }
+
+        @Test
+        void sempCallFailed_problemWithAttributeName_prefixKept() {
+            String detail = "request failed for https://broker.example.com:943/SEMP/v2/config/msgVpns/vpn1/queues/q1 " +
+                    "using PUT, Problem with owner: The name should have only printable ASCII characters., INVALID_PARAMETER";
+            CommandResult result = service.buildTfCommandResult(List.of(
+                    errorLog("SEMP call failed", "solacebroker_msg_vpn_queue.q1", detail)
+            ));
+            Map<String, Object> log = result.getLogs().get(0);
+            assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_PARAMETER");
+            assertThat(log).containsEntry("userMessage", "Problem with owner: The name should have only printable ASCII characters.");
         }
 
         @Test

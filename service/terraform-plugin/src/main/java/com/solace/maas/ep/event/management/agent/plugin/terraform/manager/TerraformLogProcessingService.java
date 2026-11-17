@@ -46,13 +46,16 @@ public class TerraformLogProcessingService {
             "INVALID_OPERATION", "TERRAFORM_INVALID_OPERATION",
             "PARSE_ERROR",       "TERRAFORM_PARSE_ERROR",
             "MAX_NUM_EXCEEDED",  "TERRAFORM_MAX_NUM_EXCEEDED",
-            "FAIL",              "TERRAFORM_FAIL"
+            "FAIL",              "TERRAFORM_FAIL",
+            "ALREADY_EXISTS",    "TERRAFORM_ALREADY_EXISTS"
     );
 
     // Matches: "request failed for <URL> using <METHOD>, <reason>, <STATUS>"
-    // Group 1 = URL, group 2 = method, group 3 = reason, group 4 = status
+    // Group 1 = reason, group 2 = status
     private static final Pattern SEMP_DETAIL_PATTERN =
             Pattern.compile("^request failed for \\S+ using \\w+, (.*), ([A-Z_]+)$");
+    private static final Pattern HTTP_METHOD_PREFIX_PATTERN =
+            Pattern.compile("^Problem with (GET|POST|PUT|PATCH|DELETE): (.*)");
     static final String EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE =
             "The Event Management Agent encountered an unexpected error. Contact support if the issue persists.";
     private final ObjectMapper objectMapper;
@@ -176,7 +179,11 @@ public class TerraformLogProcessingService {
         String reason = matcher.group(1);
         String status = matcher.group(2);
         String emaCode = SEMP_STATUS_TO_EMA_CODE.getOrDefault(status, EMA_CODE_INTERNAL_ERROR);
-        String userMessage = EMA_CODE_INTERNAL_ERROR.equals(emaCode) ? null : reason;
+        if (EMA_CODE_INTERNAL_ERROR.equals(emaCode)) {
+            return new ClassificationResult(emaCode, null);
+        }
+        Matcher prefixMatcher = HTTP_METHOD_PREFIX_PATTERN.matcher(reason);
+        String userMessage = prefixMatcher.matches() ? prefixMatcher.group(2) : reason;
         return new ClassificationResult(emaCode, userMessage);
     }
 
