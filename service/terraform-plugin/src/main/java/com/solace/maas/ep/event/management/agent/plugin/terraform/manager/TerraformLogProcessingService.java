@@ -90,14 +90,16 @@ public class TerraformLogProcessingService {
 
         // Copy the list to avoid modifying the original and to avoid concurrent modification exceptions
         List<String> jsonLogsCopy = new ArrayList<>(logsInJsonFormat);
-        List<Map<String, Object>> successLogs = jsonLogsCopy.stream()
+        List<Map<String, Object>> parsedLogs = jsonLogsCopy.stream()
                 .map(this::parseTfOutput)
+                .toList();
+
+        List<Map<String, Object>> successLogs = parsedLogs.stream()
                 .filter(this::isApplyCompleteLog)
                 .map(this::simplifyApplyCompleteLog)
                 .toList();
 
-        List<Map<String, Object>> errorLogs = jsonLogsCopy.stream()
-                .map(this::parseTfOutput)
+        List<Map<String, Object>> errorLogs = parsedLogs.stream()
                 .filter(this::isErrorLog)
                 .map(this::simplifyApplyErroredLog)
                 .toList();
