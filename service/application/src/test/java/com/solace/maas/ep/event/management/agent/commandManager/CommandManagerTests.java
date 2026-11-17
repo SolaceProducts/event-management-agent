@@ -616,6 +616,81 @@ class CommandManagerTests {
         Assertions.assertThat(captor.getValue().getInternal().getCode()).isEqualTo(EmaErrorCode.INTERNAL_ERROR.getCode());
     }
 
+    @Test
+    void terraformError_withDiagnosticDetail_setsInternalDetailAndUserMessage() {
+        CommandMessage response = executeWithTerraformErrorLogs(Map.<String, Object>of(
+                "diagnosticDetail", "Some Terraform diagnostic",
+                "userMessage", "Queue limit exceeded on the broker.",
+                "emaCode", "TERRAFORM_FAIL",
+                "level", "ERROR"
+        ));
+        Assertions.assertThat(response.getInternal().getErrorMessage()).isEqualTo("Some Terraform diagnostic");
+        Assertions.assertThat(response.getUserMessage()).isEqualTo("Queue limit exceeded on the broker.");
+        Assertions.assertThat(response.getInternal().getCode()).isEqualTo(EmaErrorCode.TERRAFORM_FAIL.getCode());
+    }
+
+    @Test
+    void terraformError_withoutDiagnosticDetail_fallsBackToMessageFieldForInternal() {
+        CommandMessage response = executeWithTerraformErrorLogs(Map.<String, Object>of(
+                "message", "Failed removing Terraform state: disk full",
+                "userMessage", "An unexpected error occurred.",
+                "emaCode", "INTERNAL_ERROR",
+                "level", "ERROR"
+        ));
+        Assertions.assertThat(response.getInternal().getErrorMessage()).isEqualTo("Failed removing Terraform state: disk full");
+        Assertions.assertThat(response.getUserMessage()).isEqualTo("An unexpected error occurred.");
+    }
+
+    @Test
+    void terraformError_withKnownEmaCode_usesEnumUserMessage() {
+        CommandMessage response = executeWithTerraformErrorLogs(Map.<String, Object>of(
+                "diagnosticDetail", "ACL profile count at maximum",
+                "emaCode", "ACL_PROFILE_LIMIT_EXCEEDED",
+                "level", "WARN"
+        ));
+        Assertions.assertThat(response.getUserMessage()).isEqualTo(EmaErrorCode.ACL_PROFILE_LIMIT_EXCEEDED.getUserMessage());
+        Assertions.assertThat(response.getInternal().getErrorMessage()).isEqualTo("ACL profile count at maximum");
+    }
+
+    @Test
+    void emaErrorCodeOverride_takesPrecedenceOverLogEntryCode() {
+        CommandMessage message = getCommandMessage("1");
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        // Returning null client triggers emaErrorCodeOverride = INTERNAL_ERROR in configPush
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(null);
+
+        commandManager.execute(message);
+
+        ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
+        CommandMessage response = captor.getValue();
+        Assertions.assertThat(response.getInternal().getCode()).isEqualTo(EmaErrorCode.INTERNAL_ERROR.getCode());
+        Assertions.assertThat(response.getUserMessage()).isNull();
+    }
+
+    private CommandMessage executeWithTerraformErrorLogs(Map<String, Object> logEntry) {
+        stubPublisherAndClient();
+        doAnswer(invocation -> {
+            Command cmd = invocation.getArgument(1);
+            cmd.setResult(CommandResult.builder()
+                    .status(JobStatus.error)
+                    .logs(List.of(logEntry))
+                    .build());
+            return Path.of("/some/path");
+        }).when(terraformManager).execute(any(), any(), any());
+        commandManager.execute(getCommandMessage("1"));
+        ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
+        verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());
+        return captor.getValue();
+    }
+
+    private void stubPublisherAndClient() {
+        doNothing().when(commandPublisher).sendCommandResponse(any(), any());
+        when(messagingServiceDelegateService.getMessagingServiceClient(any())).thenReturn(
+                new SolaceHttpSemp(SempClient.builder()
+                        .username("myUsername").password("myPassword").connectionUrl("myConnectionUrl").build()));
+    }
+
     private void assertErrorResponse(EmaErrorCode expectedCode) {
         ArgumentCaptor<CommandMessage> captor = ArgumentCaptor.forClass(CommandMessage.class);
         verify(commandPublisher, times(1)).sendCommandResponse(captor.capture(), any());

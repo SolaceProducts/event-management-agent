@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -32,9 +34,28 @@ public class TerraformLogProcessingService {
     public static final String KEY_ADDRESS = "address";
     public static final String KEY_SIMPLE_MESSAGE = "message";
     public static final String KEY_SIMPLE_LEVEL = "level";
-    // EmaErrorCode enum names and messages — kept as string literals to avoid a dependency on the application module
+    // These string literals must match EmaErrorCode enum names in the application module exactly.
+    // terraform-plugin cannot depend on application, so they are duplicated here.
+    // EmaErrorCode.fromName() is null-safe and silently falls back to INTERNAL_ERROR on mismatch —
+    // there is no build or test failure if these go out of sync.
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
+
+    private static final Map<String, String> SEMP_STATUS_TO_EMA_CODE = Map.of(
+            "INVALID_PARAMETER", "TERRAFORM_INVALID_PARAMETER",
+            "INVALID_OPERATION", "TERRAFORM_INVALID_OPERATION",
+            "PARSE_ERROR",       "TERRAFORM_PARSE_ERROR",
+            "MAX_NUM_EXCEEDED",  "TERRAFORM_MAX_NUM_EXCEEDED",
+            "FAIL",              "TERRAFORM_FAIL",
+            "ALREADY_EXISTS",    "TERRAFORM_ALREADY_EXISTS"
+    );
+
+    // Matches: "request failed for <URL> using <METHOD>, <reason>, <STATUS>"
+    // Group 1 = reason, group 2 = status
+    private static final Pattern SEMP_DETAIL_PATTERN =
+            Pattern.compile("^request failed for \\S+ using \\w+, (.*), ([A-Z_]+)$");
+    private static final Pattern HTTP_METHOD_PREFIX_PATTERN =
+            Pattern.compile("^Problem with (GET|POST|PUT|PATCH|DELETE): (.*)");
     static final String EMA_MSG_TERRAFORM_STATE_DELETION_FAILURE =
             "The Event Management Agent encountered an unexpected error. Contact support if the issue persists.";
     private final ObjectMapper objectMapper;
@@ -69,14 +90,16 @@ public class TerraformLogProcessingService {
 
         // Copy the list to avoid modifying the original and to avoid concurrent modification exceptions
         List<String> jsonLogsCopy = new ArrayList<>(logsInJsonFormat);
-        List<Map<String, Object>> successLogs = jsonLogsCopy.stream()
+        List<Map<String, Object>> parsedLogs = jsonLogsCopy.stream()
                 .map(this::parseTfOutput)
+                .toList();
+
+        List<Map<String, Object>> successLogs = parsedLogs.stream()
                 .filter(this::isApplyCompleteLog)
                 .map(this::simplifyApplyCompleteLog)
                 .toList();
 
-        List<Map<String, Object>> errorLogs = jsonLogsCopy.stream()
-                .map(this::parseTfOutput)
+        List<Map<String, Object>> errorLogs = parsedLogs.stream()
                 .filter(this::isErrorLog)
                 .map(this::simplifyApplyErroredLog)
                 .toList();
@@ -127,7 +150,7 @@ public class TerraformLogProcessingService {
         String address = extractResourceAddressFromDiagnostic(diagnostic);
         String detail = extractDiagnosticDetailMessage(diagnostic);
         String summary = extractDiagnosticSummary(diagnostic);
-        String emaCode = classifyTerraformDiagnostic(summary, address, detail);
+        ClassificationResult classification = classifyTerraformDiagnostic(summary, address, detail);
 
         Map<String, Object> result = new java.util.HashMap<>();
         result.put(KEY_ADDRESS, address);
@@ -135,14 +158,35 @@ public class TerraformLogProcessingService {
         result.put(KEY_SIMPLE_MESSAGE, expandedLogMessage.get(KEY_MESSAGE));
         result.put(KEY_SIMPLE_LEVEL, expandedLogMessage.get(KEY_LEVEL).toString().toUpperCase());
         result.put(KEY_RESULT_TIMESTAMP, expandedLogMessage.get(KEY_TIMESTAMP));
-        result.put("emaCode", emaCode);
+        result.put("emaCode", classification.emaCode());
+        if (classification.userMessage() != null) {
+            result.put("userMessage", classification.userMessage());
+        }
         return result;
     }
 
-    private String classifyTerraformDiagnostic(String summary, String address, String detail) {
-        return isAclProfileLimitExceededDiagnostic(summary, address, detail)
-                ? EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED
-                : EMA_CODE_INTERNAL_ERROR;
+    record ClassificationResult(String emaCode, String userMessage) {}
+
+    private ClassificationResult classifyTerraformDiagnostic(String summary, String address, String detail) {
+        if (isAclProfileLimitExceededDiagnostic(summary, address, detail)) {
+            return new ClassificationResult(EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED, null);
+        }
+        if (!"SEMP call failed".equals(summary) || detail == null) {
+            return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
+        }
+        Matcher matcher = SEMP_DETAIL_PATTERN.matcher(detail);
+        if (!matcher.matches()) {
+            return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
+        }
+        String reason = matcher.group(1);
+        String status = matcher.group(2);
+        String emaCode = SEMP_STATUS_TO_EMA_CODE.getOrDefault(status, EMA_CODE_INTERNAL_ERROR);
+        if (EMA_CODE_INTERNAL_ERROR.equals(emaCode)) {
+            return new ClassificationResult(emaCode, null);
+        }
+        Matcher prefixMatcher = HTTP_METHOD_PREFIX_PATTERN.matcher(reason);
+        String userMessage = prefixMatcher.matches() ? prefixMatcher.group(2) : reason;
+        return new ClassificationResult(emaCode, userMessage);
     }
 
     /**
