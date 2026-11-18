@@ -43,8 +43,8 @@ public class TerraformLogProcessingService {
     static final String EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE = "TERRAFORM_INVALID_ATTRIBUTE_VALUE";
     private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE = "Invalid Attribute Value";
     private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE_MATCH = "Invalid Attribute Value Match";
-    private static final Pattern GOT_SUFFIX_PATTERN = Pattern.compile(",\\s*got:.*$");
-    private static final Pattern ATTRIBUTE_NAME_PATTERN = Pattern.compile("^(Attribute )(\\S+)( .*)$");
+    private static final Pattern GOT_SUFFIX_PATTERN = Pattern.compile(",\\s*got:.*$", Pattern.DOTALL);
+    private static final Pattern ATTRIBUTE_NAME_PATTERN = Pattern.compile("^(Attribute )(\\S+)( .*)$", Pattern.DOTALL);
 
     private static final Map<String, String> SEMP_STATUS_TO_EMA_CODE = Map.of(
             "INVALID_PARAMETER", "TERRAFORM_INVALID_PARAMETER",
