@@ -43,10 +43,13 @@ public class TerraformLogProcessingServiceTest {
     @Test
     void buildTfCommandResult_applyCompleteLog_returnsSuccess() {
         String applyCompleteLog =
-                "{\"@level\":\"info\",\"@message\":\"Apply complete!\",\"@timestamp\":\"2026-01-01T00:00:00.000Z\"," +
-                "\"type\":\"apply_complete\"," +
-                "\"hook\":{\"resource\":{\"addr\":\"solacebroker_msg_vpn_queue.myqueue\",\"module\":\"\",\"resource\":\"solacebroker_msg_vpn_queue.myqueue\",\"implied_provider\":\"solacebroker\",\"resource_type\":\"solacebroker_msg_vpn_queue\",\"resource_name\":\"myqueue\",\"resource_key\":null}," +
-                "\"action\":\"create\",\"id_key\":\"queue_name\",\"id_value\":\"myqueue\",\"elapsed_seconds\":0}}";
+                "{\"@level\":\"info\",\"@message\":\"Apply complete!\",\"@timestamp\":\"2026-01-01T00:00:00.000Z\","
+                + "\"type\":\"apply_complete\","
+                + "\"hook\":{\"resource\":{\"addr\":\"solacebroker_msg_vpn_queue.myqueue\",\"module\":\"\","
+                + "\"resource\":\"solacebroker_msg_vpn_queue.myqueue\",\"implied_provider\":\"solacebroker\","
+                + "\"resource_type\":\"solacebroker_msg_vpn_queue\",\"resource_name\":\"myqueue\","
+                + "\"resource_key\":null},"
+                + "\"action\":\"create\",\"id_key\":\"queue_name\",\"id_value\":\"myqueue\",\"elapsed_seconds\":0}}";
 
         CommandResult result = service.buildTfCommandResult(List.of(applyCompleteLog));
 
@@ -61,14 +64,18 @@ public class TerraformLogProcessingServiceTest {
     @Test
     void buildTfCommandResult_mixedLogs_separatesSuccessAndErrors() {
         String applyCompleteLog =
-                "{\"@level\":\"info\",\"@message\":\"Apply complete!\",\"@timestamp\":\"2026-01-01T00:00:00.000Z\"," +
-                "\"type\":\"apply_complete\"," +
-                "\"hook\":{\"resource\":{\"addr\":\"solacebroker_msg_vpn_queue.myqueue\",\"module\":\"\",\"resource\":\"solacebroker_msg_vpn_queue.myqueue\",\"implied_provider\":\"solacebroker\",\"resource_type\":\"solacebroker_msg_vpn_queue\",\"resource_name\":\"myqueue\",\"resource_key\":null}," +
-                "\"action\":\"create\",\"id_key\":\"queue_name\",\"id_value\":\"myqueue\",\"elapsed_seconds\":0}}";
+                "{\"@level\":\"info\",\"@message\":\"Apply complete!\",\"@timestamp\":\"2026-01-01T00:00:00.000Z\","
+                + "\"type\":\"apply_complete\","
+                + "\"hook\":{\"resource\":{\"addr\":\"solacebroker_msg_vpn_queue.myqueue\",\"module\":\"\","
+                + "\"resource\":\"solacebroker_msg_vpn_queue.myqueue\",\"implied_provider\":\"solacebroker\","
+                + "\"resource_type\":\"solacebroker_msg_vpn_queue\",\"resource_name\":\"myqueue\","
+                + "\"resource_key\":null},"
+                + "\"action\":\"create\",\"id_key\":\"queue_name\",\"id_value\":\"myqueue\",\"elapsed_seconds\":0}}";
         String errorLog =
-                "{\"@level\":\"error\",\"@message\":\"Error: Provider returned error\"," +
-                "\"@timestamp\":\"2026-01-01T00:00:00.000Z\"," +
-                "\"diagnostic\":{\"severity\":\"error\",\"summary\":\"SEMP call failed\",\"address\":\"solacebroker_msg_vpn_queue.foo\",\"detail\":\"some error\"}}";
+                "{\"@level\":\"error\",\"@message\":\"Error: Provider returned error\","
+                + "\"@timestamp\":\"2026-01-01T00:00:00.000Z\","
+                + "\"diagnostic\":{\"severity\":\"error\",\"summary\":\"SEMP call failed\","
+                + "\"address\":\"solacebroker_msg_vpn_queue.foo\",\"detail\":\"some error\"}}";
 
         CommandResult result = service.buildTfCommandResult(List.of(applyCompleteLog, errorLog));
 
@@ -96,7 +103,9 @@ public class TerraformLogProcessingServiceTest {
             Map<String, Object> logMap = new HashMap<>() {
                 @Override
                 public Object get(Object key) {
-                    if ("diagnostic".equals(key)) throw new RuntimeException("simulated");
+                    if ("diagnostic".equals(key)) {
+                        throw new RuntimeException("simulated");
+                    }
                     return super.get(key);
                 }
             };
@@ -118,6 +127,8 @@ public class TerraformLogProcessingServiceTest {
     @Nested
     class ClassifyTerraformDiagnosticTests {
 
+        private static final ObjectMapper MAPPER = new ObjectMapper();
+
         @Test
         void aclProfileLimitExceeded_allConditionsMet_returnsLimitExceededCode() {
             CommandResult result = service.buildTfCommandResult(List.of(aclProfileErrorLog()));
@@ -131,7 +142,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("Not SEMP call failed", "solacebroker_msg_vpn_acl_profile.foo", "MAX_NUM_EXCEEDED in response")
             ));
-            assertThat((Map<String, Object>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
+            assertThat(result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         @Test
@@ -139,7 +150,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_queue.foo", "MAX_NUM_EXCEEDED in response")
             ));
-            assertThat((Map<String, Object>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
+            assertThat(result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         @Test
@@ -147,7 +158,7 @@ public class TerraformLogProcessingServiceTest {
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_acl_profile.foo", "some other error")
             ));
-            assertThat((Map<String, Object>) result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
+            assertThat(result.getLogs().get(0)).containsEntry("emaCode", "INTERNAL_ERROR");
         }
 
         // ── Broker SEMP error classification ────────────────────────────────
@@ -178,15 +189,17 @@ public class TerraformLogProcessingServiceTest {
 
         @Test
         void sempCallFailed_invalidParameter_problemWithWording_classifiesCorrectly() {
-            String detail = "request failed for https://broker.example.com:943/SEMP/v2/config/msgVpns/vpn1/queues/q1 " +
-                    "using PUT, Problem with owner: The name should have only the printable ASCII characters different from wildcards(? and *)., INVALID_PARAMETER";
+            String detail = "request failed for https://broker.example.com:943/SEMP/v2/config/msgVpns/vpn1/queues/q1 "
+                    + "using PUT, Problem with owner: The name should have only the printable ASCII characters "
+                    + "different from wildcards(? and *)., INVALID_PARAMETER";
             CommandResult result = service.buildTfCommandResult(List.of(
                     errorLog("SEMP call failed", "solacebroker_msg_vpn_queue.q1", detail)
             ));
             Map<String, Object> log = result.getLogs().get(0);
             assertThat(log).containsEntry("emaCode", "TERRAFORM_INVALID_PARAMETER");
             assertThat(log).containsEntry("userMessage",
-                    "Problem with owner: The name should have only the printable ASCII characters different from wildcards(? and *).");
+                    "Problem with owner: The name should have only the printable ASCII characters "
+                    + "different from wildcards(? and *).");
         }
 
         @Test
@@ -364,8 +377,6 @@ public class TerraformLogProcessingServiceTest {
             return errorLog("SEMP call failed", "solacebroker_msg_vpn_acl_profile.test-acl",
                     "SEMP response: 400 Bad Request — MAX_NUM_EXCEEDED for ACL profiles");
         }
-
-        private static final ObjectMapper MAPPER = new ObjectMapper();
 
         private String errorLog(String summary, String address, String detail) {
             try {
