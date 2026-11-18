@@ -54,7 +54,8 @@ class EmaErrorCodeTest {
             "TERRAFORM_PARSE_ERROR",
             "TERRAFORM_MAX_NUM_EXCEEDED",
             "TERRAFORM_FAIL",
-            "TERRAFORM_ALREADY_EXISTS"
+            "TERRAFORM_ALREADY_EXISTS",
+            "TERRAFORM_INVALID_ATTRIBUTE_VALUE"
     })
     void terraformPluginEmaCodeStrings_resolveToKnownEnum(String name) {
         assertThat(EmaErrorCode.fromName(name))

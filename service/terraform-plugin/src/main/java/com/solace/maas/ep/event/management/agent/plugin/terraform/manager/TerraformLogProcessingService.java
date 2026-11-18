@@ -40,6 +40,11 @@ public class TerraformLogProcessingService {
     // there is no build or test failure if these go out of sync.
     static final String EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED = "ACL_PROFILE_LIMIT_EXCEEDED";
     static final String EMA_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
+    static final String EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE = "TERRAFORM_INVALID_ATTRIBUTE_VALUE";
+    private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE = "Invalid Attribute Value";
+    private static final String SUMMARY_INVALID_ATTRIBUTE_VALUE_MATCH = "Invalid Attribute Value Match";
+    private static final Pattern GOT_SUFFIX_PATTERN = Pattern.compile(",\\s*got:.*$", Pattern.DOTALL);
+    private static final Pattern ATTRIBUTE_NAME_PATTERN = Pattern.compile("^(Attribute )(\\S+)( .*)$", Pattern.DOTALL);
 
     private static final Map<String, String> SEMP_STATUS_TO_EMA_CODE = Map.of(
             "INVALID_PARAMETER", "TERRAFORM_INVALID_PARAMETER",
@@ -171,9 +176,29 @@ public class TerraformLogProcessingService {
         if (isAclProfileLimitExceededDiagnostic(summary, address, detail)) {
             return new ClassificationResult(EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED, null);
         }
-        if (!"SEMP call failed".equals(summary) || detail == null) {
-            return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
+        if (SUMMARY_INVALID_ATTRIBUTE_VALUE.equals(summary) || SUMMARY_INVALID_ATTRIBUTE_VALUE_MATCH.equals(summary)) {
+            return classifyInvalidAttributeValue(detail);
         }
+        if ("SEMP call failed".equals(summary) && detail != null) {
+            return classifySempCallFailed(detail);
+        }
+        return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
+    }
+
+    private ClassificationResult classifyInvalidAttributeValue(String detail) {
+        if (detail == null) {
+            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, null);
+        }
+        String stripped = GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("");
+        if (stripped.equals(detail)) {
+            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, null);
+        }
+        Matcher m = ATTRIBUTE_NAME_PATTERN.matcher(stripped);
+        String userMessage = m.matches() ? m.group(1) + snakeToCamel(m.group(2)) + m.group(3) : stripped;
+        return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, userMessage);
+    }
+
+    private ClassificationResult classifySempCallFailed(String detail) {
         Matcher matcher = SEMP_DETAIL_PATTERN.matcher(detail);
         if (!matcher.matches()) {
             return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
@@ -262,5 +287,20 @@ public class TerraformLogProcessingService {
 
     private boolean isErrorLog(Map<String, Object> expandedLogMessage) {
         return StringUtils.equals(extractValueFromLog(expandedLogMessage, KEY_LOG_LEVEL), VALUE_LOG_LEVEL_ERROR);
+    }
+
+    private static String snakeToCamel(String snake) {
+        String[] parts = snake.split("_", -1);
+        if (parts.length == 1) {
+            return snake;
+        }
+        StringBuilder sb = new StringBuilder(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            if (!parts[i].isEmpty()) {
+                sb.append(Character.toUpperCase(parts[i].charAt(0)));
+                sb.append(parts[i].substring(1));
+            }
+        }
+        return sb.toString();
     }
 }

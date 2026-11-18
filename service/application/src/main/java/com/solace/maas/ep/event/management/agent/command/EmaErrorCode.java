@@ -62,6 +62,13 @@ public enum EmaErrorCode {
             null,
             LogLevel.ERROR
     ),
+    TERRAFORM_INVALID_ATTRIBUTE_VALUE(
+            "ema",
+            1,
+            Msg.VALIDATION_ERROR,
+            null,
+            LogLevel.ERROR
+    ),
     INTERNAL_ERROR(
             "ema",
             1,
