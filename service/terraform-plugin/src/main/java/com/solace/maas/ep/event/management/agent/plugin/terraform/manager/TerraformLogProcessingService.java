@@ -177,17 +177,28 @@ public class TerraformLogProcessingService {
             return new ClassificationResult(EMA_CODE_ACL_PROFILE_LIMIT_EXCEEDED, null);
         }
         if (SUMMARY_INVALID_ATTRIBUTE_VALUE.equals(summary) || SUMMARY_INVALID_ATTRIBUTE_VALUE_MATCH.equals(summary)) {
-            String stripped = detail != null ? GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("") : null;
-            String userMessage = null;
-            if (stripped != null && !stripped.equals(detail)) {
-                Matcher m = ATTRIBUTE_NAME_PATTERN.matcher(stripped);
-                userMessage = m.matches() ? m.group(1) + snakeToCamel(m.group(2)) + m.group(3) : stripped;
-            }
-            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, userMessage);
+            return classifyInvalidAttributeValue(detail);
         }
-        if (!"SEMP call failed".equals(summary) || detail == null) {
-            return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
+        if ("SEMP call failed".equals(summary) && detail != null) {
+            return classifySempCallFailed(detail);
         }
+        return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);
+    }
+
+    private ClassificationResult classifyInvalidAttributeValue(String detail) {
+        if (detail == null) {
+            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, null);
+        }
+        String stripped = GOT_SUFFIX_PATTERN.matcher(detail).replaceFirst("");
+        if (stripped.equals(detail)) {
+            return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, null);
+        }
+        Matcher m = ATTRIBUTE_NAME_PATTERN.matcher(stripped);
+        String userMessage = m.matches() ? m.group(1) + snakeToCamel(m.group(2)) + m.group(3) : stripped;
+        return new ClassificationResult(EMA_CODE_TERRAFORM_INVALID_ATTRIBUTE_VALUE, userMessage);
+    }
+
+    private ClassificationResult classifySempCallFailed(String detail) {
         Matcher matcher = SEMP_DETAIL_PATTERN.matcher(detail);
         if (!matcher.matches()) {
             return new ClassificationResult(EMA_CODE_INTERNAL_ERROR, null);

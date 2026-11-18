@@ -366,12 +366,19 @@ public class TerraformLogProcessingServiceTest {
         }
 
         private String errorLog(String summary, String address, String detail) {
-            return String.format(
-                    "{\"@level\":\"error\",\"@message\":\"Error: Provider returned error\"," +
-                    "\"@timestamp\":\"2026-01-01T00:00:00.000Z\"," +
-                    "\"diagnostic\":{\"severity\":\"error\",\"summary\":\"%s\",\"address\":\"%s\",\"detail\":\"%s\"}}",
-                    summary, address, detail
-            );
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                return String.format(
+                        "{\"@level\":\"error\",\"@message\":\"Error: Provider returned error\"," +
+                        "\"@timestamp\":\"2026-01-01T00:00:00.000Z\"," +
+                        "\"diagnostic\":{\"severity\":\"error\",\"summary\":%s,\"address\":%s,\"detail\":%s}}",
+                        mapper.writeValueAsString(summary),
+                        mapper.writeValueAsString(address),
+                        mapper.writeValueAsString(detail)
+                );
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
