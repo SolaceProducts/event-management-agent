@@ -365,16 +365,17 @@ public class TerraformLogProcessingServiceTest {
                     "SEMP response: 400 Bad Request — MAX_NUM_EXCEEDED for ACL profiles");
         }
 
+        private static final ObjectMapper MAPPER = new ObjectMapper();
+
         private String errorLog(String summary, String address, String detail) {
             try {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 return String.format(
                         "{\"@level\":\"error\",\"@message\":\"Error: Provider returned error\"," +
                         "\"@timestamp\":\"2026-01-01T00:00:00.000Z\"," +
                         "\"diagnostic\":{\"severity\":\"error\",\"summary\":%s,\"address\":%s,\"detail\":%s}}",
-                        mapper.writeValueAsString(summary),
-                        mapper.writeValueAsString(address),
-                        mapper.writeValueAsString(detail)
+                        MAPPER.writeValueAsString(summary),
+                        MAPPER.writeValueAsString(address),
+                        MAPPER.writeValueAsString(detail)
                 );
             } catch (Exception e) {
                 throw new RuntimeException(e);
