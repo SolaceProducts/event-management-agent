@@ -47,6 +47,11 @@ ENV GITHASH="${GITHASH}" \
     GITBRANCH="${GITBRANCH}" \
     BUILD_TIMESTAMP="${BUILD_TIMESTAMP}"
 
+# DATAGO-162526: interim mitigation for CVE-2026-114938 (Java4Shell). Turns off AVX-512 so the JVM can't use the
+# vulnerable Base64 decoder. Set in JDK_JAVA_OPTIONS, not JAVA_OPTS, because users and Helm charts set their own
+# JAVA_OPTS, which would replace it. Remove once the base image ships Java 25.0.5.1+4 or later.
+ENV JDK_JAVA_OPTIONS="-XX:UseAVX=2"
+
 # switch to the created user from root
 USER $USER
 
