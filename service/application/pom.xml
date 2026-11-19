@@ -246,10 +246,12 @@
             <version>3.1.12</version>
         </dependency>
 
+        <!-- CVE-2026-93879: hibernate-validator < 8.0.5.Final ReDoS in email validation; exploitable via
+             @Email-annotated REST fields. DATAGO-162196. -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>8.0.1.Final</version>
+            <version>8.0.5.Final</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
