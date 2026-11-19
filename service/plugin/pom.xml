@@ -22,7 +22,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <jackson.version>2.21.7</jackson.version>
+        <jackson.version>2.21.8</jackson.version>
         <spring-boot.version>4.1.1</spring-boot.version>
         <!-- This module only started having its own tests with DATAGO-159398; most of it is still covered
              through the application module, which JaCoCo does not credit here. -->
@@ -39,12 +39,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Jackson 3 arrives transitively via spring-boot-starter-jackson at 3.1.5; pin to 3.1.7
+            <!-- Jackson 3 arrives transitively via spring-boot-starter-jackson at 3.1.5; pin to 3.1.8
                  (CVE-2026-68497/91776/91777/89407/89425, DATAGO-155015, 155429). -->
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>3.1.7</version>
+                <version>3.1.8</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
