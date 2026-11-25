@@ -23,7 +23,7 @@ public class SempApiProviderImpl implements SempApiProvider {
     /**
      * OkHttp 2's default specs cap TLS at 1.2 and list no TLS 1.3 cipher suites. Leaving both to the JVM
      * lets it offer TLS 1.3, which FIPS brokers need: Java in FIPS mode sends TLS 1.2 without the
-     * extended master secret, and those brokers reject that handshake.
+     * extended master secret, and those brokers reject that handshake. CLEARTEXT keeps http:// SEMP URLs working.
      */
     static final ConnectionSpec JVM_DEFAULT_TLS = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
             .allEnabledTlsVersions()
@@ -95,7 +95,7 @@ public class SempApiProviderImpl implements SempApiProvider {
     private ApiClient setupApiClient(SolaceHttpSemp solaceClient, EventPortalProperties eventPortalProperties) {
         SempClient sempClient = solaceClient.getSempClient();
         ApiClient client = new ApiClient();
-        client.getHttpClient().setConnectionSpecs(List.of(JVM_DEFAULT_TLS));
+        client.getHttpClient().setConnectionSpecs(List.of(JVM_DEFAULT_TLS, ConnectionSpec.CLEARTEXT));
         client.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         client.setUsername(sempClient.getUsername());
         client.setPassword(sempClient.getPassword());

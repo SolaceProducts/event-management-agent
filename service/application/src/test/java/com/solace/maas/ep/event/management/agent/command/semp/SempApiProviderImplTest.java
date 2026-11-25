@@ -5,6 +5,7 @@ import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.Se
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
 import com.squareup.okhttp.ConnectionSpec;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.ResponseBody;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
@@ -32,10 +34,30 @@ class SempApiProviderImplTest {
         ApiClient apiClient = apiClient("https://broker:943");
 
         List<ConnectionSpec> specs = apiClient.getHttpClient().getConnectionSpecs();
-        assertEquals(1, specs.size());
+        assertEquals(List.of(SempApiProviderImpl.JVM_DEFAULT_TLS, ConnectionSpec.CLEARTEXT), specs);
         assertTrue(specs.get(0).isTls());
         assertNull(specs.get(0).tlsVersions());
         assertNull(specs.get(0).cipherSuites());
+    }
+
+    @Test
+    void stillCallsPlainHttpSemp() throws Exception {
+        try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+            Thread.ofVirtual().start(() -> {
+                try (Socket socket = server.accept()) {
+                    socket.getOutputStream().write(
+                            "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+                } catch (IOException ignored) {
+                    // the test closes the server
+                }
+            });
+            ApiClient apiClient = apiClient("http://localhost:" + server.getLocalPort());
+
+            Request request = new Request.Builder().url(apiClient.getBasePath() + "/about").build();
+            try (ResponseBody body = apiClient.getHttpClient().newCall(request).execute().body()) {
+                assertEquals(0, body.contentLength());
+            }
+        }
     }
 
     @Test
