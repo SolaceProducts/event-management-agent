@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,12 +44,18 @@ class SempApiProviderImplTest {
 
     @Test
     void stillCallsPlainHttpSemp() throws Exception {
-        try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+        try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getByName("localhost"))) {
             Thread.ofVirtual().start(() -> {
                 try (Socket socket = server.accept()) {
+                    // Read the request first. Closing with unread input sends a reset, which can drop the response.
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.US_ASCII));
+                    String line = reader.readLine();
+                    while (line != null && !line.isEmpty()) {
+                        line = reader.readLine();
+                    }
                     socket.getOutputStream().write(
                             "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
-                } catch (IOException ignored) {
+                } catch (IOException _) {
                     // the test closes the server
                 }
             });
@@ -63,11 +71,11 @@ class SempApiProviderImplTest {
     @Test
     void offersTls13OnTheSocket() throws Exception {
         RecordingSslSocketFactory sslSocketFactory = new RecordingSslSocketFactory();
-        try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+        try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getByName("localhost"))) {
             Thread.ofVirtual().start(() -> {
                 try {
                     server.accept().close();
-                } catch (IOException ignored) {
+                } catch (IOException _) {
                     // the test closes the server
                 }
             });
@@ -109,7 +117,7 @@ class SempApiProviderImplTest {
             this.delegate = SSLContext.getDefault().getSocketFactory();
         }
 
-        private Socket record(Socket socket) {
+        private Socket keep(Socket socket) {
             sockets.add((SSLSocket) socket);
             return socket;
         }
@@ -126,28 +134,28 @@ class SempApiProviderImplTest {
 
         @Override
         public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException {
-            return record(delegate.createSocket(socket, host, port, autoClose));
+            return keep(delegate.createSocket(socket, host, port, autoClose));
         }
 
         @Override
         public Socket createSocket(String host, int port) throws IOException {
-            return record(delegate.createSocket(host, port));
+            return keep(delegate.createSocket(host, port));
         }
 
         @Override
         public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException {
-            return record(delegate.createSocket(host, port, localHost, localPort));
+            return keep(delegate.createSocket(host, port, localHost, localPort));
         }
 
         @Override
         public Socket createSocket(InetAddress host, int port) throws IOException {
-            return record(delegate.createSocket(host, port));
+            return keep(delegate.createSocket(host, port));
         }
 
         @Override
         public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
                 throws IOException {
-            return record(delegate.createSocket(address, port, localAddress, localPort));
+            return keep(delegate.createSocket(address, port, localAddress, localPort));
         }
     }
 }
