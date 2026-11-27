@@ -11,11 +11,20 @@ import com.solace.client.sempv2.api.RestDeliveryPointApi;
 import com.solace.maas.ep.event.management.agent.config.eventPortal.EventPortalProperties;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SempClient;
 import com.solace.maas.ep.event.management.agent.plugin.solace.processor.semp.SolaceHttpSemp;
+import com.squareup.okhttp.ConnectionSpec;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 @SuppressWarnings("PMD")
 public class SempApiProviderImpl implements SempApiProvider {
+
+    /** Let the JVM choose the TLS versions and cipher suites, so it can offer TLS 1.3. */
+    static final ConnectionSpec JVM_DEFAULT_TLS = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+            .allEnabledTlsVersions()
+            .allEnabledCipherSuites()
+            .build();
 
     private final ApiClient apiClient;
     private AclProfileApi aclProfileApi;
@@ -82,6 +91,7 @@ public class SempApiProviderImpl implements SempApiProvider {
     private ApiClient setupApiClient(SolaceHttpSemp solaceClient, EventPortalProperties eventPortalProperties) {
         SempClient sempClient = solaceClient.getSempClient();
         ApiClient client = new ApiClient();
+        client.getHttpClient().setConnectionSpecs(List.of(JVM_DEFAULT_TLS, ConnectionSpec.CLEARTEXT));
         client.setBasePath(sempClient.getConnectionUrl() + "/SEMP/v2/config");
         client.setUsername(sempClient.getUsername());
         client.setPassword(sempClient.getPassword());
